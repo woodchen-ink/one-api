@@ -1,5 +1,5 @@
 export default function componentStyleOverrides(theme) {
-  const bgColor = theme.colors?.grey50;
+  const bgColor = theme.mode === 'dark' ? theme.backgroundDefault : theme.colors?.grey50;
   return {
     MuiButton: {
       styleOverrides: {
@@ -226,7 +226,7 @@ export default function componentStyleOverrides(theme) {
     MuiTableCell: {
       styleOverrides: {
         root: {
-          borderBottom: '1px solid rgb(241, 243, 244)',
+          borderBottom: '1px solid ' + theme.tableBorderBottom,
           textAlign: 'left',
           borderRight: "1px solid rgba(34,36,38,.05)", // 添加列的分割线
           padding: '12px 8px', // 你可以调整这里的数值，以符合你的设计需求
@@ -234,7 +234,7 @@ export default function componentStyleOverrides(theme) {
         },
         head: {
           color: theme.darkTextSecondary,
-          backgroundColor: 'rgb(244, 246, 248)'
+          backgroundColor: theme.headBackgroundColor
         }
       }
     },
@@ -242,7 +242,7 @@ export default function componentStyleOverrides(theme) {
       styleOverrides: {
         root: {
           '&:hover': {
-            backgroundColor: 'rgb(244, 246, 248)'
+            backgroundColor: theme.headBackgroundColor
           }
         }
       }
@@ -254,6 +254,22 @@ export default function componentStyleOverrides(theme) {
           background: theme.colors?.grey700
         }
       }
+    },
+    MuiCssBaseline: {
+      styleOverrides: `
+      .apexcharts-title-text {
+          fill: ${theme.textDark} !important
+        }
+      .apexcharts-text {
+        fill: ${theme.textDark} !important
+      }
+      .apexcharts-legend-text {
+        color: ${theme.textDark} !important
+      }
+      .apexcharts-menu {
+        background: ${theme.backgroundDefault} !important
+      }
+      `
     },
     MuiContainer: {
       styleOverrides: {
