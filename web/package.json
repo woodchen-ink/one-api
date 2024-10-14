@@ -41,7 +41,7 @@
     "react-redux": "^9.1.0",
     "react-router": "6.21.3",
     "react-router-dom": "6.21.3",
-    "react-turnstile": "^1.1.2",
+    "react-turnstile": "^1.1.4",
     "redux": "^5.0.1",
     "vite": "^5.4.7",
     "vite-jsconfig-paths": "^2.0.1",
