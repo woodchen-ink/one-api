@@ -17,7 +17,7 @@ require (
 	github.com/eko/gocache/lib/v4 v4.1.6
 	github.com/eko/gocache/store/freecache/v4 v4.2.2
 	github.com/eko/gocache/store/redis/v4 v4.2.2
-	github.com/gin-contrib/cors v1.7.0
+	github.com/gin-contrib/cors v1.7.2
 	github.com/gin-contrib/gzip v0.0.6
 	github.com/gin-contrib/sessions v1.0.1
 	github.com/gin-contrib/static v1.1.0
