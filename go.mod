@@ -149,5 +149,5 @@ require (
 	golang.org/x/text v0.19.0 // indirect
 	google.golang.org/protobuf v1.35.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	gorm.io/datatypes v1.2.3
+	gorm.io/datatypes v1.2.4
 )
