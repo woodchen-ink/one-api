@@ -40,7 +40,7 @@ require (
 	github.com/stretchr/testify v1.9.0
 	github.com/stripe/stripe-go/v80 v80.2.0
 	github.com/wechatpay-apiv3/wechatpay-go v0.2.20
-	github.com/wneessen/go-mail v0.5.0
+	github.com/wneessen/go-mail v0.5.2
 	go.uber.org/zap v1.27.0
 	golang.org/x/crypto v0.28.0
 	golang.org/x/image v0.18.0
