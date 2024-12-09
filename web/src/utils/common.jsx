@@ -212,7 +212,10 @@ export function renderQuotaWithPrompt(quota, digits) {
   let displayInCurrency = localStorage.getItem('display_in_currency');
   displayInCurrency = displayInCurrency === 'true';
   if (displayInCurrency) {
-    return `（等价金额：${renderQuota(quota, digits)}）`;
+    let quotaPerUnit = localStorage.getItem('quota_per_unit');
+    quotaPerUnit = parseFloat(quotaPerUnit);
+    let actualQuota = (parseFloat(quota) * quotaPerUnit).toFixed(0);
+    return `（等价额度：${renderNumber(actualQuota)}）`;
   }
   return '';
 }

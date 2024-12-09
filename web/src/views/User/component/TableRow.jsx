@@ -2,9 +2,7 @@ import PropTypes from 'prop-types';
 import { useState } from 'react';
 
 import {
-  Popover,
   TableRow,
-  MenuItem,
   TableCell,
   IconButton,
   Dialog,
@@ -40,25 +38,15 @@ function renderRole(t, role) {
 export default function UsersTableRow({ item, manageUser, handleOpenModal, setModalUserId }) {
   const { t } = useTranslation();
   const theme = useTheme();
-  const [open, setOpen] = useState(null);
   const [openDelete, setOpenDelete] = useState(false);
   const [statusSwitch, setStatusSwitch] = useState(item.status);
 
   const handleDeleteOpen = () => {
-    handleCloseMenu();
     setOpenDelete(true);
   };
 
   const handleDeleteClose = () => {
     setOpenDelete(false);
-  };
-
-  const handleOpenMenu = (event) => {
-    setOpen(event.currentTarget);
-  };
-
-  const handleCloseMenu = () => {
-    setOpen(null);
   };
 
   const handleStatus = async () => {
@@ -70,7 +58,6 @@ export default function UsersTableRow({ item, manageUser, handleOpenModal, setMo
   };
 
   const handleDelete = async () => {
-    handleCloseMenu();
     await manageUser(item.username, 'delete', '');
   };
 
@@ -127,49 +114,29 @@ export default function UsersTableRow({ item, manageUser, handleOpenModal, setMo
           <TableSwitch id={`switch-${item.id}`} checked={statusSwitch === 1} onChange={handleStatus} />
         </TableCell>
         <TableCell>
-          <IconButton onClick={handleOpenMenu} sx={{ color: 'rgb(99, 115, 129)' }}>
-            <Icon icon="solar:menu-dots-circle-bold-duotone" />
-          </IconButton>
+          <Stack direction="row" spacing={1}>
+            <Tooltip title={t('common.edit')}>
+              <IconButton 
+                onClick={() => {
+                  handleOpenModal();
+                  setModalUserId(item.id);
+                }}
+                sx={{ color: 'rgb(99, 115, 129)' }}
+              >
+                <Icon icon="solar:pen-bold-duotone" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title={t('common.delete')}>
+              <IconButton 
+                onClick={handleDeleteOpen}
+                sx={{ color: 'rgb(99, 115, 129)' }}
+              >
+                <Icon icon="solar:trash-bin-trash-bold-duotone" />
+              </IconButton>
+            </Tooltip>
+          </Stack>
         </TableCell>
       </TableRow>
-
-      <Popover
-        open={!!open}
-        anchorEl={open}
-        onClose={handleCloseMenu}
-        anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-        PaperProps={{
-          sx: { minWidth: 140 }
-        }}
-      >
-        {item.role !== 100 && (
-          <MenuItem
-            onClick={() => {
-              handleCloseMenu();
-              manageUser(item.username, 'role', item.role === 1 ? true : false);
-            }}
-          >
-            <Icon icon="solar:user-bold-duotone" style={{ marginRight: '16px' }} />
-            {item.role === 1 ? t('userPage.setAdmin') : t('userPage.cancelAdmin')}
-          </MenuItem>
-        )}
-
-        <MenuItem
-          onClick={() => {
-            handleCloseMenu();
-            handleOpenModal();
-            setModalUserId(item.id);
-          }}
-        >
-          <Icon icon="solar:pen-bold-duotone" style={{ marginRight: '16px' }} />
-          {t('common.edit')}
-        </MenuItem>
-        <MenuItem onClick={handleDeleteOpen} sx={{ color: 'error.main' }}>
-          <Icon icon="solar:trash-bin-trash-bold-duotone" style={{ marginRight: '16px' }} />
-          {t('common.delete')}
-        </MenuItem>
-      </Popover>
 
       <Dialog open={openDelete} onClose={handleDeleteClose}>
         <DialogTitle>{t('userPage.del')}</DialogTitle>

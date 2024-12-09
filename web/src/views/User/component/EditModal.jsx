@@ -71,6 +71,8 @@ const EditModal = ({ open, userId, onCancel, onOk }) => {
     values = trims(values);
     try {
       if (values.is_edit) {
+        const quotaPerUnit = parseFloat(localStorage.getItem('quota_per_unit'));
+        values.quota = Math.floor(parseFloat(values.quota) * quotaPerUnit);
         res = await API.put(`/api/user/`, { ...values, id: parseInt(userId) });
       } else {
         res = await API.post(`/api/user/`, values);
@@ -108,11 +110,14 @@ const EditModal = ({ open, userId, onCancel, onOk }) => {
       const { success, message, data } = res.data;
       if (success) {
         data.is_edit = true;
+        const quotaPerUnit = parseFloat(localStorage.getItem('quota_per_unit')) || 500000;
+        data.quota = (data.quota / quotaPerUnit).toFixed(2);
         setInputs(data);
       } else {
         showError(message);
       }
     } catch (error) {
+      showError(error.message);
       return;
     }
   };
@@ -229,13 +234,17 @@ const EditModal = ({ open, userId, onCancel, onOk }) => {
                       type="number"
                       value={values.quota}
                       name="quota"
-                      endAdornment={<InputAdornment position="end">{renderQuotaWithPrompt(values.quota)}</InputAdornment>}
+                      startAdornment={<InputAdornment position="start">$</InputAdornment>}
+                      endAdornment={
+                        <InputAdornment position="end">
+                          {renderQuotaWithPrompt(values.quota)}
+                        </InputAdornment>
+                      }
                       onBlur={handleBlur}
                       onChange={handleChange}
                       aria-describedby="helper-text-channel-quota-label"
                       disabled={values.unlimited_quota}
                     />
-
                     {touched.quota && errors.quota && (
                       <FormHelperText error id="helper-tex-channel-quota-label">
                         {t(errors.quota)}
