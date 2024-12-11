@@ -70,9 +70,11 @@ const Breadcrumbs = ({ card, divider, icon, icons, maxItems, navigation, rightAl
 
   // item separator
   const separatorIcon = separator ? (
-    React.isValidElement(separator) ? 
-      React.cloneElement(separator, { stroke: 1.5, size: "1rem" }) : 
-      createElement(separator, { stroke: 1.5, size: "1rem" })
+    typeof separator === 'function' ? (
+      <separator stroke={1.5} size="1rem" />
+    ) : (
+      separator
+    )
   ) : (
     <IconTallymark1 stroke={1.5} size="1rem" />
   );
