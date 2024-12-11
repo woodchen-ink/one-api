@@ -155,110 +155,59 @@ const (
 )
 
 const (
-	ChannelTypeUnknown        = 0
-	ChannelTypeOpenAI         = 1
-	ChannelTypeAPI2D          = 2
-	ChannelTypeAzure          = 3
-	ChannelTypeCloseAI        = 4
-	ChannelTypeOpenAISB       = 5
-	ChannelTypeOpenAIMax      = 6
-	ChannelTypeOhMyGPT        = 7
-	ChannelTypeCustom         = 8
-	ChannelTypeAILS           = 9
-	ChannelTypeAIProxy        = 10
-	ChannelTypePaLM           = 11
-	ChannelTypeAPI2GPT        = 12
-	ChannelTypeAIGC2D         = 13
-	ChannelTypeAnthropic      = 14
-	ChannelTypeBaidu          = 15
-	ChannelTypeZhipu          = 16
-	ChannelTypeAli            = 17
-	ChannelTypeXunfei         = 18
-	ChannelType360            = 19
-	ChannelTypeOpenRouter     = 20
-	ChannelTypeAIProxyLibrary = 21
-	ChannelTypeFastGPT        = 22
-	ChannelTypeTencent        = 23
-	ChannelTypeAzureSpeech    = 24
-	ChannelTypeGemini         = 25
-	ChannelTypeBaichuan       = 26
-	ChannelTypeMiniMax        = 27
-	ChannelTypeDeepseek       = 28
-	ChannelTypeMoonshot       = 29
-	ChannelTypeMistral        = 30
-	ChannelTypeGroq           = 31
-	ChannelTypeBedrock        = 32
-	ChannelTypeLingyi         = 33
-	ChannelTypeMidjourney     = 34
-	ChannelTypeCloudflareAI   = 35
-	ChannelTypeCohere         = 36
-	ChannelTypeStabilityAI    = 37
-	ChannelTypeCoze           = 38
-	ChannelTypeOllama         = 39
-	ChannelTypeHunyuan        = 40
-	ChannelTypeSuno           = 41
-	ChannelTypeVertexAI       = 42
-	ChannelTypeLLAMA          = 43
-	ChannelTypeIdeogram       = 44
-	ChannelTypeSiliconflow    = 45
-	ChannelTypeFlux           = 46
-	ChannelTypeJina           = 47
-	ChannelTypeRerank         = 48
-	ChannelTypeGithub         = 49
+	ChannelTypeUnknown = 0
+	ChannelTypeOpenAI  = 1
+	// ChannelTypeAPI2D          = 2
+	ChannelTypeAzure = 3
+	// ChannelTypeCloseAI = 4
+	// ChannelTypeOpenAISB       = 5
+	// ChannelTypeOpenAIMax      = 6
+	// ChannelTypeOhMyGPT        = 7
+	ChannelTypeCustom = 8
+	// ChannelTypeAILS           = 9
+	// ChannelTypeAIProxy        = 10
+	ChannelTypePaLM = 11
+	// ChannelTypeAPI2GPT        = 12
+	// ChannelTypeAIGC2D         = 13
+	ChannelTypeAnthropic = 14
+	ChannelTypeBaidu     = 15
+	ChannelTypeZhipu     = 16
+	ChannelTypeAli       = 17
+	ChannelTypeXunfei    = 18
+	ChannelType360       = 19
+	// ChannelTypeOpenRouter = 20
+	// ChannelTypeAIProxyLibrary = 21
+	// ChannelTypeFastGPT        = 22
+	ChannelTypeTencent      = 23
+	ChannelTypeAzureSpeech  = 24
+	ChannelTypeGemini       = 25
+	ChannelTypeBaichuan     = 26
+	ChannelTypeMiniMax      = 27
+	ChannelTypeDeepseek     = 28
+	ChannelTypeMoonshot     = 29
+	ChannelTypeMistral      = 30
+	ChannelTypeGroq         = 31
+	ChannelTypeBedrock      = 32
+	ChannelTypeLingyi       = 33
+	ChannelTypeMidjourney   = 34
+	ChannelTypeCloudflareAI = 35
+	ChannelTypeCohere       = 36
+	ChannelTypeStabilityAI  = 37
+	ChannelTypeCoze         = 38
+	ChannelTypeOllama       = 39
+	ChannelTypeHunyuan      = 40
+	ChannelTypeSuno         = 41
+	ChannelTypeVertexAI     = 42
+	ChannelTypeLLAMA        = 43
+	ChannelTypeIdeogram     = 44
+	ChannelTypeSiliconflow  = 45
+	ChannelTypeFlux         = 46
+	ChannelTypeJina         = 47
+	ChannelTypeRerank       = 48
+	ChannelTypeGithub       = 49
+	ChannelTypeRecraft      = 51
+	ChannelTypeReplicate    = 52
 )
-
-var ChannelBaseURLs = []string{
-	"",                                      // 0
-	"https://api.openai.com",                // 1
-	"",                                      // 2
-	"",                                      // 3
-	"",                                      // 4
-	"",                                      // 5
-	"",                                      // 6
-	"",                                      // 7
-	"",                                      // 8
-	"",                                      // 9
-	"",                                      // 10
-	"",                                      // 11
-	"",                                      // 12
-	"",                                      // 13
-	"https://api.anthropic.com",             // 14
-	"https://aip.baidubce.com",              // 15
-	"https://open.bigmodel.cn",              // 16
-	"https://dashscope.aliyuncs.com",        // 17
-	"",                                      // 18
-	"https://ai.360.cn",                     // 19
-	"",                                      // 20
-	"",                                      // 21
-	"",                                      // 22
-	"https://hunyuan.cloud.tencent.com",     //23
-	"",                                      //24
-	"",                                      //25
-	"https://api.baichuan-ai.com",           //26
-	"https://api.minimax.chat/v1",           //27
-	"https://api.deepseek.com",              //28
-	"https://api.moonshot.cn",               //29
-	"https://api.mistral.ai",                //30
-	"https://api.groq.com/openai",           //31
-	"",                                      //32
-	"https://api.lingyiwanwu.com",           //33
-	"",                                      //34
-	"",                                      //35
-	"https://api.cohere.ai/v1",              //36
-	"https://api.stability.ai/v2beta",       //37
-	"https://api.coze.com/open_api",         //38
-	"",                                      //39
-	"https://hunyuan.tencentcloudapi.com",   //40
-	"",                                      //41
-	"",                                      //42
-	"",                                      //43
-	"https://api.ideogram.ai",               //44
-	"https://api.siliconflow.cn",            //45
-	"",                                      //46
-	"https://api.jina.ai",                   //47
-	"",                                      //48
-	"https://models.inference.ai.azure.com", //49
-}
 
 const (
 	RelayModeUnknown = iota
