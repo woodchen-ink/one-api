@@ -269,7 +269,19 @@
     "totalInputTokens": "Total input tokens",
     "totalOutputTokens": "Total output tokens",
     "typeLabel": "Type",
-    "userLabel": "User"
+    "userLabel": "User",
+    "content": {
+      "calculate_steps": "Calculation steps:",
+      "calculate_steps_tip": "PS: This system calculates based on points, and all amounts are converted from points. 1 point = $0.000002, with a minimum spending of 1 point. This calculation is for reference only; actual charges may vary.",
+      "channel_group": "Group: {{ channel_group }}",
+      "group_discount": "Group discount: {{ discount }}",
+      "input_price": "Input: ${{ price }} /M",
+      "original_input_price": "Original input price: ${{ price }} /M",
+      "original_output_price": "Original output price: ${{ price }} /M",
+      "original_times_price": "Original price: ${{ times }} per time",
+      "output_price": "Output: ${{ price }} /M",
+      "times_price": "${{ times }} / time"
+    }
   },
   "login": {
     "codeRequired": "verification code must be filled",
@@ -339,7 +351,10 @@
     "search": "Search",
     "times": "times",
     "tokens": "tokens",
-    "type": "Type"
+    "type": "Type",
+    "inputAudioTokensRatio": "Audio input ratio",
+    "other": "Other",
+    "outputAudioTokensRatio": "Audio output ratio"
   },
   "nova 映射": "nova mapping",
   "onyx 映射": "onyx mapping",
@@ -674,7 +689,12 @@
         "save": "Save Rate Settings",
         "title": "Rate Settings"
       },
-      "title": "Operation Settings"
+      "title": "Operation Settings",
+      "audioTokenSettings": {
+        "info": "Configure audio rates. The configuration format is JSON, with keys as model names and values as input-output token rates. For example: {\"gpt-4o-audio-preview\": {\"input_audio_tokens_ratio\": 40, \"output_audio_tokens_ratio\": 20}, \"gpt-4o-mini-audio-preview\": {\"input_audio_tokens_ratio\": 67, \"output_audio_tokens_ratio\": 34}}",
+        "save": "Save audio token settings",
+        "title": "Audio token settings"
+      }
     },
     "otherSettings": {
       "customSettings": {

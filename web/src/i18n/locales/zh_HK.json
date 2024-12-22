@@ -269,7 +269,19 @@
     "totalInputTokens": "計算輸入Tokens",
     "totalOutputTokens": "計算輸出Tokens",
     "typeLabel": "類型",
-    "userLabel": "用戶"
+    "userLabel": "用戶",
+    "content": {
+      "calculate_steps": "計算步驟:",
+      "calculate_steps_tip": "PS：本系統按照積分計算，所有金額均為積分換算而來，1積分=$0.000002，最低消費為1積分，本計算步驟僅供參考，以實際扣費為準。",
+      "channel_group": "分組: {{ channel_group }}",
+      "group_discount": "分組折扣: {{ discount }}",
+      "input_price": "輸入: ${{ price }} /M",
+      "original_input_price": "原輸入價格: ${{ price }} /M",
+      "original_output_price": "原輸出價格: ${{ price }} /M",
+      "original_times_price": "原價格: ${{ times }} / 次",
+      "output_price": "輸出: ${{ price }} /M",
+      "times_price": "${{ times }} / 次"
+    }
   },
   "login": {
     "codeRequired": "驗證碼不能為空",
@@ -335,7 +347,10 @@
     "search": "搜尋",
     "times": "按次付費",
     "tokens": "按量付費",
-    "type": "類型"
+    "type": "類型",
+    "inputAudioTokensRatio": "音頻輸入倍率",
+    "other": "其他",
+    "outputAudioTokensRatio": "音頻輸出倍率"
   },
   "nova 映射": "nova 映射",
   "onyx 映射": "onyx 映射",
@@ -669,7 +684,12 @@
         "save": "保存倍率設置",
         "title": "倍率設置"
       },
-      "title": "運營設置"
+      "title": "運營設置",
+      "audioTokenSettings": {
+        "info": "配置音頻倍率。配置格式為JSON，鍵為模型名稱，值為輸入輸出令牌倍率。例如：{\"gpt-4o-audio-preview\":{\"input_audio_tokens_ratio\":40,\"output_audio_tokens_ratio\":20},\"gpt-4o-mini-audio-preview\":{\"input_audio_tokens_ratio\":67,\"output_audio_tokens_ratio\":34}}",
+        "save": "保留音頻權杖設置",
+        "title": "音頻令牌設置"
+      }
     },
     "otherSettings": {
       "customSettings": {
