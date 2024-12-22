@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"net/http"
 	"one-api/common/logger"
 	"one-api/common/utils"
 
@@ -16,4 +17,15 @@ func abortWithMessage(c *gin.Context, statusCode int, message string) {
 	})
 	c.Abort()
 	logger.LogError(c.Request.Context(), message)
+}
+
+func midjourneyAbortWithMessage(c *gin.Context, code int, description string) {
+	c.JSON(http.StatusBadRequest, gin.H{
+		"description": description,
+		"type":        "cz_error",
+		"code":        code,
+	})
+
+	c.Abort()
+	logger.LogError(c.Request.Context(), description)
 }
