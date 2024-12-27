@@ -38,7 +38,8 @@ import { styled, alpha } from '@mui/material/styles';
 import { Icon } from '@iconify/react';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import { copy, renderQuota  } from 'utils/common';
+import { copy, renderQuota } from 'utils/common';
+import { ChannelCheck } from './ChannelCheck';
 
 const StyledMenu = styled((props) => (
   <Menu
@@ -97,6 +98,7 @@ export default function ChannelTableRow({ item, manageChannel, handleOpenModal, 
   const [open, setOpen] = useState(null);
   const [openTest, setOpenTest] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
+  const [openCheck, setOpenCheck] = useState(false);
   const [statusSwitch, setStatusSwitch] = useState(item.status);
   const [priorityValve, setPriority] = useState(item.priority);
   const [weightValve, setWeight] = useState(item.weight);
@@ -363,6 +365,10 @@ export default function ChannelTableRow({ item, manageChannel, handleOpenModal, 
           <Icon icon="solar:copy-bold-duotone" style={{ marginRight: '16px' }} />
           {t('token_index.copy')}
         </MenuItem>
+        <MenuItem onClick={() => setOpenCheck(true)}>
+          <Icon icon="solar:checklist-minimalistic-bold" style={{ marginRight: '16px' }} />
+          {t('channel_row.check')}
+        </MenuItem>
         {CHANNEL_OPTIONS[item.type]?.url && (
           <MenuItem
             onClick={() => {
@@ -498,6 +504,7 @@ export default function ChannelTableRow({ item, manageChannel, handleOpenModal, 
           </Button>
         </DialogActions>
       </Dialog>
+      <ChannelCheck item={item} open={openCheck} onClose={() => setOpenCheck(false)} />
     </>
   );
 }
