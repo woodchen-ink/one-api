@@ -9,8 +9,8 @@ require (
 	cloud.google.com/go/iam v1.1.11
 	github.com/aliyun/aliyun-oss-go-sdk v3.0.2+incompatible
 	github.com/aws/aws-sdk-go v1.55.5
-	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.6.1
-	github.com/aws/smithy-go v1.22.0
+	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.6.7
+	github.com/aws/smithy-go v1.22.1
 	github.com/bwmarrin/snowflake v0.3.0
 	github.com/coocood/freecache v1.2.4
 	github.com/coreos/go-oidc/v3 v3.11.0
