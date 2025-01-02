@@ -344,7 +344,7 @@ function viewLogContent(item, t, totalInputTokens, totalOutputTokens) {
       {calculateSteps && (
         <>
           <MetadataTypography>{calculateSteps}</MetadataTypography>
-          <MetadataTypography>{t('logPage.content.calculate_steps_tip')}</MetadataTypography>
+          {/* <MetadataTypography>{t('logPage.content.calculate_steps_tip')}</MetadataTypography> */}
         </>
       )}
     </>
