@@ -6,7 +6,6 @@ import {
   InputLabel,
   OutlinedInput,
   Button,
-  Alert,
   TextField,
   Dialog,
   DialogTitle,
@@ -272,9 +271,6 @@ const OtherSetting = () => {
               <Button variant="contained" onClick={submitAbout}>
                 {t('setting_index.otherSettings.customSettings.saveAbout')}
               </Button>
-            </Grid>
-            <Grid xs={12}>
-              <Alert severity="warning">{t('setting_index.otherSettings.customSettings.copyrightWarning')}</Alert>
             </Grid>
             <Grid xs={12}>
               <FormControl fullWidth>

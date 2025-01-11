@@ -334,6 +334,11 @@
     "failureReason": "失败原因"
   },
   "userPage": {
+    "changeMode": "增减模式",
+    "finalMode": "最终额度模式",
+    "finalQuota": "最终额度",
+    "currentQuota": "当前额度",
+    "willChange": "将改变",
     "editUser": "编辑用户",
     "createUser": "新建用户",
     "username": "用户名",
