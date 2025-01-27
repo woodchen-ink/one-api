@@ -80,6 +80,9 @@ const Header = () => {
             <Button component={Link} variant="text" to="/" color={pathname === '/' ? 'primary' : 'inherit'}>
               {t('menu.home')}
             </Button>
+            <Button component={Link} variant="text" to="/price" color={pathname === '/price' ? 'primary' : 'inherit'}>
+              {t('price')}
+            </Button>
             <Button component={Link} variant="text" to="/about" color={pathname === '/about' ? 'primary' : 'inherit'}>
             {t('menu.about')}
             </Button>

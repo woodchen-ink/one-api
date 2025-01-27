@@ -16,6 +16,9 @@ const Home = Loadable(lazy(() => import('views/Home')));
 const About = Loadable(lazy(() => import('views/About')));
 const NotFoundView = Loadable(lazy(() => import('views/Error')));
 const Jump = Loadable(lazy(() => import('views/Jump')));
+const ModelPrice = Loadable(lazy(() => import('views/ModelPrice')));
+
+const WithMargins = ({ children }) => <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px' }}>{children}</div>;
 
 // ==============================|| AUTHENTICATION ROUTING ||============================== //
 
@@ -66,6 +69,14 @@ const OtherRoutes = {
     {
       path: '/jump',
       element: <Jump />
+    },
+    {
+      path: '/price',
+      element: (
+        <WithMargins>
+          <ModelPrice />
+        </WithMargins>
+      )
     }
   ]
 };
