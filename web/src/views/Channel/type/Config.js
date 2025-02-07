@@ -232,11 +232,8 @@ const typeConfig = {
   },
   27: {
     input: {
-      models: ['abab5.5-chat', 'abab5.5s-chat', 'abab6-chat', 'embo-01'],
-      test_model: 'abab5.5-chat'
-    },
-    prompt: {
-      key: '按照如下格式输入：APISecret|groupID'
+      models: ['abab6.5s-chat', 'MiniMax-Text-01', 'speech-01-turbo', 'speech-01-240228', 'speech-01-turbo-240228'],
+      test_model: 'abab6.5s-chat'
     },
     modelGroup: 'MiniMax'
   },
@@ -478,6 +475,30 @@ const typeConfig = {
         'recraft_styles'
       ]
     }
+  },
+  53: {
+    input: {
+      models: [
+        'kling-video_kling-v1_std_5',
+        'kling-video_kling-v1_std_10',
+        'kling-video_kling-v1_pro_5',
+        'kling-video_kling-v1_pro_10',
+
+        'kling-video_kling-v1-5_std_5',
+        'kling-video_kling-v1-5_std_10',
+        'kling-video_kling-v1-5_pro_5',
+        'kling-video_kling-v1-5_pro_10',
+
+        'kling-video_kling-v1-10_std_5',
+        'kling-video_kling-v1-10_std_10',
+        'kling-video_kling-v1-10_pro_5',
+        'kling-video_kling-v1-10_pro_10'
+      ]
+    },
+    prompt: {
+      key: '官方密钥格式： accessKey|secretKey'
+    },
+    modelGroup: 'Kling'
   }
 };
 
