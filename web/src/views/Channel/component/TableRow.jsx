@@ -519,11 +519,23 @@ ChannelTableRow.propTypes = {
 
 function renderBalance(type, balance) {
   switch (type) {
-    case 1: // OpenAI
-      return <span>${balance.toFixed(2)}</span>;
-    case 8: // 自定义
-      return <span>${balance.toFixed(2)}</span>;
+    case 28: // Deepseek
+      return (
+        <span>
+          <br />¥{balance}
+        </span>
+      );
+    case 45: // Deepseek
+      return (
+        <span>
+          <br />¥{balance}
+        </span>
+      );
     default:
-      return <span></span>;
+      return (
+        <span>
+          <br />${balance.toFixed(2)}
+        </span>
+      );
   }
 }
