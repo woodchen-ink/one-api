@@ -70,7 +70,8 @@ const typeConfig = {
   3: {
     inputLabel: {
       base_url: 'AZURE_OPENAI_ENDPOINT',
-      other: '默认 API 版本'
+      other: '默认 API 版本',
+      provider_models_list: '从Azure获取已部署模型列表'
     },
     prompt: {
       base_url: '请填写AZURE_OPENAI_ENDPOINT',
@@ -137,7 +138,7 @@ const typeConfig = {
       test_model: 'ERNIE-Speed'
     },
     prompt: {
-      key: '按照如下格式输入：APIKey|SecretKey'
+      key: '按照如下格式输入：APIKey|SecretKey, 如果开启了OpenAI API，请直接输入APIKEY'
     },
     modelGroup: 'Baidu'
   },
@@ -150,7 +151,8 @@ const typeConfig = {
   },
   17: {
     inputLabel: {
-      other: '插件参数'
+      other: '插件参数',
+      provider_models_list: '从Ali获取模型列表'
     },
     input: {
       models: ['qwen-turbo', 'qwen-plus', 'qwen-max', 'qwen-max-longcontext', 'text-embedding-v1'],
@@ -438,8 +440,7 @@ const typeConfig = {
       provider_models_list: '从Siliconflow获取模型列表'
     },
     prompt: {
-      base_url: '',
-      test_model: ''
+      base_url: ''
     },
     modelGroup: 'Siliconflow'
   },
