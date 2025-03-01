@@ -13,7 +13,7 @@ import { Card, Stack, Typography } from '@mui/material';
 import TagTableRow from './component/TagTableRow';
 import KeywordTableHead from 'ui-component/TableHead';
 import { API } from 'utils/api';
-import { ITEMS_PER_PAGE } from 'constants';
+import { ITEMS_PER_PAGE, PAGE_SIZE_OPTIONS } from 'constants';
 import { useTranslation } from 'react-i18next';
 // import TableToolBar from 'ui-component/TableToolBar';
 
@@ -86,7 +86,7 @@ export default function ChannelTag() {
     setOpenModal(true);
   };
 
-  const manageChannel = async (id, action) => {
+  const manageChannel = async (id, action, value) => {
     const url = '/api/channel_tag/';
     let res;
 
@@ -95,6 +95,14 @@ export default function ChannelTag() {
         case 'delete':
           res = await API.delete(url + encodeURIComponent(id));
           break;
+        case 'priority':
+          res = await API.put(`${url + encodeURIComponent(id)}/priority`, {
+            type: 'priority',
+            value
+          });
+          break;
+        default:
+          return null;
       }
       const { success, message } = res.data;
       if (success) {
@@ -190,6 +198,7 @@ export default function ChannelTag() {
                 { id: 'type', label: t('channel_index.supplier'), disableSort: false },
                 { id: 'group', label: t('channel_index.group'), disableSort: true, width: '80px' },
                 { id: 'models', label: t('channel_index.model'), disableSort: false },
+                { id: 'priority', label: t('channel_index.priority'), disableSort: false },
                 { id: 'action', label: t('channel_index.actions'), disableSort: true }
               ]}
             />
@@ -212,7 +221,7 @@ export default function ChannelTag() {
           count={listCount}
           rowsPerPage={rowsPerPage}
           onPageChange={handleChangePage}
-          rowsPerPageOptions={[50,100,200]}
+          rowsPerPageOptions={PAGE_SIZE_OPTIONS}
           onRowsPerPageChange={handleChangeRowsPerPage}
           showFirstButton
           showLastButton
