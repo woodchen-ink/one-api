@@ -2,6 +2,8 @@ package relay
 
 import (
 	"one-api/types"
+	"strings"
+	"time"
 
 	providersBase "one-api/providers/base"
 
@@ -13,6 +15,9 @@ type relayBase struct {
 	provider      providersBase.ProviderInterface
 	originalModel string
 	modelName     string
+	otherArg      string
+
+	firstResponseTime time.Time
 }
 
 type RelayBaseInterface interface {
@@ -26,6 +31,8 @@ type RelayBaseInterface interface {
 	getModelName() string
 	getContext() *gin.Context
 	IsStream() bool
+	HandleError(err *types.OpenAIErrorWithStatusCode)
+	GetFirstResponseTime() time.Time
 }
 
 func (r *relayBase) getRequest() interface{} {
@@ -43,7 +50,24 @@ func (r *relayBase) setProvider(modelName string) error {
 	}
 	r.provider = provider
 	r.modelName = modelName
+
+	r.provider.SetOtherArg(r.otherArg)
+
 	return nil
+}
+
+func (r *relayBase) getOtherArg() string {
+	return r.otherArg
+}
+
+func (r *relayBase) setOriginalModel(modelName string) {
+	// 使用#进行分隔模型名称， 将#后面的内容作为otherArg
+	parts := strings.Split(modelName, "#")
+	if len(parts) > 1 {
+		r.otherArg = parts[1]
+	}
+
+	r.originalModel = parts[0]
 }
 
 func (r *relayBase) getContext() *gin.Context {
@@ -59,5 +83,23 @@ func (r *relayBase) getOriginalModel() string {
 }
 
 func (r *relayBase) getModelName() string {
+	billingOriginalModel := r.c.GetBool("billing_original_model")
+
+	if billingOriginalModel {
+		return r.originalModel
+	}
 	return r.modelName
+}
+
+func (r *relayBase) GetFirstResponseTime() time.Time {
+	return r.firstResponseTime
+}
+
+func (r *relayBase) SetFirstResponseTime(firstResponseTime time.Time) {
+	r.firstResponseTime = firstResponseTime
+}
+
+func (r *relayBase) HandleError(err *types.OpenAIErrorWithStatusCode) {
+	newErr := FilterOpenAIErr(r.c, err)
+	relayResponseWithOpenAIErr(r.c, &newErr)
 }

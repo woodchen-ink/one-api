@@ -19,7 +19,7 @@ import { API } from 'utils/api';
 import { Icon } from '@iconify/react';
 import EditeModal from './component/EditModal';
 import { useSelector } from 'react-redux';
-import { ITEMS_PER_PAGE } from 'constants';
+import { ITEMS_PER_PAGE, PAGE_SIZE_OPTIONS } from 'constants';
 import { useTranslation } from 'react-i18next';
 import { UserContext } from 'contexts/UserContext';
 
@@ -111,9 +111,7 @@ export default function Token() {
   useEffect(() => {
     let options = [];
     Object.values(userGroup).forEach((item) => {
-      if (item.public) {
-        options.push({ label: `${item.name} (倍率：${item.ratio})`, value: item.symbol });
-      }
+      options.push({ label: `${item.name} (倍率：${item.ratio})`, value: item.symbol });
     });
     setUserGroupOptions(options);
   }, [userGroup]);
@@ -251,7 +249,7 @@ export default function Token() {
           count={listCount}
           rowsPerPage={rowsPerPage}
           onPageChange={handleChangePage}
-          rowsPerPageOptions={[50,100,200]}
+          rowsPerPageOptions={PAGE_SIZE_OPTIONS}
           onRowsPerPageChange={handleChangeRowsPerPage}
           showFirstButton
           showLastButton

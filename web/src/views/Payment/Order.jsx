@@ -15,7 +15,7 @@ import LogTableRow from './component/OrderTableRow';
 import KeywordTableHead from 'ui-component/TableHead';
 import TableToolBar from './component/OrderTableToolBar';
 import { API } from 'utils/api';
-import { ITEMS_PER_PAGE } from 'constants';
+import { ITEMS_PER_PAGE, PAGE_SIZE_OPTIONS } from 'constants';
 import { Icon } from '@iconify/react';
 import dayjs from 'dayjs';
 
@@ -174,7 +174,7 @@ export default function Order() {
           count={listCount}
           rowsPerPage={rowsPerPage}
           onPageChange={handleChangePage}
-          rowsPerPageOptions={[50,100,200]}
+          rowsPerPageOptions={PAGE_SIZE_OPTIONS}
           onRowsPerPageChange={handleChangeRowsPerPage}
           showFirstButton
           showLastButton
