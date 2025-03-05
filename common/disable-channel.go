@@ -66,9 +66,6 @@ func (d *DisableChannelKeyword) Load(keywords string) {
 }
 
 func (d *DisableChannelKeyword) IsContains(message string) bool {
-	if d == nil || d.AcMachines == nil {
-		return false
-	}
 
 	d.mutex.RLock()
 	defer d.mutex.RUnlock()
