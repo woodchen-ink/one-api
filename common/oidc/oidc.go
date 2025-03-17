@@ -16,6 +16,15 @@ type OIDCConfig struct {
 	OAuth2Config *oauth2.Config
 	Verifier     *oidc.IDTokenVerifier
 	LoginURL     func(state string) string
+	Endpoints    OIDCEndpoints // 添加端点配置
+}
+
+type OIDCEndpoints struct {
+	Authorization string
+	Token         string
+	Configuration string
+	JWKS          string
+	UserInfo      string
 }
 
 var oidcConfigInstance *OIDCConfig
@@ -26,6 +35,15 @@ func InitOIDCConfig() error {
 		return nil
 	}
 	logger.SysLog("OIDC功能启用")
+
+	endpoints := OIDCEndpoints{
+		Authorization: "https://connect.czl.net/oidc/authorize",
+		Token:         "https://connect.czl.net/api/oidc/token",
+		Configuration: "https://connect.czl.net/api/oidc/.well-known/openid-configuration",
+		JWKS:          "https://connect.czl.net/api/oidc/.well-known/jwks.json",
+		UserInfo:      "https://connect.czl.net/api/oidc/userinfo",
+	}
+
 	provider, err := oidc.NewProvider(context.Background(), config.OIDCIssuer)
 	if err != nil {
 		logger.SysError("OIDC配置错误, err:" + err.Error())
@@ -46,6 +64,7 @@ func InitOIDCConfig() error {
 		Provider:     provider,
 		OAuth2Config: oauth2Config,
 		Verifier:     verifier,
+		Endpoints:    endpoints,
 		LoginURL: func(state string) string {
 			return oauth2Config.AuthCodeURL(state, oauth2.AccessTypeOffline)
 		},
