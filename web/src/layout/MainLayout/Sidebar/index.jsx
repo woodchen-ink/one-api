@@ -31,19 +31,17 @@ const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
           <LogoSection />
         </Box>
       </Box>
-      <BrowserView>
-        <PerfectScrollbar
-          component="div"
-          style={{
-            height: !matchUpMd ? 'calc(100vh - 56px)' : 'calc(100vh - 88px)',
-            paddingLeft: '16px',
-            paddingRight: '16px'
-          }}
-        >
-          <MenuList />
-          <MenuCard />
-        </PerfectScrollbar>
-      </BrowserView>
+      <PerfectScrollbar
+        component="div"
+        style={{
+          height: !matchUpMd ? 'calc(100vh - 56px)' : 'calc(100vh - 88px)',
+          paddingLeft: '16px',
+          paddingRight: '16px'
+        }}
+      >
+        <MenuList />
+        <MenuCard />
+      </PerfectScrollbar>
     </>
   );
 

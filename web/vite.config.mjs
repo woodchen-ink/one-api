@@ -32,7 +32,7 @@ export default defineConfig({
     port: 3010,
     proxy: {
       '/api': {
-        target: 'http://127.0.0.1:3000', // 设置代理的目标服务器
+        target: process.env.NODE_ENV === 'production' ? 'http://localhost:3000' : 'https://oapi.czl.net',
         changeOrigin: true
       }
     }

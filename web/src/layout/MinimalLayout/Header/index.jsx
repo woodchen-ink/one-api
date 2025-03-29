@@ -19,7 +19,6 @@ import LogoSection from 'layout/MainLayout/LogoSection';
 import { Link } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-// import ThemeButton from 'ui-component/ThemeButton';
 import { NoticeButton } from 'ui-component/notice';
 import I18nButton from 'ui-component/i18nButton';
 import ProfileSection from 'layout/MainLayout/Header/ProfileSection';
@@ -174,15 +173,6 @@ const Header = () => {
                       color={pathname === 'https://work.weixin.qq.com/kfid/kfce787ac8bbad50026' ? 'primary' : 'inherit'}
                     >
                       客服
-                    </ListItemButton>
-                    <ListItemButton
-                      variant="text"
-                      href="https://chat.czl.net" // 使用href而不是to
-                      target="_blank" // 在新标签页中打开链接
-                      rel="noopener noreferrer" // 出于安全考虑，防止链接到不安全的地方
-                      color={pathname === 'https://chat.czl.net' ? 'primary' : 'inherit'}
-                    >
-                      对话
                     </ListItemButton>
                     <Divider />
                     {account.user ? (
