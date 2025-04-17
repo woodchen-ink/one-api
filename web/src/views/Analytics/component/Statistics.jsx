@@ -148,8 +148,8 @@ export default function Overview() {
           content={channelStatistics.total}
           subContent={
             <>
-              {t('analytics_index.active')}：{channelStatistics.active} / {t('analytics_index.disabled')}：{'·'}
-              {channelStatistics.disabled} / {t('analytics_index.testDisabled')}：{channelStatistics.test_disabled}
+              {t('analytics_index.active')}：{channelStatistics.active} / {t('analytics_index.disabled')}：{channelStatistics.disabled} <br />
+              {t('analytics_index.testDisabled')}：{channelStatistics.test_disabled}
             </>
           }
         />

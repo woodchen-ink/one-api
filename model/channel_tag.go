@@ -16,26 +16,14 @@ type SearchChannelsTagParams struct {
 }
 
 type ChannelTag struct {
-	ID  int    `json:"id" gorm:"column:id"`
-	Tag string `json:"tag" gorm:"column:tag"`
+	ID  int    `json:"id"`
+	Tag string `json:"tag"`
 }
 
-func GetChannelsTagList(params *SearchChannelsTagParams) (*DataResult[Channel], error) {
+func GetChannelsTagList(tag string) ([]*Channel, error) {
 	var channels []*Channel
-	// 子查询：为每个tag选择最小的id
-	subQuery := DB.Model(&Channel{}).
-		Select("MIN(id) as id").
-		Where("tag != ''").
-		Group("tag")
-
-	db := DB.Select("tag, type, models, " + quotePostgresField("group"))
-	if params.Tag != "" {
-		subQuery = subQuery.Where("tag = ?", params.Tag)
-	}
-
-	db = db.Model(&Channel{}).Where("id IN (?)", subQuery)
-
-	return PaginateAndOrder(db, &params.PaginationParams, &channels, allowedChannelOrderFields)
+	err := DB.Model(&Channel{}).Where("tag = ?", tag).Find(&channels).Error
+	return channels, err
 }
 
 func GetChannelsTagAllList() ([]*ChannelTag, error) {
@@ -156,17 +144,19 @@ func UpdateChannelsTag(tag string, channel *Channel) error {
 
 	err = tx.Model(Channel{}).Where("tag = ?", tag).Updates(
 		Channel{
-			Other:        channel.Other,
-			Models:       channel.Models,
-			Group:        channel.Group,
-			Tag:          channel.Tag,
-			ModelMapping: channel.ModelMapping,
-			ModelHeaders: channel.ModelHeaders,
-			Proxy:        channel.Proxy,
-			TestModel:    channel.TestModel,
-			OnlyChat:     channel.OnlyChat,
-			Plugin:       channel.Plugin,
-			PreCost:      channel.PreCost,
+			BaseURL:        channel.BaseURL,
+			Other:          channel.Other,
+			Models:         channel.Models,
+			Group:          channel.Group,
+			Tag:            channel.Tag,
+			ModelMapping:   channel.ModelMapping,
+			ModelHeaders:   channel.ModelHeaders,
+			Proxy:          channel.Proxy,
+			TestModel:      channel.TestModel,
+			OnlyChat:       channel.OnlyChat,
+			Plugin:         channel.Plugin,
+			PreCost:        channel.PreCost,
+			DisabledStream: channel.DisabledStream,
 		}).Error
 
 	if err != nil {
@@ -202,6 +192,21 @@ func DeleteChannelsTag(tag string, delDisabled bool) error {
 	ChannelGroup.Load()
 
 	return err
+}
+
+func ChangeChannelsTagStatus(tag string, status int) error {
+	if tag == "" {
+		return nil
+	}
+
+	err := DB.Model(&Channel{}).Where("tag = ?", tag).Update("status", status).Error
+	if err != nil {
+		return err
+	}
+
+	ChannelGroup.Load()
+
+	return nil
 }
 
 func UpdateChannelsTagPriority(tag string, value int) error {

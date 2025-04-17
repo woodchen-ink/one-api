@@ -1,4 +1,5 @@
 import { lazy } from 'react';
+import { Box } from '@mui/material';
 
 // project imports
 import Loadable from 'ui-component/Loadable';
@@ -18,7 +19,17 @@ const NotFoundView = Loadable(lazy(() => import('views/Error')));
 const Jump = Loadable(lazy(() => import('views/Jump')));
 const ModelPrice = Loadable(lazy(() => import('views/ModelPrice')));
 
-const WithMargins = ({ children }) => <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px' }}>{children}</div>;
+const WithMargins = ({ children }) => (
+  <Box
+    sx={{
+      maxWidth: '1200px',
+      margin: '0 auto',
+      padding: { xs: 0, sm: '0 24px' }
+    }}
+  >
+    {children}
+  </Box>
+);
 
 // ==============================|| AUTHENTICATION ROUTING ||============================== //
 

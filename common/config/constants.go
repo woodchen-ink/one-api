@@ -1,7 +1,6 @@
 package config
 
 import (
-	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -30,11 +29,8 @@ var DisplayInCurrencyEnabled = true
 
 var SessionSecret = uuid.New().String()
 
-var OptionMap map[string]string
-var OptionMapRWMutex sync.RWMutex
-
-var ItemsPerPage = 50 // 修改单页数量
-var MaxRecentItems = 150
+var ItemsPerPage = 50    // 修改单页数量
+var MaxRecentItems = 150 // 修改最大最近项目数量
 
 var PasswordLoginEnabled = true
 var PasswordRegisterEnabled = true
@@ -45,6 +41,85 @@ var LarkAuthEnabled = false
 var TurnstileCheckEnabled = false
 var RegisterEnabled = true
 var OIDCAuthEnabled = false
+
+// 是否开启内容审查
+var EnableSafe = false
+
+// 默认使用系统自带关键词审查工具
+var SafeToolName = "Keyword"
+
+// 系统自带关键词审查默认字典
+var SafeKeyWords = []string{
+	"fuck",
+	"shit",
+	"bitch",
+	"pussy",
+	"cunt",
+	"dick",
+	"asshole",
+	"bastard",
+	"slut",
+	"whore",
+	"nigger",
+	"nigga",
+	"nazi",
+	"gay",
+	"lesbian",
+	"transgender",
+	"queer",
+	"homosexual",
+	"incest",
+	"rape",
+	"rapist",
+	"raped",
+	"raping",
+	"raped",
+	"raping",
+	"rapist",
+	"rape",
+	"sex",
+	"sexual",
+	"sexually",
+	"sexualize",
+	"sexualized",
+	"sexualizes",
+	"sexualizing",
+	"sexually",
+	"sex",
+	"porn",
+	"pornography",
+	"prostitute",
+	"prostitution",
+	"masturbate",
+	"masturbation",
+	"pedophile",
+	"pedophilia",
+	"hentai",
+	"explicit",
+	"obscene",
+	"obscenity",
+	"erotic",
+	"erotica",
+	"fetish",
+	"NSFW",
+	"nude",
+	"nudity",
+	"harassment",
+	"abuse",
+	"violent",
+	"violence",
+	"suicide",
+	"racist",
+	"racism",
+	"discrimination",
+	"hate",
+	"terrorism",
+	"terrorist",
+	"drugs",
+	"cocaine",
+	"heroin",
+	"methamphetamine",
+}
 
 // mj
 var MjNotifyEnabled = false

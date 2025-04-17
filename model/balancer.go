@@ -49,6 +49,12 @@ func FilterOnlyChat() ChannelsFilterFunc {
 	}
 }
 
+func FilterDisabledStream(modelName string) ChannelsFilterFunc {
+	return func(_ int, choice *ChannelChoice) bool {
+		return !choice.Channel.AllowStream(modelName)
+	}
+}
+
 func init() {
 	// 每小时清理一次过期的冷却时间
 	go func() {
@@ -258,6 +264,7 @@ func (cc *ChannelsChooser) Load() {
 
 	// 处理每个channel
 	for _, channel := range channels {
+		channel.SetProxy()
 		if *channel.Weight == 0 {
 			channel.Weight = &config.DefaultChannelWeight
 		}

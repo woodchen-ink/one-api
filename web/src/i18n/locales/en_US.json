@@ -1,4 +1,6 @@
 {
+  "invite_count": "Invite Count",
+  "invite_reward": "Invite Reward",
   "AZURE_OPENAI_ENDPOINT": "AZURE_OPENAI_ENDPOINT",
   "CheckUpdatesTable": {
     "addNewOnly": "Add New Only",
@@ -18,7 +20,11 @@
     "pleaseFetchData": "Please fetch data first",
     "priceChangeModels": "Price Change Models (for reference only, ignore if you have modified the prices yourself)",
     "to": "to",
-    "url": "URL"
+    "url": "URL",
+    "priceServerTotal": "Price Server Total",
+    "updateModeAdd": "Add Only",
+    "updateModeUpdate": "Update Only",
+    "updateModeOverwrite": "Overwrite All"
   },
   "Header 配置": "Header configuration",
   "about": {
@@ -89,7 +95,12 @@
     "requiredModels": "Model cannot be empty",
     "requiredName": "Name is required",
     "validJson": "Must be a valid JSON string",
-    "copyModels": "Copy model"
+    "copyModels": "Copy model",
+    "mapAdd": "Add {{name}}",
+    "mapAddByJson": "Add {{name}} through JSON",
+    "mapJsonInput": "JSON input",
+    "listJsonError": "JSON format error, please make sure the input is in array format.",
+    "listJsonHelperText": "Please enter the JSON array format, for example: [\"item1\", \"item2\", \"item3\"]"
   },
   "channel_index": {
     "AzureApiVersion": "Azure version number",
@@ -139,12 +150,15 @@
     "unselectAll": "Anti-select all",
     "updateEnabledBalance": "Update Enabled Balance",
     "usedBalance": "Used Balance/Remaining Balance",
-    "weight": "Weight"
+    "weight": "Weight",
+    "onlyTags": "Display tags only"
   },
   "channel_row": {
     "auto": "automatic",
     "canModels": "Available models:",
     "channelWeb": "Official website",
+    "key": "Key",
+    "keyRequired": "Key is required",
     "clickUpdateQuota": "Click to update balance",
     "delChannel": "Delete channel",
     "delChannelCount": "Removed all disabled channels, {{count}} in total",
@@ -165,7 +179,38 @@
     "updateChannelBalance": "All enabled channel balances have been updated!",
     "updateOk": "update completed!",
     "weightTip": "Weight cannot be less than 1",
-    "check": "Check"
+    "check": "Check",
+    "batchAddIDRequired": "Please select at least one channel.",
+    "batchDelete": "Batch delete",
+    "batchDeleteConfirm": "Are you sure you want to delete the selected {{count}} channels? This action cannot be undone.",
+    "batchDeleteError": "Batch deletion failed: {{message}}",
+    "batchDeleteErrorTip": "Batch deletion error: {{message}}",
+    "batchDeleteSuccess": "Batch deletion successful!",
+    "batchDeleteTip": "Do you want to delete the selected channels in batch?",
+    "deleteTag": "Delete tag",
+    "deleteTagAndChannels": "Delete the tag and all its channels.",
+    "deleteTagConfirm": "Are you sure you want to delete the tag {{tag}} and all its channels? This action cannot be undone.",
+    "deleteTagError": "Failed to delete tag: {{message}}",
+    "deleteTagSuccess": "Tag {{tag}} deleted successfully",
+    "disable": "Disable",
+    "disableAllChannels": "Disable all channels",
+    "disableTagChannels": "Disable tag channel",
+    "enable": "Enable",
+    "enableAllChannels": "Enable all channels",
+    "enableTagChannels": "Enable tag channel",
+    "getTagChannelsError": "Failed to retrieve tag channel: {{message}}",
+    "getTagChannelsErrorTip": "Error getting tag channel: {{message}}",
+    "noTagChannels": "No tag channel found",
+    "priorityUpdateError": "Priority update failed: {{message}}",
+    "priorityUpdateSuccess": "Priority updated successfully",
+    "refreshList": "Refresh list",
+    "tag": "Tags",
+    "tagChannelList": "Tag channel list",
+    "tagChannelsConfirm": "Are you sure you want to {{action}} all channels under the tag {{tag}}?",
+    "tagChannelsError": "Channel {{action}} failed: {{message}}",
+    "tagChannelsSuccess": "The tag channel {{action}} is successful.",
+    "weightUpdateError": "Weight update failed: {{message}}",
+    "weightUpdateSuccess": "Weight update successful"
   },
   "common": {
     "again": "Retry ({{count}})",
@@ -201,7 +246,10 @@
     "unableServer": "Unable to connect to the server properly!",
     "unableServerTip": "New version available: {{version}}, please use the shortcut key Shift F5 to refresh the page",
     "unknown": "unknown",
-    "verificationCode": "Verification code"
+    "verificationCode": "Verification code",
+    "deleteError": "Deletion failed: {{message}}",
+    "deleteSuccess": "Delete successful!",
+    "jsonFormatError": "JSON format error"
   },
   "dashboard": "Dashboard",
   "dashboard_index": {
@@ -218,7 +266,22 @@
     "today_tokens": "Today's Tokens",
     "unknown": "Unknown",
     "used": "Used",
-    "7days_model_usage_pie": "Model Call Ratio Over the Last 7 Days"
+    "7days_model_usage_pie": "Model Call Ratio Over the Last 7 Days",
+    "week_model_statistics": "Week Model Statistics",
+    "week_consumption_log": "Week Consumption Log",
+    "date": "Date",
+    "request_count": "Request Count",
+    "amount": "Amount",
+    "tokens": "Tokens(input/output)",
+    "cache_tokens": "CacheTokens",
+    "request_time": "Request Time(s)",
+    "loading": "Loading...",
+    "quickStart": "Quick Start",
+    "quickStartTip": "When you click the button below, the system will automatically create a sys_playground token",
+    "ComparedWithYesterday": "Compared with yesterday",
+    "usage": "Usage",
+    "RPM": "Current RPM",
+    "TPM": "Current TPM"
   },
   "description": "All-in-one OpenAI interface\nIntegrates various API access methods\nOne-click deployment, ready to use",
   "echo 映射": "echo mapping",
@@ -250,6 +313,9 @@
   "logPage": {
     "cachedTokens": "Cache Tokens",
     "channelLabel": "Channel",
+    "columnSettings": "Column Settings",
+    "selectColumns": "Select Columns",
+    "columnSelectAll": "Select All",
     "detailLabel": "Detail",
     "durationLabel": "Duration",
     "durationTooltip": "t/s: The number of output tokens divided by the total generation time, indicating the generation speed",
@@ -363,7 +429,9 @@
     "inputAudioTokensRatio": "Audio input ratio",
     "other": "Other",
     "outputAudioTokensRatio": "Audio output ratio",
-    "rate": "Rate"
+    "rate": "Rate",
+    "RPM": "API rate",
+    "free": "Free"
   },
   "nova 映射": "nova mapping",
   "onyx 映射": "onyx mapping",
@@ -467,7 +535,8 @@
     "noPriceModelWarning": "There are models without configured prices, please configure the prices in time:",
     "refreshButton": "Refresh",
     "singleOperation": "Single Operation",
-    "updatePricesButton": "Update Prices"
+    "updatePricesButton": "Update Prices",
+    "title": "Model price"
   },
   "pricing_edit": {
     "channelType": "Channel type",
@@ -492,7 +561,11 @@
     "saveOk": "Saved successfully",
     "type": "type",
     "typeCheck": "The type can only be tokens or times",
-    "typeErr": "type error"
+    "typeErr": "type error",
+    "locked_title": "Lock price",
+    "locked": "Locked price",
+    "unlocked": "Unlocked price",
+    "lockedTip": "Price locked cannot be overridden by price updates on the server or program"
   },
   "profile": "Profile",
   "profilePage": {
@@ -612,6 +685,10 @@
         "topUpLink": {
           "label": "Top-up Link",
           "placeholder": "For example, the purchase link of the card issuing website"
+        },
+        "retryTimeOut": {
+          "label": "Retry Timeout (seconds)",
+          "placeholder": "Retry Timeout (seconds)"
         }
       },
       "logSettings": {
@@ -710,6 +787,18 @@
         "info": "Disable channel keywords, one keyword per line.",
         "save": "Save disabled channel keyword settings",
         "title": "Disable channel keyword settings"
+      },
+      "safetySettings": {
+        "title": "System Safety Settings",
+        "enableSafe": "Enable Prompt Safety Check",
+        "safeToolName": {
+          "label": "Safe Check Tool"
+        },
+        "safeKeyWords": {
+          "label": "Keyword List",
+          "placeholder": "Enter keywords, one per line"
+        },
+        "save": "Save Settings"
       }
     },
     "otherSettings": {
@@ -892,7 +981,8 @@
     "task": "Task ID",
     "time": "time consuming",
     "type": "type",
-    "user": "user"
+    "user": "user",
+    "title": "Asynchronous task"
   },
   "telegramPage": {
     "action": "Action",
@@ -1067,7 +1157,6 @@
   "使用代码执行功能，开启后，计算tokens不准确，建议个人使用开启": "When using the code execution function, the calculation of tokens is inaccurate after it is turned on. It is recommended that individuals use it to turn it on.",
   "使用网页搜索功能，对用户输入的内容进行搜索": "Use the web search function to search for content entered by the user",
   "其他参数": "Other parameters",
-  "单独设置代理地址，支持http和socks5，例如：http://127.0.0.1:1080": "Set the proxy address separately, support http and socks5, for example: http://127.0.0.1:1080",
   "可空，请输入中转API地址，例如通过cloudflare中转": "Can be left empty, please enter the transfer API address, for example, through cloudflare transfer",
   "启用": "enable",
   "地址填写Suno-API部署的地址": "Address: Fill in the address of Suno-API deployment",
@@ -1150,5 +1239,67 @@
   "price": "Price",
   "模型映射关系：例如用户请求A模型，实际转发给渠道的模型为B。在B模型加前缀+，表示使用传入模型计费，例如：+gpt-3": {
     "5-turbo": "Model mapping relationship: For example, when a user requests Model A, the actual model forwarded to the channel is Model B. Adding a prefix \"+\" to Model B indicates using the incoming model for billing purposes, for example: +gpt-3.5-turbo"
-  }
+  },
+  "单独设置代理地址，支持http和socks5，例如：http://127[0][0]": {
+    "1:1080,代理地址中可以通过 `%s` 作为会话标识占位符，程序中检测到有占位符会根据Key生成唯一会话标识符进行替换": "Set the proxy address separately, supporting both http and socks5, for example: http://127.0.0.1:1080. You can use `%s` as a session identifier placeholder in the proxy address. When a placeholder is detected in the program, it will be replaced with a unique session identifier generated based on the Key."
+  },
+  "请输入版本号，例如：v3[__i18n_ally_root__]": {
+    "1": "",
+    "__i18n_ally_root__": {
+      "1": ""
+    }
+  },
+  "请选择该渠道所支持的模型,你也可以输入通配符*来匹配模型，例如：gpt-3": {
+    "__i18n_ally_root__": {
+      "5*，表示支持所有gpt-3": {
+        "5开头的模型，*号只能在最后一位使用，前面必须有字符，例如：gpt-3": {
+          "5*是正确的，*gpt-3": {
+            "5是错误的": ""
+          }
+        }
+      },
+      "__i18n_ally_root__": {
+        "__i18n_ally_root__": {
+          "5*，表示支持所有gpt-3": {
+            "5开头的模型，*号只能在最后一位使用，前面必须有字符，例如：gpt-3": {
+              "5*是正确的，*gpt-3": {
+                "5是错误的": ""
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "输入后，会替换请求地址中的v1，例如：freeapi，则请求chat时会变成https://xxx": {
+    "__i18n_ally_root__": {
+      "com/freeapi/chat/completions,如果需要禁用版本号，请输入 disable": "",
+      "__i18n_ally_root__": {
+        "__i18n_ally_root__": {
+          "com/freeapi/chat/completions,如果需要禁用版本号，请输入 disable": ""
+        }
+      }
+    }
+  },
+  "用于测试使用的模型，为空时无法测速,如：gpt-3": {
+    "__i18n_ally_root__": {
+      "5-turbo，仅支持chat模型": ""
+    }
+  },
+  "禁用流式的模型": "Disable the streaming model",
+  "请参考wiki中的文档获取key": {
+    "__i18n_ally_root__": {
+      " https://github": {
+        "com/MartialBE/one-hub/wiki/VertexAI": ""
+      }
+    }
+  },
+  "请输入你部署的Ollama地址，例如：http://127[__i18n_ally_root__]": {
+    "0": {
+      "0": {
+        "1:11434，如果你使用了cloudflare Zero Trust，可以在下方插件填入授权信息": ""
+      }
+    }
+  },
+  "这里填写禁用流式的模型，注意：如果填写了禁用流式的模型，那么这些模型在流式请求时会跳过该渠道": "Fill in here to disable the streaming model. Note: If you fill in to disable the streaming model, these models will be skipped for streaming requests on that channel."
 }

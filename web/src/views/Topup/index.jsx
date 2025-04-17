@@ -9,17 +9,11 @@ const Topup = () => {
 
   return (
     <Grid container spacing={2} justifyContent="center">
-      {/* <Grid xs={12}>
-        <Alert severity="warning">{t('topupPage.alertMessage')}</Alert>
-      </Grid> */}
-      <Grid xs={12} md={6} lg={8}>
+      <Grid xs={12} md={6} lg={6}>
         <Stack spacing={2}>
           <TopupCard />
         </Stack>
       </Grid>
-      {/* <Grid xs={12} md={6} lg={4}>
-         <InviteCard /> 
-      </Grid> */}
     </Grid>
   );
 };

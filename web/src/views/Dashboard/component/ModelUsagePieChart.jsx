@@ -21,11 +21,6 @@ const ModelUsagePieChart = ({ isLoading, data }) => {
       },
       labels: data.map(item => item.name),
       colors: [
-        // theme.palette.primary.main,
-        // theme.palette.secondary.main,
-        // theme.palette.warning.main,
-        // theme.palette.error.main,
-        // theme.palette.info.main,
         red[500],
         pink[500],
         purple[500],
@@ -128,7 +123,7 @@ const ModelUsagePieChart = ({ isLoading, data }) => {
           </Box>
         </MainCard>
       ) : (
-        <MainCard sx={{ height: '100%' }}>
+        <MainCard>
           <Grid container spacing={gridSpacing}>
             <Grid item xs={12}>
               <Typography variant="h3" sx={{ mb: 2 }}>{t('dashboard_index.7days_model_usage_pie')}</Typography>

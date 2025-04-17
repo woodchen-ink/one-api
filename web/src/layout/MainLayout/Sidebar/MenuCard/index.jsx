@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 
 import { useSelector } from 'react-redux';
 
@@ -63,6 +63,8 @@ const MenuCard = () => {
   const [balance, setBalance] = useState(0);
   const [usedQuota, setUsedQuota] = useState(0);
   const [requestCount, setRequestCount] = useState(0);
+  const [userGroupMap, setUserGroupMap] = useState({});
+  const [selectedGroup, setSelectedGroup] = useState('');
   // const { userGroup } = useContext(UserContext);
   // const [users, setUsers] = useState([]);
 
@@ -84,6 +86,21 @@ const MenuCard = () => {
     };
 
     loadUserData();
+    const fetchUserGroupMap = async () => {
+      try {
+        const res = await API.get('/api/user_group_map');
+        const { success, message, data } = res.data;
+        if (success) {
+          setUserGroupMap(data);
+          setSelectedGroup(Object.keys(data)[0]); // 默认选择第一个分组
+        } else {
+          showError(message);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchUserGroupMap();
   }, []);
 
   const getGroupLabel = (group) => {
@@ -96,7 +113,7 @@ const MenuCard = () => {
 
   return (
     <CardStyle>
-      <CardContent sx={{ p: 2 }}>
+      <CardContent sx={{ p: 2, pb: '8px !important' }}>
         <List sx={{ p: 0, m: 0 }}>
           <ListItem alignItems="flex-start" disableGutters sx={{ p: 0 }}>
             <ListItemAvatar sx={{ mt: 0 }}>
@@ -129,15 +146,19 @@ const MenuCard = () => {
                   }}
                 >
                   <span>{userData ? userData.display_name : 'Loading...'}</span>
-                  {userData && (
-                    <Chip
-                      label={getGroupLabel(userData.group)}
+                    {userData && (
+                      <Chip
+                      label={`${userGroupMap[selectedGroup].name} ❤️ rpm: ${userGroupMap[selectedGroup].api_rate}`}
                       size="small"
                       color="primary"
                       variant="outlined"
-                      sx={{ height: '15px', fontSize: '0.75rem' }}
-                    />
-                  )}
+                      sx={{ 
+                        height: '1.2rem', 
+                        fontSize: '0.75rem',
+                        borderRadius: '4px',
+                      }}
+                      />
+                    )}
                 </Typography>
               }
             />
@@ -187,11 +208,12 @@ const MenuCard = () => {
           fullWidth
           sx={{
             mt: 2,
-            backgroundColor: theme.palette.primary.light,
-            color: theme.palette.primary.main,
+            //颜色适配暗色
+            background: '#13151A',
+            color: theme.palette.primary.contrastText,
             '&:hover': {
-              backgroundColor: theme.palette.primary.main,
-              color: theme.palette.primary.contrastText
+              backgroundColor: '#1C1E23',
+              color: '#1CE3EA'
             }
           }}
           onClick={() => window.open('https://work.weixin.qq.com/kfid/kfce787ac8bbad50026', '_blank')}

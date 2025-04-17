@@ -8,12 +8,14 @@ const defaultConfig = {
     proxy: '',
     test_model: '',
     model_mapping: [],
+    model_headers: [],
     models: [],
     groups: ['default'],
     plugin: {},
     tag: '',
     only_chat: false,
-    pre_cost: 1
+    pre_cost: 1,
+    disabled_stream: []
   },
   inputLabel: {
     name: '渠道名称',
@@ -25,11 +27,13 @@ const defaultConfig = {
     test_model: '测速模型',
     models: '模型',
     model_mapping: '模型映射关系',
+    model_headers: '自定义模型请求头',
     groups: '用户组',
     only_chat: '仅支持聊天',
     tag: '标签',
     provider_models_list: '',
-    pre_cost: '预计费选项'
+    pre_cost: '预计费选项',
+    disabled_stream: '禁用流式的模型'
   },
   prompt: {
     type: '请选择渠道类型',
@@ -37,7 +41,8 @@ const defaultConfig = {
     base_url: '可空，请输入中转API地址，例如通过cloudflare中转',
     key: '请输入渠道对应的鉴权密钥',
     other: '',
-    proxy: '单独设置代理地址，支持http和socks5，例如：http://127.0.0.1:1080',
+    proxy:
+      '单独设置代理地址，支持http和socks5，例如：http://127.0.0.1:1080,代理地址中可以通过 `%s` 作为会话标识占位符，程序中检测到有占位符会根据Key生成唯一会话标识符进行替换',
     test_model: '用于测试使用的模型，为空时无法测速,如：gpt-3.5-turbo，仅支持chat模型',
     models:
       '请选择该渠道所支持的模型,你也可以输入通配符*来匹配模型，例如：gpt-3.5*，表示支持所有gpt-3.5开头的模型，*号只能在最后一位使用，前面必须有字符，例如：gpt-3.5*是正确的，*gpt-3.5是错误的',
@@ -48,7 +53,8 @@ const defaultConfig = {
     provider_models_list: '必须填写所有数据后才能获取模型列表',
     tag: '你可以为你的渠道打一个标签，打完标签后，可以通过标签进行批量管理渠道，注意：设置标签后某些设置只能通过渠道标签修改，无法在渠道列表中修改。',
     pre_cost:
-      '这里选择预计费选项，用于预估费用，如果你觉得计算图片占用太多资源，可以选择关闭图片计费。但是请注意：有些渠道在stream下是不会返回tokens的，这会导致输入tokens计算错误。'
+      '这里选择预计费选项，用于预估费用，如果你觉得计算图片占用太多资源，可以选择关闭图片计费。但是请注意：有些渠道在stream下是不会返回tokens的，这会导致输入tokens计算错误。',
+    disabled_stream: '这里填写禁用流式的模型，注意：如果填写了禁用流式的模型，那么这些模型在流式请求时会跳过该渠道'
   },
   modelGroup: 'OpenAI'
 };

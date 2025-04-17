@@ -6,6 +6,7 @@ import (
 	"one-api/common/config"
 	"one-api/common/utils"
 	"one-api/model"
+	"one-api/safty"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -13,8 +14,7 @@ import (
 
 func GetOptions(c *gin.Context) {
 	var options []*model.Option
-	config.OptionMapRWMutex.Lock()
-	for k, v := range config.OptionMap {
+	for k, v := range config.GlobalOption.GetAll() {
 		if strings.HasSuffix(k, "Token") || strings.HasSuffix(k, "Secret") {
 			continue
 		}
@@ -23,11 +23,19 @@ func GetOptions(c *gin.Context) {
 			Value: utils.Interface2String(v),
 		})
 	}
-	config.OptionMapRWMutex.Unlock()
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "",
 		"data":    options,
+	})
+	return
+}
+
+func GetSafeTools(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "",
+		"data":    safty.GetAllSafeToolsName(),
 	})
 	return
 }

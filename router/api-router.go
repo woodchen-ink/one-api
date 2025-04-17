@@ -52,6 +52,7 @@ func SetApiRouter(router *gin.Engine) {
 			selfRoute.Use(middleware.UserAuth())
 			{
 				selfRoute.GET("/dashboard", controller.GetUserDashboard)
+				selfRoute.GET("/dashboard/rate", controller.GetRateRealtime)
 				selfRoute.GET("/self", controller.GetSelf)
 				selfRoute.PUT("/self", controller.UpdateSelf)
 				// selfRoute.DELETE("/self", controller.DeleteSelf)
@@ -86,6 +87,7 @@ func SetApiRouter(router *gin.Engine) {
 			optionRoute.PUT("/telegram/reload", controller.ReloadTelegramBot)
 			optionRoute.GET("/telegram/:id", controller.GetTelegramMenu)
 			optionRoute.DELETE("/telegram/:id", controller.DeleteTelegramMenu)
+			optionRoute.GET("/safe_tools", controller.GetSafeTools)
 		}
 
 		modelOwnedByRoute := apiRouter.Group("/model_ownedby")
@@ -127,17 +129,19 @@ func SetApiRouter(router *gin.Engine) {
 			channelRoute.DELETE("/disabled", controller.DeleteDisabledChannel)
 			channelRoute.DELETE("/:id/tag", controller.DeleteChannelTag)
 			channelRoute.DELETE("/:id", controller.DeleteChannel)
+			channelRoute.DELETE("/batch", controller.BatchDeleteChannel)
 		}
 		channelTagRoute := apiRouter.Group("/channel_tag")
 		channelTagRoute.Use(middleware.AdminAuth())
 		{
 			channelTagRoute.GET("/_all", controller.GetChannelsTagAllList)
-			channelTagRoute.GET("/", controller.GetChannelsTagList)
+			channelTagRoute.GET("/:tag/list", controller.GetChannelsTagList)
 			channelTagRoute.GET("/:tag", controller.GetChannelsTag)
 			channelTagRoute.PUT("/:tag", controller.UpdateChannelsTag)
 			channelTagRoute.DELETE("/:tag", controller.DeleteChannelsTag)
 			channelTagRoute.DELETE("/:tag/disabled", controller.DeleteDisabledChannelsTag)
 			channelTagRoute.PUT("/:tag/priority", controller.UpdateChannelsTagPriority)
+			channelTagRoute.PUT("/:tag/status/:status", controller.ChangeChannelsTagStatus)
 
 		}
 
@@ -190,6 +194,7 @@ func SetApiRouter(router *gin.Engine) {
 			pricesRoute.POST("/multiple", controller.BatchSetPrices)
 			pricesRoute.PUT("/multiple/delete", controller.BatchDeletePrices)
 			pricesRoute.POST("/sync", controller.SyncPricing)
+			pricesRoute.GET("/updateService", controller.GetUpdatePriceService)
 
 		}
 

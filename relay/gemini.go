@@ -3,11 +3,13 @@ package relay
 import (
 	"errors"
 	"math"
+	"net/http"
 	"one-api/common"
 	"one-api/common/config"
 	"one-api/common/image"
 	"one-api/common/requester"
 	"one-api/providers/gemini"
+	"one-api/safty"
 	"one-api/types"
 	"strings"
 
@@ -50,6 +52,7 @@ func (r *relayGeminiOnly) setRequest() error {
 	if err := common.UnmarshalBodyReusable(r.c, r.geminiRequest); err != nil {
 		return err
 	}
+	r.geminiRequest.SetJsonRaw(r.c)
 	r.geminiRequest.Model = modelList[0]
 	r.geminiRequest.Stream = isStream
 	r.setOriginalModel(r.geminiRequest.Model)
@@ -74,6 +77,20 @@ func (r *relayGeminiOnly) send() (err *types.OpenAIErrorWithStatusCode, done boo
 	chatProvider, ok := r.provider.(gemini.GeminiChatInterface)
 	if !ok {
 		return nil, false
+	}
+
+	// 内容审查
+	if config.EnableSafe {
+		for _, message := range r.geminiRequest.Contents {
+			if message.Parts != nil {
+				CheckResult, _ := safty.CheckContent(message.Parts)
+				if !CheckResult.IsSafe {
+					err = common.StringErrorWrapperLocal(CheckResult.Reason, CheckResult.Code, http.StatusBadRequest)
+					done = true
+					return
+				}
+			}
+		}
 	}
 
 	r.geminiRequest.Model = r.modelName

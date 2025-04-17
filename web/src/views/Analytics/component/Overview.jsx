@@ -8,6 +8,7 @@ import dayjs from 'dayjs';
 import { API } from 'utils/api';
 import { generateBarChartOptions, renderChartNumber } from 'utils/chart';
 import { useTranslation } from 'react-i18next';
+import { minWidth } from '@mui/system';
 
 export default function Overview() {
   const { t } = useTranslation();
@@ -77,7 +78,7 @@ export default function Overview() {
 
   return (
     <Grid container spacing={gridSpacing}>
-      <Grid lg={12} xs={12}>
+      <Grid item lg={12} xs={12}>
         <Box sx={{ display: 'flex', gap: 2, m: 3 }}>
           <Grid container spacing={2} sx={{ mb: 2 }}>
             <Grid item xs={12} sm={6}>
@@ -102,7 +103,7 @@ export default function Overview() {
             </Grid>
 
             <Grid item xs={12} sm={6}>
-              <Button variant="contained" onClick={handleSearch} fullWidth>
+              <Button variant="contained" style={{ height: '100%' }} onClick={handleSearch} fullWidth>
                 搜索
               </Button>
             </Grid>
