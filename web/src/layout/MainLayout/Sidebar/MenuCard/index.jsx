@@ -146,7 +146,7 @@ const MenuCard = () => {
                   }}
                 >
                   <span>{userData ? userData.display_name : 'Loading...'}</span>
-                    {userData && (
+                    {userData && userGroupMap && selectedGroup && userGroupMap[selectedGroup] && (
                       <Chip
                       label={`${userGroupMap[selectedGroup].name} ❤️ rpm: ${userGroupMap[selectedGroup].api_rate}`}
                       size="small"
