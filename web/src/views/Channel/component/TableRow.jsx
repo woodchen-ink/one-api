@@ -746,7 +746,7 @@ export default function ChannelTableRow({ item, manageChannel, onRefresh, groupO
                         // py: 0.75,
                         // px: 1.5,
                         fontSize: '0.75rem',
-                        cursor: 'pointer',
+                        cursor: 'pointer'
                         // '&:hover': { opacity: 0.8 }
                       }}
                       onClick={() => {
@@ -760,7 +760,7 @@ export default function ChannelTableRow({ item, manageChannel, onRefresh, groupO
               </Grid>
 
               {item.test_model && (
-                <Grid xs={12}>
+                <Grid item xs={12}>
                   <Box
                     sx={{
                       display: 'flex',
@@ -802,7 +802,7 @@ export default function ChannelTableRow({ item, manageChannel, onRefresh, groupO
               )}
 
               {item.proxy && (
-                <Grid xs={12}>
+                <Grid item xs={12}>
                   <Box
                     sx={{
                       display: 'flex',
@@ -834,7 +834,7 @@ export default function ChannelTableRow({ item, manageChannel, onRefresh, groupO
               )}
 
               {item.other && (
-                <Grid xs={12}>
+                <Grid item xs={12}>
                   <Box
                     sx={{
                       display: 'flex',
@@ -875,7 +875,7 @@ export default function ChannelTableRow({ item, manageChannel, onRefresh, groupO
                 </Grid>
               )}
               {item.tag && (
-                <Grid xs={12}>
+                <Grid item xs={12}>
                   <Box sx={{ m: 1, mt: 2 }}>
                     <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
                       <Stack direction="row" alignItems="center" spacing={1}>
@@ -1121,7 +1121,7 @@ export default function ChannelTableRow({ item, manageChannel, onRefresh, groupO
                                             sx={{ p: 0.5, color: 'primary.main' }}
                                             onClick={() => {
                                               setCurrentTestingChannel(channel);
-                                              setEditedChannel({name: channel.name, key: channel.key})
+                                              setEditedChannel({ name: channel.name, key: channel.key });
                                               simpleChannelEdit.onTrue();
                                             }}
                                           >
@@ -1305,7 +1305,7 @@ export default function ChannelTableRow({ item, manageChannel, onRefresh, groupO
         }}
         channelId={item.tag ? item.tag : item.id}
         groupOptions={groupOptions}
-        isTag={item.tag}
+        isTag={!!item.tag}
         modelOptions={modelOptions}
       />
 
@@ -1371,7 +1371,7 @@ export default function ChannelTableRow({ item, manageChannel, onRefresh, groupO
       />
 
       {/* 添加子渠道的简化编辑对话框 */}
-      <Dialog open={simpleChannelEdit.value} onClose={simpleChannelEdit.onFalse} fullWidth maxWidth="md" >
+      <Dialog open={simpleChannelEdit.value} onClose={simpleChannelEdit.onFalse} fullWidth maxWidth="md">
         <DialogTitle>{t('common.edit')}</DialogTitle>
         <DialogContent>
           <TextField
@@ -1383,7 +1383,7 @@ export default function ChannelTableRow({ item, manageChannel, onRefresh, groupO
             fullWidth
             variant="outlined"
             value={editedChannel.name}
-            onChange={(e) => setEditedChannel({...editedChannel, name: e.target.value})}
+            onChange={(e) => setEditedChannel({ ...editedChannel, name: e.target.value })}
             sx={{ mb: 2, mt: 1 }}
           />
           <TextField
@@ -1396,12 +1396,14 @@ export default function ChannelTableRow({ item, manageChannel, onRefresh, groupO
             minRows={3}
             variant="outlined"
             value={editedChannel.key}
-            onChange={(e) => setEditedChannel({...editedChannel, key: e.target.value})}
+            onChange={(e) => setEditedChannel({ ...editedChannel, key: e.target.value })}
           />
         </DialogContent>
         <DialogActions>
           <Button onClick={simpleChannelEdit.onFalse}>{t('common.cancel')}</Button>
-          <Button variant="contained" color="primary"
+          <Button
+            variant="contained"
+            color="primary"
             onClick={() => {
               if (!editedChannel?.name?.trim()) {
                 showError(t('channel_edit.requiredName'));
@@ -1411,17 +1413,17 @@ export default function ChannelTableRow({ item, manageChannel, onRefresh, groupO
                 showError(t('channel_row.keyRequired'));
                 return;
               }
-              
+
               // 确保这里使用currentTestingChannel的ID，因为这是子渠道
               const channelId = currentTestingChannel.id;
-              
+
               // 创建一个包含名称和密钥的对象来更新
               const updateData = {
                 id: channelId,
                 name: editedChannel.name,
                 key: editedChannel.key
               };
-              
+
               // 使用PUT请求更新渠道
               API.put('/api/channel/', updateData)
                 .then((res) => {
@@ -1429,14 +1431,12 @@ export default function ChannelTableRow({ item, manageChannel, onRefresh, groupO
                     const { success, message } = res.data;
                     if (success) {
                       showSuccess(t('channel_edit.editSuccess'));
-                      
+
                       // 更新本地状态
                       setTagChannels((prev) =>
-                        prev.map((c) =>
-                          c.id === channelId ? { ...c, name: editedChannel.name, key: editedChannel.key } : c
-                        )
+                        prev.map((c) => (c.id === channelId ? { ...c, name: editedChannel.name, key: editedChannel.key } : c))
                       );
-                      
+
                       onRefresh(false); // 刷新父组件数据
                     } else {
                       showError(message || t('channel_edit.editError'));
