@@ -451,7 +451,7 @@ const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, model
   }, [channelId, open]);
 
   return (
-    <Dialog open={open} onClose={onCancel} fullWidth maxWidth={'md'}>
+    <Dialog open={open} onClose={onCancel} fullWidth maxWidth={'lg'}>
       <DialogTitle sx={{ margin: '0px', fontWeight: 700, lineHeight: '1.55556', padding: '24px', fontSize: '1.125rem' }}>
         {channelId ? t('common.edit') : t('common.create')}
       </DialogTitle>
@@ -723,11 +723,14 @@ const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, model
                       </li>
                     )}
                     renderTags={(value, getTagProps) =>
-                      value.map((option, index) => (
-                        <Box key={index} sx={{ display: 'flex', alignItems: 'center' }}>
-                          <Chip label={option.id} {...getTagProps({ index })} onClick={() => copy(option.id)} />
-                        </Box>
-                      ))
+                      value.map((option, index) => {
+                        const { key, ...otherProps } = getTagProps({ index });
+                        return (
+                          <Box key={key} sx={{ display: 'flex', alignItems: 'center' }}>
+                            <Chip label={option.id} {...otherProps} onClick={() => copy(option.id)} />
+                          </Box>
+                        );
+                      })
                     }
                   />
                 </Box>

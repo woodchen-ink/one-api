@@ -86,34 +86,6 @@ const Sidebar = ({ drawerOpen, drawerToggle, window: windowProp }) => {
           >
             <MenuCard />
             <MenuList />
-
-            <Box
-              sx={{
-                pt: 2,
-                pb: 2,
-                mt: 2,
-                borderTop: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'}`
-              }}
-            >
-              <Stack direction="row" justifyContent="center">
-                <Chip
-                  label={import.meta.env.VITE_APP_VERSION || t('menu.unknownVersion')}
-                  disabled
-                  chipcolor="secondary"
-                  size="small"
-                  sx={{
-                    cursor: 'pointer',
-                    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
-                    color: theme.palette.text.secondary,
-                    fontSize: '0.75rem',
-                    height: '24px',
-                    '& .MuiChip-label': {
-                      px: 1.5
-                    }
-                  }}
-                />
-              </Stack>
-            </Box>
           </PerfectScrollbar>
         </Box>
       </BrowserView>
@@ -168,34 +140,6 @@ const Sidebar = ({ drawerOpen, drawerToggle, window: windowProp }) => {
             >
               <MenuCard />
               <MenuList />
-
-              <Box
-                sx={{
-                  pt: 2,
-                  pb: 2,
-                  mt: 2,
-                  borderTop: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'}`
-                }}
-              >
-                <Stack direction="row" justifyContent="center">
-                  <Chip
-                    label={import.meta.env.VITE_APP_VERSION || t('menu.unknownVersion')}
-                    disabled
-                    chipcolor="secondary"
-                    size="small"
-                    sx={{
-                      cursor: 'pointer',
-                      backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
-                      color: theme.palette.text.secondary,
-                      fontSize: '0.75rem',
-                      height: '24px',
-                      '& .MuiChip-label': {
-                        px: 1.5
-                      }
-                    }}
-                  />
-                </Stack>
-              </Box>
             </Box>
           </Box>
         </Box>

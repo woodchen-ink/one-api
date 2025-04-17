@@ -43,10 +43,8 @@ import {
 } from '@mui/material';
 
 import Label from 'ui-component/Label';
-// import TableSwitch from 'ui-component/Switch';
 
 import ResponseTimeLabel from './ResponseTimeLabel';
-// import GroupLabel from './GroupLabel';
 
 import { styled, alpha } from '@mui/material/styles';
 import { Icon } from '@iconify/react';
@@ -105,7 +103,6 @@ function statusInfo(t, status) {
       return t('common.unknown');
   }
 }
-import Checkbox from '@mui/material/Checkbox';
 import { red, grey, purple } from '@mui/material/colors';
 
 export default function ChannelTableRow({ item, manageChannel, onRefresh, groupOptions, modelOptions }) {
@@ -354,13 +351,12 @@ export default function ChannelTableRow({ item, manageChannel, onRefresh, groupO
             )}
           </Box>
         </TableCell>
-        <TableCell sx={{ minWidth: 100, maxWidth: 220, overflow: 'hidden' }}>
+        <TableCell sx={{ minWidth: 100, maxWidth: 220, overflow: 'hidden',textAlign:'center' }}>
           {item.tag ? (
             <Typography
               variant="subtitle1"
               sx={{
                 color: 'primary.main',
-                maxWidth: 100,
                 display: 'block'
               }}
             >
@@ -370,7 +366,6 @@ export default function ChannelTableRow({ item, manageChannel, onRefresh, groupO
             <Typography
               variant="subtitle1"
               sx={{
-                maxWidth: 100,
                 lineHeight: 1.4
               }}
             >

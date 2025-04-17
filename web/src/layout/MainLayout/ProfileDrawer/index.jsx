@@ -157,22 +157,6 @@ const ProfileDrawer = ({ open, onClose }) => {
               </Typography>
               <Typography variant="body2">{users?.request_count || t('dashboard_index.unknown')}</Typography>
             </Box>
-
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Typography variant="body2" color="text.secondary">
-                {t('invite_count')}
-              </Typography>
-              <Typography variant="body2">{users?.aff_count || t('dashboard_index.unknown') }</Typography>
-            </Box>
-
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Typography variant="body2" color="text.secondary">
-                {t('invite_reward')}
-              </Typography>
-              <Typography variant="body2">
-                {users?.aff_quota ? '$' + calculateQuota(users.aff_quota) : t('dashboard_index.unknown')}
-              </Typography>
-            </Box>
           </Stack>
           <Divider sx={{ borderWidth: '1px', borderStyle: 'dashed', mt: 2 , mb: 2 }} />
           {/* 按钮区域 */}
