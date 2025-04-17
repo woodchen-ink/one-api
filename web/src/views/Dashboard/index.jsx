@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Grid } from '@mui/material';
+import { Grid, Box } from '@mui/material';
 import { gridSpacing } from 'store/constant';
 import StatisticalLineChartCard from './component/StatisticalLineChartCard';
 import ApexCharts from 'ui-component/chart/ApexCharts';
@@ -10,9 +10,8 @@ import UserCard from 'ui-component/cards/UserCard';
 import { useTranslation } from 'react-i18next';
 import { UserContext } from 'contexts/UserContext';
 import Label from 'ui-component/Label';
-import InviteCard from './component/InviteCard';
+import ModelUsagePieChart from './component/ModelUsagePieChart';
 import QuotaLogWeek from './component/QuotaLogWeek';
-import QuickStartCard from './component/QuickStartCard';
 import RPM from './component/RPM';
 
 const Dashboard = () => {
@@ -109,13 +108,6 @@ const Dashboard = () => {
           <Grid item lg={4} xs={12}>
             {/* 用户信息 */}
             <ModelUsagePieChart isLoading={isLoading} data={modelUsageData} /> {/* 新增 */}
-            <Box mt={2}>
-              <QuickStartCard />
-            </Box>
-            {/* 邀请 */}
-            <Box mt={2}>
-              <InviteCard />
-            </Box>
           </Grid>
 
         </Grid>

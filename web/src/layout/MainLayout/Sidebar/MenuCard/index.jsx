@@ -135,7 +135,7 @@ const MenuCard = () => {
                       size="small"
                       color="primary"
                       variant="outlined"
-                      sx={{ height: '15px', fontSize: '0.75rem' }}
+                      sx={{ height: '1.2rem', fontSize: '0.75rem' }}
                     />
                   )}
                 </Typography>

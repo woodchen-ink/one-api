@@ -8,7 +8,7 @@ import { useSelector } from 'react-redux';
 
 // third-party
 import PerfectScrollbar from 'react-perfect-scrollbar';
-import { BrowserView } from 'react-device-detect';
+import { BrowserView, MobileView } from 'react-device-detect';
 
 // project imports
 import MenuList from './MenuList';
