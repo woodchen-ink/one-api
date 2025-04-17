@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import Grid from '@mui/material/Unstable_Grid2';
 import SubCard from 'ui-component/cards/SubCard';
-import { IconBrandWechat, IconBrandGithub, IconMail, IconBrandTelegram } from '@tabler/icons-react';
+import { IconBrandWechat, IconBrandGithub, IconMail, IconBrandTelegram, IconBrandOauth } from '@tabler/icons-react';
 import Label from 'ui-component/Label';
 import { API } from 'utils/api';
 import { showError, showSuccess, onGitHubOAuthClicked, copy, trims, onLarkOAuthClicked } from 'utils/common';
@@ -167,6 +167,11 @@ export default function Profile() {
               {status.lark_login && (
                 <Label variant="ghost" color={inputs.lark_id ? 'primary' : 'default'}>
                   <SvgIcon component={LarkIcon} inheritViewBox="0 0 24 24" /> {inputs.lark_id || t('profilePage.notBound')}
+                </Label>
+              )}
+              {status.oidc_auth && (
+                <Label variant="ghost" color={inputs.oidc_id ? 'primary' : 'default'}>
+                  <IconBrandOauth /> {inputs.oidc_id || t('profilePage.notBound')}
                 </Label>
               )}
             </Stack>

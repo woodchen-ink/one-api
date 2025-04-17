@@ -1,14 +1,15 @@
 import PropTypes from 'prop-types';
 import { useState } from 'react';
 import { Icon } from '@iconify/react';
+import { useLocation } from 'react-router-dom';
 
 // material-ui
 import { useTheme } from '@mui/material/styles';
-import { Box, ButtonBase } from '@mui/material';
+import { Box, IconButton, Stack } from '@mui/material';
 
 // project imports
 import LogoSection from '../LogoSection';
-import ProfileSection from './ProfileSection';
+import Profile from './Profile';
 // import ThemeButton from 'ui-component/ThemeButton';
 import I18nButton from 'ui-component/i18nButton';
 import { NoticeButton } from 'ui-component/notice';
@@ -18,17 +19,22 @@ import { NoticeButton } from 'ui-component/notice';
 
 // ==============================|| MAIN NAVBAR / HEADER ||============================== //
 
-const Header = ({ handleLeftDrawerToggle }) => {
+const Header = ({ handleLeftDrawerToggle, toggleProfileDrawer }) => {
   const theme = useTheme();
   const [isDrawerOpen, setIsDrawerOpen] = useState(true);
+  const location = useLocation();
+  
+  // 检查当前路径是否为面板/控制台页面
+  const isConsoleRoute = location.pathname.startsWith('/panel');
 
   return (
     <>
       {/* logo & toggler button */}
       <Box
         sx={{
-          width: 228,
+          width: isDrawerOpen ? 255 : 150,
           display: 'flex',
+          alignItems: 'center',
           [theme.breakpoints.down('md')]: {
             width: 'auto'
           }
@@ -37,18 +43,20 @@ const Header = ({ handleLeftDrawerToggle }) => {
         <Box component="span" sx={{ display: { xs: 'none', md: 'block' }, flexGrow: 1 }}>
           <LogoSection />
         </Box>
-        <ButtonBase
+        <IconButton
+          size="medium"
+          edge="start"
+          color="inherit"
+          aria-label="menu"
           sx={{
-            width: '36px',
-            height: '36px',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'all 0.2s ease-in-out',
+            width: '38',
+            height: '38px',
+            borderRadius: '8px',
+            backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)',
             '&:hover': {
-              backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.04)'
-            }
+              backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)'
+            },
+            transition: 'background-color 0.2s ease-in-out'
           }}
           onClick={() => {
             setIsDrawerOpen(!isDrawerOpen);
@@ -56,28 +64,29 @@ const Header = ({ handleLeftDrawerToggle }) => {
           }}
         >
           <Icon
-            icon={isDrawerOpen ? 'material-symbols:menu-open' : 'material-symbols:menu'}
-            width="20px"
-            color={theme.palette.mode === 'dark' ? '#ffffff' : '#000000'}
-            style={{
-              opacity: theme.palette.mode === 'dark' ? 0.9 : 0.7,
-              transition: 'transform 0.2s ease-in-out'
-            }}
+            icon={isDrawerOpen ? 'tabler:layout-sidebar-right-collapse' : 'tabler:layout-sidebar-left-expand'}
+            width="22px"
+            height="22px"
+            color={theme.palette.mode === 'dark' ? theme.palette.text.secondary : theme.palette.text.primary}
           />
-        </ButtonBase>
+        </IconButton>
       </Box>
 
       <Box sx={{ flexGrow: 1 }} />
-      <Box sx={{ flexGrow: 1 }} />
-      <NoticeButton />
-      <I18nButton />
-      <ProfileSection />
+
+      {/* 右侧功能按钮区 */}
+      <Stack direction="row" spacing={1} alignItems="center">
+        <NoticeButton />
+          <I18nButton />
+        {isConsoleRoute && <Profile toggleProfileDrawer={toggleProfileDrawer} />}
+      </Stack>
     </>
   );
 };
 
 Header.propTypes = {
-  handleLeftDrawerToggle: PropTypes.func
+  handleLeftDrawerToggle: PropTypes.func,
+  toggleProfileDrawer: PropTypes.func
 };
 
 export default Header;

@@ -13,10 +13,8 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Chip,
   TextField,
   InputAdornment,
-  styled,
   Box
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
@@ -26,31 +24,6 @@ import { useTheme } from '@mui/material/styles';
 import IconWrapper from 'ui-component/IconWrapper';
 import Label from 'ui-component/Label';
 import ToggleButtonGroup from 'ui-component/ToggleButton';
-const GroupChip = styled(Chip)(({ theme, selected }) => ({
-  margin: theme.spacing(0.5),
-  cursor: 'pointer',
-  height: '28px',
-  borderRadius: '14px',
-  padding: '0 12px',
-  fontSize: '13px',
-  fontWeight: 500,
-  transition: 'all 0.2s ease-in-out',
-  backgroundColor: selected ? theme.palette.primary.main : theme.palette.background.paper,
-  color: selected ? theme.palette.common.white : theme.palette.text.secondary,
-  border: `1px solid ${selected ? 'transparent' : theme.palette.divider}`,
-  boxShadow: selected ? '0 2px 4px rgba(0,0,0,0.1)' : 'none',
-
-  '&:hover': {
-    backgroundColor: selected ? theme.palette.primary.dark : theme.palette.action.hover,
-    transform: 'translateY(-1px)',
-    boxShadow: '0 3px 6px rgba(0,0,0,0.12)'
-  },
-
-  '& .MuiChip-label': {
-    padding: '0 4px'
-  }
-}));
-
 // ----------------------------------------------------------------------
 export default function ModelPrice() {
   const { t } = useTranslation();
@@ -178,8 +151,11 @@ export default function ModelPrice() {
 
   return (
     <Stack spacing={3} sx={{ padding: theme.spacing(3) }}>
-      <Typography variant="h4" color="textPrimary">
+      <Typography variant="h2">
         {t('modelpricePage.availableModels')}
+        <Typography variant="subtitle1" sx={{ mt: 1 }} color="text.secondary">
+          Available Models
+        </Typography>
       </Typography>
 
       <Card sx={{ p: 2, backgroundColor: theme.palette.background.paper }}>
@@ -189,20 +165,49 @@ export default function ModelPrice() {
           </Typography>
           <Box
             sx={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: 1,
-              alignItems: 'center'
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+              gap: 2
             }}
           >
             {Object.entries(userGroupMap).map(([key, group]) => (
-              <GroupChip
+              <Card
                 key={key}
-                label={group.name}
                 onClick={() => handleGroupChange({ target: { value: key } })}
-                selected={selectedGroup === key}
-                variant={selectedGroup === key ? 'filled' : 'outlined'}
-              />
+                sx={{
+                  p: 2,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease-in-out',
+                  transform: selectedGroup === key ? 'scale(1.02)' : 'none',
+                  border: (theme) => `1px solid ${selectedGroup === key ? theme.palette.primary.main : theme.palette.divider}`,
+                  backgroundColor: (theme) => (selectedGroup === key ? theme.palette.primary.light : theme.palette.background.paper),
+                  '&:hover': {
+                    transform: 'scale(1.02)',
+                    boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+                  }
+                }}
+              >
+                <Stack spacing={1.5}>
+                  <Stack direction="row" justifyContent="space-between" alignItems="center">
+                    <Typography variant="h6" color={selectedGroup === key ? 'primary.main' : 'text.primary'}>
+                      {group.name}
+                    </Typography>
+                  </Stack>
+                  <Stack spacing={1}>
+                    <Typography variant="body2" color="text.secondary">
+                      {t('modelpricePage.rate')}：{' '}
+                      {group.ratio > 0 ? (
+                        <Label color={group.ratio > 1 ? 'warning' : 'info'}>x{group.ratio}</Label>
+                      ) : (
+                        <Label color="success">{t('modelpricePage.free')}</Label>
+                      )}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {t('modelpricePage.RPM')}：<Label color="info">{group.api_rate} RPM</Label>
+                    </Typography>
+                  </Stack>
+                </Stack>
+              </Card>
             ))}
           </Box>
           <Stack direction="row" spacing={2} alignItems="center">
@@ -335,3 +340,4 @@ function getOther(t, extraRatios) {
     </Stack>
   );
 }
+
