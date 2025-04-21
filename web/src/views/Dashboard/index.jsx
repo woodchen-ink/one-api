@@ -8,7 +8,6 @@ import { API } from 'utils/api';
 import { showError, calculateQuota } from 'utils/common';
 import ModelUsagePieChart from './component/ModelUsagePieChart';
 import { useTranslation } from 'react-i18next';
-import InviteCard from './component/InviteCard';
 import QuotaLogWeek from './component/QuotaLogWeek';
 import RPM from './component/RPM';
 
@@ -119,22 +118,6 @@ const Dashboard = () => {
 function getModelUsageData(data) {
   const modelUsage = {};
   data.forEach((item) => {
-    if (!modelUsage[item.ModelName]) {
-      modelUsage[item.ModelName] = 0;
-    }
-    modelUsage[item.ModelName] += item.RequestCount;
-  });
-
-  return Object.entries(modelUsage).map(([name, count]) => ({
-    name,
-    value: count
-  }));
-}
-
-// 新增函数来处理模型使用数据
-function getModelUsageData(data) {
-  const modelUsage = {};
-  data.forEach(item => {
     if (!modelUsage[item.ModelName]) {
       modelUsage[item.ModelName] = 0;
     }
