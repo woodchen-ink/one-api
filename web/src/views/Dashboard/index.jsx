@@ -6,11 +6,8 @@ import ApexCharts from 'ui-component/chart/ApexCharts';
 import { getLastSevenDays, generateBarChartOptions, renderChartNumber } from 'utils/chart';
 import { API } from 'utils/api';
 import { showError, calculateQuota } from 'utils/common';
-import UserCard from 'ui-component/cards/UserCard';
-import { useTranslation } from 'react-i18next';
-import { UserContext } from 'contexts/UserContext';
-import Label from 'ui-component/Label';
 import ModelUsagePieChart from './component/ModelUsagePieChart';
+import { useTranslation } from 'react-i18next';
 import QuotaLogWeek from './component/QuotaLogWeek';
 import RPM from './component/RPM';
 
@@ -20,9 +17,10 @@ const Dashboard = () => {
   const [requestChart, setRequestChart] = useState(null);
   const [quotaChart, setQuotaChart] = useState(null);
   const [tokenChart, setTokenChart] = useState(null);
-  // const [users, setUsers] = useState([]);
   const { t } = useTranslation();
-  const [modelUsageData, setModelUsageData] = useState([]); // 新增
+  const [modelUsageData, setModelUsageData] = useState([]);
+
+  const [dashboardData, setDashboardData] = useState(null);
 
   const userDashboard = async () => {
     try {
@@ -30,12 +28,13 @@ const Dashboard = () => {
       const { success, message, data } = res.data;
       if (success) {
         if (data) {
+          setDashboardData(data);
           let lineData = getLineDataGroup(data);
           setRequestChart(getLineCardOption(lineData, 'RequestCount'));
           setQuotaChart(getLineCardOption(lineData, 'Quota'));
           setTokenChart(getLineCardOption(lineData, 'PromptTokens'));
           setStatisticalData(getBarDataGroup(data));
-          setModelUsageData(getModelUsageData(data)); // 新增
+          setModelUsageData(getModelUsageData(data));
         }
       } else {
         showError(message);
@@ -45,7 +44,6 @@ const Dashboard = () => {
       return;
     }
   };
-
 
   useEffect(() => {
     userDashboard();
@@ -101,7 +99,7 @@ const Dashboard = () => {
             <ApexCharts isLoading={isLoading} chartDatas={statisticalData} title={t('dashboard_index.week_model_statistics')} />
             <Box mt={2}>
               {/* 7日消费统计 */}
-              <QuotaLogWeek />
+              <QuotaLogWeek data={dashboardData} />
             </Box>
           </Grid>
 
@@ -119,7 +117,7 @@ const Dashboard = () => {
 // 新增函数来处理模型使用数据
 function getModelUsageData(data) {
   const modelUsage = {};
-  data.forEach(item => {
+  data.forEach((item) => {
     if (!modelUsage[item.ModelName]) {
       modelUsage[item.ModelName] = 0;
     }
