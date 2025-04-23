@@ -22,7 +22,8 @@ const Payment = Loadable(lazy(() => import('views/Payment')));
 const Task = Loadable(lazy(() => import('views/Task')));
 const UserGroup = Loadable(lazy(() => import('views/UserGroup')));
 const ModelOwnedby = Loadable(lazy(() => import('views/ModelOwnedby')));
-
+const Invoice = Loadable(lazy(() => import('views/Invoice')));
+const InvoiceDetail = Loadable(lazy(() => import('views/Invoice/detail')));
 // dashboard routing
 const Dashboard = Loadable(lazy(() => import('views/Dashboard')));
 
@@ -39,6 +40,14 @@ const MainRoutes = {
     {
       path: 'dashboard',
       element: <Dashboard />
+    },
+    {
+      path: 'invoice',
+      element: <Invoice />
+    },
+    {
+      path: 'invoice/detail/:date',
+      element: <InvoiceDetail />
     },
     {
       path: 'channel',

@@ -6,6 +6,7 @@ const config = {
   fontFamily: `czl,system-ui,-apple-system,BlinkMacSystemFont,'Helvetica Neue',Helvetica,Segoe UI,Arial,Roboto,'PingFang SC',miui,'Hiragino Sans GB','Microsoft Yahei',sans-serif`,
   borderRadius: 12,
   siteInfo: {
+    UserInvoiceMonth: false,
     chat_link: '',
     display_in_currency: true,
     email_verification: false,

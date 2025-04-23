@@ -3,7 +3,8 @@ import { Icon } from '@iconify/react';
 const icons = {
   IconArticle: () => <Icon width={20} icon="solar:document-text-bold-duotone" />,
   IconBrush: () => <Icon width={20} icon="tabler:photo-ai" />,
-  IconList: () => <Icon width={20} icon="solar:checklist-minimalistic-bold-duotone" />
+  IconList: () => <Icon width={20} icon="solar:checklist-minimalistic-bold-duotone" />,
+  IconInvoice: () => <Icon width={20} icon="solar:dollar-minimalistic-bold-duotone" />
 };
 
 const usage = {
@@ -19,23 +20,30 @@ const usage = {
       icon: icons.IconArticle,
       breadcrumbs: false
     },
-
-    // {
-    //   id: 'midjourney',
-    //   title: 'Midjourney',
-    //   type: 'item',
-    //   url: '/panel/midjourney',
-    //   icon: icons.IconBrush,
-    //   breadcrumbs: false
-    // },
-    // {
-    //   id: 'task',
-    //   title: '异步任务',
-    //   type: 'item',
-    //   url: '/panel/task',
-    //   icon: icons.IconList,
-    //   breadcrumbs: false
-    // }
+    {
+      id: 'invoice',
+      title: '月度账单',
+      type: 'item',
+      url: '/panel/invoice',
+      icon: icons.IconInvoice,
+      breadcrumbs: false
+    },
+    {
+      id: 'midjourney',
+      title: 'Midjourney',
+      type: 'item',
+      url: '/panel/midjourney',
+      icon: icons.IconBrush,
+      breadcrumbs: false
+    },
+    {
+      id: 'task',
+      title: '异步任务',
+      type: 'item',
+      url: '/panel/task',
+      icon: icons.IconList,
+      breadcrumbs: false
+    }
   ]
 };
 
