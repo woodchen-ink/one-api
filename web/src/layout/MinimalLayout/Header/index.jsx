@@ -134,15 +134,6 @@ const Header = () => {
             >
               客服
             </Button>
-            <Button
-              variant="text"
-              href="https://chat.czl.net" // 使用href而不是to
-              target="_blank" // 在新标签页中打开链接
-              rel="noopener noreferrer" // 出于安全考虑，防止链接到不安全的地方
-              color={pathname === 'https://chat.czl.net' ? 'primary' : 'inherit'}
-            >
-              对话
-            </Button>
             {/* <ThemeButton sx={{ color: theme.palette.text.primary, ml: 0.5 }} /> */}
             <I18nButton sx={{ color: theme.palette.text.primary, ml: 0.5 }} />
             {account.user ? (
