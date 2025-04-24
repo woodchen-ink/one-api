@@ -11,7 +11,7 @@ import (
 )
 
 func (p *OpenAIProvider) CreateImageEdits(request *types.ImageEditRequest) (*types.ImageResponse, *types.OpenAIErrorWithStatusCode) {
-	req, errWithCode := p.getRequestImageBody(config.RelayModeEdits, request.Model, request)
+	req, errWithCode := p.getRequestImageBody(config.RelayModeImagesEdits, request.Model, request)
 	if errWithCode != nil {
 		return nil, errWithCode
 	}
@@ -33,7 +33,11 @@ func (p *OpenAIProvider) CreateImageEdits(request *types.ImageEditRequest) (*typ
 		return nil, errWithCode
 	}
 
-	p.Usage.TotalTokens = p.Usage.PromptTokens
+	if response.Usage != nil && response.Usage.TotalTokens > 0 {
+		*p.Usage = *response.Usage.ToOpenAIUsage()
+	} else {
+		p.Usage.TotalTokens = p.Usage.PromptTokens
+	}
 
 	return &response.ImageResponse, nil
 }
@@ -81,10 +85,21 @@ func (p *OpenAIProvider) getRequestImageBody(relayMode int, ModelName string, re
 	return req, nil
 }
 
-func imagesEditsMultipartForm(request *types.ImageEditRequest, b requester.FormBuilder) error {
-	err := b.CreateFormFile("image", request.Image)
-	if err != nil {
-		return fmt.Errorf("creating form image: %w", err)
+func imagesEditsMultipartForm(request *types.ImageEditRequest, b requester.FormBuilder) (err error) {
+	if request.Image != nil {
+		err = b.CreateFormFile("image", request.Image)
+		if err != nil {
+			return fmt.Errorf("creating form image: %w", err)
+		}
+	}
+
+	if request.Images != nil {
+		for _, image := range request.Images {
+			err = b.CreateFormFile("image[]", image)
+			if err != nil {
+				return fmt.Errorf("creating form images: %w", err)
+			}
+		}
 	}
 
 	err = b.WriteField("prompt", request.Prompt)

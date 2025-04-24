@@ -8,10 +8,6 @@ import (
 )
 
 func (p *OpenAIProvider) CreateImageGenerations(request *types.ImageRequest) (*types.ImageResponse, *types.OpenAIErrorWithStatusCode) {
-	if p.Channel.Type == config.ChannelTypeOpenAI && !IsWithinRange(request.Model, request.N) {
-		return nil, common.StringErrorWrapper("n_not_within_range", "n_not_within_range", http.StatusBadRequest)
-	}
-
 	req, errWithCode := p.GetRequestTextBody(config.RelayModeImagesGenerations, request.Model, request)
 	if errWithCode != nil {
 		return nil, errWithCode
@@ -35,7 +31,11 @@ func (p *OpenAIProvider) CreateImageGenerations(request *types.ImageRequest) (*t
 		return nil, errWithCode
 	}
 
-	p.Usage.TotalTokens = p.Usage.PromptTokens
+	if response.Usage != nil && response.Usage.TotalTokens > 0 {
+		*p.Usage = *response.Usage.ToOpenAIUsage()
+	} else {
+		p.Usage.TotalTokens = p.Usage.PromptTokens
+	}
 
 	return &response.ImageResponse, nil
 

@@ -15,11 +15,17 @@ type ImageRequest struct {
 	OutputQuality    *int    `json:"output_quality,omitempty"`
 	SafetyTolerance  *string `json:"safety_tolerance,omitempty"`
 	PromptUpsampling *string `json:"prompt_upsampling,omitempty"`
+
+	Background        *string `json:"background,omitempty"`
+	Moderation        *string `json:"moderation,omitempty"`
+	OutputCompression *int    `json:"output_compression,omitempty"`
+	OutputFormat      *string `json:"output_format,omitempty"`
 }
 
 type ImageResponse struct {
 	Created any                      `json:"created,omitempty"`
 	Data    []ImageResponseDataInner `json:"data,omitempty"`
+	Usage   *ResponsesUsage          `json:"usage,omitempty"`
 }
 
 type ImageResponseDataInner struct {
@@ -29,12 +35,13 @@ type ImageResponseDataInner struct {
 }
 
 type ImageEditRequest struct {
-	Image          *multipart.FileHeader `form:"image" binding:"required"`
-	Mask           *multipart.FileHeader `form:"mask"`
-	Model          string                `form:"model"`
-	Prompt         string                `form:"prompt"`
-	N              int                   `form:"n"`
-	Size           string                `form:"size"`
-	ResponseFormat string                `form:"response_format"`
-	User           string                `form:"user"`
+	Image          *multipart.FileHeader   `form:"image"`
+	Images         []*multipart.FileHeader `form:"image[]"`
+	Mask           *multipart.FileHeader   `form:"mask"`
+	Model          string                  `form:"model"`
+	Prompt         string                  `form:"prompt"`
+	N              int                     `form:"n"`
+	Size           string                  `form:"size"`
+	ResponseFormat string                  `form:"response_format"`
+	User           string                  `form:"user"`
 }
