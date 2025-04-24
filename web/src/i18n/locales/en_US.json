@@ -288,7 +288,7 @@
     "RPM": "Current RPM",
     "TPM": "Current TPM"
   },
-  "description": "All-in-one OpenAI interface\nIntegrates various API access methods\nOne-click deployment, ready to use",
+  "description": "All-in-one AI interface",
   "echo 映射": "echo mapping",
   "error": {
     "unknownError": "unknown mistake"

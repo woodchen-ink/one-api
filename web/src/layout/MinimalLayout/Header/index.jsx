@@ -102,7 +102,7 @@ const Header = () => {
             <Button component={Link} variant="text" to="/price" color={pathname === '/price' ? 'primary' : 'inherit'}>
               {t('price')}
             </Button>
-            <Button
+            {/* <Button
               component={Link}
               variant="text"
               to="/about"
@@ -114,6 +114,15 @@ const Header = () => {
               }}
             >
             {t('menu.about')}
+            </Button> */}
+            <Button
+              variant="text"
+              href="https://czl-oapi.apifox.cn/" // 使用href而不是to
+              target="_blank" // 在新标签页中打开链接
+              rel="noopener noreferrer" // 出于安全考虑，防止链接到不安全的地方
+              color={pathname === 'https://czl-oapi.apifox.cn/' ? 'primary' : 'inherit'}
+            >
+              接口
             </Button>
             {/* <NoticeButton sx={{ color: theme.palette.text.primary, ml: 1 }} /> */}
             <Button

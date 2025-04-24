@@ -3,13 +3,14 @@ import { showError } from 'utils/common';
 import { API } from 'utils/api';
 import { marked } from 'marked';
 import BaseIndex from './baseIndex';
-import { Box, Container } from '@mui/material';
+import { Box, Container, CircularProgress } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 
 const Home = () => {
   const { t } = useTranslation();
   const [homePageContentLoaded, setHomePageContentLoaded] = useState(false);
   const [homePageContent, setHomePageContent] = useState('');
+  const [loading, setLoading] = useState(true);
 
   const displayHomePageContent = async () => {
     setHomePageContent(localStorage.getItem('home_page_content') || '');
@@ -29,7 +30,9 @@ const Home = () => {
       }
       setHomePageContentLoaded(true);
     } catch (error) {
-      return;
+      setHomePageContentLoaded(true);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -37,24 +40,30 @@ const Home = () => {
     displayHomePageContent().then();
   }, []);
 
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 'calc(100vh - 136px)' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
   return (
     <>
       {homePageContentLoaded && homePageContent === '' ? (
         <BaseIndex />
       ) : (
-        <>
-          <Box>
-            {homePageContent.startsWith('https://') ? (
-              <iframe title="home_page_content" src={homePageContent} style={{ width: '100%', height: '100vh', border: 'none' }} />
-            ) : (
-              <>
-                <Container >
-                  <div style={{ fontSize: 'larger' }} dangerouslySetInnerHTML={{ __html: homePageContent }}></div>
-                </Container>
-              </>
-            )}
-          </Box>
-        </>
+        <Box sx={{ width: '100%' }}>
+          {homePageContent.startsWith('https://') ? (
+            <iframe title="home_page_content" src={homePageContent} style={{ width: '100%', height: '100vh', border: 'none' }} />
+          ) : (
+            <>
+              <Container>
+                <div style={{ fontSize: 'larger', padding: '24px 0' }} dangerouslySetInnerHTML={{ __html: homePageContent }}></div>
+              </Container>
+            </>
+          )}
+        </Box>
       )}
     </>
   );
