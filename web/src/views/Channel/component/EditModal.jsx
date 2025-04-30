@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { CHANNEL_OPTIONS } from 'constants/ChannelConstants';
 import { useTheme } from '@mui/material/styles';
 import { API } from 'utils/api';
@@ -70,7 +70,8 @@ const getValidationSchema = (t) =>
       otherwise: Yup.string() // 在其他情况下，base_url 可以是任意字符串
     }),
     model_mapping: Yup.array(),
-    model_headers: Yup.array()
+    model_headers: Yup.array(),
+    custom_parameter: Yup.string().nullable()
   });
 
 const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, modelOptions }) => {
@@ -89,6 +90,8 @@ const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, model
 
 
   const [inputValue, setInputValue] = useState('');
+  const [parameterFocused, setParameterFocused] = useState(false);
+  const parameterInputRef = useRef(null);
   const removeDuplicates = (array) => [...new Set(array)];
 
   const initChannel = (typeValue) => {
@@ -303,6 +306,16 @@ const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, model
       }
     }
 
+    if (values.custom_parameter) {
+      try {
+        // Validate that the custom_parameter is valid JSON
+        JSON.parse(values.custom_parameter);
+      } catch (error) {
+        showError('Error parsing custom_parameter: ' + error.message);
+        return;
+      }
+    }
+
     if (values.disabled_stream) {
       values.disabled_stream = removeDuplicates(values.disabled_stream);
     }
@@ -415,6 +428,20 @@ const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, model
               }))
             : [];
         // }
+
+        // Format the custom_parameter JSON for better readability if it's not empty
+        if (data.custom_parameter !== '') {
+          try {
+            // Parse and then stringify with indentation for formatting
+            const parsedJson = JSON.parse(data.custom_parameter);
+            data.custom_parameter = JSON.stringify(parsedJson, null, 2);
+          } catch (error) {
+            // If parsing fails, keep the original string
+            console.log('Error parsing custom_parameter JSON:', error);
+          }
+        } else {
+          data.custom_parameter = '';
+        }
 
         data.base_url = data.base_url ?? '';
         data.is_edit = true;
@@ -895,6 +922,47 @@ const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, model
                     </FormHelperText>
                   ) : (
                     <FormHelperText id="helper-tex-channel-model_headers-label">{customizeT(inputPrompt.model_headers)}</FormHelperText>
+                  )}
+                </FormControl>
+              )}
+              {inputPrompt.custom_parameter && (
+                <FormControl
+                  fullWidth
+                  error={Boolean(touched.custom_parameter && errors.custom_parameter)}
+                  sx={{ ...theme.typography.otherInput }}
+                >
+                  <TextField
+                    id="channel-custom_parameter-label"
+                    label={customizeT(inputLabel.custom_parameter)}
+                    multiline={Boolean(values.custom_parameter || parameterFocused)}
+                    rows={values.custom_parameter || parameterFocused ? 8 : 1}
+                    value={values.custom_parameter}
+                    name="custom_parameter"
+                    disabled={hasTag}
+                    error={Boolean(touched.custom_parameter && errors.custom_parameter)}
+                    onChange={handleChange}
+                    inputRef={parameterInputRef}
+                    onBlur={(e) => {
+                      handleBlur(e);
+                      setParameterFocused(false);
+                    }}
+                    onFocus={() => {
+                      setParameterFocused(true);
+                      // 使用setTimeout确保状态更新后重新聚焦
+                      setTimeout(() => {
+                        if (parameterInputRef.current) {
+                          parameterInputRef.current.focus();
+                        }
+                      }, 0);
+                    }}
+                    placeholder={parameterFocused ? '{\n  "temperature": 0.7,\n  "top_p": 0.9,\n  "nested_param": {\n      "key": "value"\n  }\n}' : ''}
+                  />
+                  {touched.custom_parameter && errors.custom_parameter ? (
+                    <FormHelperText error id="helper-tex-channel-custom_parameter-label">
+                      {errors.custom_parameter}
+                    </FormHelperText>
+                  ) : (
+                    <FormHelperText id="helper-tex-channel-custom_parameter-label">{customizeT(inputPrompt.custom_parameter)}</FormHelperText>
                   )}
                 </FormControl>
               )}
