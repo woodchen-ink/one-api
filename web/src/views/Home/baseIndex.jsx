@@ -24,7 +24,7 @@ import GavelIcon from '@mui/icons-material/Gavel';
 import SecurityIcon from '@mui/icons-material/Security';
 import PrivacyTipIcon from '@mui/icons-material/PrivacyTip';
 
-import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import Lottie from 'react-lottie';
 
 const FeatureCard = ({ icon, title, description, link }) => {
   const theme = useTheme();
@@ -74,6 +74,24 @@ const FooterLink = ({ icon, title, link }) => {
 const BaseIndex = () => {
   const { t } = useTranslation();
   const theme = useTheme();
+  const [animationData, setAnimationData] = useState(null);
+
+  useEffect(() => {
+    // 动态加载animation.json文件
+    fetch('/lottie/animation.json')
+      .then(response => response.json())
+      .then(data => setAnimationData(data))
+      .catch(error => console.error('Error loading animation:', error));
+  }, []);
+
+  const defaultOptions = {
+    loop: true,
+    autoplay: true, 
+    animationData: animationData,
+    rendererSettings: {
+      preserveAspectRatio: 'xMidYMid meet'
+    }
+  };
 
   const features = [
     {
@@ -178,8 +196,12 @@ const BaseIndex = () => {
               </Stack>
             </Grid>
             <Grid item xs={12} md={5} sx={{ display: { xs: 'none', md: 'block' } }}>
-              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', minHeight: '300px' }}>
-                  <DotLottieReact src="/lottie/animation.lottie" loop autoplay />
+              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', maxHeight: '300px' }}>
+                {animationData ? (
+                  <Lottie options={defaultOptions} height={300} width="90%" />
+                ) : (
+                  <CircularProgress />
+                )}
               </Box>
             </Grid>
           </Grid>
