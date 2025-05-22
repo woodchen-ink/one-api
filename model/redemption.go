@@ -52,17 +52,12 @@ func GetRedemptionById(id int) (*Redemption, error) {
 	return &redemption, err
 }
 
-<<<<<<< HEAD
-func Redeem(key string, userId int) (quota int, upgradedToVIP bool, err error) {
-	upgradedToVIP = false // 初始化升级状态为 false（注意：这里不需要使用 var）
-=======
 func Redeem(key string, userId int, ip string) (quota int, err error) {
->>>>>>> 9ff66b085ac21e2620910b930d2f188fc5202265
 	if key == "" {
-		return 0, false, errors.New("未提供兑换码")
+		return 0, errors.New("未提供兑换码")
 	}
 	if userId == 0 {
-		return 0, false, errors.New("无效的 user id")
+		return 0, errors.New("无效的 user id")
 	}
 	redemption := &Redemption{}
 
@@ -89,29 +84,8 @@ func Redeem(key string, userId int, ip string) (quota int, err error) {
 		return err
 	})
 	if err != nil {
-		return 0, false, errors.New("兑换失败，" + err.Error())
+		return 0, errors.New("兑换失败，" + err.Error())
 	}
-<<<<<<< HEAD
-	RecordLog(userId, LogTypeTopup, fmt.Sprintf("通过兑换码充值 %s", common.LogQuota(redemption.Quota)))
-	// 获取用户信息
-	user := &User{}
-	err = DB.Where("id = ?", userId).First(user).Error
-	if err != nil {
-		return redemption.Quota, upgradedToVIP, errors.New("查询用户信息失败")
-	}
-
-	// 检查是否需要升级为 VIP
-	if user.Group != "vip" && user.Group != "svip" && user.Quota >= 5*500000 {
-		// 升级用户到 VIP
-		err = DB.Model(&User{}).Where("id = ?", userId).Update("group", "vip").Error
-		if err != nil {
-			return redemption.Quota, upgradedToVIP, errors.New("升级 VIP 失败")
-		}
-		upgradedToVIP = true // 设置升级状态为 true
-	}
-
-	return redemption.Quota, upgradedToVIP, nil
-=======
 
 	// Try to upgrade user group based on cumulative recharge amount
 	err = CheckAndUpgradeUserGroup(userId, redemption.Quota)
@@ -121,7 +95,6 @@ func Redeem(key string, userId int, ip string) (quota int, err error) {
 
 	RecordQuotaLog(userId, LogTypeTopup, redemption.Quota, ip, fmt.Sprintf("通过兑换码充值 %s", common.LogQuota(redemption.Quota)))
 	return redemption.Quota, nil
->>>>>>> 9ff66b085ac21e2620910b930d2f188fc5202265
 }
 
 func (redemption *Redemption) Insert() error {
