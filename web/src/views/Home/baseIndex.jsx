@@ -23,6 +23,7 @@ import InfoIcon from '@mui/icons-material/Info';
 import GavelIcon from '@mui/icons-material/Gavel';
 import SecurityIcon from '@mui/icons-material/Security';
 import PrivacyTipIcon from '@mui/icons-material/PrivacyTip';
+import ExtensionIcon from '@mui/icons-material/Extension';
 
 import Lottie from 'react-lottie';
 
@@ -117,6 +118,12 @@ const BaseIndex = () => {
       title: '接入到思源笔记',
       description: '将AI能力与思源笔记结合，增强您的知识管理和笔记系统，提升工作效率。',
       link: 'https://docs.czl.net/czloapi/practice/siyuan'
+    },
+    {
+      icon: <ExtensionIcon color="primary" fontSize="large" />,
+      title: 'Cline AI编程',
+      description: '了解如何接入VSCode Cline，AI自动编程插件，提升您的开发效率。',
+      link: 'https://www.q58.club/t/429'
     }
   ];
 
