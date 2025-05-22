@@ -1,4 +1,20 @@
 {
+  "System Logs": "システムログ",
+  "view_more_logs_on_server": "より多くのシステムログを表示するには、サーバーにアクセスしてください",
+  "systemInfo": "システム情報",
+  "Auto Refresh": "自動リフレッシュ",
+  "Refresh Interval": "リフレッシュ間隔",
+  "1 second": "1秒",
+  "3 seconds": "3秒",
+  "5 seconds": "5秒",
+  "10 seconds": "10秒",
+  "30 seconds": "30秒",
+  "1 minute": "1分",
+  "Max Entries": "最大エントリー数",
+  "Clear": "クリア",
+  "No logs available": "ログはありません",
+  "No matching logs found": "一致するログが見つかりません",
+  "Search logs...": "ログを検索...",
   "invite_count": "招待人数",
   "invite_reward": "招待報酬",
   "AZURE_OPENAI_ENDPOINT": "AZURE_OPENAI_ENDPOINT",
@@ -112,7 +128,22 @@
     "mapAddByJson": "JSONを使用して{{name}}を追加します。",
     "mapJsonInput": "JSON 入力",
     "listJsonError": "JSON形式が間違っています。入力が配列形式であることを確認してください。",
-    "listJsonHelperText": "JSON配列形式を入力してください。例：[\"プロジェクト1\", \"プロジェクト2\", \"プロジェクト3\"]"
+    "listJsonHelperText": "JSON配列形式を入力してください。例：[\"プロジェクト1\", \"プロジェクト2\", \"プロジェクト3\"]",
+    "modelsFetched": "モデルの取得に成功しました",
+    "selectedMappingCount": "選択されたモデルマッピング{{count}}個",
+    "addMapping": "モデルマッピングを追加",
+    "addToModelMapping": "モデルマッピングに追加",
+    "modelMapping": "モデルマッピング",
+    "modelMappingSettings": "モデルマッピング設定",
+    "prefixOrSuffix": "プレフィックス／サフィックス",
+    "removePrefixHelp": "削除する前のプレフィックスを入力してください",
+    "removeSuffixHelp": "削除する後のサフィックスを入力してください",
+    "addPlusSign": "マッピング前の課金を使用",
+    "mappingPreview": "マッピングプレビュー",
+    "removePrefix": "前缀を削除",
+    "removeSuffix": "後缀を削除",
+    "collapseList": "リストを折りたたむ",
+    "expandList": "リストを展開"
   },
   "channel_index": {
     "AzureApiVersion": "Azureのバージョン番号",
@@ -299,7 +330,11 @@
     "usage": "使用率",
     "RPM": "現在のRPM",
     "TPM": "現在のTPM",
-    "total": "総回数"
+    "total": "総回数",
+    "availability": "稼働率",
+    "tab_status": "ステータス",
+    "tab_dashboard": "ダッシュボード",
+    "title": "ダッシュボード"
   },
   "description": "All in one の OpenAI インターフェース\nさまざまな API アクセス方法を統合\nワンクリックで展開、即座に使用可能",
   "echo 映射": "エコーマッピング",
@@ -394,6 +429,13 @@
     "typeLabel": "タイプ",
     "userLabel": "ユーザー",
     "sourceIp": "Source IP",
+    "logType": {
+      "all": "すべて",
+      "recharge": "チャージ",
+      "consumption": "消費",
+      "management": "管理",
+      "system": "システム"
+    },
     "content": {
       "calculate_steps": "計算手順:",
       "calculate_steps_tip": "PS：このシステムはポイントに基づいて計算され、すべての金額はポイント換算であり、1ポイント＝$0.000002です。最低消費額は1ポイントであり、この計算手順は参考用として提供されます。実際の料金が優先されます。",
@@ -444,6 +486,7 @@
     "login": "ログイン",
     "signout": "ログアウト",
     "signup": "サインアップ",
+    "status": "ステータス",
     "unknownVersion": "未知バージョン",
     "welcomeBack": "おかえりなさい"
   },
@@ -497,7 +540,9 @@
     "noExtraRatios": "拡張価格はありません",
     "output": "出力",
     "output_image_tokens": "画像倍率",
-    "price": "価格"
+    "price": "価格",
+    "showAll": "すべて表示",
+    "onlyAvailable": "利用可能なだけ表示"
   },
   "nova 映射": "新星マッピング",
   "onyx 映射": "オニキスマッピング",
@@ -1130,7 +1175,11 @@
     "usedQuota": "使用済みクォータ",
     "userGroup": "グループ",
     "apiRate": "",
-    "apiRateTip": ""
+    "apiRateTip": "",
+    "heartbeat": "心拍設定（実験的）",
+    "heartbeatTip": "心拍設定とは、リクエスト時に長時間データが返ってこない場合、クライアントがタイムアウト機構によって接続を切断する可能性があることを指します。TCP接続がタイムアウトによって中断されないようにするため、心拍設定を有効にすることができます。設定した開始時間を超えて応答がない場合、5秒ごとにハートビートリクエスト（ストリームでないリクエストは空行、ストリームの場合は::PING）を送信し、接続を維持します。ご注意：中継プログラムを使用している場合は、この設定を有効にしないでください。予期しない問題が発生する可能性があります。",
+    "heartbeatTimeout": "ハートビート開始時間(単位：秒)",
+    "heartbeatTimeoutHelperText": "最小値は30秒、最大値は90秒です"
   },
   "topup": "トップアップ",
   "topupCard": {
@@ -1176,6 +1225,12 @@
     "name": "名前",
     "nameTip": "ユーザーに表示する名前",
     "public": "公開されていますか？",
+    "promotion": "自動アップグレード",
+    "promotionTip": "有効にすると、ユーザーのチャージ金額が最小-最大条件を満たした場合、自動的にこのユーザーグループにアップグレードされます",
+    "min": "最小金額",
+    "minTip": "自動アップグレードに必要な最小チャージ金額",
+    "max": "最大金額",
+    "maxTip": "このユーザーグループレベルの最大チャージ金額",
     "ratio": "倍率 -> 倍率",
     "symbol": "識別",
     "symbolTip": "ユーザーグループを区別するための識別子を使用してください。英語で入力し、重複しないようにしてください。",

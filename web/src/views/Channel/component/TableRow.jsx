@@ -105,7 +105,7 @@ function statusInfo(t, status) {
 }
 import { red, grey, purple } from '@mui/material/colors';
 
-export default function ChannelTableRow({ item, manageChannel, onRefresh, groupOptions, modelOptions }) {
+export default function ChannelTableRow({ item, manageChannel, onRefresh, groupOptions, modelOptions, prices }) {
   const { t } = useTranslation();
   const popover = usePopover();
   const confirmDelete = useBoolean();
@@ -1302,6 +1302,7 @@ export default function ChannelTableRow({ item, manageChannel, onRefresh, groupO
         groupOptions={groupOptions}
         isTag={!!item.tag}
         modelOptions={modelOptions}
+        prices={prices}
       />
 
       <Popover
@@ -1463,7 +1464,8 @@ ChannelTableRow.propTypes = {
   manageChannel: PropTypes.func,
   onRefresh: PropTypes.func,
   groupOptions: PropTypes.array,
-  modelOptions: PropTypes.array
+  modelOptions: PropTypes.array,
+  prices: PropTypes.array
 };
 
 function renderBalance(type, balance) {

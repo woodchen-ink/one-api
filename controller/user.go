@@ -746,7 +746,7 @@ func TopUp(c *gin.Context) {
 		return
 	}
 	id := c.GetInt("id")
-	quota, upgradedToVIP, err := model.Redeem(req.Key, id)
+	quota, err := model.Redeem(req.Key, id, c.ClientIP())
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -755,10 +755,9 @@ func TopUp(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
-		"success":       true,
-		"message":       "",
-		"data":          quota,
-		"upgradedToVIP": upgradedToVIP,
+		"success": true,
+		"message": "",
+		"data":    quota,
 	})
 }
 
@@ -802,7 +801,7 @@ func ChangeUserQuota(c *gin.Context) {
 		remark = fmt.Sprintf("%s, 备注: %s", remark, req.Remark)
 	}
 
-	model.RecordLog(userId, model.LogTypeManage, remark)
+	model.RecordQuotaLog(userId, model.LogTypeManage, req.Quota, c.ClientIP(), remark)
 
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
