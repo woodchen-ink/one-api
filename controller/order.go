@@ -170,7 +170,13 @@ func PaymentCallback(c *gin.Context) {
 	//改为美金显示
 	UsdQuota := order.Quota / 500000
 
-	model.RecordLog(order.UserId, model.LogTypeTopup, fmt.Sprintf("在线充值成功，充值金额: %d，支付金额：%.2f %s", UsdQuota, order.OrderAmount, order.OrderCurrency))
+	// Try to upgrade user group based on cumulative recharge amount
+	err = model.CheckAndUpgradeUserGroup(order.UserId, order.Quota)
+	if err != nil {
+		logger.SysError(fmt.Sprintf("failed to check and upgrade user group, trade_no: %s, error: %s", payNotify.TradeNo, err.Error()))
+	}
+
+	model.RecordQuotaLog(order.UserId, model.LogTypeTopup, order.Quota, c.ClientIP(), fmt.Sprintf("在线充值成功，充值金额: %d，支付金额：%.2f %s", UsdQuota, order.OrderAmount, order.OrderCurrency))
 
 }
 

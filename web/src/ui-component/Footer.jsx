@@ -13,7 +13,7 @@ const Footer = () => {
   const { t } = useTranslation();
 
   return (
-    <Container sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '64px' }}>
+    <Container sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '64px', borderRadius: 0 }}>
       <Box sx={{ textAlign: 'center' }}>
           <p>
           Copyright © {currentYear} - CZL LTD. All rights reserved.
