@@ -244,7 +244,7 @@ const TopupCard = () => {
         <Typography variant="h4">{renderQuota(userQuota)}</Typography>
       </Stack>
       <Stack direction="row" alignItems="center" justifyContent="center" spacing={2} paddingTop={'20px'}>
-        <Typography variant="h6">充值$5即可升级VIP，当前自动升级功能有误，请联系客服调整会员等级。</Typography>
+        <Typography variant="h6">余额达到$5即会自动升级VIP</Typography>
       </Stack>
 
       {payment.length > 0 && (
