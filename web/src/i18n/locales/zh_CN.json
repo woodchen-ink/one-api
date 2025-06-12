@@ -387,6 +387,22 @@
       "free": "免费",
       "old_log": "旧版记录",
       "illustrate": "* 本条记录为系统升级前所记录的log"
+    },
+    "quotaDetail": {
+      "saved": "节省 ",
+      "originalPrice": "原始价格",
+      "inputPrice": "原输入价格",
+      "outputPrice": "原输出价格",
+      "groupRatio": "分组倍率",
+      "groupRatioValue": "分组倍率",
+      "actualPrice": "实际价格",
+      "input": "实际输入价格",
+      "output": "实际输出价格",
+      "finalCalculation": "最终计算",
+      "originalBilling": "原始计费",
+      "actualBilling": "实际计费",
+      "calculationNote": "PS：本系统按照积分计算，所有金额均为积分换算而来，1积分=$0.000002，最低消费为1积分，本计算步骤仅供参考，以实际扣费为准",
+      "times": "倍"
     }
   },
   "redemptionPage": {
@@ -821,6 +837,14 @@
           "placeholder": "请输入默认MaxToken数量,json格式, default代表默认值， 例如：{\"default\": 1000, \"claude-3-7-sonnet-latest\": 128000}"
         },
         "save": "保存Claude设置"
+      },
+      "geminiSettings": {
+        "title": "Gemini设置",
+        "geminiOpenThink": {
+          "label": "开启输出推理的模型",
+          "placeholder": "请输入需要开启推理输出的模型,json格式,例如：{\"gemini-2.5-pro-preview-05-06\": true}"
+        },
+        "save": "保存Gemini设置"
       },
       "safetySettings": {
         "title": "系统安全设置",
