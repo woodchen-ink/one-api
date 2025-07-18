@@ -123,7 +123,11 @@ func RelayHandler(relay RelayBaseInterface) (err *types.OpenAIErrorWithStatusCod
 	}
 
 	err, done = relay.send()
-
+	// 最后处理流式中断时计算tokens
+	if usage.CompletionTokens == 0 && usage.TextBuilder.Len() > 0 {
+		usage.CompletionTokens = common.CountTokenText(usage.TextBuilder.String(), relay.getModelName())
+		usage.TotalTokens = usage.PromptTokens + usage.CompletionTokens
+	}
 	if err != nil {
 		quota.Undo(relay.getContext())
 		return

@@ -118,7 +118,6 @@ func (p *ClaudeProvider) getChatRequest(claudeRequest *ClaudeRequest) (*http.Req
 }
 
 func ConvertFromChatOpenai(request *types.ChatCompletionRequest) (*ClaudeRequest, *types.OpenAIErrorWithStatusCode) {
-	request.ClearEmptyMessages()
 	claudeRequest := ClaudeRequest{
 		Model:         request.Model,
 		Messages:      make([]Message, 0),
@@ -390,6 +389,18 @@ func ConvertToChatOpenai(provider base.ProviderInterface, response *ClaudeRespon
 
 	}
 
+	if len(choices) == 0 {
+		// 如果没有内容，则返回一个空的响应
+		choices = append(choices, types.ChatCompletionChoice{
+			Index: 0,
+			Message: types.ChatCompletionMessage{
+				Role:    response.Role,
+				Content: "",
+			},
+			FinishReason: stopReasonClaude2OpenAI(response.StopReason),
+		})
+	}
+
 	openaiResponse = &types.ChatCompletionResponse{
 		ID:      response.Id,
 		Object:  "chat.completion",
@@ -459,9 +470,7 @@ func (h *ClaudeStreamHandler) HandlerStream(rawLine *[]byte, dataChan chan strin
 
 	case "content_block_delta":
 		h.convertToOpenaiStream(&claudeResponse, dataChan)
-		h.Usage.CompletionTokens += common.CountTokenText(claudeResponse.Delta.Text, h.Request.Model)
-		h.Usage.TotalTokens = h.Usage.PromptTokens + h.Usage.CompletionTokens
-
+		h.Usage.TextBuilder.WriteString(claudeResponse.Delta.Text)
 	case "content_block_start":
 		h.convertToOpenaiStream(&claudeResponse, dataChan)
 

@@ -16,7 +16,8 @@ const defaultConfig = {
     tag: '',
     only_chat: false,
     pre_cost: 1,
-    disabled_stream: []
+    disabled_stream: [],
+    compatible_response: false
   },
   inputLabel: {
     name: '渠道名称',
@@ -35,7 +36,8 @@ const defaultConfig = {
     tag: '标签',
     provider_models_list: '',
     pre_cost: '预计费选项',
-    disabled_stream: '禁用流式的模型'
+    disabled_stream: '禁用流式的模型',
+    compatible_response: '兼容Response API'
   },
   prompt: {
     type: '请选择渠道类型',
@@ -58,7 +60,8 @@ const defaultConfig = {
     tag: '你可以为你的渠道打一个标签，打完标签后，可以通过标签进行批量管理渠道，注意：设置标签后某些设置只能通过渠道标签修改，无法在渠道列表中修改。',
     pre_cost:
       '这里选择预计费选项，用于预估费用，如果你觉得计算图片占用太多资源，可以选择关闭图片计费。但是请注意：有些渠道在stream下是不会返回tokens的，这会导致输入tokens计算错误。',
-    disabled_stream: '这里填写禁用流式的模型，注意：如果填写了禁用流式的模型，那么这些模型在流式请求时会跳过该渠道'
+    disabled_stream: '这里填写禁用流式的模型，注意：如果填写了禁用流式的模型，那么这些模型在流式请求时会跳过该渠道',
+    compatible_response: '兼容Response API'
   },
   modelGroup: 'OpenAI'
 };
@@ -86,6 +89,17 @@ const typeConfig = {
     prompt: {
       base_url: '请填写AZURE_OPENAI_ENDPOINT',
       other: '请输入默认API版本，例如：2024-05-01-preview'
+    }
+  },
+  55: {
+    inputLabel: {
+      base_url: 'AZURE_OPENAI_ENDPOINT',
+      other: '默认 API 版本',
+      provider_models_list: '从Azure获取已部署模型列表'
+    },
+    prompt: {
+      base_url: '请填写AZURE_OPENAI_ENDPOINT',
+      other: '请输入默认API版本，例如：preview OR latest'
     }
   },
   11: {
@@ -518,6 +532,16 @@ const typeConfig = {
       key: '官方密钥格式： accessKey|secretKey'
     },
     modelGroup: 'Kling'
+  },
+  54: {
+    inputLabel: {
+      base_url: 'Azure Databricks Endpoint',
+      key: 'DATABRICKS_TOKEN'
+    },
+    prompt: {
+      base_url: '请填写Azure Databricks Endpoint',
+      key: '请输入DATABRICKS_TOKEN'
+    }
   },
   20: {
     inputLabel: {

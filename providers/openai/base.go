@@ -39,9 +39,10 @@ func CreateOpenAIProvider(channel *model.Channel, baseURL string) *OpenAIProvide
 
 	OpenAIProvider := &OpenAIProvider{
 		BaseProvider: base.BaseProvider{
-			Config:    openaiConfig,
-			Channel:   channel,
-			Requester: requester.NewHTTPRequester(*channel.Proxy, RequestErrorHandle),
+			Config:          openaiConfig,
+			Channel:         channel,
+			Requester:       requester.NewHTTPRequester(*channel.Proxy, RequestErrorHandle),
+			SupportResponse: true,
 		},
 		IsAzure:       false,
 		BalanceAction: true,
@@ -137,7 +138,11 @@ func (p *OpenAIProvider) GetFullRequestURL(requestURL string, modelName string) 
 				// 已经没有dall-e-2了，所以暂时写死
 				requestURL = fmt.Sprintf("/openai/%s:submit?api-version=2023-09-01-preview", requestURL)
 			} else {
-				requestURL = fmt.Sprintf("/openai/deployments/%s%s?api-version=%s", modelName, requestURL, apiVersion)
+				if strings.HasPrefix(requestURL, "/v1") {
+					requestURL = fmt.Sprintf("/openai/%s?api-version=%s", requestURL, apiVersion)
+				} else {
+					requestURL = fmt.Sprintf("/openai/deployments/%s%s?api-version=%s", modelName, requestURL, apiVersion)
+				}
 			}
 		} else {
 			if strings.Contains(requestURL, "isGetAzureModelList") {
@@ -168,6 +173,7 @@ func (p *OpenAIProvider) GetRequestHeaders() (headers map[string]string) {
 	p.CommonRequestHeaders(headers)
 	if p.IsAzure {
 		headers["api-key"] = p.Channel.Key
+		headers["Authorization"] = fmt.Sprintf("Bearer %s", p.Channel.Key)
 	} else {
 		headers["Authorization"] = fmt.Sprintf("Bearer %s", p.Channel.Key)
 	}

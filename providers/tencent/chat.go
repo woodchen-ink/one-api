@@ -125,7 +125,6 @@ func (p *TencentProvider) convertToChatOpenai(response *TencentChatResponse, req
 }
 
 func convertFromChatOpenai(request *types.ChatCompletionRequest) *TencentChatRequest {
-	request.ClearEmptyMessages()
 	messages := make([]TencentMessage, 0, len(request.Messages))
 	for i := 0; i < len(request.Messages); i++ {
 		message := request.Messages[i]
@@ -201,6 +200,6 @@ func (h *tencentStreamHandler) convertToOpenaiStream(tencentChatResponse *Tencen
 	responseBody, _ := json.Marshal(streamResponse)
 	dataChan <- string(responseBody)
 
-	h.Usage.CompletionTokens += common.CountTokenText(tencentChatResponse.Choices[0].Delta.Content, h.Request.Model)
-	h.Usage.TotalTokens = h.Usage.PromptTokens + h.Usage.CompletionTokens
+	h.Usage.TextBuilder.WriteString(tencentChatResponse.Choices[0].Delta.Content)
+
 }
