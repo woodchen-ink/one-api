@@ -33,10 +33,9 @@ const App = () => {
   const customization = useSelector((state) => state.customization);
 
   useEffect(() => {
-    const storedTheme = localStorage.getItem('theme');
-    if (storedTheme) {
-      dispatch({ type: SET_THEME, theme: storedTheme });
-    }
+    // 强制设置为浅色主题
+    dispatch({ type: SET_THEME, theme: 'dark' });
+    localStorage.setItem('theme', 'dark');
   }, [dispatch]);
 
   return (

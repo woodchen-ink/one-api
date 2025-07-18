@@ -1,7 +1,4 @@
 import { Box, Typography } from '@mui/material';
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import PercentIcon from '@mui/icons-material/Percent';
-import CreditCardIcon from '@mui/icons-material/CreditCard';
 import CalculateIcon from '@mui/icons-material/Calculate';
 import Decimal from 'decimal.js';
 import { renderQuota } from 'utils/common';
@@ -106,88 +103,6 @@ export default function QuotaWithDetailContent({ item, totalInputTokens, totalOu
         gap: 2
       }}
     >
-      {/* 上方三栏 */}
-      <Box
-        sx={{
-          display: 'flex',
-          gap: 2,
-          overflowX: 'auto',
-          '&::-webkit-scrollbar': {
-            height: '6px'
-          },
-          '&::-webkit-scrollbar-thumb': {
-            backgroundColor: (theme) => theme.palette.divider,
-            borderRadius: '3px'
-          },
-          '&::-webkit-scrollbar-track': {
-            backgroundColor: 'transparent'
-          }
-        }}
-      >
-        {/* 原始价格 */}
-        <Box
-          sx={{
-            flex: 1,
-            minWidth: 0,
-            p: 2,
-            borderRadius: 1,
-            background: (theme) => (theme.palette.mode === 'dark' ? theme.palette.background.default : '#fafbfc')
-          }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-            <AttachMoneyIcon sx={{ fontSize: 20, mr: 1, color: (theme) => theme.palette.info.main }} />
-            <Typography sx={{ fontWeight: 600, fontSize: 15 }}>{t('logPage.quotaDetail.originalPrice')}</Typography>
-          </Box>
-          <Typography sx={{ fontSize: 13, color: (theme) => theme.palette.text.secondary, mb: 0.5, textAlign: 'left' }}>
-            {t('logPage.quotaDetail.inputPrice')}: {originalInputPrice}
-          </Typography>
-          <Typography sx={{ fontSize: 13, color: (theme) => theme.palette.text.secondary, textAlign: 'left' }}>
-            {t('logPage.quotaDetail.outputPrice')}: {originalOutputPrice}
-          </Typography>
-        </Box>
-        {/* Group Ratio */}
-        <Box
-          sx={{
-            flex: 1,
-            minWidth: 0,
-            p: 2,
-            borderRadius: 1,
-            background: (theme) => (theme.palette.mode === 'dark' ? theme.palette.background.default : '#fafbfc')
-          }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-            <PercentIcon sx={{ fontSize: 20, mr: 1, color: (theme) => theme.palette.info.main }} />
-            <Typography sx={{ fontWeight: 600, fontSize: 15 }}>{t('logPage.quotaDetail.groupRatio')}</Typography>
-          </Box>
-          <Typography sx={{ fontSize: 13, color: (theme) => theme.palette.text.secondary, textAlign: 'left' }}>
-            {t('logPage.groupLabel')}: {item.metadata?.group_name}
-          </Typography>
-          <Typography sx={{ fontSize: 13, color: (theme) => theme.palette.text.secondary, textAlign: 'left' }}>
-            {t('logPage.quotaDetail.groupRatioValue')}: {groupRatio}
-          </Typography>
-        </Box>
-        {/* Actual Price */}
-        <Box
-          sx={{
-            flex: 1,
-            minWidth: 0,
-            p: 2,
-            borderRadius: 1,
-            background: (theme) => (theme.palette.mode === 'dark' ? theme.palette.background.default : '#fafbfc')
-          }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-            <CreditCardIcon sx={{ fontSize: 20, mr: 1, color: (theme) => theme.palette.primary.main }} />
-            <Typography sx={{ fontWeight: 600, fontSize: 15 }}>{t('logPage.quotaDetail.actualPrice')}</Typography>
-          </Box>
-          <Typography sx={{ fontSize: 13, color: (theme) => theme.palette.text.secondary, mb: 0.5, textAlign: 'left' }}>
-            {t('logPage.quotaDetail.input')}: {inputPriceUnit}
-          </Typography>
-          <Typography sx={{ fontSize: 13, color: (theme) => theme.palette.text.secondary, textAlign: 'left' }}>
-            {t('logPage.quotaDetail.output')}: {outputPriceUnit}
-          </Typography>
-        </Box>
-      </Box>
       {/* Final Calculation Area */}
       <Box
         sx={{
@@ -244,9 +159,6 @@ export default function QuotaWithDetailContent({ item, totalInputTokens, totalOu
             </Box>
           )}
         </Box>
-        <Typography sx={{ fontSize: 12, color: (theme) => theme.palette.text.disabled, textAlign: 'left' }}>
-          {t('logPage.quotaDetail.calculationNote')}
-        </Typography>
       </Box>
     </Box>
   );

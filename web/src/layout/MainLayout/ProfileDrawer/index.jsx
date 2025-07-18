@@ -143,8 +143,7 @@ const ProfileDrawer = ({ open, onClose }) => {
             }}
           >
             <Typography variant="caption" color="primary">
-              {t('userPage.group')}: {userGroup?.[user?.group]?.name || user?.group}（ {t('modelpricePage.rate')}:
-              {userGroup?.[user?.group]?.ratio || t('dashboard_index.unknown')}/ {t('modelpricePage.RPM')}:{userGroup?.[user?.group]?.api_rate || t('dashboard_index.unknown')}）
+              {t('userPage.group')}: {userGroup?.[user?.group]?.name || user?.group}（ {t('modelpricePage.RPM')}:{userGroup?.[user?.group]?.api_rate || t('dashboard_index.unknown')}）
             </Typography>
           </Box>
         </Box>
@@ -173,22 +172,6 @@ const ProfileDrawer = ({ open, onClose }) => {
                 {t('dashboard_index.calls')}
               </Typography>
               <Typography variant="body2">{user?.request_count || t('dashboard_index.unknown')}</Typography>
-            </Box>
-
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Typography variant="body2" color="text.secondary">
-                {t('invite_count')}
-              </Typography>
-              <Typography variant="body2">{user?.aff_count || t('dashboard_index.unknown')}</Typography>
-            </Box>
-
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Typography variant="body2" color="text.secondary">
-                {t('invite_reward')}
-              </Typography>
-              <Typography variant="body2">
-                {user?.aff_quota ? '$' + calculateQuota(user.aff_quota) : t('dashboard_index.unknown')}
-              </Typography>
             </Box>
           </Stack>
           <Divider sx={{ borderWidth: '1px', borderStyle: 'dashed', mt: 2, mb: 2 }} />

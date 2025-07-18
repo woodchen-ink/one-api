@@ -106,7 +106,10 @@ const MainLayout = () => {
       sx={{
         display: 'flex',
         overflow: 'hidden',
-        width: '100%',
+        scrollbarWidth: 'none',
+        scrollbarColor: 'transparent transparent',
+        width: '90%',
+        margin: '0 auto',
         height: '100vh',
         position: 'relative',
         backgroundColor: theme.palette.background.default
