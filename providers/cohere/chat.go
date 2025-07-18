@@ -91,7 +91,6 @@ func (p *CohereProvider) getChatRequest(request *types.ChatCompletionRequest) (*
 }
 
 func ConvertFromChatOpenai(request *types.ChatCompletionRequest) (*V2ChatRequest, *types.OpenAIErrorWithStatusCode) {
-	request.ClearEmptyMessages()
 
 	cohereRequest := V2ChatRequest{
 		Model:            request.Model,
@@ -215,8 +214,7 @@ func (h *CohereStreamHandler) convertToOpenaiStream(cohereResponse *ChatStreamRe
 			choice.Delta.ToolCalls = []*types.ChatCompletionToolCalls{delta.Message.ToolCalls}
 		}
 
-		h.Usage.CompletionTokens += common.CountTokenText(choice.Delta.Content, h.Request.Model)
-		h.Usage.TotalTokens = h.Usage.PromptTokens + h.Usage.CompletionTokens
+		h.Usage.TextBuilder.WriteString(choice.Delta.Content)
 	}
 
 	chatCompletion := types.ChatCompletionStreamResponse{

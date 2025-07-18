@@ -118,7 +118,6 @@ func (p *ZhipuProvider) convertToChatOpenai(response *ZhipuResponse, request *ty
 }
 
 func (p *ZhipuProvider) convertFromChatOpenai(request *types.ChatCompletionRequest) *ZhipuRequest {
-	request.ClearEmptyMessages()
 	for i := range request.Messages {
 		request.Messages[i].Role = convertRole(request.Messages[i].Role)
 		if request.Messages[i].FunctionCall != nil {
@@ -355,7 +354,6 @@ func (h *zhipuStreamHandler) convertToOpenaiStream(zhipuResponse *ZhipuStreamRes
 	if zhipuResponse.Usage != nil {
 		*h.Usage = *zhipuResponse.Usage
 	} else {
-		h.Usage.CompletionTokens += common.CountTokenText(zhipuResponse.GetResponseText(), h.Request.Model)
-		h.Usage.TotalTokens = h.Usage.PromptTokens + h.Usage.CompletionTokens
+		h.Usage.TextBuilder.WriteString(zhipuResponse.GetResponseText())
 	}
 }

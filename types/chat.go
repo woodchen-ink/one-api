@@ -1,5 +1,7 @@
 package types
 
+import "encoding/json"
+
 const (
 	ContentTypeText     = "text"
 	ContentTypeImageURL = "image_url"
@@ -91,42 +93,13 @@ func (m ChatCompletionMessage) ParseContent() []ChatMessagePart {
 		})
 		return contentList
 	}
-	anyList, ok := m.Content.([]any)
-	if ok {
-		for _, contentItem := range anyList {
-			contentMap, ok := contentItem.(map[string]any)
-			if !ok {
-				continue
-			}
-
-			if subStr, ok := contentMap["text"].(string); ok && subStr != "" {
-				contentList = append(contentList, ChatMessagePart{
-					Type: ContentTypeText,
-					Text: subStr,
-				})
-			} else if subObj, ok := contentMap["image_url"].(map[string]any); ok {
-				urlValue, ok := subObj["url"].(string)
-				if !ok {
-					continue
-				}
-				contentList = append(contentList, ChatMessagePart{
-					Type: ContentTypeImageURL,
-					ImageURL: &ChatMessageImageURL{
-						URL: urlValue,
-					},
-				})
-			} else if subObj, ok := contentMap["image"].(string); ok {
-				contentList = append(contentList, ChatMessagePart{
-					Type: ContentTypeImageURL,
-					ImageURL: &ChatMessageImageURL{
-						URL: subObj,
-					},
-				})
-			}
-		}
+	msgJson, err := json.Marshal(m.Content)
+	if err != nil {
 		return contentList
 	}
-	return nil
+
+	json.Unmarshal(msgJson, &contentList)
+	return contentList
 }
 
 // 将FunctionCall转换为ToolCalls
@@ -174,10 +147,15 @@ type ChatMessagePart struct {
 	Type       string               `json:"type,omitempty"`
 	Text       string               `json:"text,omitempty"`
 	ImageURL   *ChatMessageImageURL `json:"image_url,omitempty"`
-	InputAudio any                  `json:"input_audio,omitempty"`
+	InputAudio *InputAudio          `json:"input_audio,omitempty"`
 	Refusal    string               `json:"refusal,omitempty"`
 
 	File *ChatMessageFile `json:"file,omitempty"`
+}
+
+type InputAudio struct {
+	Data   string `json:"data"`
+	Format string `json:"format"`
 }
 
 type ChatMessageFile struct {
@@ -239,8 +217,9 @@ type ChatCompletionRequest struct {
 }
 
 type ChatReasoning struct {
-	MaxTokens int    `json:"max_tokens,omitempty"`
-	Effort    string `json:"effort,omitempty"`
+	MaxTokens int     `json:"max_tokens,omitempty"`
+	Effort    string  `json:"effort,omitempty"`
+	Summary   *string `json:"summary,omitempty"`
 }
 
 type WebSearchOptions struct {
@@ -289,32 +268,26 @@ func (r *ChatCompletionRequest) GetFunctions() []*ChatCompletionFunction {
 
 	return r.Functions
 }
-func (r *ChatCompletionRequest) ClearEmptyMessages() {
-	var messages []ChatCompletionMessage
-	for _, message := range r.Messages {
-		if message.StringContent() != "" || message.ToolCalls != nil || message.FunctionCall != nil {
-			messages = append(messages, message)
-		}
-	}
-	r.Messages = messages
-}
 
 type ChatCompletionFunction struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	Parameters  any    `json:"parameters"`
+	Strict      *bool  `json:"strict,omitempty"`
 }
 
 type ChatCompletionTool struct {
 	Type     string                 `json:"type"`
-	Function ChatCompletionFunction `json:"function"`
+	Function ChatCompletionFunction `json:"function,omitzero"`
+
+	ResponsesTools
 }
 
 type ChatCompletionChoice struct {
 	Index                int                   `json:"index"`
 	Message              ChatCompletionMessage `json:"message"`
 	LogProbs             any                   `json:"logprobs,omitempty"`
-	FinishReason         any                   `json:"finish_reason,omitempty"`
+	FinishReason         string                `json:"finish_reason,omitempty"`
 	ContentFilterResults any                   `json:"content_filter_results,omitempty"`
 	FinishDetails        any                   `json:"finish_details,omitempty"`
 }
@@ -481,4 +454,132 @@ type MultimediaData struct {
 	ExpiresAt  int64  `json:"expires_at,omitempty"`
 	ID         string `json:"id,omitempty"`
 	Transcript string `json:"transcript,omitempty"`
+}
+
+func (c *ChatCompletionRequest) ToResponsesRequest() *OpenAIResponsesRequest {
+
+	res := &OpenAIResponsesRequest{
+		Model:             c.Model,
+		MaxOutputTokens:   c.MaxTokens,
+		ParallelToolCalls: c.ParallelToolCalls,
+		Stream:            c.Stream,
+		Temperature:       c.Temperature,
+		Text:              c.ResponseFormat,
+		ToolChoice:        c.ToolChoice,
+		TopP:              c.TopP,
+	}
+
+	if c.MaxCompletionTokens > 0 && c.MaxTokens == 0 {
+		res.MaxOutputTokens = c.MaxCompletionTokens
+	}
+
+	if c.Reasoning != nil {
+		res.Reasoning = &ReasoningEffort{
+			Summary: c.Reasoning.Summary,
+		}
+
+		if c.Reasoning.Effort != "" {
+			res.Reasoning.Effort = &c.Reasoning.Effort
+		}
+	}
+
+	if c.ReasoningEffort != nil && res.Reasoning == nil {
+		res.Reasoning = &ReasoningEffort{
+			Effort: c.ReasoningEffort,
+		}
+	}
+
+	if len(c.Tools) > 0 {
+		resTools := make([]ResponsesTools, 0)
+		for _, tool := range c.Tools {
+			if tool.Type == "function" && tool.Function.Name != "" {
+				resTools = append(resTools, ResponsesTools{
+					Type:        tool.Type,
+					Name:        tool.Function.Name,
+					Description: tool.Function.Description,
+					Parameters:  tool.Function.Parameters,
+					Strict:      tool.Function.Strict,
+				})
+				continue
+			}
+
+			tool.ResponsesTools.Type = tool.Type
+			resTools = append(resTools, tool.ResponsesTools)
+		}
+
+		if len(resTools) > 0 {
+			res.Tools = resTools
+		}
+	}
+
+	inputs := make([]InputResponses, 0)
+	for _, msg := range c.Messages {
+		// 处理ToolCalls
+		if len(msg.ToolCalls) > 0 {
+			for _, tool := range msg.ToolCalls {
+				if tool == nil || tool.Function == nil {
+					continue
+				}
+				inputs = append(inputs, InputResponses{
+					Type:      InputTypeFunctionCall,
+					CallID:    tool.Id,
+					Name:      tool.Function.Name,
+					Arguments: tool.Function.Arguments,
+				})
+			}
+
+			continue
+		}
+
+		if msg.ToolCallID != "" {
+			inputs = append(inputs, InputResponses{
+				Type:   InputTypeFunctionCallOutput,
+				CallID: msg.ToolCallID,
+				Output: msg.Content,
+			})
+
+			continue
+		}
+
+		input := InputResponses{
+			Type: InputTypeMessage,
+			Role: msg.Role,
+		}
+
+		inputContent := make([]ContentResponses, 0)
+
+		messges := msg.ParseContent()
+		for _, part := range messges {
+			switch part.Type {
+			case ContentTypeImageURL:
+				if part.ImageURL == nil {
+					continue
+				}
+				inputContent = append(inputContent, ContentResponses{
+					Type:     ContentTypeInputImage,
+					ImageUrl: part.ImageURL.URL,
+				})
+			case ContentTypeText:
+				roleType := ContentTypeInputText
+				if msg.Role == ChatMessageRoleAssistant {
+					roleType = ContentTypeOutputText
+				}
+				inputContent = append(inputContent, ContentResponses{
+					Type: roleType,
+					Text: part.Text,
+				})
+			}
+		}
+
+		if len(inputContent) > 0 {
+			input.Content = inputContent
+			inputs = append(inputs, input)
+		}
+	}
+
+	if len(inputs) > 0 {
+		res.Input = inputs
+	}
+
+	return res
 }
