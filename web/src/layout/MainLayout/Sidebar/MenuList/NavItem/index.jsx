@@ -24,7 +24,11 @@ const NavItem = ({ item, level }) => {
 
   const Icon = item.icon;
   const itemIcon = item?.icon ? (
-    <Icon stroke={1.5} size="1.5rem" />
+    <Icon 
+      stroke={1.5} 
+      size="1.5rem" 
+      color={theme.palette.mode === 'dark' ? 'inherit' : '#C08259'}
+    />
   ) : (
     <FiberManualRecordIcon
       sx={{

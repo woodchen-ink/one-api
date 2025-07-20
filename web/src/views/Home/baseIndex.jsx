@@ -24,6 +24,7 @@ import GavelIcon from '@mui/icons-material/Gavel';
 import SecurityIcon from '@mui/icons-material/Security';
 import PrivacyTipIcon from '@mui/icons-material/PrivacyTip';
 import ExtensionIcon from '@mui/icons-material/Extension';
+import CodeIcon from '@mui/icons-material/Code';
 
 import Lottie from 'react-lottie';
 
@@ -124,6 +125,12 @@ const BaseIndex = () => {
       title: 'Cline AI编程',
       description: '了解如何接入VSCode Cline，AI自动编程插件，提升您的开发效率。',
       link: 'https://www.q58.club/t/429'
+    },
+    {
+      icon: <CodeIcon color="primary" fontSize="large" />,
+      title: 'Claude Code AI编程',
+      description: '使用Claude Code进行AI辅助编程，支持代码生成、调试和优化，大大提升开发效率和代码质量。',
+      link: 'https://www.sunai.net/t/topic/939'
     }
   ];
 
@@ -157,9 +164,9 @@ const BaseIndex = () => {
         sx={{
           background:
             theme.mode === 'dark'
-              ? 'linear-gradient(135deg, #1a237e 0%, #311b92 100%)'
-              : 'linear-gradient(135deg, #5c6bc0 0%, #7e57c2 100%)',
-          color: 'white',
+              ? 'linear-gradient(135deg, #000000 0%, #C08259 100%)'
+              : 'linear-gradient(135deg, #C08259 0%, #b85e48 100%)',
+          color: '#F8F7F6',
           py: 8
         }}
       >
@@ -179,9 +186,12 @@ const BaseIndex = () => {
                   variant="contained"
                   size="large"
                   sx={{
-                    bgcolor: 'white',
-                    color: 'primary.main',
-                    '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' }
+                    bgcolor: '#F8F7F6',
+                    color: '#C08259',
+                    '&:hover': { 
+                      bgcolor: '#EEEDEC',
+                      color: '#C08259'
+                    }
                   }}
                 >
                   开始使用
@@ -193,9 +203,9 @@ const BaseIndex = () => {
                   variant="outlined"
                   size="large"
                   sx={{
-                    borderColor: 'white',
-                    color: 'white',
-                    '&:hover': { borderColor: 'white', bgcolor: 'rgba(255,255,255,0.1)' }
+                    borderColor: '#F8F7F6',
+                    color: '#F8F7F6',
+                    '&:hover': { borderColor: '#F8F7F6', bgcolor: '#F4E8E0', color: '#C08259' }
                   }}
                 >
                   查看文档

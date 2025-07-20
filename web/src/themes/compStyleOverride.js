@@ -49,22 +49,44 @@ export default function componentStyleOverrides(theme) {
             transform: 'translateY(0)'
           }
         },
+        // 主要按钮 - 使用 #000000/#C08259 作为背景, 内容使用#F8F7F6
         containedPrimary: {
-          background: theme.colors?.primaryMain,
+          background: '#000000',
+          color: '#F8F7F6',
           '&:hover': {
-            background: theme.colors?.primaryDark
+            background: '#C08259'
+          }
+        },
+        // 普通按钮 - 使用'#EEEDEC'作为背景, 字体用#000000
+        contained: {
+          background: '#EEEDEC',
+          color: '#000000',
+          '&:hover': {
+            background: '#000000',
+            color: '#F8F7F6'
+          }
+        },
+        // 删除按钮 - 使用#b85e48作为背景色, 字体用#F8F7F6
+        containedSecondary: {
+          background: '#b85e48',
+          color: '#F8F7F6',
+          '&:hover': {
+            background: '#9d4a3a'
           }
         },
         outlinedPrimary: {
-          borderColor: theme.colors?.primaryMain,
-          color: theme.colors?.primaryMain,
+          borderColor: '#C08259',
+          color: '#C08259',
           '&:hover': {
-            backgroundColor: 'rgba(8, 132, 221, 0.04)'
+            backgroundColor: '#F4E8E0',
+            borderColor: '#C08259',
+            color: '#b85e48'
           }
         },
         text: {
+          color: '#000000',
           '&:hover': {
-            backgroundColor: 'rgba(0, 0, 0, 0.04)'
+            backgroundColor: '#EEEDEC'
           }
         },
         sizeSmall: {
@@ -208,20 +230,20 @@ export default function componentStyleOverrides(theme) {
           borderRadius: '8px',
           padding: '8px 16px',
           '&.Mui-selected': {
-            color: theme.menuSelected,
-            backgroundColor: theme.menuSelectedBack,
+            color: '#000000',
+            backgroundColor: '#F4E8E0', // 已选择
             '&:hover': {
-              backgroundColor: theme.menuSelectedBack
+              backgroundColor: '#F4E8E0'
             },
             '& .MuiListItemIcon-root': {
-              color: theme.menuSelected
+              color: '#000000'
             }
           },
           '&:hover': {
-            backgroundColor: theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.04)',
-            color: theme.menuSelected,
+            backgroundColor: '#EEEDEC', // 悬停
+            color: '#000000',
             '& .MuiListItemIcon-root': {
-              color: theme.menuSelected
+              color: '#000000'
             }
           }
         }
@@ -230,7 +252,7 @@ export default function componentStyleOverrides(theme) {
     MuiListItemIcon: {
       styleOverrides: {
         root: {
-          color: theme.darkTextPrimary,
+          color: theme.mode === 'dark' ? theme.darkTextPrimary : '#C08259',
           minWidth: '36px'
         }
       }
@@ -407,17 +429,17 @@ export default function componentStyleOverrides(theme) {
           fontWeight: 500,
           height: '32px',
           borderRadius: '16px',
-          backgroundColor: theme.mode === 'dark' ? '#ffffff' : 'rgba(0, 0, 0, 0.8)',
-          color: theme.mode === 'dark' ? 'rgba(0, 0, 0, 0.87)' : '#ffffff',
+          backgroundColor: theme.mode === 'dark' ? '#ffffff' : '#C08259',
+          color: theme.mode === 'dark' ? 'rgba(0, 0, 0, 0.87)' : '#F8F7F6',
           transition: 'all 0.2s ease-in-out',
           '&.MuiChip-outlined': {
-            borderColor: theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)',
+            borderColor: theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.8)' : '#C08259',
             backgroundColor: 'transparent',
-            color: theme.textDark
+            color: theme.mode === 'dark' ? theme.textDark : '#C08259'
           },
           '&.MuiChip-clickable': {
             '&:hover': {
-              backgroundColor: theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.9)' : '#000000'
+              backgroundColor: theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.9)' : '#b85e48'
             }
           }
         },
@@ -444,6 +466,8 @@ export default function componentStyleOverrides(theme) {
         sizeSmall: {
           height: '26px',
           fontSize: '0.75rem',
+          backgroundColor: theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.8)' : '#b85e48',
+          color: theme.mode === 'dark' ? 'rgba(0, 0, 0, 0.87)' : '#F8F7F6',
           '& .MuiChip-label': {
             padding: '0 10px',
             lineHeight: '26px'
@@ -520,7 +544,7 @@ export default function componentStyleOverrides(theme) {
         head: {
           fontSize: '0.875rem',
           fontWeight: 600,
-          color: theme.darkTextSecondary,
+          color: theme.mode === 'dark' ? theme.darkTextSecondary : '#F8F7F6',
           borderBottom: 'none',
           whiteSpace: 'nowrap',
           padding: '14px 12px',
@@ -668,16 +692,16 @@ export default function componentStyleOverrides(theme) {
         },
         standardSuccess: {
           backgroundColor: theme.mode === 'dark' ? 'rgba(16, 185, 129, 0.16)' : theme.colors?.successLight,
-          color: theme.mode === 'dark' ? '#E0F2E9' : theme.colors?.successDark,
+          color: theme.mode === 'dark' ? '#E0F2E9' : '#3d6b3d',
           '& .MuiAlert-icon': {
-            color: theme.mode === 'dark' ? '#34D399' : theme.colors?.successMain
+            color: theme.mode === 'dark' ? '#34D399' : '#518751'
           }
         },
         standardError: {
-          backgroundColor: theme.mode === 'dark' ? 'rgba(239, 68, 68, 0.16)' : theme.colors?.errorLight,
-          color: theme.mode === 'dark' ? '#FEE2E2' : theme.colors?.errorDark,
+          backgroundColor: theme.mode === 'dark' ? 'rgba(239, 68, 68, 0.16)' : '#F4E8E0',
+          color: theme.mode === 'dark' ? '#FEE2E2' : '#9d4a3a',
           '& .MuiAlert-icon': {
-            color: theme.mode === 'dark' ? '#F87171' : theme.colors?.errorMain
+            color: theme.mode === 'dark' ? '#F87171' : '#b85e48'
           }
         },
         standardWarning: {

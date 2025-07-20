@@ -4,7 +4,7 @@ import { Avatar, Box, ButtonBase, Hidden, Menu, MenuItem, Typography } from '@mu
 import i18nList from 'i18n/i18nList';
 import useI18n from 'hooks/useI18n';
 import Flags from 'country-flag-icons/react/3x2';
-import { height } from '@mui/system';
+import { Icon } from '@iconify/react';
 
 export default function I18nButton() {
   const theme = useTheme();
@@ -51,20 +51,21 @@ export default function I18nButton() {
           sx={{
             ...theme.typography.commonAvatar,
             ...theme.typography.mediumAvatar,
-            ...theme.typography.menuButton,
             transition: 'all .2s ease-in-out',
-            borderColor: theme.typography.menuChip.background,
+            borderColor: 'transparent',
             borderRadius: '50%',
-            background: 'transparent',
+            backgroundColor: 'transparent',
+            boxShadow: 'none',
             overflow: 'hidden',
             '&[aria-controls="menu-list-grow"],&:hover': {
-              boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
-              background: 'transparent !important'
+              boxShadow: '0 0 10px rgba(0,0,0,0.2)',
+              backgroundColor: 'transparent',
+              borderRadius: '50%'
             }
           }}
           color="inherit"
         >
-          {CurrentFlag && (
+          {CurrentFlag ? (
             <Box
               sx={{
                 width: '1.8rem',
@@ -78,6 +79,12 @@ export default function I18nButton() {
             >
               <CurrentFlag style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
             </Box>
+          ) : (
+            <Icon 
+              icon="solar:global-bold-duotone" 
+              width="1.6rem" 
+              color={theme.palette.mode === 'dark' ? theme.palette.text.primary : '#C08259'}
+            />
           )}
         </Avatar>
       </ButtonBase>
@@ -93,6 +100,14 @@ export default function I18nButton() {
           vertical: 'top',
           horizontal: 'center'
         }}
+        sx={{
+          '& .MuiPaper-root': {
+            borderRadius: '8px',
+            boxShadow: theme.palette.mode === 'dark' ? '0 4px 20px 0 rgba(0,0,0,0.3)' : '0 2px 10px 0 rgba(0,0,0,0.12)',
+            border: `1px solid ${theme.palette.divider}`,
+            minWidth: '140px'
+          }
+        }}
       >
         {i18nList.map((item) => {
           const FlagComponent = Flags[item.countryCode];
@@ -106,7 +121,7 @@ export default function I18nButton() {
                 gap: 1
               }}
             >
-              {FlagComponent && (
+              {FlagComponent ? (
                 <Box
                   sx={{
                     width: '1.45rem',
@@ -120,6 +135,12 @@ export default function I18nButton() {
                 >
                   <FlagComponent style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                 </Box>
+              ) : (
+                <Icon 
+                  icon="solar:global-bold-duotone" 
+                  width="1.2rem" 
+                  color={theme.palette.text.secondary}
+                />
               )}
               <Typography variant="body1">{item.name}</Typography>
             </MenuItem>

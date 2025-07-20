@@ -106,8 +106,8 @@ const StyledLabel = styled(Box)(({ theme, ownerState }) => {
       }),
       // SOFT
       ...(softVariant && {
-        color: theme.palette.text.secondary,
-        backgroundColor: alpha(theme.palette.grey[500], 0.16)
+        color: theme.palette.mode === 'dark' ? theme.palette.text.secondary : '#000000',
+        backgroundColor: alpha(theme.palette.grey[500], theme.palette.mode === 'dark' ? 0.16 : 0.25)
       })
     })
   };
@@ -127,8 +127,9 @@ const StyledLabel = styled(Box)(({ theme, ownerState }) => {
       }),
       // SOFT
       ...(softVariant && {
-        color: theme.palette[ownerState.color]['dark'],
-        backgroundColor: alpha(theme.palette[ownerState.color].main, 0.16)
+        color: theme.palette.mode === 'dark' ? theme.palette[ownerState.color]['dark'] : theme.palette[ownerState.color]['dark'],
+        backgroundColor: alpha(theme.palette[ownerState.color].main, theme.palette.mode === 'dark' ? 0.16 : 0.25),
+        fontWeight: 600
       }),
       // GHOST
       ...(ghostVariant && {

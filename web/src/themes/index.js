@@ -98,22 +98,22 @@ function GetLightOption() {
   const color = colors;
   return {
     mode: 'light',
-    heading: '#202939',
-    paper: '#FFFFFF',
-    backgroundDefault: '#F5F7FA',
-    background: '#F5F7FA',
-    darkTextPrimary: '#3E4555',
-    darkTextSecondary: '#6C7A92',
-    textDark: '#252F40',
-    menuSelected: color.primaryMain,
-    menuSelectedBack: varAlpha(color.primary200, 0.08),
-    divider: '#E9EDF5',
-    borderColor: '#E0E6ED',
-    menuButton: varAlpha(color.primary200, 0.12),
-    menuButtonColor: color.primaryMain,
-    menuChip: '#EEF2F6',
-    headBackgroundColor: '#F5F7FA',
-    headBackgroundColorHover: varAlpha('#F5F7FA', 0.12),
-    tableBorderBottom: '#E9EDF5'
+    heading: '#000000', // 主要文本
+    paper: '#F8F7F6', // 主要背景色
+    backgroundDefault: '#F8F7F6', // 主要背景色
+    background: '#F8F7F6',
+    darkTextPrimary: '#000000', // 主要文本
+    darkTextSecondary: '#000000', // 文本颜色
+    textDark: '#000000',
+    menuSelected: '#F4E8E0', // 已选择
+    menuSelectedBack: varAlpha('#F4E8E0', 0.8),
+    divider: '#EEEDEC',
+    borderColor: '#EEEDEC',
+    menuButton: '#000000', // 导航栏背景 (黑色)
+    menuButtonColor: '#F8F7F6', // 导航栏内容 (浅色)
+    menuChip: '#EEEDEC',
+    headBackgroundColor: '#000000', // 导航栏背景
+    headBackgroundColorHover: varAlpha('#EEEDEC', 0.08), // 悬停
+    tableBorderBottom: '#EEEDEC'
   };
 }

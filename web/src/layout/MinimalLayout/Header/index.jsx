@@ -94,12 +94,24 @@ const Header = () => {
               sx={{
                 fontSize: '0.875rem',
                 fontWeight: 500,
-                textTransform: 'none'
+                textTransform: 'none',
+                color: pathname === '/' ? theme.palette.primary.main : theme.palette.text.primary
               }}
             >
               {t('menu.home')}
             </Button>
-            <Button component={Link} variant="text" to="/price" color={pathname === '/price' ? 'primary' : 'inherit'}>
+            <Button 
+              component={Link} 
+              variant="text" 
+              to="/price" 
+              color={pathname === '/price' ? 'primary' : 'inherit'}
+              sx={{
+                fontSize: '0.875rem',
+                fontWeight: 500,
+                textTransform: 'none',
+                color: pathname === '/price' ? theme.palette.primary.main : theme.palette.text.primary
+              }}
+            >
               {t('price')}
             </Button>
             {/* <Button
@@ -121,6 +133,12 @@ const Header = () => {
               target="_blank" // 在新标签页中打开链接
               rel="noopener noreferrer" // 出于安全考虑，防止链接到不安全的地方
               color={pathname === 'https://czl-oapi.apifox.cn/' ? 'primary' : 'inherit'}
+              sx={{
+                fontSize: '0.875rem',
+                fontWeight: 500,
+                textTransform: 'none',
+                color: theme.palette.text.primary
+              }}
             >
               接口
             </Button>
@@ -131,6 +149,12 @@ const Header = () => {
               target="_blank" // 在新标签页中打开链接
               rel="noopener noreferrer" // 出于安全考虑，防止链接到不安全的地方
               color={pathname === 'https://work.weixin.qq.com/kfid/kfce787ac8bbad50026' ? 'primary' : 'inherit'}
+              sx={{
+                fontSize: '0.875rem',
+                fontWeight: 500,
+                textTransform: 'none',
+                color: theme.palette.text.primary
+              }}
             >
               客服
             </Button>
@@ -145,7 +169,8 @@ const Header = () => {
                 sx={{
                   fontSize: '0.875rem',
                   fontWeight: 500,
-                  textTransform: 'none'
+                  textTransform: 'none',
+                  color: pathname === '/status' ? theme.palette.primary.main : theme.palette.text.primary
                 }}
               >
                 {t('menu.status')}
