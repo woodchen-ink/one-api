@@ -29,8 +29,8 @@ const MinimalLayout = () => {
         }}
         padding="false"
       >
-        <Container  maxWidth={false}>
-          <Toolbar  sx={{ px: { xs: 1.5, sm: 2, md: 3 }, minHeight: '64px', height: '64px' }}>
+        <Container maxWidth={false} disableGutters>
+          <Toolbar sx={{ px: { xs: 1.5, sm: 2, md: 3 }, minHeight: '64px', height: '64px' }}>
             <Header />
           </Toolbar>
         </Container>

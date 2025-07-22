@@ -103,7 +103,7 @@ function GetLightOption() {
     backgroundDefault: '#F8F7F6', // 主要背景色
     background: '#F8F7F6',
     darkTextPrimary: '#000000', // 主要文本
-    darkTextSecondary: '#000000', // 文本颜色
+    darkTextSecondary: '#666666', // 次要文本颜色（更浅一些）
     textDark: '#000000',
     menuSelected: '#F4E8E0', // 已选择
     menuSelectedBack: varAlpha('#F4E8E0', 0.8),
@@ -112,7 +112,7 @@ function GetLightOption() {
     menuButton: '#000000', // 导航栏背景 (黑色)
     menuButtonColor: '#F8F7F6', // 导航栏内容 (浅色)
     menuChip: '#EEEDEC',
-    headBackgroundColor: '#000000', // 导航栏背景
+    headBackgroundColor: '#EEEDEC', // 表头背景改为浅色
     headBackgroundColorHover: varAlpha('#EEEDEC', 0.08), // 悬停
     tableBorderBottom: '#EEEDEC'
   };

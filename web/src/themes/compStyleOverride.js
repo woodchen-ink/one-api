@@ -544,7 +544,7 @@ export default function componentStyleOverrides(theme) {
         head: {
           fontSize: '0.875rem',
           fontWeight: 600,
-          color: theme.mode === 'dark' ? theme.darkTextSecondary : '#F8F7F6',
+          color: theme.mode === 'dark' ? theme.darkTextSecondary : '#000000', // 浅色主题使用深色文字
           borderBottom: 'none',
           whiteSpace: 'nowrap',
           padding: '14px 12px',
@@ -584,7 +584,7 @@ export default function componentStyleOverrides(theme) {
     MuiTablePagination: {
       styleOverrides: {
         root: {
-          color: theme.textDark,
+          color: theme.mode === 'dark' ? theme.textDark : '#000000', // 浅色主题使用深色文字
           borderTop: `1px dashed ${theme.tableBorderBottom}`,
           overflow: 'auto',
           backgroundColor: theme.headBackgroundColor,
@@ -604,7 +604,7 @@ export default function componentStyleOverrides(theme) {
             }),
             '& > p:first-of-type': {
               fontSize: '0.875rem',
-              color: theme.darkTextSecondary
+              color: theme.mode === 'dark' ? theme.darkTextSecondary : '#000000' // 浅色主题使用深色文字
             }
           }
         },
@@ -615,15 +615,17 @@ export default function componentStyleOverrides(theme) {
           paddingRight: '28px',
           borderRadius: '8px',
           backgroundColor: theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)',
+          color: theme.mode === 'dark' ? theme.textDark : '#000000', // 浅色主题使用深色文字
           '&:focus': {
             backgroundColor: theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.09)' : 'rgba(0, 0, 0, 0.05)'
           }
         },
         selectLabel: {
-          paddingLeft: '20px'
+          paddingLeft: '20px',
+          color: theme.mode === 'dark' ? theme.darkTextSecondary : '#000000' // 浅色主题使用深色文字
         },
         selectIcon: {
-          color: theme.darkTextSecondary,
+          color: theme.mode === 'dark' ? theme.darkTextSecondary : '#000000', // 浅色主题使用深色文字
           right: '6px'
         },
         actions: {
@@ -639,7 +641,7 @@ export default function componentStyleOverrides(theme) {
             padding: '8px',
             backgroundColor: theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)',
             borderRadius: '8px',
-            color: theme.darkTextSecondary,
+            color: theme.mode === 'dark' ? theme.darkTextSecondary : '#000000', // 浅色主题使用深色文字
             margin: '0 4px',
             '&:hover': {
               backgroundColor: theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.09)' : 'rgba(0, 0, 0, 0.05)'
@@ -652,7 +654,7 @@ export default function componentStyleOverrides(theme) {
         },
         displayedRows: {
           fontSize: '0.875rem',
-          color: theme.darkTextSecondary,
+          color: theme.mode === 'dark' ? theme.darkTextSecondary : '#000000', // 浅色主题使用深色文字
           margin: 0,
           ...(theme.breakpoints && {
             [theme.breakpoints.down('sm')]: {
@@ -929,7 +931,7 @@ export default function componentStyleOverrides(theme) {
             '& .MuiTablePagination-root': {
               overflow: 'visible',
               backgroundColor: 'transparent',
-              color: theme.textDark,
+              color: theme.mode === 'dark' ? theme.textDark : '#000000', // 浅色主题使用深色文字
               borderTop: 'none'
             },
             '& .MuiToolbar-root': {
@@ -937,7 +939,7 @@ export default function componentStyleOverrides(theme) {
               padding: '0',
               '& > p:first-of-type': {
                 fontSize: '0.875rem',
-                color: theme.darkTextSecondary
+                color: theme.mode === 'dark' ? theme.darkTextSecondary : '#000000' // 浅色主题使用深色文字
               }
             }
           }
@@ -946,7 +948,7 @@ export default function componentStyleOverrides(theme) {
           padding: '12px 16px',
           fontSize: '0.875rem',
           fontWeight: 600,
-          color: theme.darkTextSecondary,
+          color: theme.mode === 'dark' ? theme.darkTextSecondary : '#000000', // 浅色主题使用深色文字
           height: '48px',
           textAlign: 'center',
           '&:focus': {
@@ -957,7 +959,7 @@ export default function componentStyleOverrides(theme) {
           }
         },
         columnHeaderTitle: {
-          color: theme.darkTextSecondary,
+          color: theme.mode === 'dark' ? theme.darkTextSecondary : '#000000', // 浅色主题使用深色文字
           fontWeight: 600,
           fontSize: '0.875rem',
           textAlign: 'center'

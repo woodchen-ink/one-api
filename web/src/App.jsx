@@ -5,6 +5,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import { CssBaseline, StyledEngineProvider } from '@mui/material';
 import { SET_THEME } from 'store/actions';
 import { I18nextProvider } from 'react-i18next';
+import { HelmetProvider } from 'react-helmet-async';
 // routing
 import Routes from 'routes';
 
@@ -34,33 +35,35 @@ const App = () => {
 
   useEffect(() => {
     // 强制设置为浅色主题
-    dispatch({ type: SET_THEME, theme: 'dark' });
-    localStorage.setItem('theme', 'dark');
+    dispatch({ type: SET_THEME, theme: 'light' });
+    localStorage.setItem('theme', 'light');
   }, [dispatch]);
 
   return (
     <StyledEngineProvider injectFirst>
       <ThemeProvider theme={themes(customization)}>
         <CssBaseline />
-        <NavigationScroll>
-          <SnackbarProvider
-            autoHideDuration={5000}
-            maxSnack={3}
-            anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-            Components={{ copy: CopySnackbar }}
-          >
-            <StatusProvider>
-              <I18nextProvider i18n={i18n}>
-                <NoticeProvider>
-                  <UserProvider>
-                    <Routes />
-                    <NoticeDialogs />
-                  </UserProvider>
-                </NoticeProvider>
-              </I18nextProvider>
-            </StatusProvider>
-          </SnackbarProvider>
-        </NavigationScroll>
+        <HelmetProvider>
+          <NavigationScroll>
+            <SnackbarProvider
+              autoHideDuration={5000}
+              maxSnack={3}
+              anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+              Components={{ copy: CopySnackbar }}
+            >
+              <StatusProvider>
+                <I18nextProvider i18n={i18n}>
+                  <NoticeProvider>
+                    <UserProvider>
+                      <Routes />
+                      <NoticeDialogs />
+                    </UserProvider>
+                  </NoticeProvider>
+                </I18nextProvider>
+              </StatusProvider>
+            </SnackbarProvider>
+          </NavigationScroll>
+        </HelmetProvider>
       </ThemeProvider>
     </StyledEngineProvider>
   );

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import {
@@ -45,6 +46,15 @@ export default function ModelPrice() {
   const [selectedOwnedBy, setSelectedOwnedBy] = useState('all');
   const [unit, setUnit] = useState('K');
   const [onlyShowAvailable, setOnlyShowAvailable] = useState(false);
+
+  // SEO 数据
+  const seoData = {
+    title: 'AI模型价格表 - CZLOapi | OpenAI、Claude、Gemini等主流AI模型价格对比',
+    description: '查看CZLOapi平台支持的所有AI模型价格，包括OpenAI GPT-4、Claude 3.5、Gemini Pro等主流模型的详细定价信息。支持按模型类型、厂商筛选，为开发者提供透明的价格参考。',
+    keywords: 'AI模型价格, OpenAI价格, Claude价格, Gemini价格, GPT-4价格, AI API定价, 模型价格对比, 人工智能价格表',
+    canonical: 'https://oapi.czl.net/price',
+    ogImage: 'https://oapi.czl.net/logo.svg'
+  };
 
   const unitOptions = [
     { value: 'K', label: 'K' },
@@ -171,7 +181,80 @@ export default function ModelPrice() {
   };
 
   return (
-    <Stack spacing={3} sx={{ padding: theme.spacing(3) }}>
+    <>
+      <Helmet>
+        <title>{seoData.title}</title>
+        <meta name="description" content={seoData.description} />
+        <meta name="keywords" content={seoData.keywords} />
+        <link rel="canonical" href={seoData.canonical} />
+        
+        {/* Open Graph */}
+        <meta property="og:title" content={seoData.title} />
+        <meta property="og:description" content={seoData.description} />
+        <meta property="og:image" content={seoData.ogImage} />
+        <meta property="og:url" content={seoData.canonical} />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="CZLOapi" />
+        
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={seoData.title} />
+        <meta name="twitter:description" content={seoData.description} />
+        <meta name="twitter:image" content={seoData.ogImage} />
+        
+        {/* 结构化数据 - 产品页面 */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'WebPage',
+            name: seoData.title,
+            description: seoData.description,
+            url: seoData.canonical,
+            mainEntity: {
+              '@type': 'ItemList',
+              name: 'AI模型价格列表',
+              itemListElement: [
+                {
+                  '@type': 'Product',
+                  name: 'OpenAI GPT-4.5',
+                  category: '人工智能模型',
+                  description: 'OpenAI最新的多模态大型语言模型'
+                },
+                {
+                  '@type': 'Product',
+                  name: 'Claude 4',
+                  category: '人工智能模型',
+                  description: 'Anthropic推出的先进AI助手'
+                },
+                {
+                  '@type': 'Product',
+                  name: 'Gemini Pro',
+                  category: '人工智能模型',
+                  description: 'Google开发的多模态AI模型'
+                }
+              ]
+            },
+            breadcrumb: {
+              '@type': 'BreadcrumbList',
+              itemListElement: [
+                {
+                  '@type': 'ListItem',
+                  position: 1,
+                  name: '首页',
+                  item: 'https://oapi.czl.net'
+                },
+                {
+                  '@type': 'ListItem',
+                  position: 2,
+                  name: '价格',
+                  item: seoData.canonical
+                }
+              ]
+            }
+          })}
+        </script>
+      </Helmet>
+      <Stack spacing={3} sx={{ padding: theme.spacing(3) }}>
       <Box sx={{ position: 'relative' }}>
         <Fade in timeout={800}>
           <Typography
@@ -734,6 +817,7 @@ export default function ModelPrice() {
         </TableContainer>
       </Card>
     </Stack>
+    </>
   );
 }
 
