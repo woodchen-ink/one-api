@@ -21,6 +21,7 @@ import Label from 'ui-component/Label';
 import TableSwitch from 'ui-component/Switch';
 import { renderQuota, renderNumber, timestamp2string, renderQuotaByMoney, showError } from 'utils/common';
 import { Icon } from '@iconify/react';
+import CZLConnectIcon from 'assets/images/icons/czlconnect.svg';
 import { useTheme } from '@mui/material/styles';
 import { useTranslation } from 'react-i18next';
 
@@ -147,7 +148,15 @@ export default function UsersTableRow({ item, manageUser, handleOpenModal, setMo
               <Icon icon="ri:mail-fill" color={item.email ? theme.palette.grey[900] : theme.palette.grey[400]} />
             </Tooltip>
             <Tooltip title={item.czlconnect_id ? `CZL: ${item.czlconnect_id}` : t('profilePage.notBound')} placement="top">
-              <Icon icon="mdi:alpha-c-circle" color={item.czlconnect_id ? theme.palette.primary.main : theme.palette.grey[400]} />
+              <img 
+                src={CZLConnectIcon} 
+                alt="czlconnect" 
+                width={16} 
+                height={16} 
+                style={{ 
+                  filter: item.czlconnect_id ? 'none' : 'grayscale(100%) opacity(0.5)'
+                }}
+              />
             </Tooltip>
           </Stack>
         </TableCell>

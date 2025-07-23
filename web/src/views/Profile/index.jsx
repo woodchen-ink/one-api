@@ -27,7 +27,7 @@ import { useSelector } from 'react-redux';
 import EmailModal from './component/EmailModal';
 import Turnstile from 'react-turnstile';
 import LarkIcon from 'assets/images/icons/lark.svg';
-import { Icon } from '@iconify/react';
+import CZLConnectIcon from 'assets/images/icons/czlconnect.svg';
 import { useTheme } from '@mui/material/styles';
 
 const validationSchema = Yup.object().shape({
@@ -177,12 +177,15 @@ export default function Profile() {
               )}
               {status.czlconnect_auth && (
                 <Label variant="ghost" color={inputs.czlconnect_id ? 'primary' : 'default'}>
-                  <Icon 
-                    icon="mdi:alpha-c-circle" 
+                  <img 
+                    src={CZLConnectIcon} 
+                    alt="czlconnect" 
                     width={24} 
                     height={24} 
-                    color={inputs.czlconnect_id ? theme.palette.primary.main : theme.palette.grey[400]} 
-                    style={{ marginRight: 8 }}
+                    style={{ 
+                      marginRight: 8,
+                      filter: inputs.czlconnect_id ? 'none' : 'grayscale(100%) opacity(0.5)'
+                    }}
                   />
                   {inputs.czlconnect_id ? `CZL: ${inputs.czlconnect_id}` : t('profilePage.notBound')}
                 </Label>
