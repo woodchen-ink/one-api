@@ -31,6 +31,8 @@ func GetStatus(c *gin.Context) {
 			"oidc_auth":           config.OIDCAuthEnabled,
 			"lark_login":          config.LarkAuthEnabled,
 			"lark_client_id":      config.LarkClientId,
+			"czlconnect_auth":     config.CZLConnectAuthEnabled,
+			"czlconnect_client_id": config.CZLConnectClientId,
 			"system_name":         config.SystemName,
 			"logo":                config.Logo,
 			"language":            config.Language,
