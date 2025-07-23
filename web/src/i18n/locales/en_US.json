@@ -1036,11 +1036,27 @@
         "subTitle": "To support login and registration via GitHub.",
         "title": "Configure GitHub OAuth App"
       },
+      "configureCZLConnectOAuth": {
+        "alert1": "Enter Homepage URL",
+        "alert2": "and Authorization callback URL",
+        "clientId": "CZLConnect Client ID",
+        "clientIdPlaceholder": "Enter the ID of your registered CZLConnect OAuth App",
+        "clientSecret": "CZLConnect Client Secret",
+        "clientSecretPlaceholder": "Sensitive information will not be sent to the frontend",
+        "redirectUri": "Redirect URI",
+        "redirectUriPlaceholder": "e.g.: https://yourdomain.com/oauth/czlconnect",
+        "manage": "Manage your CZLConnect OAuth App",
+        "manageLink": "Click here",
+        "saveButton": "Save CZLConnect OAuth Settings",
+        "subTitle": "To support login and registration via CZLConnect.",
+        "title": "Configure CZLConnect OAuth App"
+      },
       "configureLoginRegister": {
         "emailVerification": "Email Verification Required for Password Register",
         "gitHubOAuth": "Allow Login & Register via GitHub",
         "gitHubOldIdClose": "Disable logging in with old GitHub ID.",
         "larkAuth": "Allow Login & Register via Lark",
+        "czlconnectAuth": "Allow Login & Register via CZLConnect",
         "oidcAuth": "Enable login & registration via OIDC account",
         "passwordLogin": "Allow Password Login",
         "passwordRegister": "Allow Password Register",

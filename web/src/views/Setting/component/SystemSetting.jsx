@@ -38,6 +38,10 @@ const SystemSetting = () => {
     LarkAuthEnabled: '',
     LarkClientId: '',
     LarkClientSecret: '',
+    CZLConnectAuthEnabled: '',
+    CZLConnectClientId: '',
+    CZLConnectClientSecret: '',
+    CZLConnectRedirectUri: '',
     OIDCAuthEnabled: '',
     OIDCClientId: '',
     OIDCClientSecret: '',
@@ -107,6 +111,7 @@ const SystemSetting = () => {
       case 'GitHubOldIdCloseEnabled':
       case 'WeChatAuthEnabled':
       case 'LarkAuthEnabled':
+      case 'CZLConnectAuthEnabled':
       case 'OIDCAuthEnabled':
       case 'TurnstileCheckEnabled':
       case 'EmailDomainRestrictionEnabled':
@@ -170,7 +175,10 @@ const SystemSetting = () => {
       name === 'TurnstileSecretKey' ||
       name === 'EmailDomainWhitelist' ||
       name === 'LarkClientId' ||
-      name === 'LarkClientSecret'
+      name === 'LarkClientSecret' ||
+      name === 'CZLConnectClientId' ||
+      name === 'CZLConnectClientSecret' ||
+      name === 'CZLConnectRedirectUri'
     ) {
       setInputs((inputs) => ({ ...inputs, [name]: value }));
     } else {
@@ -267,6 +275,18 @@ const SystemSetting = () => {
     }
   };
 
+  const submitCZLConnectOAuth = async () => {
+    if (originInputs['CZLConnectClientId'] !== inputs.CZLConnectClientId) {
+      await updateOption('CZLConnectClientId', inputs.CZLConnectClientId);
+    }
+    if (originInputs['CZLConnectClientSecret'] !== inputs.CZLConnectClientSecret && inputs.CZLConnectClientSecret !== '') {
+      await updateOption('CZLConnectClientSecret', inputs.CZLConnectClientSecret);
+    }
+    if (originInputs['CZLConnectRedirectUri'] !== inputs.CZLConnectRedirectUri) {
+      await updateOption('CZLConnectRedirectUri', inputs.CZLConnectRedirectUri);
+    }
+  };
+
   return (
     <>
       <Stack spacing={2}>
@@ -350,6 +370,12 @@ const SystemSetting = () => {
               <FormControlLabel
                 label={t('setting_index.systemSettings.configureLoginRegister.oidcAuth')}
                 control={<Checkbox checked={inputs.OIDCAuthEnabled === 'true'} onChange={handleInputChange} name="OIDCAuthEnabled" />}
+              />
+            </Grid>
+            <Grid xs={12} md={3}>
+              <FormControlLabel
+                label={t('setting_index.systemSettings.configureLoginRegister.czlconnectAuth')}
+                control={<Checkbox checked={inputs.CZLConnectAuthEnabled === 'true'} onChange={handleInputChange} name="CZLConnectAuthEnabled" />}
               />
             </Grid>
             <Grid xs={12} md={3}>
@@ -583,6 +609,79 @@ const SystemSetting = () => {
             <Grid xs={12}>
               <Button variant="contained" onClick={submitGitHubOAuth}>
                 {t('setting_index.systemSettings.configureGitHubOAuthApp.saveButton')}
+              </Button>
+            </Grid>
+          </Grid>
+        </SubCard>
+
+        <SubCard
+          title={t('setting_index.systemSettings.configureCZLConnectOAuth.title')}
+          subTitle={
+            <span>
+              {t('setting_index.systemSettings.configureCZLConnectOAuth.subTitle')}
+              <a href="https://connect.czl.net" target="_blank" rel="noopener noreferrer">
+                {t('setting_index.systemSettings.configureCZLConnectOAuth.manageLink')}
+              </a>
+              {t('setting_index.systemSettings.configureCZLConnectOAuth.manage')}
+            </span>
+          }
+        >
+          <Grid container spacing={{ xs: 3, sm: 2, md: 4 }}>
+            <Grid xs={12}>
+              <Alert severity="info" sx={{ wordWrap: 'break-word' }}>
+                {t('setting_index.systemSettings.configureCZLConnectOAuth.alert1')} <b>{inputs.ServerAddress}</b>
+                {t('setting_index.systemSettings.configureCZLConnectOAuth.alert2')} <b>{`${inputs.ServerAddress}/oauth/czlconnect`}</b>
+              </Alert>
+            </Grid>
+            <Grid xs={12} md={4}>
+              <FormControl fullWidth>
+                <InputLabel htmlFor="CZLConnectClientId">{t('setting_index.systemSettings.configureCZLConnectOAuth.clientId')}</InputLabel>
+                <OutlinedInput
+                  id="CZLConnectClientId"
+                  name="CZLConnectClientId"
+                  value={inputs.CZLConnectClientId || ''}
+                  onChange={handleInputChange}
+                  label={t('setting_index.systemSettings.configureCZLConnectOAuth.clientId')}
+                  placeholder={t('setting_index.systemSettings.configureCZLConnectOAuth.clientIdPlaceholder')}
+                  disabled={loading}
+                />
+              </FormControl>
+            </Grid>
+            <Grid xs={12} md={4}>
+              <FormControl fullWidth>
+                <InputLabel htmlFor="CZLConnectClientSecret">
+                  {t('setting_index.systemSettings.configureCZLConnectOAuth.clientSecret')}
+                </InputLabel>
+                <OutlinedInput
+                  id="CZLConnectClientSecret"
+                  name="CZLConnectClientSecret"
+                  value={inputs.CZLConnectClientSecret || ''}
+                  onChange={handleInputChange}
+                  label={t('setting_index.systemSettings.configureCZLConnectOAuth.clientSecret')}
+                  placeholder={t('setting_index.systemSettings.configureCZLConnectOAuth.clientSecretPlaceholder')}
+                  disabled={loading}
+                />
+              </FormControl>
+            </Grid>
+            <Grid xs={12} md={4}>
+              <FormControl fullWidth>
+                <InputLabel htmlFor="CZLConnectRedirectUri">
+                  {t('setting_index.systemSettings.configureCZLConnectOAuth.redirectUri')}
+                </InputLabel>
+                <OutlinedInput
+                  id="CZLConnectRedirectUri"
+                  name="CZLConnectRedirectUri"
+                  value={inputs.CZLConnectRedirectUri || ''}
+                  onChange={handleInputChange}
+                  label={t('setting_index.systemSettings.configureCZLConnectOAuth.redirectUri')}
+                  placeholder={t('setting_index.systemSettings.configureCZLConnectOAuth.redirectUriPlaceholder')}
+                  disabled={loading}
+                />
+              </FormControl>
+            </Grid>
+            <Grid xs={12}>
+              <Button variant="contained" onClick={submitCZLConnectOAuth}>
+                {t('setting_index.systemSettings.configureCZLConnectOAuth.saveButton')}
               </Button>
             </Grid>
           </Grid>

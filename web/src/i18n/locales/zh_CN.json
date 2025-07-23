@@ -874,6 +874,7 @@
         "emailVerification": "通过密码注册时需要进行邮箱验证",
         "gitHubOAuth": "允许通过 GitHub 账户登录 & 注册",
         "oidcAuth": "允许通过 OIDC 账户登录 & 注册",
+        "czlconnectAuth": "允许通过 CZLConnect 账户登录 & 注册",
         "weChatAuth": "允许通过微信登录 & 注册",
         "larkAuth": "允许通过飞书登录 & 注册",
         "registerEnabled": "允许新用户注册（此项为否时，新用户将无法以任何方式进行注册）",
@@ -915,6 +916,21 @@
         "clientIdPlaceholder": "输入你注册的 GitHub OAuth APP 的 ID",
         "clientSecretPlaceholder": "敏感信息不会发送到前端显示",
         "saveButton": "保存 GitHub OAuth 设置"
+      },
+      "configureCZLConnectOAuth": {
+        "title": "配置 CZLConnect OAuth 应用",
+        "subTitle": "用以支持通过 CZLConnect 进行登录注册，",
+        "manageLink": "点击此处",
+        "manage": "管理你的 CZLConnect OAuth App",
+        "alert1": "Homepage URL 填",
+        "alert2": "，Authorization callback URL 填",
+        "clientId": "CZLConnect Client ID",
+        "clientSecret": "CZLConnect Client Secret",
+        "redirectUri": "重定向 URI",
+        "clientIdPlaceholder": "输入你注册的 CZLConnect OAuth APP 的 ID",
+        "clientSecretPlaceholder": "敏感信息不会发送到前端显示",
+        "redirectUriPlaceholder": "例如：https://yourdomain.com/oauth/czlconnect",
+        "saveButton": "保存 CZLConnect OAuth 设置"
       },
       "configureWeChatServer": {
         "title": "配置 WeChat 服务器",
