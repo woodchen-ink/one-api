@@ -97,6 +97,29 @@ const useLogin = () => {
     }
   };
 
+  const czlconnectLogin = async (code, state) => {
+    try {
+      const affCode = localStorage.getItem('aff');
+      const res = await API.get(`/api/oauth/czlconnect?code=${code}&state=${state}&aff=${affCode}`);
+      const { success, message } = res.data;
+      if (success) {
+        if (message === 'bind') {
+          showSuccess(t('common.bindOk'));
+          navigate('/panel');
+        } else {
+          loadUser();
+          loadUserGroup();
+          showSuccess(t('common.loginOk'));
+          navigate('/panel');
+        }
+      }
+      return { success, message };
+    } catch (err) {
+      // 请求失败，设置错误信息
+      return { success: false, message: '' };
+    }
+  };
+
   const wechatLogin = async (code) => {
     try {
       const affCode = localStorage.getItem('aff');
@@ -151,7 +174,7 @@ const useLogin = () => {
     return [];
   }, []);
 
-  return { login, logout, githubLogin, wechatLogin, larkLogin, oidcLogin, loadUser, loadUserGroup };
+  return { login, logout, githubLogin, wechatLogin, larkLogin, oidcLogin, czlconnectLogin, loadUser, loadUserGroup };
 };
 
 export default useLogin;

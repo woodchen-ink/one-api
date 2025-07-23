@@ -41,6 +41,7 @@ var EmailVerificationEnabled = false
 var GitHubOAuthEnabled = false
 var WeChatAuthEnabled = false
 var LarkAuthEnabled = false
+var CZLConnectAuthEnabled = false
 var TurnstileCheckEnabled = false
 var RegisterEnabled = true
 var OIDCAuthEnabled = false
@@ -159,6 +160,10 @@ var GitHubOldIdCloseEnabled = false
 
 var LarkClientId = ""
 var LarkClientSecret = ""
+
+var CZLConnectClientId = ""
+var CZLConnectClientSecret = ""
+var CZLConnectRedirectUri = ""
 
 var WeChatServerAddress = ""
 var WeChatServerToken = ""

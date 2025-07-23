@@ -1045,9 +1045,13 @@
     "oidcLogin": "OIDC 登录",
 
     "larkLogin": "飞书 登录",
+    "czlconnectLogin": "CZLConnect 登录",
+    "czlconnectError": "CZLConnect 登录失败，请稍后重试！",
+    "czlconnectCountError": "CZLConnect 登录失败第 {{count}} 次，请稍后重试！",
     "passwordRest": "密码重置确认",
     "useGithubLogin": "使用 Github 登录",
     "useWechatLogin": "使用 Wechat 登录",
+    "useCZLConnectLogin": "使用 CZLConnect 登录",
     "useOIDCLogin": "使用 OIDC 登录",
     "useLarkLogin": "使用飞书登录"
   },

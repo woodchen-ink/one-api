@@ -37,7 +37,8 @@ import Github from 'assets/images/icons/github.svg';
 import Wechat from 'assets/images/icons/wechat.svg';
 import Lark from 'assets/images/icons/lark.svg';
 import Oidc from 'assets/images/icons/oidc.svg';
-import { onGitHubOAuthClicked, onLarkOAuthClicked,onOIDCAuthClicked } from 'utils/common';
+import CZLConnect from 'assets/images/icons/czlconnect.svg';
+import { onGitHubOAuthClicked, onLarkOAuthClicked, onOIDCAuthClicked, onCZLConnectOAuthClicked } from 'utils/common';
 import { useTranslation } from 'react-i18next';
 
 // ============================|| FIREBASE - LOGIN ||============================ //
@@ -53,7 +54,7 @@ const LoginForm = ({ ...others }) => {
   // const [checked, setChecked] = useState(true);
 
   let tripartiteLogin = false;
-  if (siteInfo.github_oauth || siteInfo.wechat_login || siteInfo.lark_client_id || siteInfo.oidc_auth) {
+  if (siteInfo.github_oauth || siteInfo.wechat_login || siteInfo.lark_client_id || siteInfo.oidc_auth || siteInfo.czlconnect_auth) {
     tripartiteLogin = true;
   }
 
@@ -160,6 +161,28 @@ const LoginForm = ({ ...others }) => {
                     <img src={Oidc} alt="oidc" width={25} height={25} style={{ marginRight: matchDownSM ? 8 : 16 }} />
                   </Box>
                   {t('login.useOIDCLogin')}
+                </Button>
+              </AnimateButton>
+            </Grid>
+          )}
+          {/*CZLConnect配置*/}
+          {siteInfo.czlconnect_auth && (
+            <Grid item xs={12}>
+              <AnimateButton>
+                <Button
+                  disableElevation
+                  fullWidth
+                  onClick={() => onCZLConnectOAuthClicked(siteInfo.czlconnect_client_id)}
+                  size="large"
+                  variant="outlined"
+                  sx={{
+                    ...theme.typography.LoginButton
+                  }}
+                >
+                  <Box sx={{ mr: { xs: 1, sm: 2, width: 20 }, display: 'flex', alignItems: 'center' }}>
+                    <img src={CZLConnect} alt="czlconnect" width={25} height={25} style={{ marginRight: matchDownSM ? 8 : 16 }} />
+                  </Box>
+                  {t('login.useCZLConnectLogin')}
                 </Button>
               </AnimateButton>
             </Grid>

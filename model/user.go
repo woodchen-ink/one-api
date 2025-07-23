@@ -30,6 +30,7 @@ type User struct {
 	WeChatId         string         `json:"wechat_id" gorm:"column:wechat_id;index"`
 	TelegramId       int64          `json:"telegram_id" gorm:"bigint,column:telegram_id;default:0;"`
 	LarkId           string         `json:"lark_id" gorm:"column:lark_id;index"`
+	CZLConnectId     int            `json:"czlconnect_id" gorm:"column:czlconnect_id;index"`
 	VerificationCode string         `json:"verification_code" gorm:"-:all"`                                    // this field is only for Email verification, don't save it to database!
 	AccessToken      string         `json:"access_token" gorm:"type:char(32);column:access_token;uniqueIndex"` // this token is for system management
 	Quota            int            `json:"quota" gorm:"type:int;default:0"`
@@ -287,6 +288,14 @@ func (user *User) FillUserByLarkId() error {
 	return nil
 }
 
+func (user *User) FillUserByCZLConnectId() error {
+	if user.CZLConnectId == 0 {
+		return errors.New("CZLConnect id 为空！")
+	}
+	DB.Where(User{CZLConnectId: user.CZLConnectId}).First(user)
+	return nil
+}
+
 func (user *User) FillUserByOidcId() error {
 	if user.OidcId == "" {
 		return errors.New("OIDC ID 为空！")
@@ -348,6 +357,10 @@ func IsGitHubIdNewAlreadyTaken(githubIdNew int) bool {
 
 func IsLarkIdAlreadyTaken(larkId string) bool {
 	return IsFieldAlreadyTaken("lark_id", larkId)
+}
+
+func IsCZLConnectIdAlreadyTaken(czlConnectId int) bool {
+	return IsFieldAlreadyTaken("czlconnect_id", czlConnectId)
 }
 
 func IsTelegramIdAlreadyTaken(telegramId int64) bool {

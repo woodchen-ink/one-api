@@ -32,6 +32,7 @@ func InitOptionMap() {
 	config.GlobalOption.RegisterBool("GitHubOAuthEnabled", &config.GitHubOAuthEnabled)
 	config.GlobalOption.RegisterBool("WeChatAuthEnabled", &config.WeChatAuthEnabled)
 	config.GlobalOption.RegisterBool("LarkAuthEnabled", &config.LarkAuthEnabled)
+	config.GlobalOption.RegisterBool("CZLConnectAuthEnabled", &config.CZLConnectAuthEnabled)
 	config.GlobalOption.RegisterBool("OIDCAuthEnabled", &config.OIDCAuthEnabled)
 	config.GlobalOption.RegisterBool("TurnstileCheckEnabled", &config.TurnstileCheckEnabled)
 	config.GlobalOption.RegisterBool("RegisterEnabled", &config.RegisterEnabled)
@@ -64,6 +65,10 @@ func InitOptionMap() {
 	config.GlobalOption.RegisterString("ServerAddress", &config.ServerAddress)
 	config.GlobalOption.RegisterString("GitHubClientId", &config.GitHubClientId)
 	config.GlobalOption.RegisterString("GitHubClientSecret", &config.GitHubClientSecret)
+
+	config.GlobalOption.RegisterString("CZLConnectClientId", &config.CZLConnectClientId)
+	config.GlobalOption.RegisterString("CZLConnectClientSecret", &config.CZLConnectClientSecret)
+	config.GlobalOption.RegisterString("CZLConnectRedirectUri", &config.CZLConnectRedirectUri)
 
 	config.GlobalOption.RegisterString("OIDCClientId", &config.OIDCClientId)
 	config.GlobalOption.RegisterString("OIDCClientSecret", &config.OIDCClientSecret)
