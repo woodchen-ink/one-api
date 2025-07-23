@@ -146,8 +146,8 @@ export default function UsersTableRow({ item, manageUser, handleOpenModal, setMo
             <Tooltip title={item.email ? item.email : t('profilePage.notBound')} placement="top">
               <Icon icon="ri:mail-fill" color={item.email ? theme.palette.grey[900] : theme.palette.grey[400]} />
             </Tooltip>
-            <Tooltip title={item.czlconnect_id ? item.czlconnect_id : t('profilePage.notBound')} placement="top">
-              <Icon icon="ri:links-fill" color={item.czlconnect_id ? theme.palette.primary.main : theme.palette.grey[400]} />
+            <Tooltip title={item.czlconnect_id ? `CZL: ${item.czlconnect_id}` : t('profilePage.notBound')} placement="top">
+              <Icon icon="mdi:alpha-c-circle" color={item.czlconnect_id ? theme.palette.primary.main : theme.palette.grey[400]} />
             </Tooltip>
           </Stack>
         </TableCell>
