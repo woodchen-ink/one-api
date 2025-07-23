@@ -728,6 +728,7 @@
     "bindEmail": "Bind Email",
     "bindGitHubAccount": "Bind GitHub Account",
     "bindLarkAccount": "Bind Lark Account",
+    "bindCZLConnectAccount": "Bind CZLConnect Account",
     "bindWechatAccount": "Bind WeChat Account",
     "changeEmail": "Change Email",
     "displayName": "Display Name",

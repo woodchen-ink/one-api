@@ -140,10 +140,13 @@ export async function onLarkOAuthClicked(lark_client_id) {
   window.open(`https://open.feishu.cn/open-apis/authen/v1/authorize?redirect_uri=${redirect_uri}&app_id=${lark_client_id}&state=${state}`);
 }
 
-export async function onCZLConnectOAuthClicked(czlconnect_client_id) {
+export async function onCZLConnectOAuthClicked(czlconnect_client_id, isBind = false) {
   const state = await getOAuthState();
   if (!state) return;
   let redirect_uri = `${window.location.origin}/oauth/czlconnect`;
+  if (isBind) {
+    redirect_uri += '/bind';
+  }
   window.location.href = `https://connect.czl.net/oauth2/authorize?response_type=code&client_id=${czlconnect_client_id}&redirect_uri=${redirect_uri}&scope=read&state=${state}`;
 }
 

@@ -79,6 +79,10 @@ const OtherRoutes = {
       element: <CZLConnectOAuth />
     },
     {
+      path: '/oauth/czlconnect/bind',
+      element: <CZLConnectOAuth />
+    },
+    {
       path: '/404',
       element: <NotFoundView />
     },

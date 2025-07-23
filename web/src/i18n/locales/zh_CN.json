@@ -560,6 +560,7 @@
     "bindWechatAccount": "绑定微信账号",
     "bindGitHubAccount": "绑定Github账号",
     "bindLarkAccount": "绑定飞书账号",
+    "bindCZLConnectAccount": "绑定CZLConnect账号",
     "changeEmail": "更换邮箱",
     "bindEmail": "绑定邮箱",
     "telegramBot": "Telegram 机器人",

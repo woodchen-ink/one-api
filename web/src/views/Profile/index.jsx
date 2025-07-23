@@ -20,13 +20,14 @@ import SubCard from 'ui-component/cards/SubCard';
 import { IconBrandWechat, IconBrandGithub, IconMail, IconBrandTelegram, IconBrandOauth } from '@tabler/icons-react';
 import Label from 'ui-component/Label';
 import { API } from 'utils/api';
-import { showError, showSuccess, onGitHubOAuthClicked, copy, trims, onLarkOAuthClicked } from 'utils/common';
+import { showError, showSuccess, onGitHubOAuthClicked, copy, trims, onLarkOAuthClicked, onCZLConnectOAuthClicked } from 'utils/common';
 import * as Yup from 'yup';
 import WechatModal from 'views/Authentication/AuthForms/WechatModal';
 import { useSelector } from 'react-redux';
 import EmailModal from './component/EmailModal';
 import Turnstile from 'react-turnstile';
 import LarkIcon from 'assets/images/icons/lark.svg';
+import CZLConnectIcon from 'assets/images/icons/czlconnect.svg';
 import { useTheme } from '@mui/material/styles';
 
 const validationSchema = Yup.object().shape({
@@ -174,6 +175,11 @@ export default function Profile() {
                   <IconBrandOauth /> {inputs.oidc_id || t('profilePage.notBound')}
                 </Label>
               )}
+              {status.czlconnect_auth && (
+                <Label variant="ghost" color={inputs.czlconnect_id ? 'primary' : 'default'}>
+                  <SvgIcon component={CZLConnectIcon} inheritViewBox="0 0 24 24" /> {inputs.czlconnect_id || t('profilePage.notBound')}
+                </Label>
+              )}
             </Stack>
             <SubCard title={t('profilePage.personalInfo')}>
               <Grid container spacing={2}>
@@ -248,6 +254,14 @@ export default function Profile() {
                   <Grid xs={12} md={4}>
                     <Button variant="contained" onClick={() => onLarkOAuthClicked(status.lark_client_id)}>
                       {t('profilePage.bindLarkAccount')}
+                    </Button>
+                  </Grid>
+                )}
+
+                {status.czlconnect_auth && !inputs.czlconnect_id && (
+                  <Grid xs={12} md={4}>
+                    <Button variant="contained" onClick={() => onCZLConnectOAuthClicked(status.czlconnect_client_id, true)}>
+                      {t('profilePage.bindCZLConnectAccount')}
                     </Button>
                   </Grid>
                 )}

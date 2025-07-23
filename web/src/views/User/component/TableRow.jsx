@@ -146,6 +146,9 @@ export default function UsersTableRow({ item, manageUser, handleOpenModal, setMo
             <Tooltip title={item.email ? item.email : t('profilePage.notBound')} placement="top">
               <Icon icon="ri:mail-fill" color={item.email ? theme.palette.grey[900] : theme.palette.grey[400]} />
             </Tooltip>
+            <Tooltip title={item.czlconnect_id ? item.czlconnect_id : t('profilePage.notBound')} placement="top">
+              <Icon icon="ri:links-fill" color={item.czlconnect_id ? theme.palette.primary.main : theme.palette.grey[400]} />
+            </Tooltip>
           </Stack>
         </TableCell>
         <TableCell>{item.created_time === 0 ? t('common.unknown') : timestamp2string(item.created_time)}</TableCell>
