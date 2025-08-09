@@ -263,42 +263,37 @@ func (p *OpenAIProvider) GetRequestTextBody(relayMode int, ModelName string, req
 	if err != nil {
 		return nil, common.ErrorWrapper(err, "custom_parameter_error", http.StatusInternalServerError)
 	}
-	// 如果需要删除某些字段（如 gpt-5 不传 max_tokens）或存在自定义参数，则转换为 map 进行处理
-	needSanitize := strings.HasPrefix(ModelName, "gpt-5")
-	if customParams != nil || needSanitize {
-		// 将请求体转换为 map
+	// 如果有额外参数，将其添加到请求体中
+	if customParams != nil {
+		// 将请求体转换为map，以便添加额外参数
 		var requestMap map[string]interface{}
 		requestBytes, err := json.Marshal(request)
 		if err != nil {
 			return nil, common.ErrorWrapper(err, "marshal_request_failed", http.StatusInternalServerError)
 		}
 
-		if err = json.Unmarshal(requestBytes, &requestMap); err != nil {
+		err = json.Unmarshal(requestBytes, &requestMap)
+		if err != nil {
 			return nil, common.ErrorWrapper(err, "unmarshal_request_failed", http.StatusInternalServerError)
 		}
 
-		// 合并自定义参数
-		if customParams != nil {
-			requestMap = p.mergeCustomParams(requestMap, customParams)
-		}
-
-		// gpt-5 模型：不向上游传递 max_tokens
-		if needSanitize {
-			delete(requestMap, "max_tokens")
-		}
+		// 处理自定义额外参数
+		requestMap = p.mergeCustomParams(requestMap, customParams)
 
 		// 使用修改后的请求体创建请求
 		req, err := p.Requester.NewRequest(http.MethodPost, fullRequestURL, p.Requester.WithBody(requestMap), p.Requester.WithHeader(headers))
 		if err != nil {
 			return nil, common.ErrorWrapper(err, "new_request_failed", http.StatusInternalServerError)
 		}
+
 		return req, nil
 	}
 
-	// 无需处理则直接发送原始结构体
+	// 如果没有额外参数，使用原始请求体创建请求
 	req, err := p.Requester.NewRequest(http.MethodPost, fullRequestURL, p.Requester.WithBody(request), p.Requester.WithHeader(headers))
 	if err != nil {
 		return nil, common.ErrorWrapper(err, "new_request_failed", http.StatusInternalServerError)
 	}
+
 	return req, nil
 }
