@@ -15,7 +15,7 @@ const getLogTypeWithTranslation = (translationFunc) => {
   return {
     0: { value: '0', text: t('logPage.logType.all'), color: '' },
     1: { value: '1', text: t('logPage.logType.recharge'), color: 'primary' },
-    2: { value: '2', text: t('logPage.logType.consumption'), color: 'orange' },
+    2: { value: '2', text: t('logPage.logType.consumption'), color: 'success' },
     3: { value: '3', text: t('logPage.logType.management'), color: 'default' },
     4: { value: '4', text: t('logPage.logType.system'), color: 'secondary' }
   };

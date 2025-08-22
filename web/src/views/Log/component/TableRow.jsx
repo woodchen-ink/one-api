@@ -1,17 +1,14 @@
 import PropTypes from 'prop-types';
-import { useMemo, useState, memo, useCallback } from 'react';
+import { useMemo, memo } from 'react';
 
 import Badge from '@mui/material/Badge';
 
-import { TableRow, TableCell, Stack, Collapse, Tooltip, Typography } from '@mui/material';
+import { TableRow, TableCell, Stack, Tooltip, Typography } from '@mui/material';
 
 import { timestamp2string, renderQuota } from 'utils/common';
 import Label from 'ui-component/Label';
 import { useLogType } from '../type/LogType';
 import { useTranslation } from 'react-i18next';
-import QuotaWithDetailRow from './QuotaWithDetailRow';
-import QuotaWithDetailContent from './QuotaWithDetailContent';
-import { calculatePrice } from './QuotaWithDetailContent';
 import { styled } from '@mui/material/styles';
 
 function renderType(type, logTypes, t) {
@@ -48,20 +45,6 @@ function requestTimeLabelOptions(request_time) {
   return color;
 }
 
-function requestTSLabelOptions(request_ts) {
-  let color = 'success';
-  if (request_ts === 0) {
-    color = 'default';
-  } else if (request_ts <= 10) {
-    color = 'error';
-  } else if (request_ts <= 15) {
-    color = 'secondary';
-  } else if (request_ts <= 20) {
-    color = 'primary';
-  }
-
-  return color;
-}
 
 function LogTableRow({ item, userIsAdmin, userGroup, columnVisibility }) {
   const { t } = useTranslation();
@@ -69,32 +52,10 @@ function LogTableRow({ item, userIsAdmin, userGroup, columnVisibility }) {
   let request_time = item.request_time / 1000;
   let request_time_str = request_time.toFixed(2) + ' S';
 
-  let first_time = item.metadata?.first_response ? item.metadata.first_response / 1000 : 0;
-  let first_time_str = first_time ? `${first_time.toFixed(2)} S` : '';
-
-  const stream_time = request_time - first_time;
-
-  let request_ts = 0;
-  let request_ts_str = '';
-  if (first_time > 0 && item.completion_tokens > 0) {
-    // Using the completion_tokens directly since we already checked it's > 0
-    request_ts = item.completion_tokens / stream_time;
-    request_ts_str = `${request_ts.toFixed(2)} t/s`;
-  }
 
   const { totalInputTokens, totalOutputTokens, show, tokenDetails } = useMemo(() => calculateTokens(item), [item]);
 
-  // 计算当前显示的列数
-  const colCount = Object.values(columnVisibility).filter(Boolean).length;
 
-  // 展开状态（仅type=2时才有展开）
-  const [open, setOpen] = useState(false);
-  const showExpand = item.type === 2 && columnVisibility.quota;
-
-  // 使用 useCallback 优化 setOpen 函数
-  const handleToggleOpen = useCallback(() => {
-    setOpen(prev => !prev);
-  }, []);
 
   return (
     <>
@@ -139,13 +100,9 @@ function LogTableRow({ item, userIsAdmin, userGroup, columnVisibility }) {
 
         {columnVisibility.duration && (
           <TableCell sx={{ p: '10px 8px' }}>
-            <Stack direction="column" spacing={0.5}>
-              <Label color={requestTimeLabelOptions(request_time)}>
-                {item.request_time === 0 ? '无' : request_time_str} {first_time_str ? ' / ' + first_time_str : ''}
-              </Label>
-
-              {request_ts_str && <Label color={requestTSLabelOptions(request_ts)}>{request_ts_str}</Label>}
-            </Stack>
+            <Label color={requestTimeLabelOptions(request_time)}>
+              {item.request_time === 0 ? '无' : request_time_str}
+            </Label>
           </TableCell>
         )}
         {columnVisibility.message && (
@@ -154,30 +111,11 @@ function LogTableRow({ item, userIsAdmin, userGroup, columnVisibility }) {
         {columnVisibility.completion && <TableCell sx={{ p: '10px 8px' }}>{item.completion_tokens || ''}</TableCell>}
         {columnVisibility.quota && (
           <TableCell sx={{ p: '10px 8px' }}>
-            {item.type === 2 ? (
-              <QuotaWithDetailRow item={item} open={open} setOpen={handleToggleOpen} />
-            ) : item.quota ? (
-              renderQuota(item.quota, 6)
-            ) : (
-              '$0'
-            )}
+            {item.quota ? renderQuota(item.quota, 6) : '$0'}
           </TableCell>
         )}
         {columnVisibility.source_ip && <TableCell sx={{ p: '10px 8px' }}>{item.source_ip || ''}</TableCell>}
-        {columnVisibility.detail && (
-          <TableCell sx={{ p: '10px 8px' }}>{viewLogContent(item, t, totalInputTokens, totalOutputTokens)}</TableCell>
-        )}
       </TableRow>
-      {/* 展开行 */}
-      {showExpand && (
-        <TableRow>
-          <TableCell colSpan={colCount} sx={{ p: 0, border: 0, bgcolor: 'transparent' }}>
-            <Collapse in={open} timeout="auto" unmountOnExit>
-              <QuotaWithDetailContent item={item} t={t} totalInputTokens={totalInputTokens} totalOutputTokens={totalOutputTokens} />
-            </Collapse>
-          </TableCell>
-        </TableRow>
-      )}
     </>
   );
 }
@@ -378,62 +316,3 @@ function calculateTokens(item) {
   };
 }
 
-function viewLogContent(item, t) {
-  // totalOutputTokens is passed but not used in this function
-  // Check if we have the necessary data to calculate prices
-  if (!item?.metadata?.input_ratio) {
-    const free = (item.quota === 0 || item.quota === undefined) && item.type === 2;
-    return free ? (
-      <Stack direction="column" spacing={0.3}>
-        <Label color={free ? 'success' : 'secondary'} variant="soft">
-          {t('logPage.content.free')}
-        </Label>
-      </Stack>
-    ) : (
-      <>{item.content || ''}</>
-    );
-  }
-
-  // Ensure we have valid values with appropriate defaults
-  const groupDiscount = item?.metadata?.group_ratio || 1;
-  const priceType = item?.metadata?.price_type || '';
-  const originalCompletionRatio = item?.metadata?.output_ratio || 0;
-  const originalInputRatio = item?.metadata?.input_ratio || 0;
-
-  let inputPriceInfo;
-  let outputPriceInfo = '';
-  if (priceType === 'times') {
-    // Calculate prices for 'times' price type
-    const inputPrice = calculatePrice(originalInputRatio, groupDiscount, true);
-
-    inputPriceInfo = t('logPage.content.times_price', {
-      times: inputPrice
-    });
-  } else {
-    // Calculate prices for a standard price type
-    const inputPrice = calculatePrice(originalInputRatio, groupDiscount, false);
-    const outputPrice = calculatePrice(originalCompletionRatio, groupDiscount, false);
-
-    inputPriceInfo = t('logPage.content.input_price', {
-      price: inputPrice
-    });
-    outputPriceInfo = t('logPage.content.output_price', {
-      price: outputPrice
-    });
-  }
-
-  return (
-    <Stack direction="column" spacing={0.3}>
-      {inputPriceInfo && (
-        <Label color="info" variant="soft">
-          {inputPriceInfo}
-        </Label>
-      )}
-      {outputPriceInfo && (
-        <Label color="info" variant="soft">
-          {outputPriceInfo}
-        </Label>
-      )}
-    </Stack>
-  );
-}

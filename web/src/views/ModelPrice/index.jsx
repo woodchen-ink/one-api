@@ -27,7 +27,6 @@ import { API } from 'utils/api';
 import { showError, ValueFormatter, copy } from 'utils/common';
 import { useTheme } from '@mui/material/styles';
 import Label from 'ui-component/Label';
-import ToggleButtonGroup from 'ui-component/ToggleButton';
 import { alpha } from '@mui/material/styles';
 
 // ----------------------------------------------------------------------
@@ -44,8 +43,8 @@ export default function ModelPrice() {
   const [userGroupMap, setUserGroupMap] = useState({});
   const [selectedGroup, setSelectedGroup] = useState('');
   const [selectedOwnedBy, setSelectedOwnedBy] = useState('all');
-  const [unit, setUnit] = useState('K');
-  const [onlyShowAvailable, setOnlyShowAvailable] = useState(false);
+  const [unit] = useState('M'); // 固定为M单位
+  const [onlyShowAvailable, setOnlyShowAvailable] = useState(true);
 
   // SEO 数据
   const seoData = {
@@ -56,10 +55,6 @@ export default function ModelPrice() {
     ogImage: 'https://oapi.czl.net/logo.svg'
   };
 
-  const unitOptions = [
-    { value: 'K', label: 'K' },
-    { value: 'M', label: 'M' }
-  ];
 
   const fetchAvailableModels = useCallback(async () => {
     try {
@@ -158,11 +153,6 @@ export default function ModelPrice() {
     setSearchQuery(event.target.value);
   };
 
-  const handleUnitChange = (event, newUnit) => {
-    if (newUnit !== null) {
-      setUnit(newUnit);
-    }
-  };
 
   const toggleOnlyShowAvailable = () => {
     setOnlyShowAvailable((prev) => !prev);
@@ -322,29 +312,6 @@ export default function ModelPrice() {
             )}
           </Paper>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Typography variant="body2" color="text.secondary">
-              Unit:
-            </Typography>
-            <ToggleButtonGroup
-              value={unit}
-              onChange={handleUnitChange}
-              options={unitOptions}
-              aria-label="unit toggle"
-              size="small"
-              sx={{
-                '& .MuiToggleButtonGroup-grouped': {
-                  borderRadius: '6px !important',
-                  mx: 0.5,
-                  border: 0,
-                  boxShadow: theme.palette.mode === 'dark' ? '0 1px 4px rgba(0,0,0,0.2)' : '0 1px 4px rgba(0,0,0,0.05)',
-                  '&.Mui-selected': {
-                    boxShadow: `0 0 0 1px ${theme.palette.primary.main}`
-                  }
-                }
-              }}
-            />
-          </Box>
         </Box>
 
         {/* 模型提供商标签 */}

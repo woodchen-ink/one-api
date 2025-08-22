@@ -70,8 +70,7 @@ export default function Log() {
     message: true,
     completion: true,
     quota: true,
-    source_ip: true,
-    detail: true
+    source_ip: true
   });
   const [columnMenuAnchor, setColumnMenuAnchor] = useState(null);
 
@@ -304,8 +303,7 @@ export default function Log() {
                 { id: 'message', label: t('logPage.inputLabel') },
                 { id: 'completion', label: t('logPage.outputLabel') },
                 { id: 'quota', label: t('logPage.quotaLabel') },
-                { id: 'source_ip', label: t('logPage.sourceIp') },
-                { id: 'detail', label: t('logPage.detailLabel') }
+                { id: 'source_ip', label: t('logPage.sourceIp') }
               ].map(
                 (column) =>
                   (!column.adminOnly || userIsAdmin) && (
@@ -372,7 +370,6 @@ export default function Log() {
                   {
                     id: 'duration',
                     label: t('logPage.durationLabel'),
-                    tooltip: t('logPage.durationTooltip'),
                     disableSort: true,
                     hide: !columnVisibility.duration
                   },
@@ -399,12 +396,6 @@ export default function Log() {
                     label: t('logPage.sourceIp'),
                     disableSort: true,
                     hide: !columnVisibility.source_ip
-                  },
-                  {
-                    id: 'detail',
-                    label: t('logPage.detailLabel'),
-                    disableSort: true,
-                    hide: !columnVisibility.detail
                   }
                 ]}
               />
