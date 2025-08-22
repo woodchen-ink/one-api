@@ -2,6 +2,7 @@ import { Box, Typography, IconButton } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { renderQuota } from 'utils/common';
 import PropTypes from 'prop-types';
+import { memo, useMemo } from 'react';
 
 // Helper function to calculate the original quota based on actual price and group ratio
 export function calculateOriginalQuota(item) {
@@ -27,12 +28,16 @@ export function calculateOriginalQuota(item) {
 }
 
 // QuotaWithDetailRow is only responsible for the price in the main row and the small triangle
-export default function QuotaWithDetailRow({ item, open, setOpen }) {
+function QuotaWithDetailRow({ item, open, setOpen }) {
   const groupRatio = item?.metadata?.group_ratio || 1;
-  // Calculate the original quota based on the formula
-  const originalQuota = calculateOriginalQuota(item);
-  // Ensure quota has a fallback value
-  const quota = item.quota || 0;
+  
+  // 使用 useMemo 缓存计算结果
+  const { originalQuota, quota } = useMemo(() => {
+    return {
+      originalQuota: calculateOriginalQuota(item),
+      quota: item.quota || 0
+    };
+  }, [item.quota, item.metadata?.group_ratio, item.metadata?.original_quota, item.metadata?.origin_quota]);
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <Box onClick={() => setOpen((o) => !o)} sx={{ display: 'flex', flexDirection: 'column', mr: 1, cursor: 'pointer' }}>
@@ -91,3 +96,14 @@ QuotaWithDetailRow.propTypes = {
   open: PropTypes.bool.isRequired,
   setOpen: PropTypes.func.isRequired
 };
+
+// 使用 React.memo 优化性能
+export default memo(QuotaWithDetailRow, (prevProps, nextProps) => {
+  return (
+    prevProps.item.quota === nextProps.item.quota &&
+    prevProps.item.metadata?.group_ratio === nextProps.item.metadata?.group_ratio &&
+    prevProps.item.metadata?.original_quota === nextProps.item.metadata?.original_quota &&
+    prevProps.item.metadata?.origin_quota === nextProps.item.metadata?.origin_quota &&
+    prevProps.open === nextProps.open
+  );
+});

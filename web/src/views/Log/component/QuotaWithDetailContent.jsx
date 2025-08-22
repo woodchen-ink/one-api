@@ -5,6 +5,7 @@ import { renderQuota } from 'utils/common';
 import { calculateOriginalQuota } from './QuotaWithDetailRow';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
+import { memo, useMemo } from 'react';
 
 // Function to calculate price
 export function calculatePrice(ratio, groupDiscount, isTimes) {
@@ -30,64 +31,87 @@ export function calculatePrice(ratio, groupDiscount, isTimes) {
 }
 
 // QuotaWithDetailContent is responsible for rendering the detailed content
-export default function QuotaWithDetailContent({ item, totalInputTokens, totalOutputTokens }) {
+function QuotaWithDetailContent({ item, totalInputTokens, totalOutputTokens }) {
   const { t } = useTranslation();
-  // Calculate the original quota based on the formula
-  const originalQuota = calculateOriginalQuota(item);
-  const quota = item.quota || 0;
+  
+  // 使用 useMemo 缓存计算结果
+  const calculationData = useMemo(() => {
+    const originalQuota = calculateOriginalQuota(item);
+    const quota = item.quota || 0;
+    const priceType = item.metadata?.price_type || 'tokens';
+    const extraBilling = item?.metadata?.extra_billing || {};
+    
+    return { originalQuota, quota, priceType, extraBilling };
+  }, [item.quota, item.metadata]);
+  
+  const { originalQuota, quota, priceType, extraBilling } = calculationData;
 
-  const priceType = item.metadata?.price_type || 'tokens';
-  const extraBilling = item?.metadata?.extra_billing || {};
+  // 使用 useMemo 缓存价格计算
+  const priceData = useMemo(() => {
+    const groupRatio = item.metadata?.group_ratio || 1;
+    
+    // Get input/output prices from metadata with appropriate defaults
+    const originalInputPrice =
+      item.metadata?.input_price_origin ||
+      (item.metadata?.input_ratio ? `$${calculatePrice(item.metadata.input_ratio, 1, false)} /M` : '$0 /M');
+    const originalOutputPrice =
+      item.metadata?.output_price_origin ||
+      (item.metadata?.output_ratio ? `$${calculatePrice(item.metadata.output_ratio, 1, false)} /M` : '$0 /M');
 
-  // Get input/output prices from metadata with appropriate defaults
-  const originalInputPrice =
-    item.metadata?.input_price_origin ||
-    (item.metadata?.input_ratio ? `$${calculatePrice(item.metadata.input_ratio, 1, false)} /M` : '$0 /M');
-  const originalOutputPrice =
-    item.metadata?.output_price_origin ||
-    (item.metadata?.output_ratio ? `$${calculatePrice(item.metadata.output_ratio, 1, false)} /M` : '$0 /M');
+    // Calculate actual prices based on ratios and group discount
+    const inputPrice =
+      item.metadata?.input_price || (item.metadata?.input_ratio ? `$${calculatePrice(item.metadata.input_ratio, groupRatio, false)} ` : '$0');
+    const outputPrice =
+      item.metadata?.output_price ||
+      (item.metadata?.output_ratio ? `$${calculatePrice(item.metadata.output_ratio, groupRatio, false)}` : '$0');
 
-  // Calculate actual prices based on ratios and group discount
-  const groupRatio = item.metadata?.group_ratio || 1;
-  const inputPrice =
-    item.metadata?.input_price || (item.metadata?.input_ratio ? `$${calculatePrice(item.metadata.input_ratio, groupRatio, false)} ` : '$0');
-  const outputPrice =
-    item.metadata?.output_price ||
-    (item.metadata?.output_ratio ? `$${calculatePrice(item.metadata.output_ratio, groupRatio, false)}` : '$0');
+    const inputPriceUnit = inputPrice + ' /M';
+    const outputPriceUnit = outputPrice + ' /M';
 
-  const inputPriceUnit = inputPrice + ' /M';
-  const outputPriceUnit = outputPrice + ' /M';
-
-  let calculateSteps = '';
-  if (priceType === 'tokens') {
-    calculateSteps = `(${totalInputTokens} / 1M × ${inputPrice})`;
-    if (totalOutputTokens > 0) {
-      calculateSteps += ` + (${totalOutputTokens} / 1M × ${outputPrice})`;
-    }
-  } else {
-    calculateSteps = `${inputPrice}`;
-  }
-
-  const extraBillingSteps = [];
-
-  if (extraBilling && Object.keys(extraBilling).length > 0) {
-    Object.entries(extraBilling).forEach(([key, data]) => {
-      if (data.type !== '') {
-        extraBillingSteps.push(`${key}[${data.type}] : $${data.price} x ${data.call_count}`);
-      } else {
-        extraBillingSteps.push(`${key} : $${data.price} x ${data.call_count}`);
+    let calculateSteps = '';
+    if (priceType === 'tokens') {
+      calculateSteps = `(${totalInputTokens} / 1M × ${inputPrice})`;
+      if (totalOutputTokens > 0) {
+        calculateSteps += ` + (${totalOutputTokens} / 1M × ${outputPrice})`;
       }
-    });
-  }
+    } else {
+      calculateSteps = `${inputPrice}`;
+    }
 
-  if (extraBillingSteps.length > 0) {
-    calculateSteps += ` + (${extraBillingSteps.join(' + ')}) x ${groupRatio}`;
-  }
+    const extraBillingSteps = [];
+    if (extraBilling && Object.keys(extraBilling).length > 0) {
+      Object.entries(extraBilling).forEach(([key, data]) => {
+        if (data.type !== '') {
+          extraBillingSteps.push(`${key}[${data.type}] : $${data.price} x ${data.call_count}`);
+        } else {
+          extraBillingSteps.push(`${key} : $${data.price} x ${data.call_count}`);
+        }
+      });
+    }
 
-  let savePercent = '';
-  if (originalQuota > 0 && quota > 0 && groupRatio < 1) {
-    savePercent = `${t('logPage.quotaDetail.saved')}${((1 - quota / originalQuota) * 100).toFixed(0)}%`;
-  }
+    if (extraBillingSteps.length > 0) {
+      calculateSteps += ` + (${extraBillingSteps.join(' + ')}) x ${groupRatio}`;
+    }
+
+    let savePercent = '';
+    if (originalQuota > 0 && quota > 0 && groupRatio < 1) {
+      savePercent = `${t('logPage.quotaDetail.saved')}${((1 - quota / originalQuota) * 100).toFixed(0)}%`;
+    }
+    
+    return {
+      originalInputPrice,
+      originalOutputPrice,
+      inputPrice,
+      outputPrice,
+      inputPriceUnit,
+      outputPriceUnit,
+      calculateSteps,
+      savePercent,
+      groupRatio
+    };
+  }, [item.metadata, priceType, totalInputTokens, totalOutputTokens, extraBilling, originalQuota, quota, t]);
+  
+  const { calculateSteps, savePercent } = priceData;
   return (
     <Box
       sx={{
@@ -187,3 +211,6 @@ QuotaWithDetailContent.propTypes = {
   totalInputTokens: PropTypes.number.isRequired,
   totalOutputTokens: PropTypes.number.isRequired
 };
+
+// 使用 React.memo 优化性能
+export default memo(QuotaWithDetailContent);

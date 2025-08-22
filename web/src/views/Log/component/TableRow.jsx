@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, memo, useCallback } from 'react';
 
 import Badge from '@mui/material/Badge';
 
@@ -63,7 +63,7 @@ function requestTSLabelOptions(request_ts) {
   return color;
 }
 
-export default function LogTableRow({ item, userIsAdmin, userGroup, columnVisibility }) {
+function LogTableRow({ item, userIsAdmin, userGroup, columnVisibility }) {
   const { t } = useTranslation();
   const LogType = useLogType();
   let request_time = item.request_time / 1000;
@@ -90,6 +90,11 @@ export default function LogTableRow({ item, userIsAdmin, userGroup, columnVisibi
   // 展开状态（仅type=2时才有展开）
   const [open, setOpen] = useState(false);
   const showExpand = item.type === 2 && columnVisibility.quota;
+
+  // 使用 useCallback 优化 setOpen 函数
+  const handleToggleOpen = useCallback(() => {
+    setOpen(prev => !prev);
+  }, []);
 
   return (
     <>
@@ -150,7 +155,7 @@ export default function LogTableRow({ item, userIsAdmin, userGroup, columnVisibi
         {columnVisibility.quota && (
           <TableCell sx={{ p: '10px 8px' }}>
             {item.type === 2 ? (
-              <QuotaWithDetailRow item={item} open={open} setOpen={setOpen} />
+              <QuotaWithDetailRow item={item} open={open} setOpen={handleToggleOpen} />
             ) : item.quota ? (
               renderQuota(item.quota, 6)
             ) : (
@@ -183,6 +188,17 @@ LogTableRow.propTypes = {
   userGroup: PropTypes.object,
   columnVisibility: PropTypes.object
 };
+
+// 使用 React.memo 优化组件渲染性能
+export default memo(LogTableRow, (prevProps, nextProps) => {
+  // 自定义比较函数，只有相关数据变化时才重新渲染
+  return (
+    prevProps.item.id === nextProps.item.id &&
+    prevProps.userIsAdmin === nextProps.userIsAdmin &&
+    JSON.stringify(prevProps.columnVisibility) === JSON.stringify(nextProps.columnVisibility) &&
+    JSON.stringify(prevProps.userGroup) === JSON.stringify(nextProps.userGroup)
+  );
+});
 
 function viewModelName(model_name, isStream) {
   if (!model_name) {
