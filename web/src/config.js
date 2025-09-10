@@ -3,7 +3,7 @@ const config = {
   // like '/berry-material-react/react/default'
   basename: '/',
   defaultPath: '/panel/dashboard',
-  fontFamily: `czl,system-ui,-apple-system,BlinkMacSystemFont,'Helvetica Neue',Helvetica,Segoe UI,Arial,Roboto,'PingFang SC',miui,'Hiragino Sans GB','Microsoft Yahei',sans-serif`,
+  fontFamily: `-apple-system,BlinkMacSystemFont,'Noto Sans SC',system-ui,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Helvetica,Arial,sans-serif`,
   borderRadius: 12,
   siteInfo: {
     UptimeEnabled: false,
