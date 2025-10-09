@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"one-api/common"
 	"one-api/common/logger"
 	"one-api/metrics"
 	"strings"
@@ -47,7 +48,7 @@ func GinzapWithConfig() gin.HandlerFunc {
 			zap.String("method", c.Request.Method),
 			zap.String("path", path),
 			zap.String("query", query),
-			zap.String("ip", c.ClientIP()),
+			zap.String("ip", common.GetClientIP(c)),
 			zap.String("user-agent", c.Request.UserAgent()),
 			zap.Duration("latency", latency),
 			zap.Int("user_id", userID),

@@ -11,6 +11,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/woodchen-ink/go-web-utils/iputil"
 )
 
 func UnmarshalBodyReusable(c *gin.Context, v any) error {
@@ -134,4 +135,10 @@ func OpenAIErrorToRerankError(err *types.OpenAIErrorWithStatusCode) *types.Reran
 		StatusCode: err.StatusCode,
 		LocalError: err.LocalError,
 	}
+}
+
+// GetClientIP 获取客户端真实IP地址
+// 优先从X-Forwarded-For、X-Real-IP等header中获取,如果都没有则使用RemoteAddr
+func GetClientIP(c *gin.Context) string {
+	return iputil.GetClientIP(c.Request)
 }

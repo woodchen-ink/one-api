@@ -194,7 +194,7 @@ func (q *Quota) Consume(c *gin.Context, usage *types.Usage, isStream bool) {
 	q.startTime = c.GetTime("requestStartTime")
 	// 如果没有报错，则消费配额
 	go func(ctx context.Context) {
-		err := q.completedQuotaConsumption(usage, tokenName, isStream, c.ClientIP(), ctx)
+		err := q.completedQuotaConsumption(usage, tokenName, isStream, common.GetClientIP(c), ctx)
 		if err != nil {
 			logger.LogError(ctx, err.Error())
 		}

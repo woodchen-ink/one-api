@@ -176,7 +176,7 @@ func PaymentCallback(c *gin.Context) {
 		logger.SysError(fmt.Sprintf("failed to check and upgrade user group, trade_no: %s, error: %s", payNotify.TradeNo, err.Error()))
 	}
 
-	model.RecordQuotaLog(order.UserId, model.LogTypeTopup, order.Quota, c.ClientIP(), fmt.Sprintf("在线充值成功，充值金额: %d，支付金额：%.2f %s", UsdQuota, order.OrderAmount, order.OrderCurrency))
+	model.RecordQuotaLog(order.UserId, model.LogTypeTopup, order.Quota, common.GetClientIP(c), fmt.Sprintf("在线充值成功，充值金额: %d，支付金额：%.2f %s", UsdQuota, order.OrderAmount, order.OrderCurrency))
 
 }
 

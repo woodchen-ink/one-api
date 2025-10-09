@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"fmt"
 	"net/http"
+	"one-api/common"
 	"one-api/common/cache"
 	"one-api/common/config"
 	"one-api/common/utils"
@@ -167,7 +168,7 @@ func AppendAccessRecord(id string, c *gin.Context) error {
 
 	record := &AccessRecord{
 		UserAgent: c.Request.UserAgent(),
-		IP:        c.ClientIP(),
+		IP:        common.GetClientIP(c),
 	}
 
 	checkChannelImg(record)

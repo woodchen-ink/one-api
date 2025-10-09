@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"net/url"
+	"one-api/common"
 	"one-api/common/config"
 	"one-api/common/logger"
 )
@@ -35,7 +36,7 @@ func TurnstileCheck() gin.HandlerFunc {
 			rawRes, err := http.PostForm("https://challenges.cloudflare.com/turnstile/v0/siteverify", url.Values{
 				"secret":   {config.TurnstileSecretKey},
 				"response": {response},
-				"remoteip": {c.ClientIP()},
+				"remoteip": {common.GetClientIP(c)},
 			})
 			if err != nil {
 				logger.SysError(err.Error())
