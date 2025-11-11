@@ -799,7 +799,7 @@
   "setting_index": {
     "operationSettings": {
       "chatLinkSettings": {
-        "info": "配置聊天鏈接，該配置在令牌中的聊天生效以及首頁的 Playground 中的聊天生效. <br />鏈接中可以使&#123;key&#125;替換用戶的令牌，&#123;server&#125;替換伺服器地址。例如：{'https://chat.oneapi.pro/#/?settings={\"key\":\"sk-{key}\",\"url\":\"{server}\"}'}<br />如果未配置，會默認配置以下4個鏈接：<br />ChatGPT Next ： {'https://chat.oneapi.pro/#/?settings={\"key\":\"{key}\",\"url\":\"{server}\"}'}<br />chatgpt-web-midjourney-proxy ： {'https://vercel.ddaiai.com/#/?settings={\"key\":\"{key}\",\"url\":\"{server}\"}'}<br />AMA 問天 ： {'ama://set-api-key?server={server}&key={key}'}<br />opencat ： {'opencat://team/join?domain={server}&token={key}'}<br />排序規則：值越大越靠前，值相同則按照配置順序",
+        "info": "配置聊天鏈接，該配置在令牌中的聊天生效以及首頁的Playground中的聊天生效。<br />鏈接中可以使&#123;key&#125;替換用戶的令牌，&#123;server&#125;替換伺服器地址，base64<[xxxxxx]>進行base64編碼。例如：{'https://chat.oneapi.pro/#/?settings={\"key\":\"sk-{key}\",\"url\":\"{server}\"}'}<br />如果未配置，會默認配置以下4個鏈接：<br />ChatGPT Next：{'https://chat.oneapi.pro/#/?settings={\"key\":\"{key}\",\"url\":\"{server}\"}'}<br />chatgpt-web-midjourney-proxy：{'https://vercel.ddaiai.com/#/?settings={\"key\":\"{key}\",\"url\":\"{server}\"}'}<br />AMA 問天：{'ama://set-api-key?server={server}&key={key}'}<br />opencat：{'opencat://team/join?domain={server}&token={key}'}<br />排序規則：值越大越靠前，值相同則按照配置順序",
         "save": "保存聊天鏈接設置",
         "title": "聊天鏈接設置"
       },
@@ -1210,9 +1210,14 @@
     "heartbeatTimeoutHelperText": "最小值為30秒，最大值為90秒",
     "limits": "權杖限制",
     "limits_info": "設定後，可以對權杖進行限制",
-    "limits_switch": "啟用限制",
+    "limits_models_switch": "啟用模型限制",
     "limit_models": "模型限制",
-    "limit_models_info": "選擇允許此權杖使用的模型，未選擇則表示允許所有模型"
+    "limit_models_info": "選擇允許此權杖使用的模型，未選擇則表示允許所有模型",
+    "limits_ip_whitelist": "IP白名單",
+    "limits_ip_whitelist_info": "限制權杖只能從特定IP位址或範圍存取",
+    "limits_ip_whitelist_switch": "啟用IP白名單",
+    "limits_ip_whitelist_input": "IP位址",
+    "limits_ip_whitelist_helper": "每行輸入一個IP位址或CIDR範圍（如：192.168.1.1 或 10.0.0.0/8）"
   },
   "topup": "儲值",
   "topupCard": {
@@ -1278,6 +1283,8 @@
     "cancelAdmin": "取消管理員",
     "createUser": "新建用戶",
     "creationTime": "創建時間",
+    "lastLoginTime": "最後登入時間",
+    "lastLoginIP": "最後登入IP",
     "del": "刪除用戶",
     "delTip": "是否刪除用戶",
     "displayName": "顯示名稱",
