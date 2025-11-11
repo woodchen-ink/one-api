@@ -37,7 +37,7 @@ func getDefaultTemplate(content string) string {
 		  body {
 			margin: 0;
 			background-color: #eceff1;
-			font-family: Helvetica, sans-serif;
+			font-family: -apple-system, BlinkMacSystemFont, 'Noto Sans SC', system-ui, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 		  }
 		  table {
 			border-spacing: 0;

@@ -1,6 +1,6 @@
 /* Content Viewer Styles */
 .content-viewer {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Noto Sans SC', system-ui, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   line-height: 1.6;
   color: inherit;
   padding: 16px;
