@@ -1404,7 +1404,7 @@
   "默认 zh-CN-YunxiNeural|boy": "默認 zh-HK-YunxiNeural|boy",
   "默认 zh-CN-YunyangNeural": "默認 zh-HK-YunyangNeural",
   "默认 zh-CN-YunyeNeural": "默認 zh-HK-YunyeNeural",
-  "playground": "聊天",
+  "playground": "Playground",
   "modelOwnedby": {
     "action": "操作",
     "create": "新建模型歸屬",
