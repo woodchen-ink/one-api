@@ -125,17 +125,16 @@ export default function componentStyleOverrides(theme) {
         root: {
           backgroundImage: 'none',
           borderRadius: '14px',
-          boxShadow: theme.mode === 'dark' ? '0 2px 8px 0 rgba(0,0,0,0.2)' : '0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px 0 rgba(0,0,0,0.06)'
+          boxShadow: 'none'
         },
         rounded: {
           borderRadius: `${theme?.customization?.borderRadius || 14}px`
         },
         elevation1: {
-          boxShadow: theme.mode === 'dark' ? '0 2px 8px 0 rgba(0,0,0,0.2)' : '0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px 0 rgba(0,0,0,0.06)'
+          boxShadow: 'none'
         },
         elevation2: {
-          boxShadow:
-            theme.mode === 'dark' ? '0 3px 12px 0 rgba(0,0,0,0.22)' : '0 3px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)'
+          boxShadow: 'none'
         }
       }
     },
@@ -144,12 +143,11 @@ export default function componentStyleOverrides(theme) {
         root: {
           borderRadius: '14px',
           padding: 0,
-          boxShadow: theme.mode === 'dark' ? '0 2px 8px 0 rgba(0,0,0,0.2)' : '0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px 0 rgba(0,0,0,0.06)',
+          boxShadow: 'none',
           transition: 'box-shadow 0.3s ease',
           overflow: 'hidden',
           '&:hover': {
-            boxShadow:
-              theme.mode === 'dark' ? '0 6px 16px 0 rgba(0,0,0,0.3)' : '0 8px 14px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)'
+            boxShadow: 'none'
           },
           '& .MuiTableContainer-root': {
             borderRadius: 0
@@ -202,9 +200,10 @@ export default function componentStyleOverrides(theme) {
     MuiAutocomplete: {
       styleOverrides: {
         popper: {
-          boxShadow: theme.mode === 'dark' ? '0 4px 20px 0 rgba(0,0,0,0.3)' : '0 2px 10px 0 rgba(0,0,0,0.12)',
+          boxShadow: 'none',
           borderRadius: '8px',
-          color: theme.darkTextPrimary
+          color: theme.darkTextPrimary,
+          border: `1px solid ${theme.divider}`
         },
         listbox: {
           padding: '4px 0'
@@ -673,7 +672,7 @@ export default function componentStyleOverrides(theme) {
           fontWeight: 400,
           fontSize: '0.75rem',
           padding: '6px 10px',
-          boxShadow: theme.mode === 'dark' ? '0 2px 8px 0 rgba(0,0,0,0.3)' : '0 1px 4px 0 rgba(0,0,0,0.15)'
+          boxShadow: 'none'
         },
         arrow: {
           color: theme.mode === 'dark' ? theme.colors?.grey700 : '#212121'
@@ -752,8 +751,9 @@ export default function componentStyleOverrides(theme) {
       styleOverrides: {
         paper: {
           borderRadius: '16px',
-          boxShadow: theme.mode === 'dark' ? '0 12px 40px 0 rgba(0,0,0,0.5)' : '0 25px 50px -12px rgba(0,0,0,0.25)',
+          boxShadow: 'none',
           overflow: 'visible',
+          border: `1px solid ${theme.divider}`,
           '&.MuiPaper-rounded': {
             borderRadius: '16px'
           }
@@ -1026,8 +1026,9 @@ export default function componentStyleOverrides(theme) {
       styleOverrides: {
         root: {
           backgroundColor: theme.mode === 'dark' ? theme.paper : '#fff',
-          boxShadow: theme.mode === 'dark' ? '0 8px 24px 0 rgba(0,0,0,0.4)' : '0 8px 24px -4px rgba(0,0,0,0.15)',
-          borderRadius: '14px'
+          boxShadow: 'none',
+          borderRadius: '14px',
+          border: `1px solid ${theme.divider}`
         }
       }
     },
@@ -1061,8 +1062,9 @@ export default function componentStyleOverrides(theme) {
       styleOverrides: {
         root: {
           '& .MuiPaper-root': {
-            boxShadow: theme.mode === 'dark' ? '0 8px 24px 0 rgba(0,0,0,0.4)' : '0 8px 24px -4px rgba(0,0,0,0.15)',
-            borderRadius: '12px'
+            boxShadow: 'none',
+            borderRadius: '12px',
+            border: `1px solid ${theme.divider}`
           }
         }
       }
