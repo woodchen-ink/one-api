@@ -94,18 +94,34 @@ const Playground = () => {
     );
   } else if (chatLinks.length === 1) {
     return (
-      <iframe title="playground" src={iframeSrc} style={{ width: '100%', height: '85vh', border: 'none' }} />
+      <Box sx={{ margin: '-24px', marginTop: '-20px' }}>
+        <iframe
+          title="playground"
+          src={iframeSrc}
+          style={{ width: '100%', height: 'calc(100vh - 110px)', border: 'none', display: 'block' }}
+          allow="clipboard-read; clipboard-write"
+          sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals allow-downloads"
+        />
+      </Box>
     );
   } else {
     return (
-      <Card>
-        <Tabs variant="scrollable" value={tabIndex} onChange={handleTabChange} sx={{ borderRight: 1, borderColor: 'divider' }}>
-          {chatLinks.map((link, index) => link.show && <Tab label={link.name} {...a11yProps(index)} key={index} />)}
-        </Tabs>
-        <Box>
-          <iframe title="playground" src={iframeSrc} style={{ width: '100%', height: '85vh', border: 'none' }} />
-        </Box>
-      </Card>
+      <Box sx={{ margin: '-24px', marginTop: '-20px' }}>
+        <Card sx={{ boxShadow: 'none', height: '100%' }}>
+          <Tabs variant="scrollable" value={tabIndex} onChange={handleTabChange} sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            {chatLinks.map((link, index) => link.show && <Tab label={link.name} {...a11yProps(index)} key={index} />)}
+          </Tabs>
+          <Box>
+            <iframe
+              title="playground"
+              src={iframeSrc}
+              style={{ width: '100%', height: 'calc(100vh - 158px)', border: 'none', display: 'block' }}
+              allow="clipboard-read; clipboard-write"
+              sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals allow-downloads"
+            />
+          </Box>
+        </Card>
+      </Box>
     );
   }
 };
