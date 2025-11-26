@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import AuthGuard from 'utils/route-guard/AuthGuard';
 
 // material-ui
@@ -57,21 +57,17 @@ export const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open
   },
   [theme.breakpoints.up('md')]: {
     marginLeft: open ? 0 : -(drawerWidth - 20),
-    width: open ? `calc(100% - ${drawerWidth}px)` : '100%',
-    paddingLeft: theme.spacing(3),
-    paddingRight: theme.spacing(3)
+    width: open ? `calc(100% - ${drawerWidth}px)` : '100%'
   },
   [theme.breakpoints.down('md')]: {
     marginLeft: '0',
     width: '100%',
-    padding: '16px',
     marginTop: '64px',
     height: 'calc(100vh - 64px)'
   },
   [theme.breakpoints.down('sm')]: {
     marginLeft: '0',
     width: '100%',
-    padding: '16px',
     marginRight: '0',
     marginTop: '56px',
     height: 'calc(100vh - 56px)'

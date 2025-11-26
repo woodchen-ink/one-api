@@ -94,11 +94,11 @@ const Playground = () => {
     );
   } else if (chatLinks.length === 1) {
     return (
-      <Box sx={{ margin: '-24px', marginTop: '-20px' }}>
+      <Box sx={{ width: '100%', height: 'calc(100vh - 110px)' }}>
         <iframe
           title="playground"
           src={iframeSrc}
-          style={{ width: '100%', height: 'calc(100vh - 110px)', border: 'none', display: 'block' }}
+          style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
           allow="clipboard-read; clipboard-write"
           sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals allow-downloads"
         />
@@ -106,7 +106,7 @@ const Playground = () => {
     );
   } else {
     return (
-      <Box sx={{ margin: '-24px', marginTop: '-20px' }}>
+      <Box sx={{ width: '100%', height: 'calc(100vh - 110px)' }}>
         <Card sx={{ boxShadow: 'none', height: '100%' }}>
           <Tabs variant="scrollable" value={tabIndex} onChange={handleTabChange} sx={{ borderBottom: 1, borderColor: 'divider' }}>
             {chatLinks.map((link, index) => link.show && <Tab label={link.name} {...a11yProps(index)} key={index} />)}
