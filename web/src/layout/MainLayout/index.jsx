@@ -104,9 +104,7 @@ const MainLayout = () => {
         overflow: 'hidden',
         scrollbarWidth: 'none',
         scrollbarColor: 'transparent transparent',
-        width: '98%',
-        maxWidth: '1800px',
-        margin: '0 auto',
+        width: '100%',
         height: '100vh',
         position: 'relative',
         backgroundColor: theme.palette.background.default
