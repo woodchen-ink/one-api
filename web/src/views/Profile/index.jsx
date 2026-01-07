@@ -479,6 +479,46 @@ export default function Profile() {
                   </Button>
                 )}
               </ListItem>
+              {status.czlconnect_auth && (
+                <ListItem divider>
+                  <ListItemAvatar>
+                    <Avatar src={CZLConnectIcon} sx={{ bgcolor: 'transparent' }} />
+                  </ListItemAvatar>
+                  <ListItemText
+                    primary={
+                      matchDownSM ? (
+                        <Box display="flex" justifyContent="space-between" alignItems="center">
+                          <Typography variant="body1">CZL Connect</Typography>
+                          {inputs.czlconnect_id ? (
+                            <Button size="small" variant="outlined" color="error" onClick={() => handleUnbind('czlconnect')}>
+                              {t('profilePage.unbind')}
+                            </Button>
+                          ) : (
+                            <Button size="small" variant="outlined" onClick={() => onCZLConnectOAuthClicked(status.czlconnect_client_id)}>
+                              {t('profilePage.bind')}
+                            </Button>
+                          )}
+                        </Box>
+                      ) : (
+                        'CZL Connect'
+                      )
+                    }
+                    secondary={inputs.czlconnect_id ? `${t('profilePage.bound')}: ${inputs.czlconnect_id}` : t('profilePage.unbound')}
+                    secondaryTypographyProps={matchDownSM ? {} : { noWrap: true }}
+                    sx={matchDownSM ? {} : { minWidth: 0, mr: 2 }}
+                  />
+                  {!matchDownSM &&
+                    (inputs.czlconnect_id ? (
+                      <Button variant="outlined" color="error" onClick={() => handleUnbind('czlconnect')} sx={{ ml: 2 }}>
+                        {t('profilePage.unbind')}
+                      </Button>
+                    ) : (
+                      <Button variant="outlined" onClick={() => onCZLConnectOAuthClicked(status.czlconnect_client_id)} sx={{ ml: 2 }}>
+                        {t('profilePage.bind')}
+                      </Button>
+                    ))}
+                </ListItem>
+              )}
               {status.wechat_login && (
                 <ListItem divider>
                   <ListItemAvatar>
