@@ -29,6 +29,8 @@ function renderRole(t, role) {
   switch (role) {
     case 1:
       return <Label color="default">{t('userPage.cUserRole')}</Label>;
+    case 3:
+      return <Label color="primary">{t('userPage.reliableUserRole')}</Label>;
     case 10:
       return <Label color="orange">{t('userPage.adminUserRole')}</Label>;
     case 100:
@@ -168,50 +170,85 @@ export default function UsersTableRow({ item, manageUser, handleOpenModal, setMo
           <TableSwitch id={`switch-${item.id}`} checked={statusSwitch === 1} onChange={handleStatus} />
         </TableCell>
         <TableCell>
-          <Stack direction="row" spacing={1}>
-            {item.role !== 100 && (
-              <Tooltip title={item.role === 1 ? t('userPage.setAdmin') : t('userPage.cancelAdmin')}>
-                <IconButton 
-                  onClick={() => manageUser(item.username, 'role', item.role === 1 ? true : false)}
-                  sx={{ color: 'rgb(99, 115, 129)' }}
-                >
-                  <Icon icon="solar:user-bold-duotone" />
-                </IconButton>
-              </Tooltip>
-            )}
-            
-            <Tooltip title={t('common.edit')}>
-              <IconButton 
-                onClick={() => {
-                  handleOpenModal();
-                  setModalUserId(item.id);
-                }}
-                sx={{ color: 'rgb(99, 115, 129)' }}
-              >
-                <Icon icon="solar:pen-bold-duotone" />
-              </IconButton>
-            </Tooltip>
-
-            <Tooltip title={t('userPage.changeQuota')}>
-              <IconButton 
-                onClick={() => setOpenChangeQuota(true)}
-                sx={{ color: 'rgb(99, 115, 129)' }}
-              >
-                <Icon icon="solar:wallet-money-bold-duotone" />
-              </IconButton>
-            </Tooltip>
-
-            <Tooltip title={t('common.delete')}>
-              <IconButton 
-                onClick={handleDeleteOpen}
-                sx={{ color: 'error.main' }}
-              >
-                <Icon icon="solar:trash-bin-trash-bold-duotone" />
-              </IconButton>
-            </Tooltip>
-          </Stack>
+          <IconButton onClick={handleOpenMenu} sx={{ color: 'rgb(99, 115, 129)' }}>
+            <Icon icon="solar:menu-dots-circle-bold-duotone" />
+          </IconButton>
         </TableCell>
       </TableRow>
+
+      <Popover
+        open={!!open}
+        anchorEl={open}
+        onClose={handleCloseMenu}
+        anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        PaperProps={{
+          sx: { minWidth: 140 }
+        }}
+      >
+        {/* 设置为普通用户 - 只对非普通用户和非超级管理员显示 */}
+        {item.role !== 100 && item.role !== 1 && (
+          <MenuItem
+            onClick={() => {
+              handleCloseMenu();
+              manageUser(item.username, 'set_role', 1);
+            }}
+          >
+            <Icon icon="solar:user-bold-duotone" style={{ marginRight: '16px' }} />
+            {t('userPage.setCommonUser')}
+          </MenuItem>
+        )}
+
+        {/* 设置为可信内部员工 - 只对非可信内部员工和非超级管理员显示 */}
+        {item.role !== 100 && item.role !== 3 && (
+          <MenuItem
+            onClick={() => {
+              handleCloseMenu();
+              manageUser(item.username, 'set_role', 3);
+            }}
+          >
+            <Icon icon="solar:verified-check-bold-duotone" style={{ marginRight: '16px' }} />
+            {t('userPage.setReliable')}
+          </MenuItem>
+        )}
+
+        {/* 设置为管理员 - 只对非管理员和非超级管理员显示 */}
+        {item.role !== 100 && item.role !== 10 && (
+          <MenuItem
+            onClick={() => {
+              handleCloseMenu();
+              manageUser(item.username, 'set_role', 10);
+            }}
+          >
+            <Icon icon="solar:shield-user-bold-duotone" style={{ marginRight: '16px' }} />
+            {t('userPage.setAdmin')}
+          </MenuItem>
+        )}
+
+        <MenuItem
+          onClick={() => {
+            handleCloseMenu();
+            handleOpenModal();
+            setModalUserId(item.id);
+          }}
+        >
+          <Icon icon="solar:pen-bold-duotone" style={{ marginRight: '16px' }} />
+          {t('common.edit')}
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            handleCloseMenu();
+            setOpenChangeQuota(true);
+          }}
+        >
+          <Icon icon="solar:wallet-money-bold-duotone" style={{ marginRight: '16px' }} />
+          {t('userPage.changeQuota')}
+        </MenuItem>
+        <MenuItem onClick={handleDeleteOpen} sx={{ color: 'error.main' }}>
+          <Icon icon="solar:trash-bin-trash-bold-duotone" style={{ marginRight: '16px' }} />
+          {t('common.delete')}
+        </MenuItem>
+      </Popover>
 
       <Dialog open={openDelete} onClose={handleDeleteClose}>
         <DialogTitle>{t('userPage.del')}</DialogTitle>

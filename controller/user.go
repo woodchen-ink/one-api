@@ -80,7 +80,7 @@ func setupLogin(user *model.User, c *gin.Context) {
 		return
 	}
 	user.LastLoginTime = time.Now().Unix()
-  user.LastLoginIp = c.ClientIP()
+	user.LastLoginIp = c.ClientIP()
 
 	user.Update(false)
 
@@ -642,37 +642,49 @@ func ManageUser(c *gin.Context) {
 			return
 		}
 	case "promote":
+		// 设置为管理员：只有超级管理员能操作
 		if myRole != config.RoleRootUser {
 			c.JSON(http.StatusOK, gin.H{
 				"success": false,
-				"message": "普通管理员用户无法提升其他用户为管理员",
+				"message": "只有超级管理员可以设置其他用户为管理员",
 			})
 			return
 		}
-		if user.Role >= config.RoleAdminUser {
+		if user.Role == config.RoleRootUser {
 			c.JSON(http.StatusOK, gin.H{
 				"success": false,
-				"message": "该用户已经是管理员",
+				"message": "无法修改超级管理员的身份",
 			})
 			return
 		}
 		user.Role = config.RoleAdminUser
 	case "demote":
+		// 设置为普通用户：不能操作超级管理员
 		if user.Role == config.RoleRootUser {
 			c.JSON(http.StatusOK, gin.H{
 				"success": false,
-				"message": "无法降级超级管理员用户",
-			})
-			return
-		}
-		if user.Role == config.RoleCommonUser {
-			c.JSON(http.StatusOK, gin.H{
-				"success": false,
-				"message": "该用户已经是普通用户",
+				"message": "无法修改超级管理员的身份",
 			})
 			return
 		}
 		user.Role = config.RoleCommonUser
+	case "set_reliable":
+		// 设置为可信内部员工：管理员及以上能操作
+		if myRole < config.RoleAdminUser {
+			c.JSON(http.StatusOK, gin.H{
+				"success": false,
+				"message": "只有管理员或超级管理员可以设置可信内部员工",
+			})
+			return
+		}
+		if user.Role == config.RoleRootUser {
+			c.JSON(http.StatusOK, gin.H{
+				"success": false,
+				"message": "无法修改超级管理员的身份",
+			})
+			return
+		}
+		user.Role = config.RoleReliableUser
 	}
 
 	if err := user.Update(false); err != nil {
@@ -804,6 +816,61 @@ func ChangeUserQuota(c *gin.Context) {
 
 	model.RecordQuotaLog(userId, model.LogTypeManage, req.Quota, common.GetClientIP(c), remark)
 
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "",
+	})
+}
+
+type UnbindRequest struct {
+	Type string `json:"type"`
+}
+
+func Unbind(c *gin.Context) {
+	var req UnbindRequest
+	err := json.NewDecoder(c.Request.Body).Decode(&req)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "无效的参数",
+		})
+		return
+	}
+	id := c.GetInt("id")
+	user, err := model.GetUserById(id, false)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
+	updates := make(map[string]interface{})
+	switch req.Type {
+	case "github":
+		updates["github_id"] = ""
+		updates["github_id_new"] = nil
+	case "wechat":
+		updates["wechat_id"] = ""
+	case "lark":
+		updates["lark_id"] = ""
+	case "oidc":
+		updates["oidc_id"] = ""
+	default:
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "未知的绑定类型",
+		})
+		return
+	}
+	err = model.DB.Model(user).Updates(updates).Error
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "",
