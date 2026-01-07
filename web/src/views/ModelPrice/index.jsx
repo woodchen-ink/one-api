@@ -297,6 +297,11 @@ export default function ModelPrice() {
     setSearchQuery(event.target.value);
   };
 
+  const handleUnitChange = (_event, newUnit) => {
+    if (newUnit !== null) {
+      setUnit(newUnit);
+    }
+  };
 
   const toggleOnlyShowAvailable = () => {
     setOnlyShowAvailable((prev) => !prev);
