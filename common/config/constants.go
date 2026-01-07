@@ -22,6 +22,7 @@ var Logo = ""
 var TopUpLink = ""
 var ChatLink = ""
 var ChatLinks = ""
+var AnalyticsCode = ""
 var QuotaPerUnit = 500 * 1000.0 // $0.002 / 1K tokens
 var DisplayInCurrencyEnabled = true
 
@@ -219,10 +220,11 @@ var GeminiAPIEnabled = true
 var ClaudeAPIEnabled = true
 
 const (
-	RoleGuestUser  = 0
-	RoleCommonUser = 1
-	RoleAdminUser  = 10
-	RoleRootUser   = 100
+	RoleGuestUser     = 0
+	RoleCommonUser    = 1
+	RoleReliableUser  = 3   // 可信的内部员工
+	RoleAdminUser     = 10
+	RoleRootUser      = 100
 )
 
 var RateLimitKeyExpirationDuration = 20 * time.Minute

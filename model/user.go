@@ -397,6 +397,19 @@ func IsAdmin(userId int) bool {
 	return user.Role >= config.RoleAdminUser
 }
 
+func IsReliable(userId int) bool {
+	if userId == 0 {
+		return false
+	}
+	var user User
+	err := DB.Where("id = ?", userId).Select("role").Find(&user).Error
+	if err != nil {
+		logger.SysError("no such user " + err.Error())
+		return false
+	}
+	return user.Role >= config.RoleReliableUser
+}
+
 func IsUserEnabled(userId int) (bool, error) {
 	if userId == 0 {
 		return false, errors.New("user id is empty")
@@ -668,4 +681,14 @@ func SaveWebAuthnCredential(userId int, credential *webauthn.Credential, alias s
 		CreatedTime:     time.Now().Unix(),
 	}
 	return DB.Create(&webauthnCred).Error
+}
+
+// GetUserByWebAuthnCredentialId 通过WebAuthn凭据ID获取用户
+func GetUserByWebAuthnCredentialId(credentialId []byte) (*User, error) {
+	var cred WebAuthnCredential
+	err := DB.Where("credential_id = ?", credentialId).First(&cred).Error
+	if err != nil {
+		return nil, err
+	}
+	return GetUserById(cred.UserId, false)
 }

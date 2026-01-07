@@ -17,4 +17,4 @@ dist
 test.yaml
 one-api
 _output
-.claude/settings.local.json
+.claude
