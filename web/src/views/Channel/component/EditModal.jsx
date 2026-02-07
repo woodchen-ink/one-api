@@ -863,7 +863,18 @@ const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, model
                       </Typography>
                     </Box>
                     <Collapse in={advancedOpen}>
-                      <Box sx={{ pt: 1 }}>
+                      <Box
+                        sx={{
+                          pt: 1.5,
+                          px: 2,
+                          pb: 1.5,
+                          mt: 1,
+                          borderRadius: 1,
+                          bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+                          border: '1px solid',
+                          borderColor: 'divider'
+                        }}
+                      >
                         {inputPrompt.model_mapping && (
                           <FormControl
                             fullWidth
