@@ -17,6 +17,7 @@ import {
 import TableSwitch from 'ui-component/Switch';
 import { renderQuota, timestamp2string, copy } from 'utils/common';
 import Label from 'ui-component/Label';
+import ButtonGroup from '@mui/material/ButtonGroup';
 
 import { Icon } from '@iconify/react';
 import { useTranslation } from 'react-i18next';
