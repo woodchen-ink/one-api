@@ -377,7 +377,7 @@ export default function Token() {
                       { id: 'status', label: t('token_index.status'), disableSort: false },
                       { id: 'quota', label: t('token_index.usedQuota') + ' / ' + t('token_index.remainingQuota'), disableSort: true },
                       { id: 'time', label: t('token_index.createdTime') + ' / ' + t('token_index.expiryTime'), disableSort: true },
-                      { id: 'accessed_time', label: t('token_index.accessedTime'), disableSort: false },
+                      { id: 'accessed_time', label: t('token_index.accessedTime'), disableSort: true },
                       { id: 'action', label: t('token_index.actions'), disableSort: true }
                     ].filter(col => !col.hide);
                   } else {
@@ -391,6 +391,7 @@ export default function Token() {
                       { id: 'remain_quota', label: t('token_index.remainingQuota'), disableSort: false },
                       { id: 'created_time', label: t('token_index.createdTime'), disableSort: false },
                       { id: 'expired_time', label: t('token_index.expiryTime'), disableSort: false },
+                      { id: 'accessed_time', label: t('token_index.accessedTime'), disableSort: true },
                       { id: 'action', label: t('token_index.actions'), disableSort: true }
                     ].filter(col => !col.hide);
                   }
@@ -402,8 +403,6 @@ export default function Token() {
                     item={row}
                     manageToken={manageToken}
                     key={row.id}
-                    handleOpenModal={handleOpenModal}
-                    setModalTokenId={setEditTokenId}
                     userGroup={userGroup}
                     userIsReliable={userIsReliable}
                     isAdminSearch={adminSearchEnabled && (adminSearchUserId || adminSearchTokenId)}

@@ -11,18 +11,15 @@ import {
   DialogTitle,
   Button,
   Tooltip,
-  Stack,
+  Stack
 } from '@mui/material';
 
 import TableSwitch from 'ui-component/Switch';
 import { renderQuota, timestamp2string, copy } from 'utils/common';
 import Label from 'ui-component/Label';
-import ButtonGroup from '@mui/material/ButtonGroup';
 
-import { Icon } from '@iconify/react';
 import { useTranslation } from 'react-i18next';
-import useMediaQuery from '@mui/material/useMediaQuery';
-import { useTheme } from '@mui/material/styles';
+
 
 function statusInfo(t, status) {
   switch (status) {
@@ -39,13 +36,10 @@ function statusInfo(t, status) {
   }
 }
 
-export default function TokensTableRow({ item, manageToken, handleOpenModal, setModalTokenId, userGroup, userIsReliable, isAdminSearch }) {
+export default function TokensTableRow({ item, manageToken, userGroup, userIsReliable, isAdminSearch }) {
   const { t } = useTranslation();
   const [openDelete, setOpenDelete] = useState(false);
   const [statusSwitch, setStatusSwitch] = useState(item.status);
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-
   const handleDeleteOpen = () => {
     setOpenDelete(true);
   };
@@ -64,11 +58,6 @@ export default function TokensTableRow({ item, manageToken, handleOpenModal, set
 
   const handleDelete = async () => {
     await manageToken(item.id, 'delete', '');
-  };
-
-  const handleEdit = () => {
-    handleOpenModal();
-    setModalTokenId(item.id);
   };
 
   useEffect(() => {
@@ -153,56 +142,30 @@ export default function TokensTableRow({ item, manageToken, handleOpenModal, set
           </>
         )}
 
-        {/* 管理员搜索模式：最近使用日期 */}
-        {isAdminSearch && (
-          <TableCell>
-            {item.accessed_time ? timestamp2string(item.accessed_time) : '-'}
-          </TableCell>
-        )}
+        <TableCell>
+          {item.accessed_time ? timestamp2string(item.accessed_time) : '-'}
+        </TableCell>
 
         <TableCell>
           <Stack direction="row" justifyContent="center" alignItems="center" spacing={1}>
-            {isAdminSearch ? (
-              // 管理员搜索模式：只保留简单的复制按钮
-              <Button
-                size="small"
-                variant="outlined"
-                color="primary"
-                onClick={() => {
-                  copy(`sk-${item.key}`, t('token_index.token'));
-                }}
-              >
-                {isMobile ? <Icon icon="mdi:content-copy" /> : t('token_index.copy')}
-              </Button>
-            ) : (
-              // 普通模式：完整的操作按钮
-              <>
-                <ButtonGroup size="small" aria-label="split button">
-                  <Button
-                    color="primary"
-                    onClick={() => {
-                      copy(`sk-${item.key}`, t('token_index.token'));
-                    }}
-                  >
-                    {isMobile ? <Icon icon="mdi:content-copy" /> : t('token_index.copy')}
-                  </Button>
-                  <Button size="small" onClick={(e) => handleOpenMenu(e, 'copy')}>
-                    <IconCaretDownFilled size={'16px'} />
-                  </Button>
-                </ButtonGroup>
-                <ButtonGroup size="small" onClick={(e) => handleOpenMenu(e, 'link')} aria-label="split button">
-                  <Button size="small" color="primary">
-                    {isMobile ? <Icon icon="mdi:chat" /> : t('token_index.chat')}
-                  </Button>
-                  <Button size="small">
-                    <IconCaretDownFilled size={'16px'} />
-                  </Button>
-                </ButtonGroup>
-              </>
-            )}
-            <IconButton onClick={(e) => handleOpenMenu(e, 'action')} sx={{ color: 'rgb(99, 115, 129)' }}>
-              <Icon icon="solar:menu-dots-circle-bold-duotone" width={20} />
-            </IconButton>
+            <Button
+              size="small"
+              variant="outlined"
+              color="primary"
+              onClick={() => {
+                copy(`sk-${item.key}`, t('token_index.token'));
+              }}
+            >
+              {t('token_index.copy')}
+            </Button>
+            <Button
+              size="small"
+              variant="outlined"
+              color="error"
+              onClick={handleDeleteOpen}
+            >
+              {t('token_index.delete')}
+            </Button>
           </Stack>
         </TableCell>
       </TableRow>
@@ -228,8 +191,6 @@ export default function TokensTableRow({ item, manageToken, handleOpenModal, set
 TokensTableRow.propTypes = {
   item: PropTypes.object,
   manageToken: PropTypes.func,
-  handleOpenModal: PropTypes.func,
-  setModalTokenId: PropTypes.func,
   userGroup: PropTypes.object,
   userIsReliable: PropTypes.bool,
   isAdminSearch: PropTypes.bool
