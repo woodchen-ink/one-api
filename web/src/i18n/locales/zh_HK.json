@@ -127,6 +127,8 @@
     "collapse": "收起",
     "expand": "展開",
     "copyModels": "複製模型",
+    "advancedSettings": "進階設定",
+    "optionSettings": "選項設定",
     "mapAdd": "新增{{name}}",
     "mapAddByJson": "透過 JSON 添加{{name}}",
     "mapJsonInput": "JSON 輸入",

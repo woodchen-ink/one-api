@@ -223,6 +223,8 @@
     "collapse": "收起",
     "expand": "展开",
     "copyModels": "复制模型",
+    "advancedSettings": "高级配置",
+    "optionSettings": "选项设置",
     "mapAdd": "添加{{name}}",
     "mapAddByJson": "通过JSON添加{{name}}",
     "mapJsonInput": "JSON 输入",

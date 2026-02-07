@@ -124,6 +124,8 @@
     "requiredName": "名前は必須です",
     "validJson": "有効な JSON 文字列である必要があります",
     "copyModels": "モデルをコピーします",
+    "advancedSettings": "詳細設定",
+    "optionSettings": "オプション",
     "mapAdd": "{{name}}を追加",
     "mapAddByJson": "JSONを使用して{{name}}を追加します。",
     "mapJsonInput": "JSON 入力",

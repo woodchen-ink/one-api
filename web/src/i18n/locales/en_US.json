@@ -136,6 +136,8 @@
     "requiredName": "Name is required",
     "validJson": "Must be a valid JSON string",
     "copyModels": "Copy model",
+    "advancedSettings": "Advanced Settings",
+    "optionSettings": "Options",
     "mapAdd": "Add {{name}}",
     "mapAddByJson": "Add {{name}} through JSON",
     "mapJsonInput": "JSON input",
