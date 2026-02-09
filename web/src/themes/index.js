@@ -75,22 +75,22 @@ function GetDarkOption() {
   return {
     mode: 'dark',
     heading: color.darkTextTitle,
-    paper: '#1A1D23',
-    backgroundDefault: '#13151A',
-    background: '#1E2128',
-    darkTextPrimary: '#E0E4EC',
-    darkTextSecondary: '#A9B2C3',
-    textDark: '#F8F9FC',
+    paper: '#211F1C',
+    backgroundDefault: '#1A1916',
+    background: '#272420',
+    darkTextPrimary: '#F2F0EB',
+    darkTextSecondary: '#C4BFB5',
+    textDark: '#FAF9F5',
     menuSelected: color.primary200,
-    menuSelectedBack: varAlpha(color.primaryMain, 0.12),
-    divider: 'rgba(255, 255, 255, 0.1)',
-    borderColor: 'rgba(255, 255, 255, 0.12)',
-    menuButton: '#292D36',
-    menuButtonColor: color.primaryMain,
-    menuChip: '#292D36',
-    headBackgroundColor: '#25282F',
-    headBackgroundColorHover: varAlpha('#25282F', 0.08),
-    tableBorderBottom: 'rgba(255, 255, 255, 0.08)'
+    menuSelectedBack: varAlpha(color.darkPrimaryMain, 0.15),
+    divider: 'rgba(235, 230, 222, 0.12)',
+    borderColor: 'rgba(235, 230, 222, 0.15)',
+    menuButton: '#2E2B27',
+    menuButtonColor: color.darkPrimaryMain,
+    menuChip: '#2E2B27',
+    headBackgroundColor: '#2E2B27',
+    headBackgroundColorHover: varAlpha('#2E2B27', 0.08),
+    tableBorderBottom: 'rgba(235, 230, 222, 0.1)'
   };
 }
 
@@ -98,22 +98,22 @@ function GetLightOption() {
   const color = colors;
   return {
     mode: 'light',
-    heading: '#000000', // 主要文本
-    paper: '#F8F7F6', // 主要背景色
-    backgroundDefault: '#F8F7F6', // 主要背景色
-    background: '#F8F7F6',
-    darkTextPrimary: '#000000', // 主要文本
-    darkTextSecondary: '#666666', // 次要文本颜色（更浅一些）
-    textDark: '#000000',
-    menuSelected: '#F4E8E0', // 已选择
-    menuSelectedBack: varAlpha('#F4E8E0', 0.8),
-    divider: '#EEEDEC',
-    borderColor: '#EEEDEC',
-    menuButton: '#000000', // 导航栏背景 (黑色)
-    menuButtonColor: '#F8F7F6', // 导航栏内容 (浅色)
-    menuChip: '#EEEDEC',
-    headBackgroundColor: '#EEEDEC', // 表头背景改为浅色
-    headBackgroundColorHover: varAlpha('#EEEDEC', 0.08), // 悬停
-    tableBorderBottom: '#EEEDEC'
+    heading: '#141413', // 主要文本和图标
+    paper: '#FAF9F5', // 主要背景色
+    backgroundDefault: '#FAF9F5', // 主要背景色
+    background: '#FAF9F5',
+    darkTextPrimary: '#141413', // 主要文本和图标
+    darkTextSecondary: '#8A847A', // 次要文本颜色
+    textDark: '#141413',
+    menuSelected: '#E3DCD1', // 已选择
+    menuSelectedBack: varAlpha('#E3DCD1', 0.8),
+    divider: '#EBE6DE',
+    borderColor: '#EBE6DE',
+    menuButton: '#141413', // 导航栏背景 (强调色)
+    menuButtonColor: '#FAF9F5', // 导航栏内容 (浅色)
+    menuChip: '#EBE6DE',
+    headBackgroundColor: '#EBE6DE', // 表头背景 (悬停色)
+    headBackgroundColorHover: varAlpha('#EBE6DE', 0.08), // 悬停
+    tableBorderBottom: '#EBE6DE'
   };
 }

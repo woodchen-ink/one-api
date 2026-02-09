@@ -12,55 +12,55 @@ export default function themePalette(theme) {
       black: theme.colors?.darkPaper
     },
     primary: {
-      lighter: theme.mode === 'dark' ? '#60B8FF' : '#F0F7FF',
+      lighter: theme.mode === 'dark' ? '#F0D9CA' : '#F2F0EB',
       light: theme.colors?.primaryLight,
       main: theme.colors?.primaryMain,
       dark: theme.colors?.primaryDark,
       200: theme.colors?.primary200,
       800: theme.colors?.primary800,
-      contrastText: '#fff',
+      contrastText: '#FAF9F5',
       gradient: createGradient(theme.colors?.primaryMain, theme.colors?.primaryDark)
     },
     secondary: {
-      lighter: theme.mode === 'dark' ? '#B4A1FF' : '#F6F0FF',
+      lighter: theme.mode === 'dark' ? '#F0D9CA' : '#F5EDE6',
       light: theme.colors?.secondaryLight,
       main: theme.colors?.secondaryMain,
       dark: theme.colors?.secondaryDark,
       200: theme.colors?.secondary200,
       800: theme.colors?.secondary800,
-      contrastText: '#fff',
+      contrastText: '#FAF9F5',
       gradient: createGradient(theme.colors?.secondaryMain, theme.colors?.secondaryDark)
     },
     error: {
-      lighter: '#FFEBEE',
+      lighter: '#F5E4DF',
       light: theme.colors?.errorLight,
       main: theme.colors?.errorMain,
       dark: theme.colors?.errorDark,
-      contrastText: '#fff',
+      contrastText: '#FAF9F5',
       gradient: createGradient(theme.colors?.errorMain, theme.colors?.errorDark)
     },
     orange: {
-      lighter: '#FFF3E0',
+      lighter: '#F5EDE6',
       light: theme.colors?.orangeLight,
       main: theme.colors?.orangeMain,
       dark: theme.colors?.orangeDark,
-      contrastText: theme.mode === 'dark' ? '#fff' : '#000'
+      contrastText: theme.mode === 'dark' ? '#FAF9F5' : '#141413'
     },
     warning: {
-      lighter: '#FFF8E1',
+      lighter: '#FBF5DC',
       light: theme.colors?.warningLight,
       main: theme.colors?.warningMain,
       dark: theme.colors?.warningDark,
-      contrastText: theme.mode === 'dark' ? '#000' : '#000',
+      contrastText: '#141413',
       gradient: createGradient(theme.colors?.warningMain, theme.colors?.warningDark)
     },
     success: {
-      lighter: '#E6F8F1',
+      lighter: '#EEF1E8',
       light: theme.colors?.successLight,
       200: theme.colors?.success200,
       main: theme.colors?.successMain,
       dark: theme.colors?.successDark,
-      contrastText: '#fff',
+      contrastText: '#FAF9F5',
       gradient: createGradient(theme.colors?.successMain, theme.colors?.successDark)
     },
     grey: {

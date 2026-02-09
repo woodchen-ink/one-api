@@ -49,44 +49,44 @@ export default function componentStyleOverrides(theme) {
             transform: 'translateY(0)'
           }
         },
-        // 主要按钮 - 使用 #000000/#C08259 作为背景, 内容使用#F8F7F6
+        // 主要按钮 - 强调色背景, 白色字体
         containedPrimary: {
-          background: '#000000',
-          color: '#F8F7F6',
+          background: '#141413',
+          color: '#FAF9F5',
           '&:hover': {
-            background: '#C08259'
+            background: '#D97757'
           }
         },
-        // 普通按钮 - 使用'#EEEDEC'作为背景, 字体用#000000
+        // 普通按钮 - 悬停色背景
         contained: {
-          background: '#EEEDEC',
-          color: '#000000',
+          background: '#EBE6DE',
+          color: '#141413',
           '&:hover': {
-            background: '#000000',
-            color: '#F8F7F6'
+            background: '#141413',
+            color: '#FAF9F5'
           }
         },
-        // 删除按钮 - 使用#b85e48作为背景色, 字体用#F8F7F6
+        // 删除按钮 - 危险色
         containedSecondary: {
-          background: '#b85e48',
-          color: '#F8F7F6',
+          background: '#B85E48',
+          color: '#FAF9F5',
           '&:hover': {
             background: '#9d4a3a'
           }
         },
         outlinedPrimary: {
-          borderColor: '#C08259',
-          color: '#C08259',
+          borderColor: '#D97757',
+          color: '#D97757',
           '&:hover': {
-            backgroundColor: '#F4E8E0',
-            borderColor: '#C08259',
-            color: '#b85e48'
+            backgroundColor: '#E3DCD1',
+            borderColor: '#D97757',
+            color: '#B85E48'
           }
         },
         text: {
-          color: '#000000',
+          color: '#141413',
           '&:hover': {
-            backgroundColor: '#EEEDEC'
+            backgroundColor: '#EBE6DE'
           }
         },
         sizeSmall: {
@@ -229,20 +229,20 @@ export default function componentStyleOverrides(theme) {
           borderRadius: '8px',
           padding: '8px 16px',
           '&.Mui-selected': {
-            color: '#000000',
-            backgroundColor: '#F4E8E0', // 已选择
+            color: '#141413',
+            backgroundColor: '#E3DCD1', // 已选择
             '&:hover': {
-              backgroundColor: '#F4E8E0'
+              backgroundColor: '#E3DCD1'
             },
             '& .MuiListItemIcon-root': {
-              color: '#000000'
+              color: '#141413'
             }
           },
           '&:hover': {
-            backgroundColor: '#EEEDEC', // 悬停
-            color: '#000000',
+            backgroundColor: '#EBE6DE', // 悬停
+            color: '#141413',
             '& .MuiListItemIcon-root': {
-              color: '#000000'
+              color: '#141413'
             }
           }
         }
@@ -251,7 +251,7 @@ export default function componentStyleOverrides(theme) {
     MuiListItemIcon: {
       styleOverrides: {
         root: {
-          color: theme.mode === 'dark' ? theme.darkTextPrimary : '#C08259',
+          color: theme.mode === 'dark' ? theme.darkTextPrimary : '#D97757',
           minWidth: '36px'
         }
       }
@@ -428,17 +428,17 @@ export default function componentStyleOverrides(theme) {
           fontWeight: 500,
           height: '32px',
           borderRadius: '16px',
-          backgroundColor: theme.mode === 'dark' ? '#ffffff' : '#C08259',
-          color: theme.mode === 'dark' ? 'rgba(0, 0, 0, 0.87)' : '#F8F7F6',
+          backgroundColor: theme.mode === 'dark' ? '#ffffff' : '#D97757',
+          color: theme.mode === 'dark' ? 'rgba(0, 0, 0, 0.87)' : '#FAF9F5',
           transition: 'all 0.2s ease-in-out',
           '&.MuiChip-outlined': {
-            borderColor: theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.8)' : '#C08259',
+            borderColor: theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.8)' : '#D97757',
             backgroundColor: 'transparent',
-            color: theme.mode === 'dark' ? theme.textDark : '#C08259'
+            color: theme.mode === 'dark' ? theme.textDark : '#D97757'
           },
           '&.MuiChip-clickable': {
             '&:hover': {
-              backgroundColor: theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.9)' : '#b85e48'
+              backgroundColor: theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.9)' : '#B85E48'
             }
           }
         },
@@ -465,8 +465,8 @@ export default function componentStyleOverrides(theme) {
         sizeSmall: {
           height: '26px',
           fontSize: '0.75rem',
-          backgroundColor: theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.8)' : '#b85e48',
-          color: theme.mode === 'dark' ? 'rgba(0, 0, 0, 0.87)' : '#F8F7F6',
+          backgroundColor: theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.8)' : '#B85E48',
+          color: theme.mode === 'dark' ? 'rgba(0, 0, 0, 0.87)' : '#FAF9F5',
           '& .MuiChip-label': {
             padding: '0 10px',
             lineHeight: '26px'
@@ -543,7 +543,7 @@ export default function componentStyleOverrides(theme) {
         head: {
           fontSize: '0.875rem',
           fontWeight: 600,
-          color: theme.mode === 'dark' ? theme.darkTextSecondary : '#000000', // 浅色主题使用深色文字
+          color: theme.mode === 'dark' ? theme.darkTextSecondary : '#141413', // 浅色主题使用深色文字
           borderBottom: 'none',
           whiteSpace: 'nowrap',
           padding: '14px 12px',
@@ -583,7 +583,7 @@ export default function componentStyleOverrides(theme) {
     MuiTablePagination: {
       styleOverrides: {
         root: {
-          color: theme.mode === 'dark' ? theme.textDark : '#000000', // 浅色主题使用深色文字
+          color: theme.mode === 'dark' ? theme.textDark : '#141413', // 浅色主题使用深色文字
           borderTop: `1px dashed ${theme.tableBorderBottom}`,
           overflow: 'auto',
           backgroundColor: theme.headBackgroundColor,
@@ -614,7 +614,7 @@ export default function componentStyleOverrides(theme) {
           paddingRight: '28px',
           borderRadius: '8px',
           backgroundColor: theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)',
-          color: theme.mode === 'dark' ? theme.textDark : '#000000', // 浅色主题使用深色文字
+          color: theme.mode === 'dark' ? theme.textDark : '#141413', // 浅色主题使用深色文字
           '&:focus': {
             backgroundColor: theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.09)' : 'rgba(0, 0, 0, 0.05)'
           }
@@ -624,7 +624,7 @@ export default function componentStyleOverrides(theme) {
           color: theme.mode === 'dark' ? theme.darkTextSecondary : '#000000' // 浅色主题使用深色文字
         },
         selectIcon: {
-          color: theme.mode === 'dark' ? theme.darkTextSecondary : '#000000', // 浅色主题使用深色文字
+          color: theme.mode === 'dark' ? theme.darkTextSecondary : '#141413', // 浅色主题使用深色文字
           right: '6px'
         },
         actions: {
@@ -640,7 +640,7 @@ export default function componentStyleOverrides(theme) {
             padding: '8px',
             backgroundColor: theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)',
             borderRadius: '8px',
-            color: theme.mode === 'dark' ? theme.darkTextSecondary : '#000000', // 浅色主题使用深色文字
+            color: theme.mode === 'dark' ? theme.darkTextSecondary : '#141413', // 浅色主题使用深色文字
             margin: '0 4px',
             '&:hover': {
               backgroundColor: theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.09)' : 'rgba(0, 0, 0, 0.05)'
@@ -653,7 +653,7 @@ export default function componentStyleOverrides(theme) {
         },
         displayedRows: {
           fontSize: '0.875rem',
-          color: theme.mode === 'dark' ? theme.darkTextSecondary : '#000000', // 浅色主题使用深色文字
+          color: theme.mode === 'dark' ? theme.darkTextSecondary : '#141413', // 浅色主题使用深色文字
           margin: 0,
           ...(theme.breakpoints && {
             [theme.breakpoints.down('sm')]: {
@@ -692,17 +692,17 @@ export default function componentStyleOverrides(theme) {
           opacity: 1
         },
         standardSuccess: {
-          backgroundColor: theme.mode === 'dark' ? 'rgba(16, 185, 129, 0.16)' : theme.colors?.successLight,
-          color: theme.mode === 'dark' ? '#E0F2E9' : '#3d6b3d',
+          backgroundColor: theme.mode === 'dark' ? 'rgba(116, 135, 90, 0.16)' : theme.colors?.successLight,
+          color: theme.mode === 'dark' ? '#EEF1E8' : '#5C6B47',
           '& .MuiAlert-icon': {
-            color: theme.mode === 'dark' ? '#34D399' : '#518751'
+            color: theme.mode === 'dark' ? '#A3B07E' : '#74875A'
           }
         },
         standardError: {
-          backgroundColor: theme.mode === 'dark' ? 'rgba(239, 68, 68, 0.16)' : '#F4E8E0',
-          color: theme.mode === 'dark' ? '#FEE2E2' : '#9d4a3a',
+          backgroundColor: theme.mode === 'dark' ? 'rgba(184, 94, 72, 0.16)' : '#F5E4DF',
+          color: theme.mode === 'dark' ? '#F5E4DF' : '#9d4a3a',
           '& .MuiAlert-icon': {
-            color: theme.mode === 'dark' ? '#F87171' : '#b85e48'
+            color: theme.mode === 'dark' ? '#D97757' : '#B85E48'
           }
         },
         standardWarning: {
@@ -713,10 +713,10 @@ export default function componentStyleOverrides(theme) {
           }
         },
         standardInfo: {
-          backgroundColor: theme.mode === 'dark' ? 'rgba(8, 132, 221, 0.16)' : 'rgba(8, 132, 221, 0.08)',
-          color: theme.mode === 'dark' ? '#E0F1FF' : theme.colors?.primaryDark,
+          backgroundColor: theme.mode === 'dark' ? 'rgba(217, 119, 87, 0.12)' : 'rgba(20, 20, 19, 0.05)',
+          color: theme.mode === 'dark' ? '#F2F0EB' : theme.colors?.primaryDark,
           '& .MuiAlert-icon': {
-            color: theme.mode === 'dark' ? '#60B8FF' : theme.colors?.primaryMain
+            color: theme.mode === 'dark' ? '#D97757' : theme.colors?.secondaryMain
           }
         }
       }
@@ -931,7 +931,7 @@ export default function componentStyleOverrides(theme) {
             '& .MuiTablePagination-root': {
               overflow: 'visible',
               backgroundColor: 'transparent',
-              color: theme.mode === 'dark' ? theme.textDark : '#000000', // 浅色主题使用深色文字
+              color: theme.mode === 'dark' ? theme.textDark : '#141413', // 浅色主题使用深色文字
               borderTop: 'none'
             },
             '& .MuiToolbar-root': {
@@ -948,7 +948,7 @@ export default function componentStyleOverrides(theme) {
           padding: '12px 16px',
           fontSize: '0.875rem',
           fontWeight: 600,
-          color: theme.mode === 'dark' ? theme.darkTextSecondary : '#000000', // 浅色主题使用深色文字
+          color: theme.mode === 'dark' ? theme.darkTextSecondary : '#141413', // 浅色主题使用深色文字
           height: '48px',
           textAlign: 'center',
           '&:focus': {
@@ -959,7 +959,7 @@ export default function componentStyleOverrides(theme) {
           }
         },
         columnHeaderTitle: {
-          color: theme.mode === 'dark' ? theme.darkTextSecondary : '#000000', // 浅色主题使用深色文字
+          color: theme.mode === 'dark' ? theme.darkTextSecondary : '#141413', // 浅色主题使用深色文字
           fontWeight: 600,
           fontSize: '0.875rem',
           textAlign: 'center'

@@ -1,91 +1,90 @@
 // paper & background
-$paper: #ffffff;
+$paper: #FAF9F5;
 
-// primary
-$primaryLight: #f1f9fe;
-$primaryMain: #2ea7e0;
-$primaryDark: #1e88e5;
-$primary200: #bfe3f8;
-$primary800: #144766;
-$primaryDark2: #68CDF9;
-// $main: #078DEE;
+// primary - 强调色系 (深色主调)
+$primaryLight: #EBE6DE;
+$primaryMain: #141413;
+$primaryDark: #0a0a09;
+$primary200: #E3DCD1;
+$primary800: #141413;
+$primaryDark2: #D97757;
 
-// secondary
-$secondaryLight: #eceff1; //50
-$secondaryMain: #607d8b; //500
-$secondaryDark: #546e7a; //600
-$secondary200: #b0bec5; //200
-$secondary800: #37474f; //800
+// secondary - 第二强调色系 (暖橙色)
+$secondaryLight: #F5EDE6;
+$secondaryMain: #D97757;
+$secondaryDark: #B85E48;
+$secondary200: #F0D9CA;
+$secondary800: #9d4a3a;
 
-// success Colors
-$successLight: #E6F8F1;
-$success200: #66D9AB;
-$successMain: #22C882;
-$successDark: #0AA366;
+// success Colors - 成功色 (橄榄绿)
+$successLight: #EEF1E8;
+$success200: #A3B07E;
+$successMain: #74875A;
+$successDark: #5C6B47;
 
-// error
-$errorLight: #FFEBEE;
-$errorMain: #FF4D4F;
-$errorDark: #CF1322;
+// error - 危险色
+$errorLight: #F5E4DF;
+$errorMain: #B85E48;
+$errorDark: #9d4a3a;
 
-// orange
-$orangeLight: #FFF3E0;
-$orangeMain: #FF9800;
-$orangeDark: #E65100;
+// orange - 第二强调色
+$orangeLight: #F5EDE6;
+$orangeMain: #D97757;
+$orangeDark: #B85E48;
 
-// warning
-$warningLight: #FFF8E1;
-$warningMain: #FAAD14;
-$warningDark: #D48806;
+// warning - 高亮色
+$warningLight: #FBF5DC;
+$warningMain: #F2D879;
+$warningDark: #D4BA54;
 
-$grey50: #f8fafc;
-$grey100: #eef2f6;
-$grey200: #e3e8ef;
-$grey300: #cdd5df;
-$grey500: #697586;
-$grey600: #4b5565;
-$grey700: #364152;
-$grey900: #121926;
-
+$grey50: #FAF9F5;
+$grey100: #F2F0EB;
+$grey200: #EBE6DE;
+$grey300: #E3DCD1;
+$grey500: #8A847A;
+$grey600: #5C5850;
+$grey700: #3D3A35;
+$grey900: #141413;
 
 
-$tableBackground: #F8FAFC;
-$tableBorderBottom: #F0F2F5;
+
+$tableBackground: #FAF9F5;
+$tableBorderBottom: #EBE6DE;
 
 // ==============================|| DARK THEME VARIANTS ||============================== //
 
 // paper & background
-$darkBackground: #292825; // level 3
-$darkPaper: #252422; // level 4
-$darkDivider: rgba(141, 145, 150, 0.2);
-$darkSelectedBack : rgba(77, 104, 255, 0.15);
+$darkBackground: #1A1916; // level 3
+$darkPaper: #211F1C; // level 4
+$darkDivider: rgba(235, 230, 222, 0.15);
+$darkSelectedBack : rgba(217, 119, 87, 0.2);
 
 
 // dark 800 & 900
-$darkLevel1: #11557b; // level 1
-$darkLevel2: #252422; // level 2
+$darkLevel1: #2E2B27; // level 1
+$darkLevel2: #211F1C; // level 2
 
-$darkTableHeader: #253545;
+$darkTableHeader: #2E2B27;
 
 // primary dark
-$darkPrimaryLight: #60B8FF;
-$darkPrimaryMain: #0884DD;
-$darkPrimaryDark: #0062A3;
-$darkPrimary200: #91CAFF;
-$darkPrimary800: #004D85;
+$darkPrimaryLight: #F0D9CA;
+$darkPrimaryMain: #D97757;
+$darkPrimaryDark: #B85E48;
+$darkPrimary200: #F5EDE6;
+$darkPrimary800: #9d4a3a;
 
 // secondary dark
-$darkSecondaryLight: #f1f9fe;
-$darkSecondaryMain: #2ea7e0;
-$darkSecondaryDark: #127db7;
-$darkSecondary200: #bfe3f8;
-$darkSecondary800: #11557b;
+$darkSecondaryLight: #F0D9CA;
+$darkSecondaryMain: #D97757;
+$darkSecondaryDark: #B85E48;
+$darkSecondary200: #F5EDE6;
+$darkSecondary800: #9d4a3a;
 
 // text variants
-$darkTextTitle: #F5F5F7;
-$darkTextPrimary: #f1f9fe;
-$darkTextSecondary: #e2f2fc;
-$darkTextDark: #919EAB;
+$darkTextTitle: #FAF9F5;
+$darkTextPrimary: #F2F0EB;
+$darkTextSecondary: #C4BFB5;
+$darkTextDark: #8A847A;
 
 // ==============================|| JAVASCRIPT ||============================== //
 
