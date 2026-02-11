@@ -368,7 +368,6 @@ const ModelSelectorModal = ({ open, onClose, onConfirm, channelValues, prices })
           display: 'flex',
           alignItems: 'center',
           p: 1,
-          bgcolor: 'background.paper',
           borderRadius: 1,
           cursor: 'pointer',
           '&:hover': { bgcolor: 'action.hover' }
@@ -409,12 +408,8 @@ const ModelSelectorModal = ({ open, onClose, onConfirm, channelValues, prices })
     <Dialog
       open={open}
       onClose={handleClose}
-      fullScreen
-      PaperProps={{
-        sx: {
-          bgcolor: 'background.default'
-        }
-      }}
+      maxWidth="lg"
+      fullWidth
     >
       <DialogTitle
         sx={{
@@ -424,8 +419,7 @@ const ModelSelectorModal = ({ open, onClose, onConfirm, channelValues, prices })
           padding: { xs: '12px 16px', sm: '16px 24px' },
           fontSize: { xs: '1rem', sm: '1.125rem' },
           display: 'flex',
-          alignItems: 'center',
-          bgcolor: 'background.paper'
+          alignItems: 'center'
         }}
       >
         <Icon icon="mdi:robot" style={{ marginRight: 8 }} />
@@ -441,10 +435,13 @@ const ModelSelectorModal = ({ open, onClose, onConfirm, channelValues, prices })
           display: 'flex',
           flexDirection: 'column',
           p: { xs: 1.5, sm: 2, md: 3 },
-          overflow: 'hidden'
+          minHeight: 0,
+          overflow: 'hidden',
+          height: { xs: 'auto', md: '70vh' },
+          maxHeight: '80vh'
         }}
       >
-        <Grid container spacing={2} sx={{ flexGrow: 1, overflow: 'hidden' }}>
+        <Grid container spacing={2} sx={{ flexGrow: 1, minHeight: 0, overflow: 'hidden', height: '100%' }}>
           {/* Left Column: Fetch + Search + Model List */}
           <Grid
             item
@@ -454,7 +451,9 @@ const ModelSelectorModal = ({ open, onClose, onConfirm, channelValues, prices })
               display: 'flex',
               flexDirection: 'column',
               height: { xs: isMobile ? '50vh' : 'auto', md: '100%' },
-              overflow: 'hidden'
+              minHeight: 0,
+              overflow: 'hidden',
+              flexGrow: 1
             }}
           >
             {/* Fetch Settings */}
@@ -610,10 +609,11 @@ const ModelSelectorModal = ({ open, onClose, onConfirm, channelValues, prices })
               variant="outlined"
               sx={{
                 flexGrow: 1,
-                overflow: 'hidden',
                 display: 'flex',
                 flexDirection: 'column',
-                borderRadius: 1
+                borderRadius: 1,
+                minHeight: 0,
+                overflow: 'hidden'
               }}
             >
               {loading ? (
@@ -667,8 +667,9 @@ const ModelSelectorModal = ({ open, onClose, onConfirm, channelValues, prices })
               ) : (
                 <Box
                   sx={{
+                    flex: 1,
+                    minHeight: 0,
                     overflow: 'auto',
-                    height: '100%',
                     p: 1.5,
                     WebkitOverflowScrolling: 'touch'
                   }}
@@ -913,7 +914,6 @@ const ModelSelectorModal = ({ open, onClose, onConfirm, channelValues, prices })
         sx={{
           px: { xs: 2, sm: 3 },
           py: { xs: 1.5, sm: 2 },
-          bgcolor: 'background.paper',
           justifyContent: 'space-between'
         }}
       >
