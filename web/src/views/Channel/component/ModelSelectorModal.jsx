@@ -31,9 +31,10 @@ import {
   Skeleton,
   Tooltip,
   Alert,
-  Container,
-  ButtonGroup
+  Grid,
+  useMediaQuery
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { useTranslation } from 'react-i18next';
 import { Icon } from '@iconify/react';
@@ -41,6 +42,8 @@ import { useSelector } from 'react-redux';
 
 const ModelSelectorModal = ({ open, onClose, onConfirm, channelValues, prices }) => {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const [loading, setLoading] = useState(false);
   const [models, setModels] = useState([]);
@@ -59,9 +62,7 @@ const ModelSelectorModal = ({ open, onClose, onConfirm, channelValues, prices })
   const [convertToLowercase, setConvertToLowercase] = useState(false);
   const [filterMappedModels, setFilterMappedModels] = useState(false);
   const [overwriteMappings, setOverwriteMappings] = useState(false);
-  const [overwriteModels, setOverwriteModels] = useState(false);
   const [mappingPreview, setMappingPreview] = useState({});
-  const [modelsListCollapsed, setModelsListCollapsed] = useState(false);
 
   const getOwnedbyName = (id) => {
     const owner = ownedby.find((item) => item.id === id);
@@ -101,7 +102,6 @@ const ModelSelectorModal = ({ open, onClose, onConfirm, channelValues, prices })
       setConvertToLowercase(false);
       setFilterMappedModels(false);
       setOverwriteMappings(false);
-      setOverwriteModels(false);
       setMappingPreview({});
     }
   }, [open, channelValues, t]);
@@ -318,21 +318,21 @@ const ModelSelectorModal = ({ open, onClose, onConfirm, channelValues, prices })
 
     if (addToMapping && mappings.length > 0) {
       if (filterMappedModels) {
-        const mappedValues = mappings.map(m => m.value.startsWith('+') ? m.value.substring(1) : m.value);
-        modelsToSubmit = selectedModels.filter(model => !mappedValues.includes(model.id));
+        const mappedValues = mappings.map((m) => (m.value.startsWith('+') ? m.value.substring(1) : m.value));
+        modelsToSubmit = selectedModels.filter((model) => !mappedValues.includes(model.id));
       }
 
-      const mappedModels = mappings.map(mapping => {
+      const mappedModels = mappings.map((mapping) => {
         return { id: mapping.key, group: t('channel_edit.customModelTip') };
       });
 
-      const existingIds = new Set(modelsToSubmit.map(model => model.id));
-      const newMappedModels = mappedModels.filter(model => !existingIds.has(model.id));
+      const existingIds = new Set(modelsToSubmit.map((model) => model.id));
+      const newMappedModels = mappedModels.filter((model) => !existingIds.has(model.id));
 
       modelsToSubmit = [...modelsToSubmit, ...newMappedModels];
     }
-    
-    onConfirm(modelsToSubmit, mappings, overwriteModels, overwriteMappings);
+
+    onConfirm(modelsToSubmit, mappings, overwriteMappings);
     onClose();
   };
 
@@ -347,7 +347,6 @@ const ModelSelectorModal = ({ open, onClose, onConfirm, channelValues, prices })
     setConvertToLowercase(false);
     setFilterMappedModels(false);
     setOverwriteMappings(false);
-    setOverwriteModels(false);
     setMappingPreview({});
     onClose();
   };
@@ -402,24 +401,18 @@ const ModelSelectorModal = ({ open, onClose, onConfirm, channelValues, prices })
     );
   };
 
+  const handleRemoveSelected = (modelId) => {
+    setSelectedModels(selectedModels.filter((m) => m.id !== modelId));
+  };
+
   return (
     <Dialog
       open={open}
       onClose={handleClose}
-      fullWidth
-      maxWidth="md"
+      fullScreen
       PaperProps={{
         sx: {
-          borderRadius: { xs: 1, sm: 2 },
-          overflow: 'hidden',
-          width: { xs: '100%', sm: '90%' },
-          margin: { xs: 0, sm: 'auto' },
-          maxHeight: { xs: '100%', sm: '90vh' }
-        }
-      }}
-      sx={{
-        '& .MuiDialog-container': {
-          alignItems: { xs: 'flex-end', sm: 'center' }
+          bgcolor: 'background.default'
         }
       }}
     >
@@ -431,67 +424,75 @@ const ModelSelectorModal = ({ open, onClose, onConfirm, channelValues, prices })
           padding: { xs: '12px 16px', sm: '16px 24px' },
           fontSize: { xs: '1rem', sm: '1.125rem' },
           display: 'flex',
-          alignItems: 'center'
+          alignItems: 'center',
+          bgcolor: 'background.paper'
         }}
       >
         <Icon icon="mdi:robot" style={{ marginRight: 8 }} />
         {t('channel_edit.modelSelector')}
+        <Box sx={{ flexGrow: 1 }} />
+        <IconButton onClick={handleClose} size="small">
+          <Icon icon="mdi:close" />
+        </IconButton>
       </DialogTitle>
       <Divider />
       <DialogContent
         sx={{
-          height: { xs: 'calc(100vh - 120px)', sm: '550px' },
           display: 'flex',
           flexDirection: 'column',
-          p: { xs: 2, sm: 3 },
-          overflow: 'auto'
+          p: { xs: 1.5, sm: 2, md: 3 },
+          overflow: 'hidden'
         }}
       >
-        <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-          <Paper
-            variant="outlined"
+        <Grid container spacing={2} sx={{ flexGrow: 1, overflow: 'hidden' }}>
+          {/* Left Column: Fetch + Search + Model List */}
+          <Grid
+            item
+            xs={12}
+            md={7}
             sx={{
-              p: { xs: 1.5, sm: 2 },
-              mb: 2,
-              borderRadius: { xs: 1, sm: 2 },
-              bgcolor: (theme) => (theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)')
+              display: 'flex',
+              flexDirection: 'column',
+              height: { xs: isMobile ? '50vh' : 'auto', md: '100%' },
+              overflow: 'hidden'
             }}
           >
-            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
-              <FormControlLabel
-                control={<Switch checked={isOpenAIMode} onChange={handleOpenAIModeChange} color="primary" />}
-                label={
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Icon icon="simple-icons:openai" style={{ marginRight: 8 }} />
-                    {t('channel_edit.openaiMode')}
-                  </Box>
-                }
-                sx={{ m: 0 }}
-              />
-
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexGrow: 1,
-                  gap: { xs: 1, sm: 2 },
-                  alignItems: 'center',
-                  width: '100%',
-                  mt: isOpenAIMode ? 1 : 0,
-                  mb: isOpenAIMode ? 1 : 0,
-                  flexDirection: { xs: 'column', sm: 'row' }
-                }}
-              >
-                {isOpenAIMode && (
-                  <FormControl
-                    fullWidth
-                    sx={{
-                      '& .MuiFormHelperText-root': {
-                        position: { xs: 'static', sm: 'absolute' },
-                        bottom: '-20px',
-                        mt: { xs: 0.5, sm: 0 }
-                      }
-                    }}
+            {/* Fetch Settings */}
+            <Paper
+              variant="outlined"
+              sx={{
+                p: { xs: 1.5, sm: 2 },
+                mb: 2,
+                borderRadius: 1,
+                bgcolor: (theme) => (theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)'),
+                flexShrink: 0
+              }}
+            >
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+                  <FormControlLabel
+                    control={<Switch checked={isOpenAIMode} onChange={handleOpenAIModeChange} color="primary" />}
+                    label={
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Icon icon="simple-icons:openai" style={{ marginRight: 8 }} />
+                        {t('channel_edit.openaiMode')}
+                      </Box>
+                    }
+                    sx={{ m: 0 }}
+                  />
+                  <LoadingButton
+                    variant="contained"
+                    loading={loading}
+                    onClick={fetchModels}
+                    startIcon={<Icon icon="mdi:cloud-download" />}
+                    sx={{ height: '40px', whiteSpace: 'nowrap', flexShrink: 0 }}
                   >
+                    {t('channel_edit.fetchModels')}
+                  </LoadingButton>
+                </Box>
+
+                {isOpenAIMode && (
+                  <FormControl fullWidth>
                     <InputLabel htmlFor="openai-base-url">{t('channel_edit.baseUrl')}</InputLabel>
                     <OutlinedInput
                       id="openai-base-url"
@@ -513,41 +514,25 @@ const ModelSelectorModal = ({ open, onClose, onConfirm, channelValues, prices })
                     <FormHelperText>{t('channel_edit.openaiBaseUrlTip')}</FormHelperText>
                   </FormControl>
                 )}
-
-                <LoadingButton
-                  variant="contained"
-                  loading={loading}
-                  onClick={fetchModels}
-                  startIcon={<Icon icon="mdi:cloud-download" />}
-                  sx={{
-                    height: '40px',
-                    whiteSpace: 'nowrap',
-                    flexShrink: 0,
-                    width: { xs: '100%', sm: 'auto' }
-                  }}
-                >
-                  {t('channel_edit.fetchModels')}
-                </LoadingButton>
               </Box>
-            </Box>
-          </Paper>
+            </Paper>
 
-          {error && (
-            <Alert
-              severity="error"
-              sx={{ mb: 2 }}
-              action={
-                <IconButton color="inherit" size="small" onClick={() => setError('')}>
-                  <Icon icon="mdi:close" />
-                </IconButton>
-              }
-            >
-              {error}
-            </Alert>
-          )}
+            {error && (
+              <Alert
+                severity="error"
+                sx={{ mb: 2, flexShrink: 0 }}
+                action={
+                  <IconButton color="inherit" size="small" onClick={() => setError('')}>
+                    <Icon icon="mdi:close" />
+                  </IconButton>
+                }
+              >
+                {error}
+              </Alert>
+            )}
 
-          <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
-            <Box sx={{ mb: 1.5, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: 'stretch', gap: 1 }}>
+            {/* Search + Actions */}
+            <Box sx={{ mb: 1.5, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: 'stretch', gap: 1, flexShrink: 0 }}>
               <TextField
                 fullWidth
                 variant="outlined"
@@ -604,211 +589,234 @@ const ModelSelectorModal = ({ open, onClose, onConfirm, channelValues, prices })
                 </Tooltip>
 
                 <Tooltip title={t('channel_edit.clearModelsTip')} placement="top">
-                    <span>
-                      <Button
-                        variant="outlined"
-                        onClick={() => setSelectedModels([])}
-                        startIcon={<Icon icon="mdi:refresh" />}
-                        disabled={selectedModels.length === 0}
-                        size="small"
-                        sx={{ whiteSpace: 'nowrap', flex: { xs: 1, sm: 'none' } }}
-                      >
-                        {t('common.reset')}
-                      </Button>
-                    </span>
-                  </Tooltip>
-
-                <Tooltip title={modelsListCollapsed ? t('channel_edit.expandList') : t('channel_edit.collapseList')}>
                   <span>
-                    <IconButton
-                      onClick={() => setModelsListCollapsed(!modelsListCollapsed)}
+                    <Button
+                      variant="outlined"
+                      onClick={() => setSelectedModels([])}
+                      startIcon={<Icon icon="mdi:refresh" />}
+                      disabled={selectedModels.length === 0}
                       size="small"
-                      color={modelsListCollapsed ? 'primary' : 'default'}
-                      sx={{ border: '1px solid', borderColor: 'divider' }}
+                      sx={{ whiteSpace: 'nowrap', flex: { xs: 1, sm: 'none' } }}
                     >
-                      <Icon icon={modelsListCollapsed ? 'mdi:chevron-down' : 'mdi:chevron-up'} />
-                    </IconButton>
+                      {t('common.reset')}
+                    </Button>
                   </span>
                 </Tooltip>
               </Box>
             </Box>
 
-            <Collapse in={!modelsListCollapsed} timeout="auto">
-              <Paper
-                variant="outlined"
-                sx={{
-                  flexGrow: 1,
-                  overflow: 'hidden',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  borderRadius: { xs: 1, sm: 2 },
-                  mb: 2,
-                  height: modelsListCollapsed ? '0px' : 'auto',
-                  minHeight: modelsListCollapsed ? '0px' : { xs: '150px', sm: '200px' },
-                  maxHeight: { xs: '300px', sm: '400px' }
-                }}
-              >
-                {loading ? (
-                  <Box sx={{ p: 2 }}>
-                    {[1, 2, 3, 4].map((i) => (
-                      <Box key={i} sx={{ mb: 2 }}>
-                        <Skeleton variant="rectangular" height={40} sx={{ mb: 1, borderRadius: 1 }} />
-                        <Box sx={{ pl: 2 }}>
-                          {[1, 2, 3].map((j) => (
-                            <Skeleton key={j} variant="rectangular" height={30} sx={{ mb: 0.5, borderRadius: 1 }} />
-                          ))}
-                        </Box>
-                      </Box>
-                    ))}
-                  </Box>
-                ) : models.length === 0 ? (
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      height: '100%',
-                      p: { xs: 2, sm: 4 }
-                    }}
-                  >
-                    <Icon icon="mdi:robot-confused" style={{ fontSize: 64, opacity: 0.5, marginBottom: 16 }} />
-                    <Typography variant="h6" color="text.secondary">
-                      {t('channel_edit.noModels')}
-                    </Typography>
-                  </Box>
-                ) : filteredModels.length === 0 ? (
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      height: '100%',
-                      p: { xs: 2, sm: 4 }
-                    }}
-                  >
-                    <Icon icon="mdi:file-search-outline" style={{ fontSize: 64, opacity: 0.5, marginBottom: 16 }} />
-                    <Typography variant="h6" color="text.secondary">
-                      {t('channel_edit.noMatchingModels')}
-                    </Typography>
-                    <Button variant="text" startIcon={<Icon icon="mdi:close" />} onClick={() => setSearchTerm('')} sx={{ mt: 2 }}>
-                      {t('channel_edit.clearSearch')}
-                    </Button>
-                  </Box>
-                ) : (
-                  <Box
-                    sx={{
-                      overflow: 'auto',
-                      height: '100%',
-                      p: { xs: 1, sm: 1.5 },
-                      WebkitOverflowScrolling: 'touch'
-                    }}
-                  >
-                    {Object.entries(filteredModelsByGroup).map(([group, groupModels]) => (
-                      <Box key={group} sx={{ mb: 1.5 }}>
-                        {renderGroupHeader(group)}
-                        <Collapse in={expandedGroups[group]} timeout="auto">
-                          <List dense disablePadding sx={{ pl: { xs: 1, sm: 2 } }}>
-                            {groupModels.map((model) => {
-                              const isSelected = selectedModels.some((m) => m.id === model.id);
-                              return (
-                                <ListItem
-                                  key={model.id}
-                                  dense
-                                  button
-                                  onClick={() => handleModelToggle(model)}
-                                  sx={{
-                                    borderRadius: 1,
-                                    mb: 0.5,
-                                    transition: 'all 0.2s',
-                                    py: { xs: 0.75, sm: 0.5 },
-                                    '&:hover': {
-                                      bgcolor: (theme) => (theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)')
-                                    },
-                                    ...(isSelected && {
-                                      bgcolor: (theme) =>
-                                        theme.palette.mode === 'dark' ? 'rgba(144,202,249,0.15)' : 'rgba(33,150,243,0.08)'
-                                    })
-                                  }}
-                                >
-                                  <ListItemIcon sx={{ minWidth: { xs: 36, sm: 42 } }}>
-                                    <Checkbox edge="start" checked={isSelected} tabIndex={-1} disableRipple color="primary" size="small" />
-                                  </ListItemIcon>
-                                  <ListItemText
-                                    primary={model.id}
-                                    primaryTypographyProps={{
-                                      sx: {
-                                        fontFamily: 'monospace',
-                                        fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                                        whiteSpace: 'nowrap',
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
-                                        ...(isSelected && { fontWeight: 600 })
-                                      }
-                                    }}
-                                  />
-                                </ListItem>
-                              );
-                            })}
-                          </List>
-                        </Collapse>
-                      </Box>
-                    ))}
-                  </Box>
-                )}
-              </Paper>
-            </Collapse>
-
+            {/* Model List */}
             <Paper
               variant="outlined"
               sx={{
-                p: { xs: 1.5, sm: 2 },
-                borderRadius: { xs: 1, sm: 2 },
-                bgcolor: (theme) => (theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)'),
-                display: selectedModels.length > 0 ? 'block' : 'none',
-                flexGrow: modelsListCollapsed ? 1 : 0,
-                overflow: modelsListCollapsed ? 'auto' : 'visible',
-                maxHeight: modelsListCollapsed ? { xs: '300px', sm: '400px' } : 'none'
+                flexGrow: 1,
+                overflow: 'hidden',
+                display: 'flex',
+                flexDirection: 'column',
+                borderRadius: 1
+              }}
+            >
+              {loading ? (
+                <Box sx={{ p: 2 }}>
+                  {[1, 2, 3, 4].map((i) => (
+                    <Box key={i} sx={{ mb: 2 }}>
+                      <Skeleton variant="rectangular" height={40} sx={{ mb: 1, borderRadius: 1 }} />
+                      <Box sx={{ pl: 2 }}>
+                        {[1, 2, 3].map((j) => (
+                          <Skeleton key={j} variant="rectangular" height={30} sx={{ mb: 0.5, borderRadius: 1 }} />
+                        ))}
+                      </Box>
+                    </Box>
+                  ))}
+                </Box>
+              ) : models.length === 0 ? (
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    height: '100%',
+                    p: 4
+                  }}
+                >
+                  <Icon icon="mdi:robot-confused" style={{ fontSize: 64, opacity: 0.5, marginBottom: 16 }} />
+                  <Typography variant="h6" color="text.secondary">
+                    {t('channel_edit.noModels')}
+                  </Typography>
+                </Box>
+              ) : filteredModels.length === 0 ? (
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    height: '100%',
+                    p: 4
+                  }}
+                >
+                  <Icon icon="mdi:file-search-outline" style={{ fontSize: 64, opacity: 0.5, marginBottom: 16 }} />
+                  <Typography variant="h6" color="text.secondary">
+                    {t('channel_edit.noMatchingModels')}
+                  </Typography>
+                  <Button variant="text" startIcon={<Icon icon="mdi:close" />} onClick={() => setSearchTerm('')} sx={{ mt: 2 }}>
+                    {t('channel_edit.clearSearch')}
+                  </Button>
+                </Box>
+              ) : (
+                <Box
+                  sx={{
+                    overflow: 'auto',
+                    height: '100%',
+                    p: 1.5,
+                    WebkitOverflowScrolling: 'touch'
+                  }}
+                >
+                  {Object.entries(filteredModelsByGroup).map(([group, groupModels]) => (
+                    <Box key={group} sx={{ mb: 1.5 }}>
+                      {renderGroupHeader(group)}
+                      <Collapse in={expandedGroups[group]} timeout="auto">
+                        <List dense disablePadding sx={{ pl: 2 }}>
+                          {groupModels.map((model) => {
+                            const isSelected = selectedModels.some((m) => m.id === model.id);
+                            return (
+                              <ListItem
+                                key={model.id}
+                                dense
+                                button
+                                onClick={() => handleModelToggle(model)}
+                                sx={{
+                                  borderRadius: 1,
+                                  mb: 0.5,
+                                  transition: 'all 0.2s',
+                                  py: 0.5,
+                                  '&:hover': {
+                                    bgcolor: (theme) =>
+                                      theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)'
+                                  },
+                                  ...(isSelected && {
+                                    bgcolor: (theme) =>
+                                      theme.palette.mode === 'dark' ? 'rgba(144,202,249,0.15)' : 'rgba(33,150,243,0.08)'
+                                  })
+                                }}
+                              >
+                                <ListItemIcon sx={{ minWidth: 42 }}>
+                                  <Checkbox edge="start" checked={isSelected} tabIndex={-1} disableRipple color="primary" size="small" />
+                                </ListItemIcon>
+                                <ListItemText
+                                  primary={model.id}
+                                  primaryTypographyProps={{
+                                    sx: {
+                                      fontFamily: 'monospace',
+                                      fontSize: '0.875rem',
+                                      whiteSpace: 'nowrap',
+                                      overflow: 'hidden',
+                                      textOverflow: 'ellipsis',
+                                      ...(isSelected && { fontWeight: 600 })
+                                    }
+                                  }}
+                                />
+                              </ListItem>
+                            );
+                          })}
+                        </List>
+                      </Collapse>
+                    </Box>
+                  ))}
+                </Box>
+              )}
+            </Paper>
+          </Grid>
+
+          {/* Right Column: Selected Models + Mapping Config */}
+          <Grid
+            item
+            xs={12}
+            md={5}
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              height: { xs: 'auto', md: '100%' },
+              overflow: 'hidden'
+            }}
+          >
+            {/* Selected Models */}
+            <Paper
+              variant="outlined"
+              sx={{
+                p: 2,
+                borderRadius: 1,
+                mb: 2,
+                flexShrink: 0,
+                maxHeight: { md: '40%' },
+                overflow: 'auto'
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
+                <Icon icon="mdi:check-circle" style={{ marginRight: 8, opacity: 0.7 }} />
+                <Typography variant="subtitle2" sx={{ flexGrow: 1 }}>
+                  {t('channel_edit.selectedCount', { count: selectedModels.length })}
+                </Typography>
+                {selectedModels.length > 0 && (
+                  <Button size="small" onClick={() => setSelectedModels([])} startIcon={<Icon icon="mdi:delete-sweep" />}>
+                    {t('common.reset')}
+                  </Button>
+                )}
+              </Box>
+              {selectedModels.length === 0 ? (
+                <Typography variant="body2" color="text.secondary" sx={{ py: 2, textAlign: 'center' }}>
+                  {t('channel_edit.noModels')}
+                </Typography>
+              ) : (
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                  {selectedModels.map((model) => (
+                    <Chip
+                      key={model.id}
+                      label={model.id}
+                      size="small"
+                      onDelete={() => handleRemoveSelected(model.id)}
+                      sx={{
+                        fontFamily: 'monospace',
+                        fontSize: '0.75rem',
+                        height: 'auto',
+                        '& .MuiChip-label': {
+                          whiteSpace: 'normal',
+                          wordBreak: 'break-word',
+                          padding: '4px 8px',
+                          lineHeight: 1.4
+                        }
+                      }}
+                    />
+                  ))}
+                </Box>
+              )}
+            </Paper>
+
+            {/* Mapping Config */}
+            <Paper
+              variant="outlined"
+              sx={{
+                p: 2,
+                borderRadius: 1,
+                flexGrow: 1,
+                overflow: 'auto',
+                bgcolor: (theme) => (theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.01)')
               }}
             >
               <FormControlLabel
-                control={<Switch checked={overwriteModels} onChange={(e) => setOverwriteModels(e.target.checked)} color="primary" />}
+                control={<Switch checked={addToMapping} onChange={(e) => setAddToMapping(e.target.checked)} color="primary" />}
                 label={
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Icon icon="mdi:playlist-remove" style={{ marginRight: 8 }} />
-                    {t('channel_edit.overwriteModels')}
-                    <Tooltip title={t('channel_edit.overwriteModelsTip')} placement="top" arrow>
-                      <Icon icon="mdi:help-circle-outline" style={{ marginLeft: 4, opacity: 0.7 }} />
-                    </Tooltip>
+                    <Icon icon="mdi:map-marker-path" style={{ marginRight: 8 }} />
+                    {t('channel_edit.addToModelMapping')}
                   </Box>
                 }
-                sx={{ m: 0 }}
+                sx={{ m: 0, mb: 1 }}
               />
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 1 }}>
-                <FormControlLabel
-                  control={<Switch checked={addToMapping} onChange={(e) => setAddToMapping(e.target.checked)} color="primary" />}
-                  label={
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Icon icon="mdi:map-marker-path" style={{ marginRight: 8 }} />
-                      {t('channel_edit.addToModelMapping')}
-                    </Box>
-                  }
-                  sx={{ m: 0 }}
-                />
-                {modelsListCollapsed && (
-                  <Chip
-                    icon={<Icon icon="mdi:check-circle" />}
-                    label={t('channel_edit.selectedCount', { count: selectedModels.length })}
-                    color="primary"
-                    variant="outlined"
-                    size="small"
-                  />
-                )}
-              </Box>
 
               <Collapse in={addToMapping}>
-                <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: { xs: 1.5, sm: 2 } }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                   <Typography variant="subtitle2" color="text.secondary">
                     {t('channel_edit.modelMappingSettings')}
                   </Typography>
@@ -858,7 +866,7 @@ const ModelSelectorModal = ({ open, onClose, onConfirm, channelValues, prices })
                     label={t('channel_edit.filterMappedModels')}
                     sx={{ my: 0 }}
                   />
-                  
+
                   <FormControlLabel
                     control={<Switch checked={overwriteMappings} onChange={(e) => setOverwriteMappings(e.target.checked)} />}
                     label={
@@ -879,7 +887,7 @@ const ModelSelectorModal = ({ open, onClose, onConfirm, channelValues, prices })
                       </Typography>
                       <Box
                         sx={{
-                          maxHeight: modelsListCollapsed ? '300px' : { xs: '80px', sm: '120px' },
+                          maxHeight: '200px',
                           overflowY: 'auto',
                           border: '1px solid',
                           borderColor: 'divider',
@@ -897,31 +905,29 @@ const ModelSelectorModal = ({ open, onClose, onConfirm, channelValues, prices })
                 </Box>
               </Collapse>
             </Paper>
-          </Box>
-        </Box>
+          </Grid>
+        </Grid>
       </DialogContent>
+      <Divider />
       <DialogActions
-        sx={{ px: { xs: 2, sm: 3 }, py: { xs: 1.5, sm: 2 }, flexDirection: { xs: 'column', sm: 'row' }, alignItems: 'stretch', gap: 1 }}
+        sx={{
+          px: { xs: 2, sm: 3 },
+          py: { xs: 1.5, sm: 2 },
+          bgcolor: 'background.paper',
+          justifyContent: 'space-between'
+        }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', width: { xs: '100%', sm: 'auto' } }}>
-          <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
-            <Icon icon="mdi:information-outline" style={{ marginRight: 4, opacity: 0.7 }} />
-            {addToMapping
-              ? t('channel_edit.selectedMappingCount', {
-                  count: selectedModels.length,
-                  mappingCount: Object.keys(mappingPreview).length
-                })
-              : t('channel_edit.selectedCount', { count: selectedModels.length })}
-          </Typography>
-        </Box>
-        <Box sx={{ display: 'flex', width: { xs: '100%', sm: 'auto' }, gap: 1 }}>
-          <Button
-            onClick={handleClose}
-            startIcon={<Icon icon="mdi:close" />}
-            fullWidth={true}
-            variant="outlined"
-            sx={{ display: { xs: 'flex', sm: 'inline-flex' } }}
-          >
+        <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center' }}>
+          <Icon icon="mdi:information-outline" style={{ marginRight: 4, opacity: 0.7 }} />
+          {addToMapping
+            ? t('channel_edit.selectedMappingCount', {
+                count: selectedModels.length,
+                mappingCount: Object.keys(mappingPreview).length
+              })
+            : t('channel_edit.selectedCount', { count: selectedModels.length })}
+        </Typography>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Button onClick={handleClose} startIcon={<Icon icon="mdi:close" />} variant="outlined">
             {t('common.cancel')}
           </Button>
           <Button
@@ -930,8 +936,6 @@ const ModelSelectorModal = ({ open, onClose, onConfirm, channelValues, prices })
             color="primary"
             disabled={selectedModels.length === 0}
             startIcon={<Icon icon={addToMapping ? 'mdi:map-marker-path' : 'mdi:check'} />}
-            fullWidth={true}
-            sx={{ display: { xs: 'flex', sm: 'inline-flex' } }}
           >
             {addToMapping ? t('channel_edit.addMapping') : t('common.submit')}
           </Button>

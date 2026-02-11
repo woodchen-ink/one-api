@@ -161,22 +161,9 @@ const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, model
     return modelList;
   };
 
-  const handleModelSelectorConfirm = (selectedModels, overwriteModels) => {
-    if (tempSetFieldValue && tempFormikValues) {
-      if (overwriteModels) {
-        // 覆盖模式：清空现有的模型列表，使用选择器中的模型
-        tempSetFieldValue('models', selectedModels);
-      } else {
-        // 追加模式：合并现有模型和新选择的模型，避免重复
-        const existingModels = tempFormikValues.models || [];
-        const existingModelIds = new Set(existingModels.map((model) => model.id));
-
-        // 过滤掉已存在的模型，避免重复
-        const newModels = selectedModels.filter((model) => !existingModelIds.has(model.id));
-
-        // 合并模型列表
-        tempSetFieldValue('models', [...existingModels, ...newModels]);
-      }
+  const handleModelSelectorConfirm = (selectedModels) => {
+    if (tempSetFieldValue) {
+      tempSetFieldValue('models', selectedModels);
     }
   };
 
@@ -1280,9 +1267,9 @@ const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, model
         <ModelSelectorModal
           open={modelSelectorOpen}
           onClose={() => setModelSelectorOpen(false)}
-          onConfirm={(selectedModels, mappings, overwriteModels, overwriteMappings) => {
-            // 处理普通模型选择
-            handleModelSelectorConfirm(selectedModels, overwriteModels);
+          onConfirm={(selectedModels, mappings, overwriteMappings) => {
+            // 处理模型选择（始终覆盖）
+            handleModelSelectorConfirm(selectedModels);
 
             // 处理映射关系
             if (mappings && mappings.length > 0) {
