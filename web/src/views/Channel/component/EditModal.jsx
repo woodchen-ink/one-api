@@ -402,6 +402,7 @@ const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, model
   }, [channelId, open]);
 
   return (
+    <>
     <Dialog open={open} onClose={onCancel} fullWidth maxWidth={'lg'}>
       <DialogTitle sx={{ margin: '0px', fontWeight: 700, lineHeight: '1.55556', padding: '24px', fontSize: '1.125rem' }}>
         {channelId ? t('common.edit') : t('common.create')}
@@ -1263,37 +1264,39 @@ const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, model
           }}
         </Formik>
 
-        {/* 模型选择器弹窗 */}
-        <ModelSelectorModal
-          open={modelSelectorOpen}
-          onClose={() => setModelSelectorOpen(false)}
-          onConfirm={(selectedModels, mappings, overwriteMappings) => {
-            // 处理模型选择（始终覆盖）
-            handleModelSelectorConfirm(selectedModels);
-
-            // 处理映射关系
-            if (mappings && mappings.length > 0) {
-              if (overwriteMappings) {
-                // 覆盖映射模式：清空现有映射，使用新的
-                tempSetFieldValue('model_mapping', mappings);
-              } else {
-                // 追加映射模式：
-                const existingMappings = tempFormikValues?.model_mapping || [];
-                const existingKeys = new Set(existingMappings.map((item) => item.key));
-                const newMappings = mappings.filter((item) => !existingKeys.has(item.key));
-                const mergedMappings = [...existingMappings, ...newMappings].map((item, index) => ({
-                  ...item,
-                  index
-                }));
-                tempSetFieldValue('model_mapping', mergedMappings);
-              }
-            }
-          }}
-          channelValues={tempFormikValues}
-          prices={prices}
-        />
       </DialogContent>
     </Dialog>
+
+    {/* 模型选择器弹窗 - 独立于父 Dialog 渲染，避免宽度被限制 */}
+    <ModelSelectorModal
+      open={modelSelectorOpen}
+      onClose={() => setModelSelectorOpen(false)}
+      onConfirm={(selectedModels, mappings, overwriteMappings) => {
+        // 处理模型选择（始终覆盖）
+        handleModelSelectorConfirm(selectedModels);
+
+        // 处理映射关系
+        if (mappings && mappings.length > 0) {
+          if (overwriteMappings) {
+            // 覆盖映射模式：清空现有映射，使用新的
+            tempSetFieldValue('model_mapping', mappings);
+          } else {
+            // 追加映射模式：
+            const existingMappings = tempFormikValues?.model_mapping || [];
+            const existingKeys = new Set(existingMappings.map((item) => item.key));
+            const newMappings = mappings.filter((item) => !existingKeys.has(item.key));
+            const mergedMappings = [...existingMappings, ...newMappings].map((item, index) => ({
+              ...item,
+              index
+            }));
+            tempSetFieldValue('model_mapping', mergedMappings);
+          }
+        }
+      }}
+      channelValues={tempFormikValues}
+      prices={prices}
+    />
+  </>
   );
 };
 
