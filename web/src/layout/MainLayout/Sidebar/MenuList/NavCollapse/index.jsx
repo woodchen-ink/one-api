@@ -77,9 +77,7 @@ const NavCollapse = ({ menu, level, isMini = false }) => {
   const isActive = !!selected;
 
   const IconComponent = menu.icon;
-  const menuIcon = menu.icon ? (
-    <IconComponent strokeWidth={1.5} size={isMini ? '1.375rem' : '1.25rem'} />
-  ) : null;
+  const menuIcon = menu.icon ? <IconComponent strokeWidth={1.5} size={isMini ? '1.375rem' : '1.25rem'} /> : null;
 
   if (isMini) {
     return (

@@ -718,7 +718,6 @@ export function replaceChatPlaceholders(text, key, server) {
     .replace('{server}', server);
 }
 
-
 export function ValueFormatter(value, onlyUsd = false, unitMillion = false) {
   if (value == null) {
     return '';

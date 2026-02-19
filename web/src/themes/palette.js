@@ -98,9 +98,7 @@ export default function themePalette(theme) {
       hint: theme.colors?.grey100,
       disabled: theme.mode === 'dark' ? theme.colors?.grey600 : theme.colors?.grey500
     },
-    divider: theme.divider || (theme.mode === 'dark'
-      ? varAlpha(theme.colors?.grey500, 0.2)
-      : varAlpha(theme.colors?.grey500, 0.2)),
+    divider: theme.divider || (theme.mode === 'dark' ? varAlpha(theme.colors?.grey500, 0.2) : varAlpha(theme.colors?.grey500, 0.2)),
     background: {
       paper: theme.paper,
       default: theme.backgroundDefault,

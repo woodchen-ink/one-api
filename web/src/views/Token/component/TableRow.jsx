@@ -177,7 +177,9 @@ export default function TokensTableRow({ item, manageToken, handleOpenModal, set
         {isAdminSearch && (
           <TableCell>
             <Tooltip title={`ID: ${item.user_id}`} placement="top">
-              <span>{item.user_id} - {item.owner_name || '-'}</span>
+              <span>
+                {item.user_id} - {item.owner_name || '-'}
+              </span>
             </Tooltip>
           </TableCell>
         )}
@@ -196,9 +198,7 @@ export default function TokensTableRow({ item, manageToken, handleOpenModal, set
         </TableCell>
         {userIsReliable && (
           <TableCell>
-            <Label color={userGroup[item.setting?.billing_tag]?.color}>
-              {userGroup[item.setting?.billing_tag]?.name || '-'}
-            </Label>
+            <Label color={userGroup[item.setting?.billing_tag]?.color}>{userGroup[item.setting?.billing_tag]?.name || '-'}</Label>
           </TableCell>
         )}
         <TableCell>
@@ -222,7 +222,9 @@ export default function TokensTableRow({ item, manageToken, handleOpenModal, set
           <TableCell>
             <Stack direction="column" spacing={0.5}>
               <span>{renderQuota(item.used_quota)}</span>
-              <span style={{ color: 'text.secondary' }}>{item.unlimited_quota ? t('token_index.unlimited') : renderQuota(item.remain_quota, 2)}</span>
+              <span style={{ color: 'text.secondary' }}>
+                {item.unlimited_quota ? t('token_index.unlimited') : renderQuota(item.remain_quota, 2)}
+              </span>
             </Stack>
           </TableCell>
         ) : (
@@ -238,7 +240,9 @@ export default function TokensTableRow({ item, manageToken, handleOpenModal, set
           <TableCell>
             <Stack direction="column" spacing={0.5}>
               <span>{timestamp2string(item.created_time)}</span>
-              <span style={{ color: 'text.secondary' }}>{item.expired_time === -1 ? t('token_index.neverExpires') : timestamp2string(item.expired_time)}</span>
+              <span style={{ color: 'text.secondary' }}>
+                {item.expired_time === -1 ? t('token_index.neverExpires') : timestamp2string(item.expired_time)}
+              </span>
             </Stack>
           </TableCell>
         ) : (
@@ -250,11 +254,7 @@ export default function TokensTableRow({ item, manageToken, handleOpenModal, set
         )}
 
         {/* 管理员搜索模式：最近使用日期 */}
-        {isAdminSearch && (
-          <TableCell>
-            {item.accessed_time ? timestamp2string(item.accessed_time) : '-'}
-          </TableCell>
-        )}
+        {isAdminSearch && <TableCell>{item.accessed_time ? timestamp2string(item.accessed_time) : '-'}</TableCell>}
 
         <TableCell>
           <Stack direction="row" justifyContent="center" alignItems="center" spacing={1}>

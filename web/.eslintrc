@@ -34,7 +34,9 @@
   "parserOptions": {
     "requireConfigFile": false,
     "babelOptions": {
-      "presets": ["@babel/preset-react"]
+      "parserOpts": {
+        "plugins": ["jsx"]
+      }
     },
     "ecmaFeatures": {
       "experimentalObjectRestSpread": true,

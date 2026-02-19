@@ -11,7 +11,19 @@ import Alert from '@mui/material/Alert';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import Toolbar from '@mui/material/Toolbar';
 
-import { Button, Card, Box, Stack, Container, Typography, FormControl, InputLabel, OutlinedInput, InputAdornment, Collapse } from '@mui/material';
+import {
+  Button,
+  Card,
+  Box,
+  Stack,
+  Container,
+  Typography,
+  FormControl,
+  InputLabel,
+  OutlinedInput,
+  InputAdornment,
+  Collapse
+} from '@mui/material';
 import TokensTableRow from './component/TableRow';
 import KeywordTableHead from 'ui-component/TableHead';
 import TableToolBar from 'ui-component/TableToolBar';
@@ -276,11 +288,7 @@ export default function Token() {
             />
           </Box>
           <Collapse in={adminSearchEnabled}>
-            <Stack
-              direction={{ xs: 'column', sm: 'row' }}
-              spacing={2}
-              sx={{ p: 2 }}
-            >
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ p: 2 }}>
               <FormControl sx={{ flex: 1 }}>
                 <InputLabel htmlFor="admin-search-user-id">{t('token_index.userId')}</InputLabel>
                 <OutlinedInput
@@ -379,7 +387,7 @@ export default function Token() {
                       { id: 'time', label: t('token_index.createdTime') + ' / ' + t('token_index.expiryTime'), disableSort: true },
                       { id: 'accessed_time', label: t('token_index.accessedTime'), disableSort: false },
                       { id: 'action', label: t('token_index.actions'), disableSort: true }
-                    ].filter(col => !col.hide);
+                    ].filter((col) => !col.hide);
                   } else {
                     // 普通模式
                     return [
@@ -392,7 +400,7 @@ export default function Token() {
                       { id: 'created_time', label: t('token_index.createdTime'), disableSort: false },
                       { id: 'expired_time', label: t('token_index.expiryTime'), disableSort: false },
                       { id: 'action', label: t('token_index.actions'), disableSort: true }
-                    ].filter(col => !col.hide);
+                    ].filter((col) => !col.hide);
                   }
                 })()}
               />

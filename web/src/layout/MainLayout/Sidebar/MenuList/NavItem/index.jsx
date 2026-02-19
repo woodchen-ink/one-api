@@ -30,9 +30,7 @@ const NavItem = ({ item, level, isMini = false }) => {
   const isSubItem = level > 1;
 
   const Icon = item.icon;
-  const itemIcon = item?.icon ? (
-    <Icon stroke={1.5} size={isMini ? '1.375rem' : '1.25rem'} />
-  ) : null;
+  const itemIcon = item?.icon ? <Icon stroke={1.5} size={isMini ? '1.375rem' : '1.25rem'} /> : null;
 
   let itemTarget = '_self';
   if (item.target) {

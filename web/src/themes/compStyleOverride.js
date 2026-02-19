@@ -752,10 +752,10 @@ export default function componentStyleOverrides(theme) {
           }
         },
         standardInfo: {
-          backgroundColor: isDark ? (theme.colors?.infoDark || '#006C9C') : '#CAFDF5',
-          color: isDark ? '#CAFDF5' : (theme.colors?.infoDark || '#006C9C'),
+          backgroundColor: isDark ? theme.colors?.infoDark || '#006C9C' : '#CAFDF5',
+          color: isDark ? '#CAFDF5' : theme.colors?.infoDark || '#006C9C',
           '& .MuiAlert-icon': {
-            color: isDark ? (theme.colors?.infoLight || '#61F3F3') : (theme.colors?.infoMain || '#00B8D9')
+            color: isDark ? theme.colors?.infoLight || '#61F3F3' : theme.colors?.infoMain || '#00B8D9'
           }
         }
       }

@@ -92,9 +92,9 @@ const MenuCard = () => {
     <CardStyle>
       <CardContent sx={{ p: 1.5, pb: '8px !important' }}>
         <Stack direction="row" spacing={1} alignItems="center" mb={1}>
-          <Box 
+          <Box
             component="div"
-            sx={{ 
+            sx={{
               cursor: 'pointer',
               position: 'relative',
               width: '38px',

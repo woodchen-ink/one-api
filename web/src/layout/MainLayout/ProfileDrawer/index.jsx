@@ -27,7 +27,6 @@ import { calculateQuota } from 'utils/common';
 // assets
 import { Icon } from '@iconify/react';
 
-
 // ==============================|| PROFILE DRAWER ||============================== //
 
 const ProfileDrawer = ({ open, onClose }) => {
@@ -78,7 +77,6 @@ const ProfileDrawer = ({ open, onClose }) => {
 
         {/* 用户信息头部 */}
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', px: 2, pb: 2 }}>
-
           <Box
             component="div"
             sx={{
@@ -109,7 +107,6 @@ const ProfileDrawer = ({ open, onClose }) => {
             />
           </Box>
 
-
           <Typography variant="h5" sx={{ fontWeight: 500, mb: 0.5 }}>
             {user?.display_name || user?.username || 'Unknown'}
           </Typography>
@@ -127,7 +124,8 @@ const ProfileDrawer = ({ open, onClose }) => {
           >
             <Typography variant="caption" color="primary">
               {t('userPage.group')}: {userGroup?.[user?.group]?.name || user?.group}（ {t('modelpricePage.rate')}:
-              {userGroup?.[user?.group]?.ratio || t('dashboard_index.unknown')}/ {t('modelpricePage.RPM')}:{userGroup?.[user?.group]?.api_rate || t('dashboard_index.unknown')}）
+              {userGroup?.[user?.group]?.ratio || t('dashboard_index.unknown')}/ {t('modelpricePage.RPM')}:
+              {userGroup?.[user?.group]?.api_rate || t('dashboard_index.unknown')}）
             </Typography>
           </Box>
         </Box>

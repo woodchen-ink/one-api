@@ -51,9 +51,9 @@ export default function Invoice() {
 
   const handlerViewInvoice = (date) => {
     //时间只取年月日
-    date = date.substring(0, 7)
+    date = date.substring(0, 7);
     navigate(`/panel/invoice/detail/${date}`);
-  }
+  };
 
   const fetchData = async (page, rowsPerPage, order, orderBy) => {
     setSearching(true);
@@ -91,7 +91,6 @@ export default function Invoice() {
   useEffect(() => {
     fetchData(page, rowsPerPage, order, orderBy);
   }, [page, rowsPerPage, order, orderBy, refreshFlag]);
-
 
   return (
     <>

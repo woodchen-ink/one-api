@@ -138,7 +138,9 @@ const EditModal = ({ open, tokenId, onCancel, onOk, userGroupOptions, adminMode 
 
     // 过滤掉空的 IP 行
     if (values.setting?.limits?.limits_ip_setting?.whitelist) {
-      values.setting.limits.limits_ip_setting.whitelist = values.setting.limits.limits_ip_setting.whitelist.filter(ip => ip.trim() !== '');
+      values.setting.limits.limits_ip_setting.whitelist = values.setting.limits.limits_ip_setting.whitelist.filter(
+        (ip) => ip.trim() !== ''
+      );
     }
     let res;
     try {
@@ -197,7 +199,8 @@ const EditModal = ({ open, tokenId, onCancel, onOk, userGroupOptions, adminMode 
         if (!tokenData.setting.limits) tokenData.setting.limits = originInputs.setting.limits;
         if (!tokenData.setting.limits.limit_model_setting)
           tokenData.setting.limits.limit_model_setting = originInputs.setting.limits.limit_model_setting;
-        if (!tokenData.setting.limits.limits_ip_setting) tokenData.setting.limits.limits_ip_setting = originInputs.setting.limits.limits_ip_setting;
+        if (!tokenData.setting.limits.limits_ip_setting)
+          tokenData.setting.limits.limits_ip_setting = originInputs.setting.limits.limits_ip_setting;
         if (!tokenData.setting.limits.limit_model_setting.models) tokenData.setting.limits.limit_model_setting.models = [];
         if (!tokenData.setting.limits.limits_ip_setting.whitelist) tokenData.setting.limits.limits_ip_setting.whitelist = [];
         setInputs(tokenData);
@@ -254,9 +257,7 @@ const EditModal = ({ open, tokenId, onCancel, onOk, userGroupOptions, adminMode 
                       inputProps={{ autoComplete: 'off' }}
                       aria-describedby="helper-text-token-user-id-label"
                     />
-                    <FormHelperText id="helper-text-token-user-id-label">
-                      {t('token_index.transferToUserHelper')}
-                    </FormHelperText>
+                    <FormHelperText id="helper-text-token-user-id-label">{t('token_index.transferToUserHelper')}</FormHelperText>
                   </FormControl>
                 </>
               )}
@@ -483,7 +484,6 @@ const EditModal = ({ open, tokenId, onCancel, onOk, userGroupOptions, adminMode 
                 <ModelLimitSelector modelOptions={modelOptions} getModelIcon={getModelIcon} />
               )}
 
-
               {/* IP 白名单限制 */}
               <Divider sx={{ margin: '16px 0px' }} />
               <Typography variant="caption">{t('token_index.limits_ip_whitelist_info')}</Typography>
@@ -527,7 +527,9 @@ const EditModal = ({ open, tokenId, onCancel, onOk, userGroupOptions, adminMode 
               {userIsReliable && (
                 <>
                   <Divider sx={{ margin: '16px 0px' }} />
-                  <Typography variant="h4" color="primary">{t('token_index.billingTag')}</Typography>
+                  <Typography variant="h4" color="primary">
+                    {t('token_index.billingTag')}
+                  </Typography>
                   <Typography variant="caption">{t('token_index.billingTagInfo')}</Typography>
                   <Grid container spacing={2} mt={2}>
                     <Grid item xs={12} md={6}>
