@@ -213,16 +213,10 @@ export async function onWebAuthnClicked(username, showError, showSuccess, naviga
       ...beginData.data.publicKey,
       challenge: base64urlToUint8Array(beginData.data.publicKey.challenge),
       allowCredentials:
-        beginData.data.publicKey.allowCredentials?.map((cred, index) => {
-          try {
-            return {
-              ...cred,
-              id: base64urlToUint8Array(cred.id)
-            };
-          } catch (error) {
-            throw error;
-          }
-        }) || []
+        beginData.data.publicKey.allowCredentials?.map((cred) => ({
+          ...cred,
+          id: base64urlToUint8Array(cred.id)
+        })) || []
     };
 
     // 调用WebAuthn API进行认证

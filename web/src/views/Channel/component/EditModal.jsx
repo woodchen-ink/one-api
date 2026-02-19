@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { CHANNEL_OPTIONS } from 'constants/ChannelConstants';
 import { useTheme } from '@mui/material/styles';
 import { API } from 'utils/api';

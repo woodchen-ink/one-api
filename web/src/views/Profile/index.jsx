@@ -8,7 +8,6 @@ import {
   OutlinedInput,
   Stack,
   Alert,
-  Divider,
   Chip,
   Typography,
   useMediaQuery,
