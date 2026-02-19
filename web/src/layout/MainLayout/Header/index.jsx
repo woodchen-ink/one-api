@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import { Icon } from '@iconify/react';
 import { useLocation } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 // material-ui
 import { useTheme } from '@mui/material/styles';
@@ -12,6 +13,7 @@ import Profile from './Profile';
 import ThemeButton from 'ui-component/ThemeButton';
 import I18nButton from 'ui-component/i18nButton';
 import { NoticeButton } from 'ui-component/notice';
+import { drawerWidth, miniDrawerWidth } from 'store/constant';
 
 // ==============================|| MAIN NAVBAR / HEADER ||============================== //
 
@@ -20,6 +22,7 @@ const Header = ({ handleLeftDrawerToggle, toggleProfileDrawer }) => {
   const matchUpMd = useMediaQuery(theme.breakpoints.up('md'));
   const location = useLocation();
   const isConsoleRoute = location.pathname.startsWith('/panel');
+  const leftDrawerOpened = useSelector((state) => state.customization.opened);
 
   return (
     <>
@@ -27,13 +30,28 @@ const Header = ({ handleLeftDrawerToggle, toggleProfileDrawer }) => {
         sx={{
           display: 'flex',
           alignItems: 'center',
+          ...(matchUpMd && {
+            width: `${leftDrawerOpened ? drawerWidth : miniDrawerWidth}px`,
+            ml: leftDrawerOpened ? 0 : -3,
+            transition: 'width 200ms cubic-bezier(0.4, 0, 0.2, 1), margin 200ms cubic-bezier(0.4, 0, 0.2, 1)'
+          }),
           [theme.breakpoints.down('md')]: {
             width: 'auto'
           }
         }}
       >
-        <Box component="span" sx={{ display: { xs: 'none', md: 'block' }, mr: 1 }}>
-          <LogoSection />
+        <Box
+          component="span"
+          sx={{
+            display: { xs: 'none', md: 'flex' },
+            alignItems: 'center',
+            justifyContent: leftDrawerOpened ? 'flex-start' : 'center',
+            width: '100%',
+            overflow: 'visible',
+            transition: 'all 200ms cubic-bezier(0.4, 0, 0.2, 1)'
+          }}
+        >
+          <LogoSection isMini={!leftDrawerOpened} />
         </Box>
         {!matchUpMd && (
           <IconButton
