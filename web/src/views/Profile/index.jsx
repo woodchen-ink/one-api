@@ -27,7 +27,7 @@ import {
   ListItemText,
   ListItemAvatar
 } from '@mui/material';
-import { keyframes } from '@emotion/react';
+
 import Grid from '@mui/material/Unstable_Grid2';
 import SubCard from 'ui-component/cards/SubCard';
 import MainCard from 'ui-component/cards/MainCard';
@@ -106,19 +106,6 @@ export default function Profile() {
   const theme = useTheme();
   const matchDownSM = useMediaQuery(theme.breakpoints.down('md'));
   const [value, setValue] = useState(0);
-
-  // Define the gradient animation
-  const gradientAnimation = keyframes`
-    0% {
-      background-position: 0 50%;
-    }
-    50% {
-      background-position: 100% 50%;
-    }
-    100% {
-      background-position: 0 50%;
-    }
-  `;
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -349,12 +336,7 @@ export default function Profile() {
                         ${theme.palette.primary.main}, 
                         ${theme.palette.secondary.main}, 
                         ${theme.palette.primary.light}, 
-                        ${theme.palette.primary.main})`,
-                      backgroundSize: '300% 300%',
-                      animation: `${gradientAnimation} 5s ease infinite`,
-                      '&:hover': {
-                        animation: `${gradientAnimation} 5s ease infinite`
-                      }
+                        ${theme.palette.primary.main})`
                     }}
                   >
                     <Avatar
