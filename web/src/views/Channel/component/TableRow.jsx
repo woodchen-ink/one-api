@@ -351,14 +351,7 @@ export default function ChannelTableRow({ item, manageChannel, onRefresh, groupO
               {item.tag}
             </Typography>
           ) : (
-            <Typography
-              variant="subtitle1"
-              sx={{
-                lineHeight: 1.4
-              }}
-            >
-              {item.name}
-            </Typography>
+            item.name
           )}
         </TableCell>
 
