@@ -3,7 +3,7 @@
  * @param {JsonObject} theme Theme customization object
  */
 
-import { varAlpha } from './utils';
+import { varAlpha, createGradient } from './utils';
 
 export default function themePalette(theme) {
   return {
