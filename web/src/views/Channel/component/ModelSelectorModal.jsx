@@ -320,12 +320,17 @@ const ModelSelectorModal = ({ open, onClose, onConfirm, channelValues, prices })
       if (filterMappedModels) {
         const mappedValues = mappings.map((m) => (m.value.startsWith('+') ? m.value.substring(1) : m.value));
         modelsToSubmit = selectedModels.filter((model) => !mappedValues.includes(model.id));
+        const mappedValues = mappings.map((m) => (m.value.startsWith('+') ? m.value.substring(1) : m.value));
+        modelsToSubmit = selectedModels.filter((model) => !mappedValues.includes(model.id));
       }
 
+      const mappedModels = mappings.map((mapping) => {
       const mappedModels = mappings.map((mapping) => {
         return { id: mapping.key, group: t('channel_edit.customModelTip') };
       });
 
+      const existingIds = new Set(modelsToSubmit.map((model) => model.id));
+      const newMappedModels = mappedModels.filter((model) => !existingIds.has(model.id));
       const existingIds = new Set(modelsToSubmit.map((model) => model.id));
       const newMappedModels = mappedModels.filter((model) => !existingIds.has(model.id));
 
@@ -867,6 +872,7 @@ const ModelSelectorModal = ({ open, onClose, onConfirm, channelValues, prices })
                     label={t('channel_edit.filterMappedModels')}
                     sx={{ my: 0 }}
                   />
+
 
                   <FormControlLabel
                     control={<Switch checked={overwriteMappings} onChange={(e) => setOverwriteMappings(e.target.checked)} />}

@@ -89,8 +89,15 @@ const getValidationSchema = (t) =>
       .test('isPositive', t('pricing_edit.inputVal'), (value) => value !== '' && value >= 0),
     output: Yup.number().when('type', {
       is: 'tokens',
-      then: (schema) => schema.required(t('pricing_edit.requiredOutput')).test('isPositive', t('pricing_edit.outputVal'), (value) => value !== '' && value >= 0),
-      otherwise: (schema) => schema.notRequired().nullable().transform((value) => value === undefined || value === '' ? null : value)
+      then: (schema) =>
+        schema
+          .required(t('pricing_edit.requiredOutput'))
+          .test('isPositive', t('pricing_edit.outputVal'), (value) => value !== '' && value >= 0),
+      otherwise: (schema) =>
+        schema
+          .notRequired()
+          .nullable()
+          .transform((value) => (value === undefined || value === '' ? null : value))
     }),
     models: Yup.array().min(1, t('pricing_edit.requiredModels'))
   });
@@ -674,8 +681,8 @@ const EditModal = ({
             onClick={() =>
               submit(inputs, {
                 setErrors,
-                setStatus: () => { },
-                setSubmitting: () => { }
+                setStatus: () => {},
+                setSubmitting: () => {}
               })
             }
             variant="contained"
