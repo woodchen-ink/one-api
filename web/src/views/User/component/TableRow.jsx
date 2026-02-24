@@ -2,6 +2,8 @@ import PropTypes from 'prop-types';
 import { useState } from 'react';
 
 import {
+  Popover,
+  MenuItem,
   TableRow,
   TableCell,
   IconButton,
@@ -52,6 +54,14 @@ export default function UsersTableRow({ item, manageUser, handleOpenModal, setMo
   const [quotaMode, setQuotaMode] = useState('change');
   const [finalQuota, setFinalQuota] = useState(item.quota);
   const [finalMoney, setFinalMoney] = useState(0);
+
+  const handleOpenMenu = (event) => {
+    setOpen(event.currentTarget);
+  };
+
+  const handleCloseMenu = () => {
+    setOpen(null);
+  };
 
   const handleDeleteOpen = () => {
     handleCloseMenu();
