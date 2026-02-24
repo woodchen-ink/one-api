@@ -213,16 +213,10 @@ export async function onWebAuthnClicked(username, showError, showSuccess, naviga
       ...beginData.data.publicKey,
       challenge: base64urlToUint8Array(beginData.data.publicKey.challenge),
       allowCredentials:
-        beginData.data.publicKey.allowCredentials?.map((cred, index) => {
-          try {
-            return {
-              ...cred,
-              id: base64urlToUint8Array(cred.id)
-            };
-          } catch (error) {
-            throw error;
-          }
-        }) || []
+        beginData.data.publicKey.allowCredentials?.map((cred) => ({
+          ...cred,
+          id: base64urlToUint8Array(cred.id)
+        })) || []
     };
 
     // 调用WebAuthn API进行认证
@@ -730,7 +724,6 @@ export function replaceChatPlaceholders(text, key, server) {
     .replace('{key}', key)
     .replace('{server}', server);
 }
-
 
 export function ValueFormatter(value, onlyUsd = false, unitMillion = false) {
   if (value == null) {
