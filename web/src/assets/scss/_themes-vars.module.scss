@@ -1,11 +1,11 @@
-// paper & background
-$paper: #FAF9F5;
+// paper & background (oklch hue≈67.80, chroma≤0.005)
+$paper: #F8F7F6;
 
 // primary - 强调色系 (深色主调)
-$primaryLight: #EBE6DE;
+$primaryLight: #EAE8E6;
 $primaryMain: #141413;
 $primaryDark: #0a0a09;
-$primary200: #E3DCD1;
+$primary200: #E0DEDA;
 $primary800: #141413;
 $primaryDark2: #D97757;
 
@@ -37,19 +37,20 @@ $warningLight: #FBF5DC;
 $warningMain: #F2D879;
 $warningDark: #D4BA54;
 
-$grey50: #FAF9F5;
-$grey100: #F2F0EB;
-$grey200: #EBE6DE;
-$grey300: #E3DCD1;
-$grey500: #8A847A;
-$grey600: #5C5850;
-$grey700: #3D3A35;
+// 中性面 (oklch hue≈67.80, chroma≤0.005, 与 #F8F7F6 同色系)
+$grey50: #F8F7F6;
+$grey100: #F1F0EE;
+$grey200: #EAE8E6;
+$grey300: #E0DEDA;
+$grey500: #8A8886;
+$grey600: #5C5B59;
+$grey700: #3D3C3A;
 $grey900: #141413;
 
 
 
-$tableBackground: #FAF9F5;
-$tableBorderBottom: #EBE6DE;
+$tableBackground: #F8F7F6;
+$tableBorderBottom: #EAE8E6;
 
 // ==============================|| DARK THEME VARIANTS ||============================== //
 
@@ -81,10 +82,10 @@ $darkSecondary200: #F5EDE6;
 $darkSecondary800: #9d4a3a;
 
 // text variants
-$darkTextTitle: #FAF9F5;
-$darkTextPrimary: #F2F0EB;
+$darkTextTitle: #F8F7F6;
+$darkTextPrimary: #F1F0EE;
 $darkTextSecondary: #C4BFB5;
-$darkTextDark: #8A847A;
+$darkTextDark: #8A8886;
 
 // ==============================|| JAVASCRIPT ||============================== //
 

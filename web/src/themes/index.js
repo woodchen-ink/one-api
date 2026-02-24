@@ -78,19 +78,19 @@ function GetDarkOption() {
     paper: '#211F1C',
     backgroundDefault: '#1A1916',
     background: '#272420',
-    darkTextPrimary: '#F2F0EB',
+    darkTextPrimary: '#F1F0EE',
     darkTextSecondary: '#C4BFB5',
-    textDark: '#FAF9F5',
+    textDark: '#F8F7F6',
     menuSelected: color.primary200,
     menuSelectedBack: varAlpha(color.darkPrimaryMain, 0.15),
-    divider: 'rgba(235, 230, 222, 0.12)',
-    borderColor: 'rgba(235, 230, 222, 0.15)',
+    divider: 'rgba(248, 247, 246, 0.12)',
+    borderColor: 'rgba(248, 247, 246, 0.15)',
     menuButton: '#2E2B27',
     menuButtonColor: color.darkPrimaryMain,
     menuChip: '#2E2B27',
     headBackgroundColor: '#2E2B27',
     headBackgroundColorHover: varAlpha('#2E2B27', 0.08),
-    tableBorderBottom: 'rgba(235, 230, 222, 0.1)'
+    tableBorderBottom: 'rgba(248, 247, 246, 0.1)'
   };
 }
 
@@ -98,22 +98,22 @@ function GetLightOption() {
   const color = colors;
   return {
     mode: 'light',
-    heading: '#141413', // 主要文本和图标
-    paper: '#FAF9F5', // 主要背景色
-    backgroundDefault: '#FAF9F5', // 主要背景色
-    background: '#FAF9F5',
-    darkTextPrimary: '#141413', // 主要文本和图标
-    darkTextSecondary: '#8A847A', // 次要文本颜色
+    heading: '#141413', // foreground 主要文本
+    paper: '#F8F7F6', // background 主要背景
+    backgroundDefault: '#F8F7F6', // background
+    background: '#F8F7F6',
+    darkTextPrimary: '#141413', // foreground
+    darkTextSecondary: '#8A8886', // grey500 辅助文本
     textDark: '#141413',
-    menuSelected: '#E3DCD1', // 已选择
-    menuSelectedBack: varAlpha('#E3DCD1', 0.8),
-    divider: '#EBE6DE',
-    borderColor: '#EBE6DE',
-    menuButton: '#141413', // 导航栏背景 (强调色)
-    menuButtonColor: '#FAF9F5', // 导航栏内容 (浅色)
-    menuChip: '#EBE6DE',
-    headBackgroundColor: '#EBE6DE', // 表头背景 (悬停色)
-    headBackgroundColorHover: varAlpha('#EBE6DE', 0.08), // 悬停
-    tableBorderBottom: '#EBE6DE'
+    menuSelected: '#E0DEDA', // muted 已选择
+    menuSelectedBack: varAlpha('#E0DEDA', 0.8),
+    divider: '#EAE8E6', // border 中性暖灰边框
+    borderColor: '#EAE8E6',
+    menuButton: '#141413', // primary 导航栏背景
+    menuButtonColor: '#F8F7F6', // background 导航栏内容
+    menuChip: '#EAE8E6',
+    headBackgroundColor: '#EAE8E6', // secondary 悬停色
+    headBackgroundColorHover: varAlpha('#EAE8E6', 0.08),
+    tableBorderBottom: '#EAE8E6'
   };
 }

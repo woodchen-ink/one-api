@@ -12,13 +12,13 @@ export default function themePalette(theme) {
       black: theme.colors?.darkPaper
     },
     primary: {
-      lighter: theme.mode === 'dark' ? '#F0D9CA' : '#F2F0EB',
+      lighter: theme.mode === 'dark' ? '#F0D9CA' : '#F1F0EE',
       light: theme.colors?.primaryLight,
       main: theme.colors?.primaryMain,
       dark: theme.colors?.primaryDark,
       200: theme.colors?.primary200,
       800: theme.colors?.primary800,
-      contrastText: '#FAF9F5',
+      contrastText: '#F8F7F6',
       gradient: createGradient(theme.colors?.primaryMain, theme.colors?.primaryDark)
     },
     secondary: {
@@ -28,7 +28,7 @@ export default function themePalette(theme) {
       dark: theme.colors?.secondaryDark,
       200: theme.colors?.secondary200,
       800: theme.colors?.secondary800,
-      contrastText: '#FAF9F5',
+      contrastText: '#F8F7F6',
       gradient: createGradient(theme.colors?.secondaryMain, theme.colors?.secondaryDark)
     },
     error: {
@@ -36,7 +36,7 @@ export default function themePalette(theme) {
       light: theme.colors?.errorLight,
       main: theme.colors?.errorMain,
       dark: theme.colors?.errorDark,
-      contrastText: '#FAF9F5',
+      contrastText: '#F8F7F6',
       gradient: createGradient(theme.colors?.errorMain, theme.colors?.errorDark)
     },
     orange: {
@@ -44,7 +44,7 @@ export default function themePalette(theme) {
       light: theme.colors?.orangeLight,
       main: theme.colors?.orangeMain,
       dark: theme.colors?.orangeDark,
-      contrastText: theme.mode === 'dark' ? '#FAF9F5' : '#141413'
+      contrastText: theme.mode === 'dark' ? '#F8F7F6' : '#141413'
     },
     warning: {
       lighter: '#FBF5DC',
@@ -60,7 +60,7 @@ export default function themePalette(theme) {
       200: theme.colors?.success200,
       main: theme.colors?.successMain,
       dark: theme.colors?.successDark,
-      contrastText: '#FAF9F5',
+      contrastText: '#F8F7F6',
       gradient: createGradient(theme.colors?.successMain, theme.colors?.successDark)
     },
     grey: {
