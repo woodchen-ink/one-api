@@ -37,14 +37,21 @@ $warningLight: #FBF5DC;
 $warningMain: #F2D879;
 $warningDark: #D4BA54;
 
+// info - 信息色 (中性蓝灰)
+$infoLight: #E8EAED;
+$infoMain: #6B7280;
+$infoDark: #4B5563;
+
 // 中性面 (oklch hue≈67.80, chroma≤0.005, 与 #F8F7F6 同色系)
 $grey50: #F8F7F6;
 $grey100: #F1F0EE;
 $grey200: #EAE8E6;
 $grey300: #E0DEDA;
+$grey400: #C4C2BF;
 $grey500: #8A8886;
 $grey600: #5C5B59;
 $grey700: #3D3C3A;
+$grey800: #2A2928;
 $grey900: #141413;
 
 
@@ -128,14 +135,21 @@ $darkTextDark: #8A8886;
   warningMain: $warningMain;
   warningDark: $warningDark;
 
+  // info
+  infoLight: $infoLight;
+  infoMain: $infoMain;
+  infoDark: $infoDark;
+
   // grey
   grey50: $grey50;
   grey100: $grey100;
   grey200: $grey200;
   grey300: $grey300;
+  grey400: $grey400;
   grey500: $grey500;
   grey600: $grey600;
   grey700: $grey700;
+  grey800: $grey800;
   grey900: $grey900;
 
   // ==============================|| DARK THEME VARIANTS ||============================== //
