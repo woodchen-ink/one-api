@@ -209,17 +209,17 @@ function viewTokens(item, t, totalInputTokens, totalOutputTokens, show, tokenDet
   if (!prompt_tokens && !completion_tokens) return '';
 
   const content = (
-    <Stack direction="row" spacing={0.5} alignItems="center" sx={{ whiteSpace: 'nowrap' }}>
-      <Typography variant="caption" color="text.secondary">
+    <span style={{ whiteSpace: 'nowrap' }}>
+      <Typography component="span" variant="caption" color="text.secondary">
         {prompt_tokens || 0}
       </Typography>
-      <Typography variant="caption" color="text.disabled">
+      <Typography component="span" variant="caption" color="text.disabled" sx={{ mx: 0.5 }}>
         /
       </Typography>
-      <Typography variant="caption" color="text.primary">
+      <Typography component="span" variant="caption" color="text.primary">
         {completion_tokens || 0}
       </Typography>
-    </Stack>
+    </span>
   );
 
   if (!show) return content;
