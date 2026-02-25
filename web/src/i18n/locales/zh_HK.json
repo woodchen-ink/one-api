@@ -424,6 +424,7 @@
     "modelLabel": "模型",
     "outputAudioTokens": "輸出音頻Tokens (* {{ ratio }})",
     "outputLabel": "輸出",
+    "tokensLabel": "Tokens",
     "outputTextTokens": "輸出文本Tokens (* {{ ratio }})",
     "quotaLabel": "額度",
     "refreshButton": "刷新/清除搜尋條件",
@@ -437,6 +438,7 @@
     "typeLabel": "類型",
     "userLabel": "用戶",
     "sourceIp": "Source IP",
+    "requestPath": "請求路徑",
     "logType": {
       "all": "全部",
       "recharge": "充值",

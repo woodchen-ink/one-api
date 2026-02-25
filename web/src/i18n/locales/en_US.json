@@ -443,6 +443,7 @@
     "modelLabel": "Model",
     "outputAudioTokens": "Output audio tokens (* {{ ratio }})",
     "outputLabel": "Output",
+    "tokensLabel": "Tokens",
     "outputTextTokens": "Output text tokens (* {{ ratio }})",
     "quotaLabel": "Quota",
     "refreshButton": "Refresh/Clear Search",
@@ -456,6 +457,7 @@
     "typeLabel": "Type",
     "userLabel": "User",
     "sourceIp": "Source IP",
+    "requestPath": "Request Path",
     "unknown": "Unknown",
     "logType": {
       "all": "All",

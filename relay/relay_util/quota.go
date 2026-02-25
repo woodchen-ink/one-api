@@ -36,6 +36,7 @@ type Quota struct {
 	startTime         time.Time
 	firstResponseTime time.Time
 	extraBillingData  map[string]ExtraBillingData
+	requestPath       string
 }
 
 func NewQuota(c *gin.Context, modelName string, promptTokens int) *Quota {
@@ -170,7 +171,7 @@ func (q *Quota) completedQuotaConsumption(usage *types.Usage, tokenName string, 
 		"",
 		q.getRequestTime(),
 		isStream,
-		q.GetLogMeta(usage),
+		q.GetLogMeta(usage, q.requestPath),
 		sourceIp,
 	)
 	model.UpdateUserUsedQuotaAndRequestCount(q.userId, quota)
@@ -193,6 +194,7 @@ func (q *Quota) Undo(c *gin.Context) {
 func (q *Quota) Consume(c *gin.Context, usage *types.Usage, isStream bool) {
 	tokenName := c.GetString("token_name")
 	q.startTime = c.GetTime("requestStartTime")
+	q.requestPath = c.Request.URL.Path
 	// 如果没有报错，则消费配额
 	go func(ctx context.Context) {
 		err := q.completedQuotaConsumption(usage, tokenName, isStream, common.GetClientIP(c), ctx)
@@ -206,7 +208,7 @@ func (q *Quota) GetInputRatio() float64 {
 	return q.inputRatio
 }
 
-func (q *Quota) GetLogMeta(usage *types.Usage) map[string]any {
+func (q *Quota) GetLogMeta(usage *types.Usage, requestPath ...string) map[string]any {
 	meta := map[string]any{
 		"group_name":        q.groupName,
 		"backup_group_name": q.backupGroupName,
@@ -215,6 +217,10 @@ func (q *Quota) GetLogMeta(usage *types.Usage) map[string]any {
 		"group_ratio":       q.groupRatio,
 		"input_ratio":       q.price.GetInput(),
 		"output_ratio":      q.price.GetOutput(),
+	}
+
+	if len(requestPath) > 0 && requestPath[0] != "" {
+		meta["request_path"] = requestPath[0]
 	}
 
 	firstResponseTime := q.GetFirstResponseTime()

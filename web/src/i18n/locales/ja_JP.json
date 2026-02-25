@@ -419,6 +419,7 @@
     "modelLabel": "モデル",
     "outputAudioTokens": "Output audio tokens (* {{ ratio }})",
     "outputLabel": "出力",
+    "tokensLabel": "Tokens",
     "outputTextTokens": "Output text tokens (* {{ ratio }})",
     "quotaLabel": "クォータ",
     "refreshButton": "更新/検索条件をクリア",
@@ -432,6 +433,7 @@
     "typeLabel": "タイプ",
     "userLabel": "ユーザー",
     "sourceIp": "Source IP",
+    "requestPath": "リクエストパス",
     "logType": {
       "all": "すべて",
       "recharge": "チャージ",

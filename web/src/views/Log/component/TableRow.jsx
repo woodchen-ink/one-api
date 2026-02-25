@@ -111,6 +111,15 @@ function LogTableRow({ item, userIsAdmin, userGroup, columnVisibility }) {
         {columnVisibility.type && <TableCell sx={{ p: '10px 8px' }}>{renderType(item.type, LogType, t)}</TableCell>}
         {columnVisibility.model_name && <TableCell sx={{ p: '10px 8px' }}>{viewModelName(item.model_name, item.is_stream)}</TableCell>}
 
+        {columnVisibility.request_path && (
+          <TableCell sx={{ p: '10px 8px' }}>
+            {item?.metadata?.request_path && (
+              <Typography variant="caption" sx={{ fontFamily: 'monospace', color: 'text.secondary', whiteSpace: 'nowrap' }}>
+                {item.metadata.request_path}
+              </Typography>
+            )}
+          </TableCell>
+        )}
         {columnVisibility.duration && (
           <TableCell sx={{ p: '10px 8px' }}>
             <Label color={requestTimeLabelOptions(request_time)}>
@@ -118,10 +127,11 @@ function LogTableRow({ item, userIsAdmin, userGroup, columnVisibility }) {
             </Label>
           </TableCell>
         )}
-        {columnVisibility.message && (
-          <TableCell sx={{ p: '10px 8px' }}>{viewInput(item, t, totalInputTokens, totalOutputTokens, show, tokenDetails)}</TableCell>
+        {columnVisibility.tokens && (
+          <TableCell sx={{ p: '10px 8px' }}>
+            {viewTokens(item, t, totalInputTokens, totalOutputTokens, show, tokenDetails)}
+          </TableCell>
         )}
-        {columnVisibility.completion && <TableCell sx={{ p: '10px 8px' }}>{item.completion_tokens || ''}</TableCell>}
         {columnVisibility.quota && (
           <TableCell sx={{ p: '10px 8px' }}>
             {item.quota ? renderQuota(item.quota, 6) : '$0'}
@@ -193,11 +203,26 @@ const MetadataTypography = styled(Typography)(({ theme }) => ({
   }
 }));
 
-function viewInput(item, t, totalInputTokens, totalOutputTokens, show, tokenDetails) {
-  const { prompt_tokens } = item;
+function viewTokens(item, t, totalInputTokens, totalOutputTokens, show, tokenDetails) {
+  const { prompt_tokens, completion_tokens } = item;
 
-  if (!prompt_tokens) return '';
-  if (!show) return prompt_tokens;
+  if (!prompt_tokens && !completion_tokens) return '';
+
+  const content = (
+    <Stack direction="row" spacing={0.5} alignItems="center" sx={{ whiteSpace: 'nowrap' }}>
+      <Typography variant="caption" color="text.secondary">
+        {prompt_tokens || 0}
+      </Typography>
+      <Typography variant="caption" color="text.disabled">
+        /
+      </Typography>
+      <Typography variant="caption" color="text.primary">
+        {completion_tokens || 0}
+      </Typography>
+    </Stack>
+  );
+
+  if (!show) return content;
 
   const tooltipContent = tokenDetails.map(({ key, label, tokens, value, rate, labelParams }) => (
     <MetadataTypography key={key}>{`${t(label, labelParams)}: ${value} *  (${rate} - 1) = ${tokens}`}</MetadataTypography>
@@ -220,7 +245,7 @@ function viewInput(item, t, totalInputTokens, totalOutputTokens, show, tokenDeta
         placement="top"
         arrow
       >
-        <span style={{ cursor: 'help' }}>{prompt_tokens}</span>
+        <span style={{ cursor: 'help' }}>{content}</span>
       </Tooltip>
     </Badge>
   );

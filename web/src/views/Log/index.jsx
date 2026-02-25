@@ -66,9 +66,9 @@ export default function Log() {
     token_name: true,
     type: true,
     model_name: true,
+    request_path: true,
     duration: true,
-    message: true,
-    completion: true,
+    tokens: true,
     quota: true,
     source_ip: true
   });
@@ -299,9 +299,9 @@ export default function Log() {
                 { id: 'token_name', label: t('logPage.tokenLabel') },
                 { id: 'type', label: t('logPage.typeLabel') },
                 { id: 'model_name', label: t('logPage.modelLabel') },
+                { id: 'request_path', label: t('logPage.requestPath') },
                 { id: 'duration', label: t('logPage.durationLabel') },
-                { id: 'message', label: t('logPage.inputLabel') },
-                { id: 'completion', label: t('logPage.outputLabel') },
+                { id: 'tokens', label: t('logPage.tokensLabel') },
                 { id: 'quota', label: t('logPage.quotaLabel') },
                 { id: 'source_ip', label: t('logPage.sourceIp') }
               ].map(
@@ -368,22 +368,22 @@ export default function Log() {
                     hide: !columnVisibility.model_name
                   },
                   {
+                    id: 'request_path',
+                    label: t('logPage.requestPath'),
+                    disableSort: true,
+                    hide: !columnVisibility.request_path
+                  },
+                  {
                     id: 'duration',
                     label: t('logPage.durationLabel'),
                     disableSort: true,
                     hide: !columnVisibility.duration
                   },
                   {
-                    id: 'message',
-                    label: t('logPage.inputLabel'),
+                    id: 'tokens',
+                    label: t('logPage.tokensLabel'),
                     disableSort: true,
-                    hide: !columnVisibility.message
-                  },
-                  {
-                    id: 'completion',
-                    label: t('logPage.outputLabel'),
-                    disableSort: true,
-                    hide: !columnVisibility.completion
+                    hide: !columnVisibility.tokens
                   },
                   {
                     id: 'quota',
