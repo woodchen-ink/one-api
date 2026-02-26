@@ -17,7 +17,10 @@ import {
   Autocomplete,
   TextField,
   Switch,
-  FormControlLabel
+  FormControlLabel,
+  Chip,
+  Tooltip,
+  Alert
 } from '@mui/material';
 
 import { showSuccess, showError, trims } from 'utils/common';
@@ -164,6 +167,27 @@ const EditModal = ({ open, Oid, onCancel, onOk }) => {
                   onChange={(event, newValue) => {
                     setFieldValue('target_models', newValue);
                   }}
+                  renderTags={(value, getTagProps) =>
+                    value.map((option, index) => {
+                      const isUnavailable = modelOptions.length > 0 && !modelOptions.includes(option);
+                      const chip = (
+                        <Chip
+                          size="small"
+                          label={option}
+                          color={isUnavailable ? 'warning' : 'default'}
+                          variant={isUnavailable ? 'filled' : 'outlined'}
+                          {...getTagProps({ index })}
+                        />
+                      );
+                      return isUnavailable ? (
+                        <Tooltip key={option} title={t('modelMapping.modelUnavailable', '该模型当前不可用')} arrow>
+                          {chip}
+                        </Tooltip>
+                      ) : (
+                        chip
+                      );
+                    })
+                  }
                   renderInput={(params) => (
                     <TextField
                       {...params}
@@ -176,6 +200,12 @@ const EditModal = ({ open, Oid, onCancel, onOk }) => {
                     />
                   )}
                 />
+                {modelOptions.length > 0 &&
+                  values.target_models.some((m) => !modelOptions.includes(m)) && (
+                    <Alert severity="warning" sx={{ mt: 1 }}>
+                      {t('modelMapping.unavailableWarning', '部分目标模型当前不可用，请检查对应渠道是否已启用')}
+                    </Alert>
+                  )}
               </FormControl>
 
               <FormControl sx={{ ...theme.typography.otherInput }}>
