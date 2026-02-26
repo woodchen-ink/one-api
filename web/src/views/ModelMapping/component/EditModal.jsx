@@ -43,10 +43,10 @@ const EditModal = ({ open, Oid, onCancel, onOk }) => {
 
   const fetchModels = async () => {
     try {
-      const res = await API.get('/api/prices/model_list');
+      const res = await API.get('/api/available_model');
       const { success, data } = res.data;
-      if (success && Array.isArray(data)) {
-        setModelOptions(data);
+      if (success && data) {
+        setModelOptions(Object.keys(data).sort());
       }
     } catch (error) {
       console.error(error);
