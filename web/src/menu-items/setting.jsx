@@ -84,6 +84,15 @@ const Setting = {
           isAdmin: true
         },
         {
+          id: 'model_mapping',
+          title: '模型映射',
+          type: 'item',
+          url: '/panel/model_mapping',
+          icon: icons.IconModel,
+          breadcrumbs: false,
+          isAdmin: true
+        },
+        {
           id: 'telegram',
           title: 'Telegram Bot',
           type: 'item',

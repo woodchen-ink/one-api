@@ -122,7 +122,10 @@ func GetProvider(c *gin.Context, modelName string) (provider providersBase.Provi
 	provider.SetOriginalModel(modelName)
 	c.Set("original_model", modelName)
 
-	newModelName, fail = provider.ModelMappingHandler(modelName)
+	// 解析全局模型映射：将别名解析为该渠道实际支持的模型
+	resolvedModel := resolveGlobalAlias(modelName, channel)
+
+	newModelName, fail = provider.ModelMappingHandler(resolvedModel)
 	if fail != nil {
 		return
 	}
@@ -138,6 +141,26 @@ func GetProvider(c *gin.Context, modelName string) (provider providersBase.Provi
 	c.Set("billing_original_model", BillingOriginalModel)
 
 	return
+}
+
+// resolveGlobalAlias 将全局模型别名解析为该渠道实际支持的真实模型名
+func resolveGlobalAlias(modelName string, channel *model.Channel) string {
+	targets := model.GlobalModelMappingCache.GetTargets(modelName)
+	if len(targets) == 0 {
+		return modelName
+	}
+
+	channelModels := strings.Split(channel.Models, ",")
+	for _, target := range targets {
+		target = strings.TrimSpace(target)
+		for _, cm := range channelModels {
+			if strings.TrimSpace(cm) == target {
+				return target
+			}
+		}
+	}
+
+	return targets[0]
 }
 
 func fetchChannel(c *gin.Context, modelName string) (channel *model.Channel, fail error) {

@@ -313,6 +313,35 @@ func (cc *ChannelsChooser) Load() {
 		}
 	}
 
+	// 注入全局模型映射的别名
+	aliasMappings := GlobalModelMappingCache.GetAll()
+	for alias, targets := range aliasMappings {
+		for _, target := range targets {
+			target = strings.TrimSpace(target)
+			if target == "" {
+				continue
+			}
+			for key, priorityMap := range channelGroups {
+				if key.model != target {
+					continue
+				}
+				aliasKey := groupModelKey{group: key.group, model: alias}
+				if _, ok := channelGroups[aliasKey]; !ok {
+					channelGroups[aliasKey] = make(map[int64][]int)
+				}
+				for priority, ids := range priorityMap {
+					channelGroups[aliasKey][priority] = append(
+						channelGroups[aliasKey][priority], ids...)
+				}
+				// 更新 ModelGroup
+				if _, ok := newModelGroup[alias]; !ok {
+					newModelGroup[alias] = make(map[string]bool)
+				}
+				newModelGroup[alias][key.group] = true
+			}
+		}
+	}
+
 	// 构建最终的newGroup结构
 	for key, priorityMap := range channelGroups {
 		// 初始化group和model的map

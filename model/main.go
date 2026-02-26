@@ -25,6 +25,7 @@ func SetupDB() {
 	if err != nil {
 		logger.FatalLog("failed to initialize database: " + err.Error())
 	}
+	GlobalModelMappingCache.Load()
 	ChannelGroup.Load()
 	GlobalUserGroupRatio.Load()
 	config.RootUserEmail = GetRootUserEmail()
@@ -190,6 +191,11 @@ func InitDB() (err error) {
 		}
 
 		err = DB.AutoMigrate(&WebAuthnCredential{})
+		if err != nil {
+			return err
+		}
+
+		err = db.AutoMigrate(&ModelMapping{})
 		if err != nil {
 			return err
 		}
