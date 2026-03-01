@@ -60,7 +60,7 @@ const StatisticalCard = ({ isLoading }) => {
                       ...theme.typography.commonAvatar,
                       ...theme.typography.largeAvatar,
                       backgroundColor: theme.palette.primary[800],
-                      color: '#cdd5df'
+                      color: '#C4C2BF'
                     }}
                   >
                     <TableChartOutlinedIcon fontSize="inherit" />
@@ -73,7 +73,7 @@ const StatisticalCard = ({ isLoading }) => {
                     mb: 0.45
                   }}
                   primary={
-                    <Typography variant="h4" sx={{ color: '#cdd5df' }}>
+                    <Typography variant="h4" sx={{ color: '#C4C2BF' }}>
                       $203k
                     </Typography>
                   }

@@ -23,13 +23,13 @@
 
 .content-viewer h1 {
   font-size: 2em;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid rgba(20, 20, 19, 0.1);
   padding-bottom: 0.3em;
 }
 
 .content-viewer h2 {
   font-size: 1.5em;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid rgba(20, 20, 19, 0.1);
   padding-bottom: 0.3em;
 }
 
@@ -47,12 +47,12 @@
 
 .content-viewer h6 {
   font-size: 0.85em;
-  color: #6a737d;
+  color: #8A8886;
 }
 
 /* Links */
 .content-viewer a {
-  color: #0366d6;
+  color: #D97757;
   text-decoration: none;
 }
 
@@ -86,7 +86,7 @@
   padding: 0.2em 0.4em;
   margin: 0;
   font-size: 85%;
-  background-color: rgba(27, 31, 35, 0.05);
+  background-color: rgba(20, 20, 19, 0.05);
   border-radius: 3px;
 }
 
@@ -96,7 +96,7 @@
   overflow: auto;
   font-size: 85%;
   line-height: 1.45;
-  background-color: #f6f8fa;
+  background-color: #F1F0EE;
   border-radius: 3px;
   margin-top: 0;
   margin-bottom: 16px;
@@ -116,8 +116,8 @@
 /* Blockquotes */
 .content-viewer blockquote {
   padding: 0 1em;
-  color: #6a737d;
-  border-left: 0.25em solid #dfe2e5;
+  color: #8A8886;
+  border-left: 0.25em solid #E0DEDA;
   margin: 0 0 16px 0;
 }
 
@@ -143,28 +143,28 @@
 .content-viewer table th {
   font-weight: 600;
   padding: 6px 13px;
-  border: 1px solid #dfe2e5;
+  border: 1px solid #E0DEDA;
 }
 
 .content-viewer table td {
   padding: 6px 13px;
-  border: 1px solid #dfe2e5;
+  border: 1px solid #E0DEDA;
 }
 
 .content-viewer table tr {
-  background-color: #fff;
-  border-top: 1px solid #c6cbd1;
+  background-color: #F8F7F6;
+  border-top: 1px solid #C4C2BF;
 }
 
 .content-viewer table tr:nth-child(2n) {
-  background-color: #f6f8fa;
+  background-color: #F1F0EE;
 }
 
 /* Images */
 .content-viewer img {
   max-width: 100%;
   box-sizing: content-box;
-  background-color: #fff;
+  background-color: #F8F7F6;
 }
 
 /* Horizontal Rule */
@@ -172,53 +172,53 @@
   height: 0.25em;
   padding: 0;
   margin: 24px 0;
-  background-color: #e1e4e8;
+  background-color: #EAE8E6;
   border: 0;
 }
 
 /* Dark mode adjustments */
 @media (prefers-color-scheme: dark) {
   .content-viewer {
-    color: #c9d1d9;
+    color: #F1F0EE;
   }
 
   .content-viewer h1,
   .content-viewer h2 {
-    border-bottom-color: rgba(255, 255, 255, 0.1);
+    border-bottom-color: rgba(248, 247, 246, 0.1);
   }
 
   .content-viewer a {
-    color: #58a6ff;
+    color: #D97757;
   }
 
   .content-viewer code {
-    background-color: rgba(240, 246, 252, 0.15);
+    background-color: rgba(248, 247, 246, 0.1);
   }
 
   .content-viewer pre {
-    background-color: #161b22;
+    background-color: #2E2B27;
   }
 
   .content-viewer blockquote {
-    color: #8b949e;
-    border-left-color: #3b434b;
+    color: #C4BFB5;
+    border-left-color: #3D3C3A;
   }
 
   .content-viewer table th,
   .content-viewer table td {
-    border-color: #3b434b;
+    border-color: #3D3C3A;
   }
 
   .content-viewer table tr {
-    background-color: #0d1117;
-    border-top-color: #3b434b;
+    background-color: #1A1916;
+    border-top-color: #3D3C3A;
   }
 
   .content-viewer table tr:nth-child(2n) {
-    background-color: #161b22;
+    background-color: #211F1C;
   }
 
   .content-viewer hr {
-    background-color: #30363d;
+    background-color: #3D3C3A;
   }
 }

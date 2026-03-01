@@ -11,9 +11,9 @@ import { Avatar, Box, ButtonBase, Chip, Tooltip, Typography, useMediaQuery } fro
 import { MENU_OPEN, SET_MENU } from 'store/actions';
 
 const BULLET_SIZE = 14;
-const BULLET_COLOR_LIGHT = '#EDEFF2';
-const BULLET_COLOR_DARK = '#282F37';
-const BULLET_SVG = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='none' viewBox='0 0 14 14'%3E%3Cpath d='M1 1v4a8 8 0 0 0 8 8h4' stroke='%23efefef' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat 50% 50%/100% auto`;
+const BULLET_COLOR_LIGHT = '#EAE8E6';
+const BULLET_COLOR_DARK = '#2E2B27';
+const BULLET_SVG = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='none' viewBox='0 0 14 14'%3E%3Cpath d='M1 1v4a8 8 0 0 0 8 8h4' stroke='%23EAE8E6' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat 50% 50%/100% auto`;
 
 // ==============================|| SIDEBAR MENU LIST ITEMS ||============================== //
 

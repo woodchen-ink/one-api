@@ -12,8 +12,8 @@ import { IconChevronDown, IconChevronRight } from '@tabler/icons-react';
 import NavItem from '../NavItem';
 
 const BULLET_SIZE = 14;
-const BULLET_COLOR_LIGHT = '#EDEFF2';
-const BULLET_COLOR_DARK = '#282F37';
+const BULLET_COLOR_LIGHT = '#EAE8E6';
+const BULLET_COLOR_DARK = '#2E2B27';
 
 // ==============================|| SIDEBAR MENU LIST COLLAPSE ITEMS ||============================== //
 

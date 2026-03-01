@@ -615,7 +615,7 @@ export default function componentStyleOverrides(theme) {
     MuiTableHead: {
       styleOverrides: {
         root: {
-          backgroundColor: isDark ? '#28323D' : theme.colors?.grey200,
+          backgroundColor: isDark ? '#2E2B27' : theme.colors?.grey200,
           width: '100%',
           margin: 0,
           '& tr': {
@@ -1000,7 +1000,7 @@ export default function componentStyleOverrides(theme) {
             '& .MuiDataGrid-columnHeaders': {
               borderBottom: `1px dashed ${theme.divider}`,
               borderRadius: 0,
-              backgroundColor: isDark ? '#28323D' : theme.colors?.grey200,
+              backgroundColor: isDark ? '#2E2B27' : theme.colors?.grey200,
               minHeight: '48px',
               width: '100%',
               margin: 0
@@ -1050,7 +1050,7 @@ export default function componentStyleOverrides(theme) {
             borderTop: `1px dashed ${theme.divider}`,
             borderTopStyle: 'dashed',
             minHeight: 'auto',
-            backgroundColor: isDark ? '#28323D' : theme.colors?.grey200,
+            backgroundColor: isDark ? '#2E2B27' : theme.colors?.grey200,
             width: '100%',
             margin: 0,
             padding: '0 24px',

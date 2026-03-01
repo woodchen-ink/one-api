@@ -71,12 +71,12 @@ export default function themePalette(theme) {
       100: theme.colors?.grey100,
       200: theme.colors?.grey200,
       300: theme.colors?.grey300,
-      400: theme.colors?.grey400 || '#C4CDD5',
+      400: theme.colors?.grey400 || '#C4C2BF',
       500: theme.colors?.grey500,
       600: theme.colors?.grey600,
       700: theme.colors?.grey700,
-      800: theme.colors?.grey800 || '#1C252E',
-      900: theme.colors?.grey900 || '#141A21'
+      800: theme.colors?.grey800 || '#2A2928',
+      900: theme.colors?.grey900 || '#141413'
     },
     dark: {
       light: theme.colors?.darkTextPrimary,
@@ -96,7 +96,7 @@ export default function themePalette(theme) {
     background: {
       paper: theme.paper,
       default: theme.backgroundDefault,
-      neutral: theme.mode === 'dark' ? '#28323D' : theme.colors?.grey200
+      neutral: theme.mode === 'dark' ? '#2E2B27' : theme.colors?.grey200
     },
     action: {
       hover: varAlpha(theme.colors?.grey500, 0.08),

@@ -217,11 +217,11 @@ const MenuCard = () => {
           sx={{
             mt: 2,
             //颜色适配暗色
-            background: '#13151A',
+            background: '#141413',
             color: theme.palette.primary.contrastText,
             '&:hover': {
-              backgroundColor: '#1C1E23',
-              color: '#1CE3EA'
+              backgroundColor: '#2A2928',
+              color: '#D97757'
             }
           }}
           onClick={() => window.open('https://work.weixin.qq.com/kfid/kfce787ac8bbad50026', '_blank')}
