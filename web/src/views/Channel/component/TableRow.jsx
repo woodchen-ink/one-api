@@ -103,7 +103,8 @@ function statusInfo(t, status) {
       return t('common.unknown');
   }
 }
-import { red, grey, purple } from '@mui/material/colors';
+import { grey } from '@mui/material/colors';
+import GroupLabel from './GroupLabel';
 
 export default function ChannelTableRow({ item, manageChannel, onRefresh, groupOptions, modelOptions, prices }) {
   const { t } = useTranslation();
@@ -313,18 +314,6 @@ export default function ChannelTableRow({ item, manageChannel, onRefresh, groupO
     }
   };
 
-  // 改变用户组的显示方式
-  function renderCheckbox(checked, color) {
-    return (
-      <Checkbox
-        checked={checked}
-        style={{
-          color: color,
-          padding: '4px'
-        }}
-      />
-    );
-  }
 
   useEffect(() => {
     setStatusSwitch(item.status);
@@ -368,9 +357,7 @@ export default function ChannelTableRow({ item, manageChannel, onRefresh, groupO
         </TableCell>
 
         <TableCell>
-          {renderCheckbox(item.group.split(',').includes('default'), grey[500])}
-          {renderCheckbox(item.group.split(',').includes('vip'), red[500])}
-          {renderCheckbox(item.group.split(',').includes('svip'), purple[500])}
+          <GroupLabel group={item.group} />
         </TableCell>
 
         <TableCell>
