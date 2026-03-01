@@ -54,8 +54,8 @@ export default function ModelPrice() {
   const [selectedOwnedBy, setSelectedOwnedBy] = useState('all');
   const [selectedModality, setSelectedModality] = useState('all');
   const [selectedTag, setSelectedTag] = useState('all');
-  const [unit, setUnit] = useState('K');
-  const [onlyShowAvailable, setOnlyShowAvailable] = useState(false);
+  const [unit, setUnit] = useState('M');
+  const [onlyShowAvailable, setOnlyShowAvailable] = useState(true);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [viewMode, setViewMode] = useState('card'); // 'card' or 'list'
