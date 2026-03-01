@@ -357,7 +357,7 @@ export default function ChannelTableRow({ item, manageChannel, onRefresh, groupO
         </TableCell>
 
         <TableCell>
-          <GroupLabel group={item.group} />
+          <GroupLabel group={item.group} groupOptions={groupOptions} />
         </TableCell>
 
         <TableCell>

@@ -6,6 +6,7 @@ import (
 	"one-api/common/limit"
 	"one-api/common/logger"
 	"one-api/common/redis"
+	"sort"
 	"sync"
 )
 
@@ -164,6 +165,20 @@ func (cgrm *UserGroupRatio) GetAll() map[string]*UserGroup {
 	defer cgrm.RUnlock()
 
 	return cgrm.UserGroup
+}
+
+func (cgrm *UserGroupRatio) GetAllSorted() []*UserGroup {
+	cgrm.RLock()
+	defer cgrm.RUnlock()
+
+	groups := make([]*UserGroup, 0, len(cgrm.UserGroup))
+	for _, ug := range cgrm.UserGroup {
+		groups = append(groups, ug)
+	}
+	sort.Slice(groups, func(i, j int) bool {
+		return groups[i].Id < groups[j].Id
+	})
+	return groups
 }
 
 func (cgrm *UserGroupRatio) GetAPIRate(symbol string) int {

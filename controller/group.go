@@ -10,10 +10,10 @@ import (
 func GetGroups(c *gin.Context) {
 	groupNames := make([]string, 0)
 
-	userGroup := model.GlobalUserGroupRatio.GetAll()
+	userGroup := model.GlobalUserGroupRatio.GetAllSorted()
 
-	for symbol, _ := range userGroup {
-		groupNames = append(groupNames, symbol)
+	for _, ug := range userGroup {
+		groupNames = append(groupNames, ug.Symbol)
 	}
 
 	c.JSON(http.StatusOK, gin.H{
