@@ -10,6 +10,7 @@ import {
   DialogContentText,
   DialogTitle,
   Button,
+  IconButton,
   Tooltip,
   Stack
 } from '@mui/material';
@@ -17,6 +18,7 @@ import {
 import TableSwitch from 'ui-component/Switch';
 import { renderQuota, timestamp2string, copy } from 'utils/common';
 import Label from 'ui-component/Label';
+import { Icon } from '@iconify/react';
 
 import { useTranslation } from 'react-i18next';
 
@@ -36,7 +38,7 @@ function statusInfo(t, status) {
   }
 }
 
-export default function TokensTableRow({ item, manageToken, userGroup, userIsReliable, isAdminSearch }) {
+export default function TokensTableRow({ item, manageToken, handleOpenModal, userGroup, userIsReliable, isAdminSearch }) {
   const { t } = useTranslation();
   const [openDelete, setOpenDelete] = useState(false);
   const [statusSwitch, setStatusSwitch] = useState(item.status);
@@ -151,25 +153,22 @@ export default function TokensTableRow({ item, manageToken, userGroup, userIsRel
         </TableCell>
 
         <TableCell>
-          <Stack direction="row" justifyContent="center" alignItems="center" spacing={1}>
-            <Button
-              size="small"
-              variant="outlined"
-              color="primary"
-              onClick={() => {
-                copy(`sk-${item.key}`, t('token_index.token'));
-              }}
-            >
-              {t('token_index.copy')}
-            </Button>
-            <Button
-              size="small"
-              variant="outlined"
-              color="error"
-              onClick={handleDeleteOpen}
-            >
-              {t('token_index.delete')}
-            </Button>
+          <Stack direction="row" justifyContent="center" alignItems="center" spacing={0.5}>
+            <Tooltip title={t('token_index.copy')} placement="top">
+              <IconButton size="small" onClick={() => copy(`sk-${item.key}`, t('token_index.token'))}>
+                <Icon icon="solar:copy-bold-duotone" width={18} />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title={t('common.edit')} placement="top">
+              <IconButton size="small" onClick={() => handleOpenModal(item.id)}>
+                <Icon icon="solar:pen-bold-duotone" width={18} />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title={t('token_index.delete')} placement="top">
+              <IconButton size="small" color="error" onClick={handleDeleteOpen}>
+                <Icon icon="solar:trash-bin-trash-bold-duotone" width={18} />
+              </IconButton>
+            </Tooltip>
           </Stack>
         </TableCell>
       </TableRow>
@@ -195,6 +194,7 @@ export default function TokensTableRow({ item, manageToken, userGroup, userIsRel
 TokensTableRow.propTypes = {
   item: PropTypes.object,
   manageToken: PropTypes.func,
+  handleOpenModal: PropTypes.func,
   userGroup: PropTypes.object,
   userIsReliable: PropTypes.bool,
   isAdminSearch: PropTypes.bool

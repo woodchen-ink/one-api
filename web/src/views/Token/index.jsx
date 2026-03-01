@@ -411,6 +411,7 @@ export default function Token() {
                     item={row}
                     manageToken={manageToken}
                     key={row.id}
+                    handleOpenModal={handleOpenModal}
                     userGroup={userGroup}
                     userIsReliable={userIsReliable}
                     isAdminSearch={adminSearchEnabled && (adminSearchUserId || adminSearchTokenId)}
