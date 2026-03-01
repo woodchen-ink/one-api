@@ -148,7 +148,7 @@ const BaseIndex = () => {
       icon: <ExtensionIcon fontSize="large" />,
       title: 'Cline AI编程',
       description: '了解如何接入VSCode Cline，AI自动编程插件，提升您的开发效率。',
-      link: 'https://www.q58.club/t/429'
+      link: 'https://www.sunai.net/t/429'
     },
     {
       icon: <CodeIcon fontSize="large" />,
