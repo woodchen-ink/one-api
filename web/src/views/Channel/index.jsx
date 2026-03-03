@@ -70,8 +70,8 @@ export async function fetchChannelData(page, rowsPerPage, keyword, order, orderB
 export default function ChannelList() {
   const { t } = useTranslation();
   const [page, setPage] = useState(0);
-  const [order, setOrder] = useState('desc');
-  const [orderBy, setOrderBy] = useState('id');
+  const [order, setOrder] = useState('asc');
+  const [orderBy, setOrderBy] = useState('type');
   const [rowsPerPage, setRowsPerPage] = useState(() => getPageSize('channel'));
   const [listCount, setListCount] = useState(0);
   const [searching, setSearching] = useState(false);
