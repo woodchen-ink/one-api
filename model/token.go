@@ -381,6 +381,25 @@ func increaseTokenQuota(id int, quota int) (err error) {
 	return err
 }
 
+// UpdateTokenUsedQuota 仅更新 token 的 used_quota，不修改 remain_quota（用于无限额度 token）
+func UpdateTokenUsedQuota(id int, quota int) (err error) {
+	if config.BatchUpdateEnabled {
+		addNewRecord(BatchUpdateTypeTokenUsedQuota, id, quota)
+		return nil
+	}
+	return updateTokenUsedQuota(id, quota)
+}
+
+func updateTokenUsedQuota(id int, quota int) (err error) {
+	err = DB.Model(&Token{}).Where("id = ?", id).Updates(
+		map[string]interface{}{
+			"used_quota":    gorm.Expr("used_quota + ?", quota),
+			"accessed_time": utils.GetTimestamp(),
+		},
+	).Error
+	return err
+}
+
 func DecreaseTokenQuota(id int, quota int) (err error) {
 	if quota < 0 {
 		return errors.New("quota 不能为负数！")
@@ -428,6 +447,11 @@ func PreConsumeTokenQuota(tokenId int, quota int) (err error) {
 	}
 	if !token.UnlimitedQuota {
 		err = DecreaseTokenQuota(tokenId, quota)
+		if err != nil {
+			return err
+		}
+	} else {
+		err = UpdateTokenUsedQuota(tokenId, quota)
 		if err != nil {
 			return err
 		}
@@ -480,6 +504,11 @@ func PostConsumeTokenQuotaWithInfo(tokenId int, userId int, unlimitedQuota bool,
 		} else {
 			err = IncreaseTokenQuota(tokenId, -quota)
 		}
+		if err != nil {
+			return err
+		}
+	} else {
+		err = UpdateTokenUsedQuota(tokenId, quota)
 		if err != nil {
 			return err
 		}

@@ -16,6 +16,7 @@ const (
 	BatchUpdateTypeUsedQuota
 	BatchUpdateTypeChannelUsedQuota
 	BatchUpdateTypeRequestCount
+	BatchUpdateTypeTokenUsedQuota
 	BatchUpdateTypeCount // if you add a new type, you need to add a new map and a new lock
 )
 
@@ -101,6 +102,11 @@ func batchUpdate() {
 				updateUserRequestCount(key, value)
 			case BatchUpdateTypeChannelUsedQuota:
 				updateChannelUsedQuota(key, value)
+			case BatchUpdateTypeTokenUsedQuota:
+				err := updateTokenUsedQuota(key, value)
+				if err != nil {
+					logger.SysError("failed to batch update token used quota: " + err.Error())
+				}
 			}
 		}
 	}
