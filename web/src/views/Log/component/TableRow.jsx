@@ -110,6 +110,7 @@ function LogTableRow({ item, userIsAdmin, userGroup, columnVisibility }) {
         )}
         {columnVisibility.type && <TableCell sx={{ p: '10px 8px' }}>{renderType(item.type, LogType, t)}</TableCell>}
         {columnVisibility.model_name && <TableCell sx={{ p: '10px 8px' }}>{viewModelName(item.model_name, item.is_stream)}</TableCell>}
+        {columnVisibility.reasoning && <TableCell sx={{ p: '10px 8px' }}>{viewReasoning(item?.metadata?.reasoning, t)}</TableCell>}
 
         {columnVisibility.request_path && (
           <TableCell sx={{ p: '10px 8px' }}>
@@ -193,6 +194,120 @@ function viewModelName(model_name, isStream) {
       {model_name}
     </Label>
   );
+}
+
+function viewReasoning(reasoning, t) {
+  if (!reasoning?.enabled) {
+    return <Typography variant="body2" color="text.secondary">-</Typography>;
+  }
+
+  const label = reasoning.level ? (
+    <Label color={getReasoningColor(reasoning.level)} variant="soft">
+      {reasoning.level}
+    </Label>
+  ) : (
+    <Typography variant="body2" color="text.secondary">
+      -
+    </Typography>
+  );
+
+  const details = getReasoningDetails(reasoning, t);
+  if (details.length === 0) {
+    return label;
+  }
+
+  return (
+    <Tooltip
+      title={
+        <>
+          {details.map(({ key, label, value }) => (
+            <MetadataTypography key={key}>{`${label}: ${value}`}</MetadataTypography>
+          ))}
+        </>
+      }
+      placement="top"
+      arrow
+    >
+      <span style={{ cursor: 'help' }}>{label}</span>
+    </Tooltip>
+  );
+}
+
+function getReasoningColor(level) {
+  switch ((level || '').toLowerCase()) {
+    case 'low':
+      return 'success';
+    case 'medium':
+      return 'primary';
+    case 'high':
+      return 'warning';
+    case 'xhigh':
+      return 'error';
+    default:
+      return 'default';
+  }
+}
+
+function getReasoningDetails(reasoning, t) {
+  const details = [];
+
+  if (reasoning.provider_family) {
+    details.push({
+      key: 'provider_family',
+      label: t('logPage.reasoningDetail.provider'),
+      value: reasoning.provider_family
+    });
+  }
+
+  if (reasoning.mode) {
+    details.push({
+      key: 'mode',
+      label: t('logPage.reasoningDetail.mode'),
+      value: reasoning.mode
+    });
+  }
+
+  if (reasoning.raw_effort) {
+    details.push({
+      key: 'raw_effort',
+      label: t('logPage.reasoningDetail.rawEffort'),
+      value: reasoning.raw_effort
+    });
+  }
+
+  if (reasoning.raw_thinking_level) {
+    details.push({
+      key: 'raw_thinking_level',
+      label: t('logPage.reasoningDetail.rawThinkingLevel'),
+      value: reasoning.raw_thinking_level
+    });
+  }
+
+  if (reasoning.budget_tokens) {
+    details.push({
+      key: 'budget_tokens',
+      label: t('logPage.reasoningDetail.budgetTokens'),
+      value: reasoning.budget_tokens
+    });
+  }
+
+  if (reasoning.summary) {
+    details.push({
+      key: 'summary',
+      label: t('logPage.reasoningDetail.summary'),
+      value: reasoning.summary
+    });
+  }
+
+  if (reasoning.requested_via) {
+    details.push({
+      key: 'requested_via',
+      label: t('logPage.reasoningDetail.requestedVia'),
+      value: reasoning.requested_via
+    });
+  }
+
+  return details;
 }
 
 const MetadataTypography = styled(Typography)(({ theme }) => ({

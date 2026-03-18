@@ -39,6 +39,7 @@ func (r *relayClaudeOnly) setRequest() error {
 		return err
 	}
 	r.setOriginalModel(r.claudeRequest.Model)
+	setLogReasoningMetadata(r.c, extractClaudeReasoningMetadata(r.claudeRequest))
 	return nil
 }
 

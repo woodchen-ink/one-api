@@ -33,6 +33,7 @@ func (r *relayResponses) setRequest() error {
 	}
 
 	r.setOriginalModel(r.responsesRequest.Model)
+	setLogReasoningMetadata(r.c, extractResponsesReasoningMetadata(&r.responsesRequest))
 
 	return nil
 }

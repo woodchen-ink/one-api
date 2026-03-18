@@ -479,7 +479,17 @@
     },
     "cachedReadTokens": "緩存讀取Tokens (* {{ ratio }})",
     "reasoningTokens": "推理Tokens (* {{ ratio }})",
-    "cachedWriteTokens": "緩存寫入 Tokens (* {{ ratio }})"
+    "cachedWriteTokens": "緩存寫入 Tokens (* {{ ratio }})",
+    "reasoningLabel": "思考級別",
+    "reasoningDetail": {
+      "provider": "提供方",
+      "mode": "模式",
+      "rawEffort": "原始 Effort",
+      "rawThinkingLevel": "原始 Thinking Level",
+      "budgetTokens": "Budget Tokens",
+      "summary": "Summary",
+      "requestedVia": "來源"
+    }
   },
   "login": {
     "codeRequired": "驗證碼不能為空",

@@ -8,6 +8,7 @@ import (
 	"one-api/common"
 	"one-api/common/config"
 	"one-api/common/logger"
+	"one-api/common/utils"
 	"one-api/model"
 	"one-api/types"
 	"time"
@@ -37,6 +38,7 @@ type Quota struct {
 	firstResponseTime time.Time
 	extraBillingData  map[string]ExtraBillingData
 	requestPath       string
+	reasoningMetadata *types.LogReasoningMetadata
 }
 
 func NewQuota(c *gin.Context, modelName string, promptTokens int) *Quota {
@@ -51,6 +53,15 @@ func NewQuota(c *gin.Context, modelName string, promptTokens int) *Quota {
 		unlimitedQuota: c.GetBool("token_unlimited_quota"),
 		HandelStatus:   false,
 		isBackupGroup:  isBackupGroup, // 记录是否使用备用分组
+	}
+
+	if reasoningMetadata, ok := utils.GetGinValue[*types.LogReasoningMetadata](c, types.LogReasoningMetadataContextKey); ok && reasoningMetadata != nil {
+		clonedMetadata := *reasoningMetadata
+		if reasoningMetadata.BudgetTokens != nil {
+			budgetTokens := *reasoningMetadata.BudgetTokens
+			clonedMetadata.BudgetTokens = &budgetTokens
+		}
+		quota.reasoningMetadata = &clonedMetadata
 	}
 
 	quota.price = *model.PricingInstance.GetPrice(quota.modelName)
@@ -240,6 +251,10 @@ func (q *Quota) GetLogMeta(usage *types.Usage, requestPath ...string) map[string
 
 	if q.extraBillingData != nil {
 		meta["extra_billing"] = q.extraBillingData
+	}
+
+	if q.reasoningMetadata != nil {
+		meta["reasoning"] = q.reasoningMetadata
 	}
 
 	return meta

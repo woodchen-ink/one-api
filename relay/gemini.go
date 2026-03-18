@@ -58,6 +58,7 @@ func (r *relayGeminiOnly) setRequest() error {
 	r.geminiRequest.Model = modelList[0]
 	r.geminiRequest.Stream = isStream
 	r.setOriginalModel(r.geminiRequest.Model)
+	setLogReasoningMetadata(r.c, extractGeminiReasoningMetadata(r.geminiRequest))
 
 	return nil
 }

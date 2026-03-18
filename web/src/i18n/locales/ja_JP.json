@@ -474,7 +474,17 @@
     },
     "cachedReadTokens": "キャッシュからトークンを読み取ります（* {{ ratio }} )",
     "cachedWriteTokens": "トークンのキャッシュ書き込み（* {{ ratio }} ）",
-    "reasoningTokens": "推理トークン"
+    "reasoningTokens": "推理トークン",
+    "reasoningLabel": "思考レベル",
+    "reasoningDetail": {
+      "provider": "Provider",
+      "mode": "モード",
+      "rawEffort": "Raw Effort",
+      "rawThinkingLevel": "Raw Thinking Level",
+      "budgetTokens": "Budget Tokens",
+      "summary": "Summary",
+      "requestedVia": "Requested Via"
+    }
   },
   "login": {
     "codeRequired": "確認コードを入力する必要があります",

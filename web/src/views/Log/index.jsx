@@ -66,6 +66,7 @@ export default function Log() {
     token_name: true,
     type: true,
     model_name: true,
+    reasoning: true,
     request_path: true,
     duration: true,
     tokens: true,
@@ -291,6 +292,7 @@ export default function Log() {
                 { id: 'token_name', label: t('logPage.tokenLabel') },
                 { id: 'type', label: t('logPage.typeLabel') },
                 { id: 'model_name', label: t('logPage.modelLabel') },
+                { id: 'reasoning', label: t('logPage.reasoningLabel') },
                 { id: 'request_path', label: t('logPage.requestPath') },
                 { id: 'duration', label: t('logPage.durationLabel') },
                 { id: 'tokens', label: t('logPage.tokensLabel') },
@@ -358,6 +360,12 @@ export default function Log() {
                     label: t('logPage.modelLabel'),
                     disableSort: false,
                     hide: !columnVisibility.model_name
+                  },
+                  {
+                    id: 'reasoning',
+                    label: t('logPage.reasoningLabel'),
+                    disableSort: true,
+                    hide: !columnVisibility.reasoning
                   },
                   {
                     id: 'request_path',

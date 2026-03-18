@@ -63,8 +63,8 @@
     "welcomeBack": "Welcome Back"
   },
   "sidebar": {
-    "totalQuota": "Total Quota",
-    "remainingBalance": "Remaining Balance"
+    "totalQuota": "Total Value",
+    "remainingBalance": "Balance"
   },
   "Header 配置": "Header configuration",
   "about": {
@@ -339,11 +339,10 @@
     "today_tokens": "Today's Tokens",
     "unknown": "Unknown",
     "used": "Used",
-    "7days_model_usage_pie": "Model Call Ratio Over the Last 7 Days",
+    "7days_model_usage_pie": "7 Days Model Usage Pie",
     "week_model_statistics": "Week Model Statistics",
     "week_consumption_log": "Week Consumption Log",
     "week_total_consumption": "Week Total Consumption",
-    "7days_model_usage_pie": "7 Days Model Usage Pie",
     "date": "Date",
     "request_count": "Request Count",
     "amount": "Amount",
@@ -441,6 +440,7 @@
     "inputLabel": "Input",
     "inputTextTokens": "Input text tokens (* {{ ratio }})",
     "modelLabel": "Model",
+    "reasoningLabel": "Reasoning",
     "outputAudioTokens": "Output audio tokens (* {{ ratio }})",
     "outputLabel": "Output",
     "tokensLabel": "Tokens",
@@ -459,6 +459,15 @@
     "sourceIp": "Source IP",
     "requestPath": "Request Path",
     "unknown": "Unknown",
+    "reasoningDetail": {
+      "provider": "Provider",
+      "mode": "Mode",
+      "rawEffort": "Raw Effort",
+      "rawThinkingLevel": "Raw Thinking Level",
+      "budgetTokens": "Budget Tokens",
+      "summary": "Summary",
+      "requestedVia": "Requested Via"
+    },
     "logType": {
       "all": "All",
       "recharge": "Recharge",
@@ -545,10 +554,6 @@
     "timeConsuming": "time consuming",
     "type": "Type",
     "user": "User"
-  },
-  "sidebar": {
-    "totalQuota": "Total Value",
-    "remainingBalance": "Balance"
   },
   "model_price": "Model Price",
   "modelpricePage": {

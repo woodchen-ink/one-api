@@ -51,6 +51,7 @@ func (r *relayChat) setRequest() error {
 	}
 
 	r.setOriginalModel(r.chatRequest.Model)
+	setLogReasoningMetadata(r.c, extractChatReasoningMetadata(&r.chatRequest, r.getOtherArg()))
 
 	otherArg := r.getOtherArg()
 
