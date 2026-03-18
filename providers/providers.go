@@ -23,7 +23,6 @@ import (
 	"one-api/providers/hunyuan"
 	"one-api/providers/jina"
 	"one-api/providers/lingyi"
-	"one-api/providers/midjourney"
 	"one-api/providers/minimax"
 	"one-api/providers/mistral"
 	"one-api/providers/moonshot"
@@ -73,7 +72,6 @@ func init() {
 		config.ChannelTypeMistral:         mistral.MistralProviderFactory{},
 		config.ChannelTypeGroq:            groq.GroqProviderFactory{},
 		config.ChannelTypeBedrock:         bedrock.BedrockProviderFactory{},
-		config.ChannelTypeMidjourney:      midjourney.MidjourneyProviderFactory{},
 		config.ChannelTypeCloudflareAI:    cloudflareAI.CloudflareAIProviderFactory{},
 		config.ChannelTypeCohere:          cohere.CohereProviderFactory{},
 		config.ChannelTypeStabilityAI:     stabilityAI.StabilityAIProviderFactory{},

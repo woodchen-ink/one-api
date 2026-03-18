@@ -141,11 +141,11 @@ export default function Task() {
           <Container maxWidth="xl">
             <ButtonGroup variant="outlined" aria-label="outlined small primary button group">
               <Button onClick={handleRefresh} startIcon={<Icon icon="solar:refresh-bold-duotone" width={18} />}>
-                {t('midjourneyPage.refreshClearSearch')}
+                {t('channel_index.refreshClearSearchConditions')}
               </Button>
 
               <Button onClick={searchLogs} startIcon={<Icon icon="solar:minimalistic-magnifer-line-duotone" width={18} />}>
-                {t('midjourneyPage.search')}
+                {t('common.search')}
               </Button>
             </ButtonGroup>
           </Container>

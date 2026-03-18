@@ -153,11 +153,6 @@ func InitDB() (err error) {
 		if err != nil {
 			return err
 		}
-		err = db.AutoMigrate(&Midjourney{})
-		if err != nil {
-			return err
-		}
-
 		err = db.AutoMigrate(&Payment{})
 		if err != nil {
 			return err

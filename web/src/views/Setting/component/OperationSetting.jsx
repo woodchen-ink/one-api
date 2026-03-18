@@ -50,7 +50,6 @@ const OperationSetting = () => {
     RetryTimes: 0,
     RetryTimeOut: 0,
     RetryCooldownSeconds: 0,
-    MjNotifyEnabled: '',
     ChatImageRequestProxy: '',
     PaymentUSDRate: 0,
     PaymentMinAmount: 1,
@@ -500,11 +499,6 @@ const OperationSetting = () => {
             justifyContent="flex-start"
             alignItems="flex-start"
           >
-            <FormControlLabel
-              sx={{ marginLeft: '0px' }}
-              label={t('setting_index.operationSettings.otherSettings.mjNotify')}
-              control={<Checkbox checked={inputs.MjNotifyEnabled === 'true'} onChange={handleInputChange} name="MjNotifyEnabled" />}
-            />
             <FormControlLabel
               sx={{ marginLeft: '0px' }}
               label={t('setting_index.operationSettings.otherSettings.claudeAPIEnabled')}

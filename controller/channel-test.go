@@ -27,7 +27,7 @@ var (
 	embeddingsRegex = regexp.MustCompile(`(?:^text-|embed|Embed|rerank|davinci|babbage|bge-|e5-|LLM2Vec|retrieval|uae-|gte-|jina-clip|jina-embeddings)`)
 	imageRegex      = regexp.MustCompile(`flux|diffusion|stabilityai|sd-|dall|cogview|janus|image`)
 	responseRegex   = regexp.MustCompile(`(?:^o[1-9])`)
-	noSupportRegex  = regexp.MustCompile(`(?:^tts|rerank|whisper|speech|^mj_|^chirp)`)
+	noSupportRegex  = regexp.MustCompile(`(?:^tts|rerank|whisper|speech|^chirp)`)
 )
 
 func testChannel(channel *model.Channel, testModel string) (openaiErr *types.OpenAIErrorWithStatusCode, err error) {

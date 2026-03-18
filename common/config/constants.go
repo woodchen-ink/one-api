@@ -126,9 +126,6 @@ var SafeKeyWords = []string{
 	"methamphetamine",
 }
 
-// mj
-var MjNotifyEnabled = false
-
 var EmailDomainRestrictionEnabled = false
 var EmailDomainWhitelist = []string{
 	"gmail.com",
@@ -220,11 +217,11 @@ var GeminiAPIEnabled = true
 var ClaudeAPIEnabled = true
 
 const (
-	RoleGuestUser     = 0
-	RoleCommonUser    = 1
-	RoleReliableUser  = 3   // 可信的内部员工
-	RoleAdminUser     = 10
-	RoleRootUser      = 100
+	RoleGuestUser    = 0
+	RoleCommonUser   = 1
+	RoleReliableUser = 3 // 可信的内部员工
+	RoleAdminUser    = 10
+	RoleRootUser     = 100
 )
 
 var RateLimitKeyExpirationDuration = 20 * time.Minute
@@ -289,7 +286,6 @@ const (
 	ChannelTypeGroq            = 31
 	ChannelTypeBedrock         = 32
 	ChannelTypeLingyi          = 33
-	ChannelTypeMidjourney      = 34
 	ChannelTypeCloudflareAI    = 35
 	ChannelTypeCohere          = 36
 	ChannelTypeStabilityAI     = 37

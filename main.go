@@ -77,7 +77,6 @@ func main() {
 	// Initialize Telegram bot
 	telegram.InitTelegramBot()
 
-	controller.InitMidjourneyTask()
 	task.InitTask()
 	notify.InitNotifier()
 	cron.InitCron()

@@ -340,35 +340,6 @@ const typeConfig = {
     },
     modelGroup: 'Lingyiwanwu'
   },
-  34: {
-    input: {
-      models: [
-        'mj_imagine',
-        'mj_variation',
-        'mj_reroll',
-        'mj_blend',
-        'mj_modal',
-        'mj_zoom',
-        'mj_shorten',
-        'mj_high_variation',
-        'mj_low_variation',
-        'mj_pan',
-        'mj_inpaint',
-        'mj_custom_zoom',
-        'mj_describe',
-        'mj_upscale',
-        'swap_face',
-        'mj_upload'
-      ]
-    },
-    prompt: {
-      key: '密钥填写midjourney-proxy的密钥，如果没有设置密钥，可以随便填',
-      base_url: '地址填写midjourney-proxy部署的地址',
-      test_model: '',
-      model_mapping: ''
-    },
-    modelGroup: 'Midjourney'
-  },
   35: {
     input: {
       models: [

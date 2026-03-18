@@ -146,13 +146,6 @@ export const CHANNEL_OPTIONS = {
     color: 'primary',
     url: 'https://platform.lingyiwanwu.com/details'
   },
-  34: {
-    key: 34,
-    text: 'Midjourney',
-    value: 34,
-    color: 'orange',
-    url: ''
-  },
   35: {
     key: 35,
     text: 'Cloudflare AI',
