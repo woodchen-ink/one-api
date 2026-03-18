@@ -1,9 +1,8 @@
-import { useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+﻿import { useEffect } from 'react';
+import { useSelector } from 'react-redux';
 
 import { ThemeProvider } from '@mui/material/styles';
 import { CssBaseline, StyledEngineProvider } from '@mui/material';
-import { SET_THEME } from 'store/actions';
 import { I18nextProvider } from 'react-i18next';
 import { HelmetProvider } from 'react-helmet-async';
 // routing
@@ -25,19 +24,14 @@ import CopySnackbar from 'ui-component/Snackbar';
 // locales
 import i18n from 'i18n/i18n';
 
-
-
 // ==============================|| APP ||============================== //
 
 const App = () => {
-  const dispatch = useDispatch();
   const customization = useSelector((state) => state.customization);
 
   useEffect(() => {
-    // 强制设置为浅色主题
-    dispatch({ type: SET_THEME, theme: 'light' });
-    localStorage.setItem('theme', 'light');
-  }, [dispatch]);
+    document.documentElement.setAttribute('data-theme', customization.theme);
+  }, [customization.theme]);
 
   return (
     <StyledEngineProvider injectFirst>

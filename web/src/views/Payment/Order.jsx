@@ -116,9 +116,6 @@ export default function Order() {
 
   return (
     <>
-      <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
-        <Typography variant="h4">{t('orderlogPage.title')}</Typography>
-      </Stack>
       <Card>
         <Box component="form" noValidate>
           <TableToolBar filterName={toolBarValue} handleFilterName={handleToolBarValue} />

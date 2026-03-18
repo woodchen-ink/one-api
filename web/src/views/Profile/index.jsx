@@ -34,7 +34,6 @@ import {
   IconBrandWechat,
   IconBrandGithub,
   IconMail,
-  IconBrandTelegram,
   IconBrandOauth,
   IconSettings,
   IconLink,
@@ -660,28 +659,6 @@ export default function Profile() {
                 </ListItem>
               )}
             </List>
-            {status.telegram_bot && (
-              <Stack spacing={2} sx={{ mt: 2 }}>
-                <Alert severity="info">
-                  <Typography variant="h4" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <IconBrandTelegram /> {t('profilePage.telegramBot')}
-                  </Typography>
-                  <Box sx={{ mt: 1 }}>
-                    <Typography variant="body2">{t('profilePage.telegramStep1')}</Typography>
-                    <Chip
-                      icon={<IconBrandTelegram />}
-                      label={'@' + status.telegram_bot}
-                      color="primary"
-                      variant="outlined"
-                      size="small"
-                      onClick={() => window.open('https://t.me/' + status.telegram_bot, '_blank')}
-                      sx={{ my: 1 }}
-                    />
-                    <Typography variant="body2">{t('profilePage.telegramStep2')}</Typography>
-                  </Box>
-                </Alert>
-              </Stack>
-            )}
           </SubCard>
         </CustomTabPanel>
         <CustomTabPanel value={value} index={2}>

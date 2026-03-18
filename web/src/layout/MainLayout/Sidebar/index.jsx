@@ -26,15 +26,19 @@ const Sidebar = ({ drawerOpen, drawerToggle, window: windowProp }) => {
   const isDark = theme.palette.mode === 'dark';
   const isMini = matchUpMd && !drawerOpen;
   const currentWidth = isMini ? miniDrawerWidth : drawerWidth;
+  const sidebarBorderColor = theme.palette.divider;
+  const sidebarSurface = isDark
+    ? `linear-gradient(180deg, ${theme.palette.background.paper} 0%, ${theme.palette.background.default} 100%)`
+    : `linear-gradient(180deg, ${theme.palette.background.paper} 0%, ${theme.palette.grey[100]} 100%)`;
 
   const scrollbarStyles = {
     scrollbarWidth: 'thin',
-    scrollbarColor: `${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)'} transparent`,
+    scrollbarColor: `${isDark ? varAlpha(theme.palette.text.secondary, 0.32) : varAlpha(theme.palette.text.secondary, 0.22)} transparent`,
     '&::-webkit-scrollbar': {
       width: '5px'
     },
     '&::-webkit-scrollbar-thumb': {
-      background: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)',
+      background: isDark ? varAlpha(theme.palette.text.secondary, 0.32) : varAlpha(theme.palette.text.secondary, 0.22),
       borderRadius: '4px'
     },
     '&::-webkit-scrollbar-track': {
@@ -78,7 +82,7 @@ const Sidebar = ({ drawerOpen, drawerToggle, window: windowProp }) => {
           sx={{
             flexShrink: 0,
             py: 1.5,
-            borderTop: `1px dashed ${varAlpha(theme.palette.grey[500], 0.12)}`
+            borderTop: `1px dashed ${sidebarBorderColor}`
           }}
         >
           <Stack direction="row" justifyContent="center">
@@ -88,8 +92,9 @@ const Sidebar = ({ drawerOpen, drawerToggle, window: windowProp }) => {
               size="small"
               sx={{
                 cursor: 'default',
-                backgroundColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.04)',
-                color: theme.palette.text.disabled,
+                backgroundColor: isDark ? varAlpha(theme.palette.background.default, 0.92) : varAlpha(theme.palette.background.paper, 0.96),
+                color: theme.palette.text.secondary,
+                border: `1px solid ${theme.palette.divider}`,
                 fontSize: '0.6875rem',
                 height: '22px',
                 '& .MuiChip-label': {
@@ -111,16 +116,16 @@ const Sidebar = ({ drawerOpen, drawerToggle, window: windowProp }) => {
         p: 0.5,
         top: 24,
         position: 'fixed',
-        color: 'action.active',
-        bgcolor: 'background.default',
+        color: theme.palette.text.secondary,
+        bgcolor: theme.palette.background.paper,
         transform: 'translateX(-50%)',
         zIndex: theme.zIndex.drawer + 2,
         left: `${currentWidth}px`,
-        border: `1px solid ${varAlpha(theme.palette.grey[500], 0.12)}`,
+        border: `1px solid ${sidebarBorderColor}`,
         transition: `left ${transitionDuration} ${transitionEasing}`,
         '&:hover': {
-          color: 'text.primary',
-          bgcolor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)'
+          color: theme.palette.text.primary,
+          bgcolor: isDark ? theme.palette.dark.main : theme.palette.grey[100]
         }
       }}
     >
@@ -148,8 +153,9 @@ const Sidebar = ({ drawerOpen, drawerToggle, window: windowProp }) => {
             zIndex: theme.zIndex.drawer,
             display: 'flex',
             flexDirection: 'column',
-            bgcolor: 'background.default',
-            borderRight: `1px solid ${varAlpha(theme.palette.grey[500], 0.12)}`,
+            background: sidebarSurface,
+            borderRight: `1px solid ${sidebarBorderColor}`,
+            boxShadow: isDark ? 'inset -1px 0 0 rgba(255,255,255,0.02)' : 'inset -1px 0 0 rgba(20,20,19,0.03)',
             transition: `width ${transitionDuration} ${transitionEasing}`,
             overflowX: 'hidden'
           }}
@@ -171,9 +177,9 @@ const Sidebar = ({ drawerOpen, drawerToggle, window: windowProp }) => {
         sx={{
           '& .MuiDrawer-paper': {
             width: drawerWidth,
-            background: theme.palette.background.default,
+            background: sidebarSurface,
             color: theme.palette.text.primary,
-            borderRight: `1px solid ${varAlpha(theme.palette.grey[500], 0.12)}`,
+            borderRight: `1px solid ${sidebarBorderColor}`,
             boxSizing: 'border-box',
             borderRadius: 0,
             top: '0',

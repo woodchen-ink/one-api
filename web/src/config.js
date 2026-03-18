@@ -4,7 +4,7 @@ const config = {
   basename: '/',
   defaultPath: '/panel/dashboard',
   fontFamily: `-apple-system,BlinkMacSystemFont,'Noto Sans SC',system-ui,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Helvetica,Arial,sans-serif`,
-  borderRadius: 12,
+  borderRadius: 8,
   siteInfo: {
     UptimeEnabled: false,
     UptimeDomain: '',

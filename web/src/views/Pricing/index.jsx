@@ -185,31 +185,21 @@ const Pricing = () => {
 
   return (
     <Stack spacing={3}>
-      <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
-        <Stack direction="column" spacing={1}>
-          <Typography variant="h2">{t('pricingPage.title')}</Typography>
-          <Typography variant="subtitle1" color="text.secondary">
-            Price
-          </Typography>
-        </Stack>
-
-        <ButtonGroup variant="contained" aria-label="outlined small primary button group">
-          <Button color="primary" onClick={() => handleOpenaddModal(null)} startIcon={<Icon icon="solar:add-circle-line-duotone" />}>
-            {t('pricingPage.newButton')}
-          </Button>
-          <Button onClick={handleRefresh} startIcon={<Icon icon="solar:refresh-bold-duotone" />}>
-            {t('pricingPage.refreshButton')}
-          </Button>
-          <Button
-            onClick={() => {
-              setOpenModal(true);
-            }}
-          >
-            {t('pricingPage.updatePricesButton')}
-          </Button>
-        </ButtonGroup>
-      </Stack>
-
+      <ButtonGroup aria-label="small button group">
+        <Button color="primary" onClick={() => handleOpenaddModal(null)} startIcon={<Icon icon="solar:add-circle-line-duotone" />}>
+          {t('pricingPage.newButton')}
+        </Button>
+        <Button onClick={handleRefresh} startIcon={<Icon icon="solar:refresh-bold-duotone" />}>
+          {t('pricingPage.refreshButton')}
+        </Button>
+        <Button
+          onClick={() => {
+            setOpenModal(true);
+          }}
+        >
+          {t('pricingPage.updatePricesButton')}
+        </Button>
+      </ButtonGroup>
       <Alert severity="info">
         <b>{t('pricingPage.currencyInfo1')}</b>
         {t('pricingPage.currencyInfo2')}

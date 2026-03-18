@@ -170,17 +170,6 @@ export default function Gateway() {
 
   return (
     <>
-      <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
-        <Typography variant="h4">{t('paymentGatewayPage.title')}</Typography>
-        <Button
-          variant="contained"
-          color="primary"
-          startIcon={<Icon icon="solar:add-circle-line-duotone" />}
-          onClick={() => handleOpenModal(0)}
-        >
-          {t('paymentGatewayPage.createPayment')}
-        </Button>
-      </Stack>
       <Card>
         <Box component="form" noValidate>
           <TableToolBar filterName={toolBarValue} handleFilterName={handleToolBarValue} />

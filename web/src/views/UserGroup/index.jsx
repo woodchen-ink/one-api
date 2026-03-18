@@ -138,23 +138,6 @@ export default function UserGroup() {
 
   return (
     <>
-      <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
-        <Stack direction="column" spacing={1}>
-          <Typography variant="h2">{t('userGroup.title')}</Typography>
-          <Typography variant="subtitle1" color="text.secondary">
-            User Group
-          </Typography>
-        </Stack>
-
-        <Button
-          variant="contained"
-          color="primary"
-          startIcon={<Icon icon="solar:add-circle-line-duotone" />}
-          onClick={() => handleOpenModal(0)}
-        >
-          {t('userGroup.create')}
-        </Button>
-      </Stack>
       <Card>
         <Toolbar
           sx={{
@@ -169,6 +152,14 @@ export default function UserGroup() {
             <ButtonGroup variant="outlined" aria-label="outlined small primary button group">
               <Button onClick={handleRefresh} startIcon={<Icon icon="solar:refresh-bold-duotone" width={18} />}>
                 {t('userPage.refresh')}
+              </Button>
+              <Button
+                variant="outlined"
+                color="primary"
+                startIcon={<Icon icon="solar:add-circle-line-duotone" />}
+                onClick={() => handleOpenModal(0)}
+              >
+                {t('userGroup.create')}
               </Button>
             </ButtonGroup>
           </Container>

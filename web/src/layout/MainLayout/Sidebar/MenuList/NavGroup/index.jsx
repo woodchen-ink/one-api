@@ -9,7 +9,6 @@ import { IconChevronDown, IconChevronRight } from '@tabler/icons-react';
 // project imports
 import NavItem from '../NavItem';
 import NavCollapse from '../NavCollapse';
-import { varAlpha } from 'themes/utils';
 
 // ==============================|| SIDEBAR MENU LIST GROUP ||============================== //
 
@@ -39,7 +38,7 @@ const NavGroup = ({ item, isMini = false }) => {
   if (isMini) {
     return (
       <Box sx={{ py: 0.5 }}>
-        <Divider sx={{ mx: 1, mb: 1, borderColor: varAlpha(theme.palette.grey[500], 0.12) }} />
+        <Divider sx={{ mx: 1, mb: 1, borderColor: theme.palette.divider }} />
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>{items}</Box>
       </Box>
     );
@@ -68,7 +67,7 @@ const NavGroup = ({ item, isMini = false }) => {
               lineHeight: 1.5,
               textTransform: 'uppercase',
               letterSpacing: '0.04em',
-              color: theme.palette.text.disabled,
+              color: theme.palette.text.secondary,
               p: theme.spacing(2, 1, 1, 1.5),
               transition: theme.transitions.create(['color', 'padding-left'], {
                 duration: theme.transitions.duration.standard

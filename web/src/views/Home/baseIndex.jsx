@@ -37,7 +37,7 @@ const FeatureCard = ({ icon, title, description, link }) => {
         height: '100%',
         textDecoration: 'none',
         border: `1px solid ${theme.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'}`,
-        borderRadius: '16px',
+        borderRadius: `${theme.shape.borderRadius}px`,
         backgroundColor: theme.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.8)',
         backdropFilter: 'blur(20px)',
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',

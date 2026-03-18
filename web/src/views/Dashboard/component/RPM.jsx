@@ -13,7 +13,7 @@ import { showError } from 'utils/common';
 import RefreshIcon from '@mui/icons-material/Refresh';
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
-  borderRadius: '16px',
+  borderRadius: `${theme.shape.borderRadius}px`,
   border: theme.palette.mode === 'dark' ? '1px solid rgba(255, 255, 255, 0.05)' : 'none',
   boxShadow: theme.palette.mode === 'dark' ? 'none' : '0px 1px 3px rgba(0, 0, 0, 0.1)',
   overflow: 'hidden',

@@ -153,23 +153,6 @@ export default function Redemption() {
 
   return (
     <>
-      <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
-        <Stack direction="column" spacing={1}>
-          <Typography variant="h2">{t('redemptionPage.pageTitle')}</Typography>
-          <Typography variant="subtitle1" color="text.secondary">
-            Redemption
-          </Typography>
-        </Stack>
-
-        <Button
-          variant="contained"
-          color="primary"
-          startIcon={<Icon icon="solar:add-circle-line-duotone" />}
-          onClick={() => handleOpenModal(0)}
-        >
-          {t('redemptionPage.createRedemptionCode')}
-        </Button>
-      </Stack>
       <Card>
         <Box component="form" onSubmit={searchRedemptions} noValidate>
           <TableToolBar placeholder={t('redemptionPage.searchPlaceholder')} />
@@ -187,6 +170,14 @@ export default function Redemption() {
             <ButtonGroup variant="outlined" aria-label="outlined small primary button group">
               <Button onClick={handleRefresh} startIcon={<Icon icon="solar:refresh-bold-duotone" width={18} />}>
                 {t('redemptionPage.refreshButton')}
+              </Button>
+              <Button
+                variant="outlined"
+                color="primary"
+                startIcon={<Icon icon="solar:add-circle-line-duotone" />}
+                onClick={() => handleOpenModal(0)}
+              >
+                {t('redemptionPage.createRedemptionCode')}
               </Button>
             </ButtonGroup>
           </Container>

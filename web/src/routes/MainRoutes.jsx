@@ -14,7 +14,6 @@ const User = Loadable(lazy(() => import('views/User')));
 const Profile = Loadable(lazy(() => import('views/Profile')));
 const NotFoundView = Loadable(lazy(() => import('views/Error')));
 const Analytics = Loadable(lazy(() => import('views/Analytics')));
-const Telegram = Loadable(lazy(() => import('views/Telegram')));
 const Pricing = Loadable(lazy(() => import('views/Pricing')));
 const Midjourney = Loadable(lazy(() => import('views/Midjourney')));
 const ModelPrice = Loadable(lazy(() => import('views/ModelPrice')));
@@ -98,10 +97,6 @@ const MainRoutes = {
     {
       path: '404',
       element: <NotFoundView />
-    },
-    {
-      path: 'telegram',
-      element: <Telegram />
     },
     {
       path: 'pricing',

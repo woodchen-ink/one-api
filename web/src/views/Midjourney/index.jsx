@@ -123,14 +123,6 @@ export default function Log() {
 
   return (
     <>
-      <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
-        <Stack direction="column" spacing={1}>
-          <Typography variant="h2">{t('midjourneyPage.midjourney')}</Typography>
-          <Typography variant="subtitle1" color="text.secondary">
-            Midjourney
-          </Typography>
-        </Stack>
-      </Stack>
       <Card>
         <Box component="form" noValidate>
           <TableToolBar filterName={toolBarValue} handleFilterName={handleToolBarValue} userIsAdmin={userIsAdmin} />

@@ -12,8 +12,8 @@ import { IconChevronDown, IconChevronRight } from '@tabler/icons-react';
 import NavItem from '../NavItem';
 
 const BULLET_SIZE = 14;
-const BULLET_COLOR_LIGHT = '#EAE8E6';
-const BULLET_COLOR_DARK = '#2E2B27';
+const BULLET_COLOR_LIGHT = '#D9C7B6';
+const BULLET_COLOR_DARK = '#5F554B';
 
 // ==============================|| SIDEBAR MENU LIST COLLAPSE ITEMS ||============================== //
 
@@ -94,7 +94,7 @@ const NavCollapse = ({ menu, level, isMini = false }) => {
             textAlign: 'center',
             px: 0.5,
             py: 0.75,
-            color: theme.palette.text.secondary,
+            color: theme.palette.text.primary,
             transition: theme.transitions.create(['background-color', 'color'], {
               duration: theme.transitions.duration.shortest
             }),
@@ -102,10 +102,10 @@ const NavCollapse = ({ menu, level, isMini = false }) => {
               backgroundColor: theme.palette.action.hover
             },
             ...(isActive && {
-              color: theme.palette.primary.main,
-              backgroundColor: alpha(theme.palette.primary.main, 0.08),
+              color: isDark ? theme.palette.secondary.light : theme.palette.secondary.dark,
+              backgroundColor: theme.palette.action.selected,
               '&:hover': {
-                backgroundColor: alpha(theme.palette.primary.main, 0.16)
+                backgroundColor: theme.palette.action.selected
               }
             }),
             ...(isOpen && {
@@ -122,6 +122,7 @@ const NavCollapse = ({ menu, level, isMini = false }) => {
                 width: '22px',
                 height: '22px',
                 mb: 0.5,
+                color: 'inherit',
                 '& > svg': { width: '100%', height: '100%' }
               }}
             >
@@ -162,7 +163,7 @@ const NavCollapse = ({ menu, level, isMini = false }) => {
           alignItems: 'center',
           justifyContent: 'flex-start',
           textAlign: 'left',
-          color: theme.palette.text.secondary,
+          color: theme.palette.text.primary,
           transition: theme.transitions.create(['background-color', 'color'], {
             duration: theme.transitions.duration.shortest
           }),
@@ -170,10 +171,10 @@ const NavCollapse = ({ menu, level, isMini = false }) => {
             backgroundColor: theme.palette.action.hover
           },
           ...(isActive && {
-            color: theme.palette.primary.main,
-            backgroundColor: alpha(theme.palette.primary.main, 0.08),
+            color: isDark ? theme.palette.secondary.light : theme.palette.secondary.dark,
+            backgroundColor: theme.palette.action.selected,
             '&:hover': {
-              backgroundColor: alpha(theme.palette.primary.main, 0.16)
+              backgroundColor: theme.palette.action.selected
             }
           }),
           ...(isOpen && {
@@ -191,6 +192,7 @@ const NavCollapse = ({ menu, level, isMini = false }) => {
               width: '24px',
               height: '24px',
               mr: 1.5,
+              color: 'inherit',
               '& > svg': { width: '100%', height: '100%' }
             }}
           >

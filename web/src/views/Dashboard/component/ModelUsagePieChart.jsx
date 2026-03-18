@@ -171,7 +171,7 @@ const ModelUsagePieChart = ({ isLoading, data }) => {
       ) : (
         <MainCard
           sx={{
-            borderRadius: '16px',
+            borderRadius: `${theme.shape.borderRadius}px`,
             overflow: 'hidden',
             boxShadow: theme.palette.mode === 'dark' ? '0 8px 24px rgba(0,0,0,0.2)' : '0 8px 24px rgba(0,0,0,0.05)'
           }}
@@ -197,7 +197,7 @@ const ModelUsagePieChart = ({ isLoading, data }) => {
                   sx={{
                     bgcolor: 'transparent',
                     position: 'relative',
-                    borderRadius: '12px',
+                    borderRadius: `${theme.shape.borderRadius}px`,
                     overflow: 'hidden',
                     p: 2
                   }}
@@ -211,7 +211,7 @@ const ModelUsagePieChart = ({ isLoading, data }) => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    borderRadius: '12px',
+                    borderRadius: `${theme.shape.borderRadius}px`,
                     bgcolor: alpha(theme.palette.primary.light, 0.05)
                   }}
                 >

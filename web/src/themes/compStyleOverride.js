@@ -1,4 +1,4 @@
-import { varAlpha } from './utils';
+﻿import { varAlpha } from './utils';
 
 export default function componentStyleOverrides(theme) {
   const isDark = theme.mode === 'dark';
@@ -10,6 +10,15 @@ export default function componentStyleOverrides(theme) {
           box-sizing: border-box;
           font-family: -apple-system, BlinkMacSystemFont, 'Noto Sans SC', system-ui, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
         }
+        :root {
+          --czl-foreground: ${theme.mode === 'dark' ? '#EBE8E1' : '#141413'};
+          --czl-background: ${theme.mode === 'dark' ? '#1F1D1B' : '#F7F5F0'};
+          --czl-primary: ${theme.mode === 'dark' ? '#D49A73' : '#141413'};
+          --czl-accent: ${theme.mode === 'dark' ? '#756A5E' : '#9A6540'};
+          --czl-destructive: ${theme.mode === 'dark' ? '#CF726A' : '#B85E48'};
+          --czl-success: ${theme.mode === 'dark' ? '#7FA67F' : '#5E7245'};
+          --czl-highlight: ${theme.mode === 'dark' ? '#4D4632' : '#F2D879'};
+        }
         html, body {
           -webkit-font-smoothing: antialiased;
           -moz-osx-font-smoothing: grayscale;
@@ -19,6 +28,15 @@ export default function componentStyleOverrides(theme) {
           flex: 1 1 auto;
           min-height: 100%;
           flex-direction: column;
+        }
+        body {
+          color: var(--czl-foreground);
+          background-color: var(--czl-background);
+          background-image:
+            radial-gradient(circle at 12% 8%, ${isDark ? varAlpha('#D49A73', 0.05) : varAlpha('#C08259', 0.08)} 0%, transparent 32%),
+            radial-gradient(circle at 86% 14%, ${isDark ? varAlpha('#756A5E', 0.08) : varAlpha('#8C7B6D', 0.1)} 0%, transparent 28%),
+            linear-gradient(${isDark ? varAlpha('#1F1D1B', 0.96) : varAlpha('#F7F5F0', 0.94)}, ${isDark ? varAlpha('#1F1D1B', 0.96) : varAlpha('#F7F5F0', 0.94)});
+          background-attachment: fixed;
         }
         img {
           max-width: 100%;
@@ -81,53 +99,39 @@ export default function componentStyleOverrides(theme) {
           }
         },
         contained: {
-          color: isDark ? theme.colors?.grey800 : '#FFFFFF',
-          backgroundColor: isDark ? '#FFFFFF' : theme.colors?.grey800,
+          color: isDark ? '#1F1D1B' : '#F7F5F0',
+          backgroundColor: isDark ? theme.colors?.darkPrimaryMain : theme.colors?.primaryMain,
           '&:hover': {
-            backgroundColor: isDark ? theme.colors?.grey300 : theme.colors?.grey700
+            backgroundColor: isDark ? theme.colors?.darkPrimaryDark : theme.colors?.primaryDark
           }
         },
-        // 主要按钮 - 强调色背景, 白色字体
         containedPrimary: {
-          background: '#141413',
-          color: '#F8F7F6',
+          background: isDark ? theme.colors?.darkPrimaryMain : theme.colors?.primaryMain,
+          color: isDark ? '#1F1D1B' : '#F7F5F0',
           '&:hover': {
-            background: '#D97757'
+            background: isDark ? theme.colors?.darkPrimaryDark : theme.colors?.primaryDark
           }
         },
-        // 普通按钮 - 悬停色背景
-        contained: {
-          background: '#EAE8E6',
-          color: '#141413',
-          '&:hover': {
-            background: '#141413',
-            color: '#F8F7F6'
-          }
-        },
-        // 删除按钮 - 危险色
         containedSecondary: {
-          background: '#B85E48',
-          color: '#F8F7F6',
+          background: isDark ? theme.colors?.darkSecondaryMain : theme.colors?.secondaryMain,
+          color: isDark ? '#EBE8E1' : '#FAF8F4',
           '&:hover': {
-            background: '#9d4a3a'
+            background: isDark ? theme.colors?.darkSecondaryDark : theme.colors?.secondaryDark
           }
         },
         outlinedPrimary: {
-          borderColor: '#D97757',
-          color: '#D97757',
+          borderColor: varAlpha(theme.colors?.secondaryMain, 0.52),
+          color: theme.colors?.secondaryMain,
           '&:hover': {
-            backgroundColor: '#E0DEDA',
-            borderColor: '#D97757',
-            color: '#B85E48'
+            backgroundColor: isDark ? varAlpha(theme.colors?.darkLevel1, 0.8) : varAlpha(theme.colors?.grey300, 0.8),
+            borderColor: theme.colors?.secondaryMain,
+            color: isDark ? theme.colors?.darkPrimaryMain : theme.colors?.secondaryDark
           }
-        },
-        outlinedPrimary: {
-          borderColor: varAlpha(theme.colors?.primaryMain, 0.48)
         },
         text: {
-          color: '#141413',
+          color: theme.textDark,
           '&:hover': {
-            backgroundColor: '#EAE8E6'
+            backgroundColor: isDark ? varAlpha(theme.colors?.darkLevel1, 0.7) : varAlpha(theme.colors?.grey200, 0.9)
           }
         },
         sizeSmall: {
@@ -169,11 +173,13 @@ export default function componentStyleOverrides(theme) {
       styleOverrides: {
         root: {
           backgroundImage: 'none',
-          borderRadius: '14px',
-          boxShadow: 'none'
+          backgroundColor: theme.paper,
+          border: `1px solid ${theme.divider}`,
+          borderRadius: `${theme?.customization?.borderRadius || 8}px`,
+          boxShadow: isDark ? '0 10px 26px rgba(0, 0, 0, 0.22)' : '0 8px 24px rgba(44, 40, 37, 0.08)'
         },
         rounded: {
-          borderRadius: `${theme?.customization?.borderRadius || 14}px`
+          borderRadius: `${theme?.customization?.borderRadius || 8}px`
         },
         elevation1: {
           boxShadow: 'none'
@@ -187,13 +193,15 @@ export default function componentStyleOverrides(theme) {
       styleOverrides: {
         root: {
           position: 'relative',
-          borderRadius: `${(theme?.customization?.borderRadius || 8) * 2}px`,
+          borderRadius: `${theme?.customization?.borderRadius || 8}px`,
           padding: 0,
-          boxShadow: 'none',
+          boxShadow: isDark ? '0 12px 28px rgba(0, 0, 0, 0.22)' : '0 10px 26px rgba(44, 40, 37, 0.08)',
           transition: 'box-shadow 0.3s ease',
+          backgroundColor: theme.paper,
+          border: `1px solid ${theme.divider}`,
           overflow: 'hidden',
           '&:hover': {
-            boxShadow: 'none'
+            boxShadow: isDark ? '0 16px 34px rgba(0, 0, 0, 0.3)' : '0 14px 30px rgba(44, 40, 37, 0.12)'
           },
           '& .MuiTableContainer-root': {
             borderRadius: 0
@@ -274,20 +282,20 @@ export default function componentStyleOverrides(theme) {
           borderRadius: '8px',
           padding: '8px 16px',
           '&.Mui-selected': {
-            color: '#141413',
-            backgroundColor: '#E0DEDA', // 已选择
+            color: theme.textDark,
+            backgroundColor: theme.menuSelected,
             '&:hover': {
-              backgroundColor: '#E0DEDA'
+              backgroundColor: theme.menuSelected
             },
             '& .MuiListItemIcon-root': {
-              color: '#141413'
+              color: theme.textDark
             }
           },
           '&:hover': {
-            backgroundColor: '#EAE8E6', // 悬停
-            color: '#141413',
+            backgroundColor: theme.headBackgroundColor,
+            color: theme.textDark,
             '& .MuiListItemIcon-root': {
-              color: '#141413'
+              color: theme.textDark
             }
           }
         }
@@ -296,7 +304,7 @@ export default function componentStyleOverrides(theme) {
     MuiListItemIcon: {
       styleOverrides: {
         root: {
-          color: theme.mode === 'dark' ? theme.darkTextPrimary : '#D97757',
+          color: theme.mode === 'dark' ? theme.darkTextPrimary : theme.colors?.secondaryMain,
           minWidth: '36px'
         }
       }
@@ -497,7 +505,7 @@ export default function componentStyleOverrides(theme) {
           borderWidth: 1,
           borderStyle: 'solid',
           borderColor: varAlpha(theme.colors?.grey500, 0.08),
-          backgroundColor: '#FFFFFF'
+          backgroundColor: '#FAF8F4'
         },
         sizeSmall: {
           '& .MuiSlider-thumb': {
@@ -525,7 +533,7 @@ export default function componentStyleOverrides(theme) {
           fontWeight: 600
         },
         rounded: {
-          borderRadius: `${(theme?.customization?.borderRadius || 8) * 1.5}px`
+          borderRadius: `${theme?.customization?.borderRadius || 8}px`
         },
         colorDefault: {
           color: theme.darkTextSecondary,
@@ -540,17 +548,17 @@ export default function componentStyleOverrides(theme) {
           fontWeight: 500,
           height: '32px',
           borderRadius: '16px',
-          backgroundColor: theme.mode === 'dark' ? '#ffffff' : '#D97757',
-          color: theme.mode === 'dark' ? 'rgba(0, 0, 0, 0.87)' : '#F8F7F6',
+          backgroundColor: theme.mode === 'dark' ? theme.colors?.darkPrimaryMain : theme.colors?.secondaryMain,
+          color: theme.mode === 'dark' ? '#1F1D1B' : '#FAF8F4',
           transition: 'all 0.2s ease-in-out',
           '&.MuiChip-outlined': {
-            borderColor: theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.8)' : '#D97757',
+            borderColor: theme.mode === 'dark' ? varAlpha(theme.colors?.darkPrimaryMain, 0.8) : theme.colors?.secondaryMain,
             backgroundColor: 'transparent',
-            color: theme.mode === 'dark' ? theme.textDark : '#D97757'
+            color: theme.mode === 'dark' ? theme.darkTextPrimary : theme.colors?.secondaryMain
           },
           '&.MuiChip-clickable': {
             '&:hover': {
-              backgroundColor: theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.9)' : '#B85E48'
+              backgroundColor: theme.mode === 'dark' ? theme.colors?.darkPrimaryDark : theme.colors?.secondaryDark
             }
           }
         },
@@ -574,8 +582,8 @@ export default function componentStyleOverrides(theme) {
         sizeSmall: {
           height: '26px',
           fontSize: '0.75rem',
-          backgroundColor: theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.8)' : '#B85E48',
-          color: theme.mode === 'dark' ? 'rgba(0, 0, 0, 0.87)' : '#F8F7F6',
+          backgroundColor: theme.mode === 'dark' ? varAlpha(theme.colors?.darkSecondaryMain, 0.9) : theme.colors?.errorMain,
+          color: theme.mode === 'dark' ? '#EBE8E1' : '#FAF8F4',
           '& .MuiChip-label': {
             padding: '0 10px',
             lineHeight: '26px'
@@ -594,14 +602,21 @@ export default function componentStyleOverrides(theme) {
         root: {
           position: 'relative',
           scrollbarWidth: 'thin',
-          overflowX: 'auto',
-          overflowY: 'auto',
+          overflowX: 'auto !important',
+          overflowY: 'auto !important',
+          maxHeight: 'min(62vh, calc(100vh - 300px)) !important',
+          minHeight: '240px',
+          overscrollBehavior: 'contain',
+          scrollbarGutter: 'stable',
           borderRadius: `${theme?.customization?.borderRadius || 8}px`,
           boxShadow: 'none'
         }
       }
     },
     MuiTable: {
+      defaultProps: {
+        stickyHeader: true
+      },
       styleOverrides: {
         root: {
           borderCollapse: 'separate',
@@ -615,7 +630,7 @@ export default function componentStyleOverrides(theme) {
     MuiTableHead: {
       styleOverrides: {
         root: {
-          backgroundColor: isDark ? '#2E2B27' : theme.colors?.grey200,
+          backgroundColor: isDark ? theme.headBackgroundColor : theme.colors?.grey200,
           width: '100%',
           margin: 0,
           '& tr': {
@@ -648,11 +663,15 @@ export default function componentStyleOverrides(theme) {
         head: {
           fontSize: 14,
           fontWeight: 600,
-          color: theme.mode === 'dark' ? theme.darkTextSecondary : '#141413', // 浅色主题使用深色文字
+          color: theme.mode === 'dark' ? theme.darkTextSecondary : theme.textDark, // 娴呰壊涓婚浣跨敤娣辫壊鏂囧瓧
           borderBottom: 'none',
           whiteSpace: 'nowrap',
           padding: '14px 12px',
-          textAlign: 'center'
+          textAlign: 'center',
+          '&.MuiTableCell-stickyHeader': {
+            zIndex: 2,
+            backgroundColor: isDark ? theme.headBackgroundColor : theme.colors?.grey200
+          }
         },
         body: {
           color: theme.textDark
@@ -684,7 +703,7 @@ export default function componentStyleOverrides(theme) {
       },
       styleOverrides: {
         root: {
-          color: theme.mode === 'dark' ? theme.textDark : '#141413', // 浅色主题使用深色文字
+          color: theme.textDark, // 娴呰壊涓婚浣跨敤娣辫壊鏂囧瓧
           borderTop: `1px dashed ${theme.tableBorderBottom}`,
           overflow: 'auto',
           minHeight: '56px',
@@ -703,7 +722,7 @@ export default function componentStyleOverrides(theme) {
             }),
             '& > p:first-of-type': {
               fontSize: '0.875rem',
-              color: theme.mode === 'dark' ? theme.darkTextSecondary : '#141413' // 浅色主题使用深色文字
+              color: theme.mode === 'dark' ? theme.darkTextSecondary : theme.textDark // 娴呰壊涓婚浣跨敤娣辫壊鏂囧瓧
             }
           }
         },
@@ -714,17 +733,17 @@ export default function componentStyleOverrides(theme) {
           paddingRight: '28px',
           borderRadius: '8px',
           backgroundColor: theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)',
-          color: theme.mode === 'dark' ? theme.textDark : '#141413', // 浅色主题使用深色文字
+          color: theme.textDark, // 娴呰壊涓婚浣跨敤娣辫壊鏂囧瓧
           '&:focus': {
             borderRadius: `${theme?.customization?.borderRadius || 8}px`
           }
         },
         selectLabel: {
           paddingLeft: '20px',
-          color: theme.mode === 'dark' ? theme.darkTextSecondary : '#141413' // 浅色主题使用深色文字
+          color: theme.mode === 'dark' ? theme.darkTextSecondary : theme.textDark // 娴呰壊涓婚浣跨敤娣辫壊鏂囧瓧
         },
         selectIcon: {
-          color: theme.mode === 'dark' ? theme.darkTextSecondary : '#141413', // 浅色主题使用深色文字
+          color: theme.mode === 'dark' ? theme.darkTextSecondary : theme.textDark, // 娴呰壊涓婚浣跨敤娣辫壊鏂囧瓧
           right: '6px'
         },
         actions: {
@@ -740,7 +759,7 @@ export default function componentStyleOverrides(theme) {
             padding: '8px',
             backgroundColor: theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)',
             borderRadius: '8px',
-            color: theme.mode === 'dark' ? theme.darkTextSecondary : '#141413', // 浅色主题使用深色文字
+            color: theme.mode === 'dark' ? theme.darkTextSecondary : theme.textDark, // 娴呰壊涓婚浣跨敤娣辫壊鏂囧瓧
             margin: '0 4px',
             '&:hover': {
               backgroundColor: theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.09)' : 'rgba(0, 0, 0, 0.05)'
@@ -753,7 +772,7 @@ export default function componentStyleOverrides(theme) {
         },
         displayedRows: {
           fontSize: '0.875rem',
-          color: theme.mode === 'dark' ? theme.darkTextSecondary : '#141413', // 浅色主题使用深色文字
+          color: theme.mode === 'dark' ? theme.darkTextSecondary : theme.textDark, // 娴呰壊涓婚浣跨敤娣辫壊鏂囧瓧
           margin: 0,
           ...(theme.breakpoints && {
             [theme.breakpoints.down('sm')]: {
@@ -804,17 +823,17 @@ export default function componentStyleOverrides(theme) {
           opacity: 1
         },
         standardSuccess: {
-          backgroundColor: theme.mode === 'dark' ? 'rgba(116, 135, 90, 0.16)' : theme.colors?.successLight,
-          color: theme.mode === 'dark' ? '#EEF1E8' : '#5C6B47',
+          backgroundColor: theme.mode === 'dark' ? varAlpha(theme.colors?.successMain, 0.2) : theme.colors?.successLight,
+          color: theme.mode === 'dark' ? '#EBE8E1' : theme.colors?.successDark,
           '& .MuiAlert-icon': {
-            color: theme.mode === 'dark' ? '#A3B07E' : '#74875A'
+            color: theme.mode === 'dark' ? theme.colors?.successMain : theme.colors?.successMain
           }
         },
         standardError: {
-          backgroundColor: theme.mode === 'dark' ? 'rgba(184, 94, 72, 0.16)' : '#F5E4DF',
-          color: theme.mode === 'dark' ? '#F5E4DF' : '#9d4a3a',
+          backgroundColor: theme.mode === 'dark' ? varAlpha(theme.colors?.errorMain, 0.22) : theme.colors?.errorLight,
+          color: theme.mode === 'dark' ? '#F6E5E0' : theme.colors?.errorDark,
           '& .MuiAlert-icon': {
-            color: theme.mode === 'dark' ? '#D97757' : '#B85E48'
+            color: theme.mode === 'dark' ? theme.colors?.errorMain : theme.colors?.errorMain
           }
         },
         standardWarning: {
@@ -825,10 +844,10 @@ export default function componentStyleOverrides(theme) {
           }
         },
         standardInfo: {
-          backgroundColor: theme.mode === 'dark' ? 'rgba(217, 119, 87, 0.12)' : 'rgba(20, 20, 19, 0.05)',
-          color: theme.mode === 'dark' ? '#F1F0EE' : theme.colors?.primaryDark,
+          backgroundColor: theme.mode === 'dark' ? varAlpha(theme.colors?.secondaryMain, 0.2) : varAlpha(theme.colors?.secondaryMain, 0.12),
+          color: theme.mode === 'dark' ? '#EBE8E1' : theme.colors?.primaryDark,
           '& .MuiAlert-icon': {
-            color: theme.mode === 'dark' ? '#D97757' : theme.colors?.secondaryMain
+            color: theme.mode === 'dark' ? theme.colors?.darkPrimaryMain : theme.colors?.secondaryMain
           }
         }
       }
@@ -876,12 +895,12 @@ export default function componentStyleOverrides(theme) {
     MuiDialog: {
       styleOverrides: {
         paper: {
-          borderRadius: '16px',
+          borderRadius: `${(theme?.customization?.borderRadius || 8) + 2}px`,
           boxShadow: 'none',
           overflow: 'visible',
           border: `1px solid ${theme.divider}`,
           '&.MuiPaper-rounded': {
-            borderRadius: `${(theme?.customization?.borderRadius || 8) * 2}px`
+            borderRadius: `${(theme?.customization?.borderRadius || 8) + 2}px`
           }
         },
         paperFullScreen: {
@@ -968,9 +987,9 @@ export default function componentStyleOverrides(theme) {
             marginBottom: 4
           },
           '&.Mui-selected': {
-            backgroundColor: theme.mode === 'dark' ? 'rgba(217, 119, 87, 0.15)' : 'rgba(20, 20, 19, 0.06)',
+            backgroundColor: theme.mode === 'dark' ? varAlpha(theme.menuSelectedBack, 0.72) : varAlpha(theme.menuSelected, 0.72),
             '&.Mui-focusVisible': {
-              backgroundColor: theme.mode === 'dark' ? 'rgba(217, 119, 87, 0.25)' : 'rgba(20, 20, 19, 0.10)'
+              backgroundColor: theme.mode === 'dark' ? varAlpha(theme.menuSelectedBack, 0.94) : varAlpha(theme.menuSelected, 0.94)
             }
           }
         }
@@ -981,7 +1000,7 @@ export default function componentStyleOverrides(theme) {
         root: {
           border: 'none',
           borderRadius: 0,
-          backgroundColor: isDark ? theme.paper : '#FFFFFF',
+          backgroundColor: theme.paper,
           overflow: 'hidden',
           width: '100%',
           margin: 0,
@@ -1000,13 +1019,13 @@ export default function componentStyleOverrides(theme) {
             '& .MuiDataGrid-columnHeaders': {
               borderBottom: `1px dashed ${theme.divider}`,
               borderRadius: 0,
-              backgroundColor: isDark ? '#2E2B27' : theme.colors?.grey200,
+              backgroundColor: isDark ? theme.headBackgroundColor : theme.colors?.grey200,
               minHeight: '48px',
               width: '100%',
               margin: 0
             },
             '& .MuiDataGrid-virtualScroller': {
-              backgroundColor: isDark ? theme.paper : '#fff',
+              backgroundColor: theme.paper,
               width: '100%',
               margin: 0
             },
@@ -1050,14 +1069,14 @@ export default function componentStyleOverrides(theme) {
             borderTop: `1px dashed ${theme.divider}`,
             borderTopStyle: 'dashed',
             minHeight: 'auto',
-            backgroundColor: isDark ? '#2E2B27' : theme.colors?.grey200,
+            backgroundColor: isDark ? theme.headBackgroundColor : theme.colors?.grey200,
             width: '100%',
             margin: 0,
             padding: '0 24px',
             '& .MuiTablePagination-root': {
               overflow: 'visible',
               backgroundColor: 'transparent',
-              color: theme.mode === 'dark' ? theme.textDark : '#141413', // 浅色主题使用深色文字
+              color: theme.textDark, // 娴呰壊涓婚浣跨敤娣辫壊鏂囧瓧
               borderTop: 'none'
             },
             '& .MuiToolbar-root': {
@@ -1065,7 +1084,7 @@ export default function componentStyleOverrides(theme) {
               padding: '0',
               '& > p:first-of-type': {
                 fontSize: '0.875rem',
-                color: theme.mode === 'dark' ? theme.darkTextSecondary : '#141413' // 浅色主题使用深色文字
+                color: theme.mode === 'dark' ? theme.darkTextSecondary : theme.textDark // 娴呰壊涓婚浣跨敤娣辫壊鏂囧瓧
               }
             }
           }
@@ -1074,7 +1093,7 @@ export default function componentStyleOverrides(theme) {
           padding: '12px 16px',
           fontSize: 14,
           fontWeight: 600,
-          color: theme.mode === 'dark' ? theme.darkTextSecondary : '#141413', // 浅色主题使用深色文字
+          color: theme.mode === 'dark' ? theme.darkTextSecondary : theme.textDark, // 娴呰壊涓婚浣跨敤娣辫壊鏂囧瓧
           height: '48px',
           textAlign: 'center',
           '&:focus': {
@@ -1088,7 +1107,7 @@ export default function componentStyleOverrides(theme) {
           }
         },
         columnHeaderTitle: {
-          color: theme.mode === 'dark' ? theme.darkTextSecondary : '#141413', // 浅色主题使用深色文字
+          color: theme.mode === 'dark' ? theme.darkTextSecondary : theme.textDark, // 娴呰壊涓婚浣跨敤娣辫壊鏂囧瓧
           fontWeight: 600,
           fontSize: 14,
           textAlign: 'center'
@@ -1116,12 +1135,12 @@ export default function componentStyleOverrides(theme) {
         row: {
           transition: 'background-color 0.2s ease',
           '&:hover': {
-            backgroundColor: isDark ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.04)'
+            backgroundColor: theme.mode === 'dark' ? varAlpha(theme.headBackgroundColor, 0.9) : varAlpha(theme.colors?.grey200, 0.9)
           },
           '&.Mui-selected': {
-            backgroundColor: theme.mode === 'dark' ? 'rgba(217, 119, 87, 0.15)' : 'rgba(20, 20, 19, 0.06)',
+            backgroundColor: theme.mode === 'dark' ? varAlpha(theme.menuSelectedBack, 0.72) : varAlpha(theme.menuSelected, 0.72),
             '&:hover': {
-              backgroundColor: theme.mode === 'dark' ? 'rgba(217, 119, 87, 0.25)' : 'rgba(20, 20, 19, 0.10)'
+              backgroundColor: theme.mode === 'dark' ? varAlpha(theme.menuSelectedBack, 0.94) : varAlpha(theme.menuSelected, 0.94)
             }
           }
         },
@@ -1130,7 +1149,7 @@ export default function componentStyleOverrides(theme) {
           whiteSpace: 'nowrap'
         },
         toolbarContainer: {
-          backgroundColor: isDark ? theme.paper : '#FFFFFF',
+          backgroundColor: theme.paper,
           gap: '16px',
           padding: '16px',
           '& .MuiButton-root': {
@@ -1138,7 +1157,7 @@ export default function componentStyleOverrides(theme) {
           }
         },
         panelHeader: {
-          backgroundColor: theme.mode === 'dark' ? theme.paper : theme.colors?.paper,
+          backgroundColor: theme.paper,
           padding: '16px 20px',
           borderBottom: `1px dashed ${theme.divider}`
         },
@@ -1157,9 +1176,9 @@ export default function componentStyleOverrides(theme) {
     MuiDataGridPanel: {
       styleOverrides: {
         root: {
-          backgroundColor: theme.mode === 'dark' ? theme.paper : '#fff',
+          backgroundColor: theme.paper,
           boxShadow: 'none',
-          borderRadius: '14px',
+          borderRadius: `${theme?.customization?.borderRadius || 8}px`,
           border: `1px solid ${theme.divider}`
         }
       }
@@ -1185,7 +1204,7 @@ export default function componentStyleOverrides(theme) {
     MuiDataGridMenuList: {
       styleOverrides: {
         root: {
-          backgroundColor: theme.mode === 'dark' ? theme.paper : '#fff',
+          backgroundColor: theme.paper,
           padding: '8px 0'
         }
       }
@@ -1195,7 +1214,7 @@ export default function componentStyleOverrides(theme) {
         root: {
           '& .MuiPaper-root': {
             boxShadow: 'none',
-            borderRadius: '12px',
+            borderRadius: `${theme?.customization?.borderRadius || 8}px`,
             border: `1px solid ${theme.divider}`
           }
         }
@@ -1203,3 +1222,5 @@ export default function componentStyleOverrides(theme) {
     }
   }
 }
+
+

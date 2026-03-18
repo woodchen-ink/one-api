@@ -1,4 +1,4 @@
-import { createTheme } from '@mui/material/styles';
+﻿import { createTheme } from '@mui/material/styles';
 
 // assets
 import colors from 'assets/scss/_themes-vars.module.scss';
@@ -9,7 +9,6 @@ import themePalette from './palette';
 import themeTypography from './typography';
 import { varAlpha, createGradient } from './utils';
 
-// 创建自定义渐变背景色
 const customGradients = {
   primary: createGradient(colors.primaryMain, colors.primaryDark),
   secondary: createGradient(colors.secondaryMain, colors.secondaryDark)
@@ -19,7 +18,6 @@ const customGradients = {
  * Represent theme style and structure as per Material-UI
  * @param {JsonObject} customization customization parameter object
  */
-
 export const theme = (customization) => {
   const color = colors;
   const options = customization.theme === 'light' ? GetLightOption() : GetDarkOption();
@@ -75,45 +73,44 @@ function GetDarkOption() {
   return {
     mode: 'dark',
     heading: color.darkTextTitle,
-    paper: '#211F1C',
-    backgroundDefault: '#1A1916',
-    background: '#272420',
-    darkTextPrimary: '#F1F0EE',
-    darkTextSecondary: '#C4BFB5',
-    textDark: '#F8F7F6',
-    menuSelected: color.primary200,
-    menuSelectedBack: varAlpha(color.darkPrimaryMain, 0.15),
-    divider: 'rgba(248, 247, 246, 0.12)',
-    borderColor: 'rgba(248, 247, 246, 0.15)',
-    menuButton: '#2E2B27',
+    paper: '#292623',
+    backgroundDefault: '#1F1D1B',
+    background: '#292623',
+    darkTextPrimary: '#CFCAC2',
+    darkTextSecondary: '#8F8B85',
+    textDark: '#EBE8E1',
+    menuSelected: '#36322E',
+    menuSelectedBack: '#36322E',
+    divider: color.darkDivider,
+    borderColor: color.darkDivider,
+    menuButton: '#2E2B28',
     menuButtonColor: color.darkPrimaryMain,
-    menuChip: '#2E2B27',
-    headBackgroundColor: '#2E2B27',
-    headBackgroundColorHover: varAlpha('#2E2B27', 0.08),
-    tableBorderBottom: 'rgba(248, 247, 246, 0.1)'
+    menuChip: '#2E2B28',
+    headBackgroundColor: '#2E2B28',
+    headBackgroundColorHover: varAlpha('#2E2B28', 0.32),
+    tableBorderBottom: color.darkDivider
   };
 }
 
 function GetLightOption() {
-  const color = colors;
   return {
     mode: 'light',
-    heading: '#141413', // foreground 主要文本
-    paper: '#F8F7F6', // background 主要背景
-    backgroundDefault: '#F8F7F6', // background
-    background: '#F8F7F6',
-    darkTextPrimary: '#141413', // foreground
-    darkTextSecondary: '#8A8886', // grey500 辅助文本
-    textDark: '#141413',
-    menuSelected: '#E0DEDA', // muted 已选择
-    menuSelectedBack: varAlpha('#E0DEDA', 0.8),
-    divider: '#EAE8E6', // border 中性暖灰边框
-    borderColor: '#EAE8E6',
-    menuButton: '#141413', // primary 导航栏背景
-    menuButtonColor: '#F8F7F6', // background 导航栏内容
-    menuChip: '#EAE8E6',
-    headBackgroundColor: '#EAE8E6', // secondary 悬停色
-    headBackgroundColorHover: varAlpha('#EAE8E6', 0.08),
-    tableBorderBottom: '#EAE8E6'
+    heading: '#2C2825',
+    paper: '#FAF8F4',
+    backgroundDefault: '#F7F5F0',
+    background: '#F7F5F0',
+    darkTextPrimary: '#45403B',
+    darkTextSecondary: '#857F76',
+    textDark: '#2C2825',
+    menuSelected: '#E3DCD1',
+    menuSelectedBack: '#E3DCD1',
+    divider: '#DBD3C8',
+    borderColor: '#DBD3C8',
+    menuButton: '#141413',
+    menuButtonColor: '#F7F5F0',
+    menuChip: '#EBE8E1',
+    headBackgroundColor: '#EBE8E1',
+    headBackgroundColorHover: varAlpha('#EBE8E1', 0.8),
+    tableBorderBottom: '#DBD3C8'
   };
 }

@@ -10,8 +10,16 @@ export const initialState = {
   fontFamily: config.fontFamily,
   borderRadius: config.borderRadius,
   opened: true,
-  theme: 'dark'
+  theme: getInitialTheme()
 };
+
+function getInitialTheme() {
+  if (typeof window === 'undefined') {
+    return 'light';
+  }
+  const persistedTheme = localStorage.getItem('theme');
+  return persistedTheme === 'dark' || persistedTheme === 'light' ? persistedTheme : 'light';
+}
 
 // ==============================|| CUSTOMIZATION REDUCER ||============================== //
 

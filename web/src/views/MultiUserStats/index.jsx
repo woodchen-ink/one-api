@@ -207,18 +207,6 @@ export default function MultiUserStats() {
 
   return (
     <>
-      <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
-        <Stack direction="column" spacing={1}>
-          <Typography variant="h2">多用户令牌统计</Typography>
-          <Typography variant="subtitle1" color="text.secondary">
-            Multi-User Token Statistics
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            查询多个用户的所有令牌使用情况统计数据
-          </Typography>
-        </Stack>
-      </Stack>
-
       <Card sx={{ mb: 3, p: 3 }}>
         <Stack spacing={3}>
           <TextField
@@ -284,7 +272,7 @@ export default function MultiUserStats() {
                       theme.palette.primary.light,
                       0.05
                     )} 100%)`,
-                    borderRadius: '16px'
+                    borderRadius: `${theme.shape.borderRadius}px`
                   }}
                 >
                   <Stack spacing={2}>
@@ -350,7 +338,7 @@ export default function MultiUserStats() {
           <Grid container spacing={3}>
             {/* 用户额度消耗柱状图 */}
             <Grid item xs={12} lg={6}>
-              <MainCard sx={{ borderRadius: '16px' }}>
+              <MainCard sx={{ borderRadius: `${theme.shape.borderRadius}px` }}>
                 <Typography variant="h3" sx={{ mb: 2, fontWeight: 600 }}>
                   用户额度消耗对比
                 </Typography>
@@ -362,7 +350,7 @@ export default function MultiUserStats() {
 
             {/* 模型使用次数饼图 */}
             <Grid item xs={12} lg={6}>
-              <MainCard sx={{ borderRadius: '16px' }}>
+              <MainCard sx={{ borderRadius: `${theme.shape.borderRadius}px` }}>
                 <Typography variant="h3" sx={{ mb: 2, fontWeight: 600 }}>
                   不同用户模型调用分布
                 </Typography>

@@ -92,23 +92,6 @@ export default function ModelMapping() {
 
   return (
     <>
-      <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
-        <Stack direction="column" spacing={1}>
-          <Typography variant="h2">{t('modelMapping.title', '模型映射')}</Typography>
-          <Typography variant="subtitle1" color="text.secondary">
-            {t('modelMapping.subtitle', '全局模型别名，支持一对多跨渠道映射')}
-          </Typography>
-        </Stack>
-
-        <Button
-          variant="contained"
-          color="primary"
-          startIcon={<Icon icon="solar:add-circle-line-duotone" />}
-          onClick={() => handleOpenModal(0)}
-        >
-          {t('modelMapping.create', '新建映射')}
-        </Button>
-      </Stack>
       <Card>
         <Toolbar
           sx={{
@@ -123,6 +106,14 @@ export default function ModelMapping() {
             <ButtonGroup variant="outlined" aria-label="outlined small primary button group">
               <Button onClick={handleRefresh} startIcon={<Icon icon="solar:refresh-bold-duotone" width={18} />}>
                 {t('userPage.refresh')}
+              </Button>
+              <Button
+                variant="contained"
+                color="primary"
+                startIcon={<Icon icon="solar:add-circle-line-duotone" />}
+                onClick={() => handleOpenModal(0)}
+              >
+                {t('modelMapping.create', '新建映射')}
               </Button>
             </ButtonGroup>
           </Container>

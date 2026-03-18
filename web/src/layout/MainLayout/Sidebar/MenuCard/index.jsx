@@ -11,20 +11,20 @@ import { useTranslation } from 'react-i18next';
 import { Icon } from '@iconify/react';
 
 const CardStyle = styled(Card)(({ theme }) => ({
-  background: theme.palette.mode === 'dark' ? alpha(theme.palette.background.paper, 0.8) : alpha(theme.palette.background.paper, 0.9),
+  background: theme.palette.mode === 'dark' ? alpha(theme.palette.background.paper, 0.9) : alpha(theme.palette.background.paper, 0.94),
   backdropFilter: 'blur(8px)',
-  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+  border: `1px solid ${theme.palette.divider}`,
   marginBottom: '22px',
   overflow: 'hidden',
   position: 'relative',
-  borderRadius: 12,
-  boxShadow: theme.palette.mode === 'dark' ? '0 4px 16px rgba(0,0,0,0.2)' : '0 4px 16px rgba(149, 157, 165, 0.1)',
+  borderRadius: theme.shape.borderRadius,
+  boxShadow: theme.palette.mode === 'dark' ? '0 8px 18px rgba(0,0,0,0.18)' : '0 8px 20px rgba(44, 40, 37, 0.06)',
   '&:after': {
     content: '""',
     position: 'absolute',
     width: '120px',
     height: '120px',
-    background: alpha(theme.palette.primary.main, 0.08),
+    background: alpha(theme.palette.secondary.main, 0.08),
     borderRadius: '50%',
     top: '-60px',
     right: '-30px',
@@ -38,7 +38,7 @@ const ProgressBarWrapper = styled(Box)(({ theme }) => ({
   height: 6,
   borderRadius: 6,
   overflow: 'hidden',
-  backgroundColor: alpha(theme.palette.divider, 0.1),
+  backgroundColor: alpha(theme.palette.divider, 0.6),
   '& .MuiLinearProgress-root': {
     height: '100%',
     borderRadius: 6,
@@ -155,7 +155,7 @@ const MenuCard = () => {
                 }
                 size="small"
                 variant="outlined"
-                color="primary"
+                color="secondary"
               />
             )}
           </Box>
@@ -217,11 +217,11 @@ const MenuCard = () => {
           sx={{
             mt: 2,
             //颜色适配暗色
-            background: '#141413',
-            color: theme.palette.primary.contrastText,
+            background: theme.palette.secondary.main,
+            color: theme.palette.secondary.contrastText,
             '&:hover': {
-              backgroundColor: '#2A2928',
-              color: '#D97757'
+              backgroundColor: theme.palette.secondary.dark,
+              color: theme.palette.secondary.contrastText
             }
           }}
           onClick={() => window.open('https://work.weixin.qq.com/kfid/kfce787ac8bbad50026', '_blank')}

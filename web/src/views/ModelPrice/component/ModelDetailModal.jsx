@@ -60,7 +60,7 @@ export default function ModelDetailModal({ open, onClose, model, provider, model
       fullWidth
       sx={{
         '& .MuiDialog-paper': {
-          borderRadius: '16px',
+          borderRadius: `${theme.shape.borderRadius + 2}px`,
           backgroundColor: theme.palette.mode === 'dark' ? alpha(theme.palette.background.paper, 0.95) : theme.palette.background.paper
         }
       }}

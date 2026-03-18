@@ -394,23 +394,6 @@ export default function ChannelList() {
 
   return (
     <AdminContainer>
-      <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
-        <Stack direction="column" spacing={1}>
-          <Typography variant="h2">{t('channel_index.channel')}</Typography>
-          <Typography variant="subtitle1" color="text.secondary">
-            Channel
-          </Typography>
-        </Stack>
-
-        <ButtonGroup variant="contained" aria-label="outlined small primary button group">
-          <Button color="primary" startIcon={<Icon icon="solar:add-circle-line-duotone" />} onClick={() => handleOpenModal(0)}>
-            {t('channel_index.newChannel')}
-          </Button>
-          <Button color="primary" startIcon={<Icon icon="solar:menu-dots-bold-duotone" />} onClick={() => setOpenBatchModal(true)}>
-            {t('channel_index.batchProcessing')}
-          </Button>
-        </ButtonGroup>
-      </Stack>
       <Card>
         <Box component="form" noValidate>
           <TableToolBar filterName={toolBarValue} handleFilterName={handleToolBarValue} groupOptions={groupOptions} tags={tags} />
@@ -425,7 +408,7 @@ export default function ChannelList() {
             p: (theme) => theme.spacing(0, 1, 0, 3)
           }}
         >
-          <Container maxWidth="xl">
+          <Container>
             {matchUpMd ? (
               <ButtonGroup variant="outlined" aria-label="outlined small primary button group">
                 <Button onClick={() => handleRefresh(true)} startIcon={<Icon icon="solar:refresh-circle-bold-duotone" width={18} />}>
@@ -451,6 +434,12 @@ export default function ChannelList() {
                   startIcon={<Icon icon="solar:trash-bin-trash-bold-duotone" width={18} />}
                 >
                   {t('channel_index.deleteDisabledChannels')}
+                </Button>
+                <Button color="primary" startIcon={<Icon icon="solar:add-circle-line-duotone" />} onClick={() => handleOpenModal(0)}>
+                  {t('channel_index.newChannel')}
+                </Button>
+                <Button color="primary" startIcon={<Icon icon="solar:menu-dots-bold-duotone" />} onClick={() => setOpenBatchModal(true)}>
+                  {t('channel_index.batchProcessing')}
                 </Button>
               </ButtonGroup>
             ) : (

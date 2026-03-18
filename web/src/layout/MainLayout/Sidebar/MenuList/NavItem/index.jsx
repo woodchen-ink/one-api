@@ -11,9 +11,9 @@ import { Avatar, Box, ButtonBase, Chip, Tooltip, Typography, useMediaQuery } fro
 import { MENU_OPEN, SET_MENU } from 'store/actions';
 
 const BULLET_SIZE = 14;
-const BULLET_COLOR_LIGHT = '#EAE8E6';
-const BULLET_COLOR_DARK = '#2E2B27';
-const BULLET_SVG = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='none' viewBox='0 0 14 14'%3E%3Cpath d='M1 1v4a8 8 0 0 0 8 8h4' stroke='%23EAE8E6' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat 50% 50%/100% auto`;
+const BULLET_COLOR_LIGHT = '#D9C7B6';
+const BULLET_COLOR_DARK = '#5F554B';
+const BULLET_SVG = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='none' viewBox='0 0 14 14'%3E%3Cpath d='M1 1v4a8 8 0 0 0 8 8h4' stroke='%23D9C7B6' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat 50% 50%/100% auto`;
 
 // ==============================|| SIDEBAR MENU LIST ITEMS ||============================== //
 
@@ -77,7 +77,7 @@ const NavItem = ({ item, level, isMini = false }) => {
             textAlign: 'center',
             px: 0.5,
             py: 0.75,
-            color: theme.palette.text.secondary,
+            color: theme.palette.text.primary,
             transition: theme.transitions.create(['background-color', 'color'], {
               duration: theme.transitions.duration.shortest
             }),
@@ -85,10 +85,10 @@ const NavItem = ({ item, level, isMini = false }) => {
               backgroundColor: theme.palette.action.hover
             },
             ...(isSelected && {
-              color: theme.palette.primary.main,
-              backgroundColor: alpha(theme.palette.primary.main, 0.08),
+              color: isDark ? theme.palette.secondary.light : theme.palette.secondary.dark,
+              backgroundColor: theme.palette.action.selected,
               '&:hover': {
-                backgroundColor: alpha(theme.palette.primary.main, 0.16)
+                backgroundColor: theme.palette.action.selected
               }
             }),
             ...(item.disabled && {
@@ -105,6 +105,7 @@ const NavItem = ({ item, level, isMini = false }) => {
                 width: '22px',
                 height: '22px',
                 mb: 0.5,
+                color: 'inherit',
                 '& > svg': { width: '100%', height: '100%' }
               }}
             >
@@ -147,7 +148,7 @@ const NavItem = ({ item, level, isMini = false }) => {
         alignItems: 'center',
         justifyContent: 'flex-start',
         textAlign: 'left',
-        color: theme.palette.text.secondary,
+        color: theme.palette.text.primary,
         transition: theme.transitions.create(['background-color', 'color'], {
           duration: theme.transitions.duration.shortest
         }),
@@ -156,15 +157,15 @@ const NavItem = ({ item, level, isMini = false }) => {
         },
         ...(isSelected &&
           isRootItem && {
-            color: theme.palette.primary.main,
-            backgroundColor: alpha(theme.palette.primary.main, 0.08),
+            color: isDark ? theme.palette.secondary.light : theme.palette.secondary.dark,
+            backgroundColor: theme.palette.action.selected,
             '&:hover': {
-              backgroundColor: alpha(theme.palette.primary.main, 0.16)
+              backgroundColor: theme.palette.action.selected
             }
           }),
         ...(isSelected &&
           isSubItem && {
-            color: theme.palette.text.primary,
+            color: isDark ? theme.palette.secondary.light : theme.palette.secondary.dark,
             backgroundColor: theme.palette.action.hover
           }),
         ...(isSubItem && {
@@ -195,6 +196,7 @@ const NavItem = ({ item, level, isMini = false }) => {
             width: '24px',
             height: '24px',
             mr: 1.5,
+            color: 'inherit',
             '& > svg': {
               width: '100%',
               height: '100%'

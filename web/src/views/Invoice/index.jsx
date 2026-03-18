@@ -94,17 +94,6 @@ export default function Invoice() {
 
   return (
     <>
-      <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
-        <Stack direction="column" spacing={1}>
-          <Typography variant="h2">{t('invoice_index.invoice')}</Typography>
-          <Typography variant="subtitle1" color="text.secondary">
-            Invoice
-          </Typography>
-          <Typography variant="subtitle1" color="text.secondary">
-            {t('invoice_index.alert')}
-          </Typography>
-        </Stack>
-      </Stack>
       <Card>
         <Toolbar
           sx={{

@@ -360,60 +360,6 @@ export default function ModelPrice() {
 
   return (
     <Stack spacing={3} sx={{ padding: theme.spacing(3) }}>
-      <Box sx={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <Box>
-          <Fade in timeout={800}>
-            <Typography
-              variant="h2"
-              sx={{
-                fontWeight: 700,
-                background:
-                  theme.palette.mode === 'dark'
-                    ? 'linear-gradient(45deg, #6b9fff 30%, #a29bfe 90%)'
-                    : 'linear-gradient(45deg, #2196F3 30%, #3f51b5 90%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent'
-              }}
-            >
-              {t('modelpricePage.availableModels')}
-            </Typography>
-          </Fade>
-          <Typography variant="subtitle1" color="text.secondary" sx={{ mt: 0.5, mb: 2 }}>
-            {t('modelpricePage.modelPricing')}
-          </Typography>
-        </Box>
-
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <MuiToggleButtonGroup
-            value={viewMode}
-            exclusive
-            onChange={handleViewModeChange}
-            aria-label="view mode"
-            size="small"
-            sx={{
-              backgroundColor: theme.palette.mode === 'dark' ? alpha(theme.palette.background.paper, 0.6) : theme.palette.background.paper,
-              '& .MuiToggleButton-root': {
-                border: `1px solid ${theme.palette.divider}`,
-                '&.Mui-selected': {
-                  backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                  color: theme.palette.primary.main,
-                  '&:hover': {
-                    backgroundColor: alpha(theme.palette.primary.main, 0.2)
-                  }
-                }
-              }
-            }}
-          >
-            <ToggleButton value="card" aria-label="card view">
-              <Icon icon="eva:grid-outline" width={20} height={20} />
-            </ToggleButton>
-            <ToggleButton value="list" aria-label="list view">
-              <Icon icon="eva:list-outline" width={20} height={20} />
-            </ToggleButton>
-          </MuiToggleButtonGroup>
-        </Box>
-      </Box>
-
       <Card
         elevation={0}
         sx={{
@@ -481,6 +427,34 @@ export default function ModelPrice() {
                 }
               }}
             />
+            <MuiToggleButtonGroup
+              value={viewMode}
+              exclusive
+              onChange={handleViewModeChange}
+              aria-label="view mode"
+              size="small"
+              sx={{
+                backgroundColor:
+                  theme.palette.mode === 'dark' ? alpha(theme.palette.background.paper, 0.6) : theme.palette.background.paper,
+                '& .MuiToggleButton-root': {
+                  border: `1px solid ${theme.palette.divider}`,
+                  '&.Mui-selected': {
+                    backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                    color: theme.palette.primary.main,
+                    '&:hover': {
+                      backgroundColor: alpha(theme.palette.primary.main, 0.2)
+                    }
+                  }
+                }
+              }}
+            >
+              <ToggleButton value="card" aria-label="card view">
+                <Icon icon="eva:grid-outline" width={20} height={20} />
+              </ToggleButton>
+              <ToggleButton value="list" aria-label="list view">
+                <Icon icon="eva:list-outline" width={20} height={20} />
+              </ToggleButton>
+            </MuiToggleButtonGroup>
           </Box>
         </Box>
 

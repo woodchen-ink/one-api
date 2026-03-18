@@ -13,7 +13,7 @@ import { Icon } from '@iconify/react';
 import { renderNumber } from 'utils/common';
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
-  borderRadius: '16px',
+  borderRadius: `${theme.shape.borderRadius}px`,
   border: theme.palette.mode === 'dark' ? '1px solid rgba(255, 255, 255, 0.05)' : 'none',
   boxShadow: theme.palette.mode === 'dark' ? 'none' : '0px 1px 3px rgba(0, 0, 0, 0.1)',
   overflow: 'hidden',
@@ -194,7 +194,7 @@ const StatisticalLineChartCard = ({ isLoading, title, chartData, todayValue, las
                           display: 'flex',
                           alignItems: 'center',
                           bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)',
-                          borderRadius: '12px',
+                          borderRadius: `${theme.shape.borderRadius}px`,
                           py: 0.5,
                           px: 1
                         }}

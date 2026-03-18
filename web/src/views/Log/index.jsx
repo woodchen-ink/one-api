@@ -191,14 +191,6 @@ export default function Log() {
 
   return (
     <>
-      <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
-        <Stack direction="column" spacing={1}>
-          <Typography variant="h2">{t('logPage.title')}</Typography>
-          <Typography variant="subtitle1" color="text.secondary">
-            Log
-          </Typography>
-        </Stack>
-      </Stack>
       <Card>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tabs

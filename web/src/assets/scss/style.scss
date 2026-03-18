@@ -4,6 +4,26 @@
 // third-party
 @import '~react-perfect-scrollbar/dist/css/styles.css';
 
+:root {
+  --czl-foreground: #141413;
+  --czl-background: #f7f5f0;
+  --czl-primary: #141413;
+  --czl-accent: #9a6540;
+  --czl-destructive: #b85e48;
+  --czl-success: #5e7245;
+  --czl-highlight: #f2d879;
+}
+
+html[data-theme='dark'] {
+  --czl-foreground: #ebe8e1;
+  --czl-background: #1f1d1b;
+  --czl-primary: #d49a73;
+  --czl-accent: #756a5e;
+  --czl-destructive: #cf726a;
+  --czl-success: #7fa67f;
+  --czl-highlight: #4d4632;
+}
+
 // ==============================|| LIGHT BOX ||============================== //
 .fullscreen .react-images__blanket {
   z-index: 1200;
@@ -134,20 +154,5 @@
   box-shadow: 0 1px 3px 0 rgba(34, 36, 38, .15);
 }
 
-.default-group {
-  box-shadow: 0 0 10px $secondaryMain;
-  border-radius: 16px;
 
-}
-
-.vip-group {
-  box-shadow: 0 0 10px $errorMain;
-  border-radius: 16px;
-
-}
-
-.svip-group {
-  box-shadow: 0 0 10px $primaryDark;
-  border-radius: 16px;
-}
 

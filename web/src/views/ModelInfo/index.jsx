@@ -123,33 +123,6 @@ export default function ModelInfo() {
 
   return (
     <>
-      <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
-        <Stack direction="column" spacing={1}>
-          <Typography variant="h2">模型详情</Typography>
-          <Typography variant="subtitle1" color="text.secondary">
-            Model Info
-          </Typography>
-        </Stack>
-
-        <Stack direction="row" spacing={2}>
-          <Button
-            variant="outlined"
-            color="primary"
-            startIcon={<Icon icon="solar:upload-bold-duotone" />}
-            onClick={() => setOpenImportModal(true)}
-          >
-            批量导入
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<Icon icon="solar:add-circle-line-duotone" />}
-            onClick={() => handleOpenModal(0)}
-          >
-            新建模型信息
-          </Button>
-        </Stack>
-      </Stack>
       <Card>
         <Toolbar
           sx={{
@@ -165,6 +138,22 @@ export default function ModelInfo() {
               <Button onClick={handleRefresh} startIcon={<Icon icon="solar:refresh-bold-duotone" width={18} />}>
                 刷新
               </Button>
+              <Button
+            variant="outlined"
+            color="primary"
+            startIcon={<Icon icon="solar:upload-bold-duotone" />}
+            onClick={() => setOpenImportModal(true)}
+          >
+            批量导入
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<Icon icon="solar:add-circle-line-duotone" />}
+            onClick={() => handleOpenModal(0)}
+          >
+            新建模型信息
+          </Button>
             </ButtonGroup>
           </Container>
           <OutlinedInput

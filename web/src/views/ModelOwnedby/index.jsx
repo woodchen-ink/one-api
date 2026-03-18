@@ -93,23 +93,6 @@ export default function ModelOwnedby() {
 
   return (
     <>
-      <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
-        <Stack direction="column" spacing={1}>
-          <Typography variant="h2">{t('modelOwnedby.title')}</Typography>
-          <Typography variant="subtitle1" color="text.secondary">
-            Model Owned By
-          </Typography>
-        </Stack>
-
-        <Button
-          variant="contained"
-          color="primary"
-          startIcon={<Icon icon="solar:add-circle-line-duotone" />}
-          onClick={() => handleOpenModal(0)}
-        >
-          {t('modelOwnedby.create')}
-        </Button>
-      </Stack>
       <Card>
         <Toolbar
           sx={{
@@ -124,6 +107,14 @@ export default function ModelOwnedby() {
             <ButtonGroup variant="outlined" aria-label="outlined small primary button group">
               <Button onClick={handleRefresh} startIcon={<Icon icon="solar:refresh-bold-duotone" width={18} />}>
                 {t('userPage.refresh')}
+              </Button>
+              <Button
+                variant="contained"
+                color="primary"
+                startIcon={<Icon icon="solar:add-circle-line-duotone" />}
+                onClick={() => handleOpenModal(0)}
+              >
+                {t('modelOwnedby.create')}
               </Button>
             </ButtonGroup>
           </Container>
