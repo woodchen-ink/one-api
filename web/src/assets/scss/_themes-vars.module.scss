@@ -1,97 +1,104 @@
-﻿// Light theme surfaces and semantic palette (CZL paper style)
-$paper: #faf8f4;
+// Light theme surfaces and semantic palette (CZL cool neutral brand)
+$paper: #ffffff;
+
+// Brand gradient
+$brandStart: #1d2088;
+$brandEnd: #2ea7e0;
 
 // Primary (strong emphasis)
-$primaryLight: #e3dcd1;
-$primaryMain: #141413;
-$primaryDark: #0f0f0e;
-$primary200: #e3dcd1;
-$primary800: #141413;
+$primaryLight: #d9e6f5;
+$primaryMain: #1b2152;
+$primaryDark: #151a40;
+$primary200: #d9e6f5;
+$primary800: #10183b;
 
-// Secondary (warm accent)
-$secondaryLight: #ebe6de;
-$secondaryMain: #9a6540;
-$secondaryDark: #7d5132;
-$secondary200: #d9c7b6;
-$secondary800: #5f3e27;
+// Secondary (brand accent)
+$secondaryLight: #dde2e8;
+$secondaryMain: #4b669a;
+$secondaryDark: #344a73;
+$secondary200: #dde2e8;
+$secondary800: #27395d;
 
-// Success / Destructive / Highlight
-$successLight: #ebf2e7;
-$success200: #bdd0b4;
-$successMain: #5e7245;
-$successDark: #4b5e36;
+// Semantic colors
+$successLight: #e5f0f0;
+$success200: #bdd0d1;
+$successMain: #5e7e80;
+$successDark: #486668;
 
-$errorLight: #f6e5e0;
-$errorMain: #b85e48;
-$errorDark: #964837;
+$errorLight: #f4e6ea;
+$errorMain: #9d6877;
+$errorDark: #7f5060;
 
-$orangeLight: #f4ebe3;
-$orangeMain: #8c7b6d;
-$orangeDark: #756a5e;
+$orangeLight: #eff1f4;
+$orangeMain: #6b7ea8;
+$orangeDark: #52658a;
 
-$warningLight: #fbf4d6;
-$warningMain: #f2d879;
-$warningDark: #c7aa46;
+$warningLight: #eff1f4;
+$warningMain: #6c7da6;
+$warningDark: #54638a;
 
-// Neutral information tone (avoid blue/purple)
-$infoLight: #eee9e1;
-$infoMain: #8c7b6d;
-$infoDark: #6f6258;
+$infoLight: #eff2f5;
+$infoMain: #4b669a;
+$infoDark: #344a73;
 
-// Warm neutral scale
-$grey50: #f7f5f0;
-$grey100: #f1eee8;
-$grey200: #ebe8e1;
-$grey300: #e3dcd1;
-$grey400: #bfb8ae;
-$grey500: #857f76;
-$grey600: #625c54;
-$grey700: #45403b;
-$grey800: #2c2825;
-$grey900: #141413;
+// Cool neutral scale
+$grey50: #ffffff;
+$grey100: #f2f5f9;
+$grey200: #eef1f4;
+$grey300: #e5e8ec;
+$grey400: #ccd1d8;
+$grey500: #9ba3ad;
+$grey600: #6f7782;
+$grey700: #4c5560;
+$grey800: #2d343d;
+$grey900: #10131a;
 
-$tableBackground: #faf8f4;
-$tableBorderBottom: #dbd3c8;
+$tableBackground: #ffffff;
+$tableBorderBottom: #e5e8ec;
 
 // ==============================|| DARK THEME VARIANTS ||============================== //
 
-// Dark theme surfaces and semantic palette (CZL paper style)
-$darkBackground: #1f1d1b;
-$darkPaper: #292623;
-$darkDivider: rgba(235, 232, 225, 0.18);
-$darkSelectedBack : #36322e;
+// Dark theme surfaces and semantic palette (CZL cool neutral brand)
+$darkBackground: #10141c;
+$darkPaper: #171c25;
+$darkDivider: rgba(149, 160, 174, 0.18);
+$darkSelectedBack: #253042;
 
 // Dark layers
-$darkLevel1: #2e2b28;
-$darkLevel2: #292623;
+$darkLevel1: #1d2430;
+$darkLevel2: #171c25;
 
-$darkTableHeader: #2e2b28;
+$darkTableHeader: #1d2430;
 
 // Primary dark
-$darkPrimaryLight: #efd6c1;
-$darkPrimaryMain: #d49a73;
-$darkPrimaryDark: #b77952;
-$darkPrimary200: #d49a73;
-$darkPrimary800: #8c5f41;
+$darkPrimaryLight: #7b90bf;
+$darkPrimaryMain: #2a367a;
+$darkPrimaryDark: #202a5f;
+$darkPrimary200: #7b90bf;
+$darkPrimary800: #17204b;
 
 // Secondary dark
-$darkSecondaryLight: #8c7f73;
-$darkSecondaryMain: #756a5e;
-$darkSecondaryDark: #5f554b;
-$darkSecondary200: #756a5e;
-$darkSecondary800: #4b433b;
+$darkSecondaryLight: #9fb0d6;
+$darkSecondaryMain: #7b90bf;
+$darkSecondaryDark: #6174a0;
+$darkSecondary200: #7b90bf;
+$darkSecondary800: #4e5f87;
 
 // Text variants
-$darkTextTitle: #ebe8e1;
-$darkTextPrimary: #cfcac2;
-$darkTextSecondary: #8f8b85;
-$darkTextDark: #8f8b85;
+$darkTextTitle: #eef3f8;
+$darkTextPrimary: #d5dce5;
+$darkTextSecondary: #95a0ae;
+$darkTextDark: #95a0ae;
 
 // ==============================|| JAVASCRIPT ||============================== //
 
 :export {
   // paper & background
   paper: $paper;
+
+  // brand
+  brandStart: $brandStart;
+  brandEnd: $brandEnd;
 
   // primary
   primaryLight: $primaryLight;

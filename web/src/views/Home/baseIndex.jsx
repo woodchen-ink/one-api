@@ -12,6 +12,7 @@ import {
   useTheme,
   Avatar
 } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import { useTranslation } from 'react-i18next';
 import { Link as RouterLink } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
@@ -36,17 +37,14 @@ const FeatureCard = ({ icon, title, description, link }) => {
       sx={{
         height: '100%',
         textDecoration: 'none',
-        border: `1px solid ${theme.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'}`,
+        border: `1px solid ${theme.palette.divider}`,
         borderRadius: `${theme.shape.borderRadius}px`,
-        backgroundColor: theme.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.8)',
-        backdropFilter: 'blur(20px)',
+        backgroundColor: theme.palette.background.paper,
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         '&:hover': {
           transform: 'translateY(-2px) scale(1.02)',
-          boxShadow: theme.mode === 'dark' 
-            ? '0 20px 40px rgba(0,0,0,0.4)' 
-            : '0 20px 40px rgba(0,0,0,0.08)',
-          borderColor: theme.mode === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)',
+          boxShadow: theme.mode === 'dark' ? '0 18px 36px rgba(0,0,0,0.3)' : '0 18px 36px rgba(16,19,26,0.08)',
+          borderColor: alpha(theme.palette.secondary.main, 0.32),
           '& .feature-icon': {
             transform: 'scale(1.1)'
           }
@@ -67,8 +65,8 @@ const FeatureCard = ({ icon, title, description, link }) => {
             width: 64,
             height: 64,
             mb: 3,
-            backgroundColor: 'primary.main',
-            color: 'white',
+            backgroundColor: alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.24 : 0.1),
+            color: 'primary.main',
             transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
           }}
         >
@@ -186,25 +184,12 @@ const BaseIndex = () => {
       {/* 头部区域 - Apple风格简洁设计 */}
       <Box
         sx={{
-          background: theme.mode === 'dark'
-            ? 'linear-gradient(180deg, #000000 0%, #1a1a1a 100%)'
-            : 'linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%)',
+          backgroundColor: theme.palette.background.default,
           minHeight: '80vh',
           display: 'flex',
           alignItems: 'center',
           position: 'relative',
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: theme.mode === 'dark'
-              ? 'radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.05) 0%, transparent 70%)'
-              : 'radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.03) 0%, transparent 70%)',
-            pointerEvents: 'none'
-          }
+          borderBottom: `1px solid ${theme.palette.divider}`
         }}
       >
         <Container maxWidth="md" sx={{ textAlign: 'center', position: 'relative', zIndex: 1 }}>
@@ -244,17 +229,17 @@ const BaseIndex = () => {
               sx={{
                 px: 4,
                 py: 1.5,
-                fontSize: '1.1rem',
-                fontWeight: 500,
-                borderRadius: '12px',
-                boxShadow: '0 4px 14px rgba(0,0,0,0.1)',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                '&:hover': {
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 8px 25px rgba(0,0,0,0.15)'
-                }
-              }}
-            >
+              fontSize: '1.1rem',
+              fontWeight: 500,
+              borderRadius: '12px',
+              boxShadow: theme.mode === 'dark' ? '0 8px 20px rgba(0,0,0,0.24)' : `0 8px 20px ${alpha(theme.palette.primary.main, 0.12)}`,
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              '&:hover': {
+                transform: 'translateY(-2px)',
+                boxShadow: theme.mode === 'dark' ? '0 12px 26px rgba(0,0,0,0.3)' : `0 12px 26px ${alpha(theme.palette.primary.main, 0.16)}`
+              }
+            }}
+          >
               开始使用
             </Button>
             <Button
@@ -269,10 +254,12 @@ const BaseIndex = () => {
                 fontSize: '1.1rem',
                 fontWeight: 500,
                 borderRadius: '12px',
-                borderWidth: '2px',
+                borderWidth: '1px',
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 '&:hover': {
-                  borderWidth: '2px',
+                  borderWidth: '1px',
+                  backgroundColor: alpha(theme.palette.secondary.main, theme.palette.mode === 'dark' ? 0.12 : 0.06),
+                  borderColor: theme.palette.secondary.main,
                   transform: 'translateY(-2px)'
                 }
               }}
@@ -284,7 +271,7 @@ const BaseIndex = () => {
       </Box>
 
       {/* 特性区域 - Apple风格 */}
-      <Box sx={{ py: 10, px: 2 }}>
+      <Box sx={{ py: 10, px: 2, backgroundColor: '#F6F7F8' }}>
         <Container maxWidth="lg">
           <Typography
             variant="h2"
@@ -324,12 +311,12 @@ const BaseIndex = () => {
       {/* 优势区域 - Apple风格 */}
       <Box
         sx={{
-          bgcolor: theme.mode === 'dark' 
-            ? 'rgba(0,0,0,0.2)' 
-            : 'rgba(248,249,250,0.8)',
+          bgcolor: '#F6F7F8',
           py: 10,
           px: 2,
-          position: 'relative'
+          position: 'relative',
+          borderTop: `1px solid ${theme.palette.divider}`,
+          borderBottom: `1px solid ${theme.palette.divider}`
         }}
       >
         <Container maxWidth="lg">
@@ -379,9 +366,13 @@ const BaseIndex = () => {
                     p: 4,
                     height: '100%',
                     textAlign: 'center',
+                    borderRadius: `${theme.shape.borderRadius}px`,
+                    backgroundColor: theme.palette.mode === 'dark' ? alpha(theme.palette.background.default, 0.4) : theme.palette.background.paper,
+                    border: `1px solid ${theme.palette.divider}`,
                     transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     '&:hover': {
-                      transform: 'translateY(-4px)'
+                      transform: 'translateY(-4px)',
+                      borderColor: alpha(theme.palette.secondary.main, 0.24)
                     }
                   }}
                 >
@@ -417,7 +408,8 @@ const BaseIndex = () => {
       <Box
         sx={{
           py: 6,
-          borderTop: `1px solid ${theme.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`
+          backgroundColor: '#F6F7F8',
+          borderTop: `1px solid ${theme.palette.divider}`
         }}
       >
         <Container maxWidth="lg">

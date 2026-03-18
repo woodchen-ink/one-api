@@ -331,11 +331,7 @@ export default function Profile() {
                       display: 'flex',
                       justifyContent: 'center',
                       alignItems: 'center',
-                      background: `linear-gradient(90deg, 
-                        ${theme.palette.primary.main}, 
-                        ${theme.palette.secondary.main}, 
-                        ${theme.palette.primary.light}, 
-                        ${theme.palette.primary.main})`
+                      background: theme.palette.primary.gradient
                     }}
                   >
                     <Avatar

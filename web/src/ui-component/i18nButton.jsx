@@ -80,11 +80,7 @@ export default function I18nButton() {
               <CurrentFlag style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
             </Box>
           ) : (
-            <Icon 
-              icon="solar:global-bold-duotone" 
-              width="1.6rem" 
-              color={theme.palette.mode === 'dark' ? theme.palette.text.primary : '#C08259'}
-            />
+            <Icon icon="solar:global-bold-duotone" width="1.6rem" color={theme.palette.secondary.main} />
           )}
         </Avatar>
       </ButtonBase>
@@ -136,11 +132,7 @@ export default function I18nButton() {
                   <FlagComponent style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                 </Box>
               ) : (
-                <Icon 
-                  icon="solar:global-bold-duotone" 
-                  width="1.2rem" 
-                  color={theme.palette.text.secondary}
-                />
+                <Icon icon="solar:global-bold-duotone" width="1.2rem" color={theme.palette.text.secondary} />
               )}
               <Typography variant="body1">{item.name}</Typography>
             </MenuItem>

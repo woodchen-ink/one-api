@@ -104,11 +104,7 @@ const MenuCard = () => {
               justifyContent: 'center',
               alignItems: 'center',
               borderRadius: '50%',
-              background: `linear-gradient(90deg, 
-                ${theme.palette.primary.main}, 
-                ${theme.palette.secondary.main}, 
-                ${theme.palette.primary.light}, 
-                ${theme.palette.primary.main})`
+              background: theme.palette.primary.gradient
             }}
             onClick={() => navigate('/panel/profile')}
           >

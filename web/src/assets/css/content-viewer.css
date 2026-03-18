@@ -152,7 +152,7 @@
 }
 
 .content-viewer table tr {
-  background-color: #F8F7F6;
+  background-color: #F6F7F8;
   border-top: 1px solid #C4C2BF;
 }
 
@@ -164,7 +164,7 @@
 .content-viewer img {
   max-width: 100%;
   box-sizing: content-box;
-  background-color: #F8F7F6;
+  background-color: #F6F7F8;
 }
 
 /* Horizontal Rule */

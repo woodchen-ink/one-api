@@ -10,7 +10,7 @@ import themeTypography from './typography';
 import { varAlpha, createGradient } from './utils';
 
 const customGradients = {
-  primary: createGradient(colors.primaryMain, colors.primaryDark),
+  primary: createGradient(colors.brandStart, colors.brandEnd),
   secondary: createGradient(colors.secondaryMain, colors.secondaryDark)
 };
 
@@ -73,44 +73,45 @@ function GetDarkOption() {
   return {
     mode: 'dark',
     heading: color.darkTextTitle,
-    paper: '#292623',
-    backgroundDefault: '#1F1D1B',
-    background: '#292623',
-    darkTextPrimary: '#CFCAC2',
-    darkTextSecondary: '#8F8B85',
-    textDark: '#EBE8E1',
-    menuSelected: '#36322E',
-    menuSelectedBack: '#36322E',
+    paper: color.darkPaper,
+    backgroundDefault: color.darkBackground,
+    background: color.darkPaper,
+    darkTextPrimary: color.darkTextPrimary,
+    darkTextSecondary: color.darkTextSecondary,
+    textDark: color.darkTextTitle,
+    menuSelected: color.darkSelectedBack,
+    menuSelectedBack: color.darkSelectedBack,
     divider: color.darkDivider,
     borderColor: color.darkDivider,
-    menuButton: '#2E2B28',
-    menuButtonColor: color.darkPrimaryMain,
-    menuChip: '#2E2B28',
-    headBackgroundColor: '#2E2B28',
-    headBackgroundColorHover: varAlpha('#2E2B28', 0.32),
+    menuButton: color.darkLevel1,
+    menuButtonColor: color.darkSecondaryMain,
+    menuChip: color.darkLevel1,
+    headBackgroundColor: color.darkTableHeader,
+    headBackgroundColorHover: varAlpha(color.darkTableHeader, 0.32),
     tableBorderBottom: color.darkDivider
   };
 }
 
 function GetLightOption() {
+  const color = colors;
   return {
     mode: 'light',
-    heading: '#2C2825',
-    paper: '#FAF8F4',
-    backgroundDefault: '#F7F5F0',
-    background: '#F7F5F0',
-    darkTextPrimary: '#45403B',
-    darkTextSecondary: '#857F76',
-    textDark: '#2C2825',
-    menuSelected: '#E3DCD1',
-    menuSelectedBack: '#E3DCD1',
-    divider: '#DBD3C8',
-    borderColor: '#DBD3C8',
-    menuButton: '#141413',
-    menuButtonColor: '#F7F5F0',
-    menuChip: '#EBE8E1',
-    headBackgroundColor: '#EBE8E1',
-    headBackgroundColorHover: varAlpha('#EBE8E1', 0.8),
-    tableBorderBottom: '#DBD3C8'
+    heading: color.grey900,
+    paper: color.paper,
+    backgroundDefault: '#F6F7F8',
+    background: '#F6F7F8',
+    darkTextPrimary: color.grey800,
+    darkTextSecondary: color.grey600,
+    textDark: color.grey900,
+    menuSelected: color.grey300,
+    menuSelectedBack: color.grey300,
+    divider: color.tableBorderBottom,
+    borderColor: color.tableBorderBottom,
+    menuButton: color.primaryMain,
+    menuButtonColor: color.paper,
+    menuChip: color.grey50,
+    headBackgroundColor: color.grey100,
+    headBackgroundColorHover: varAlpha(color.grey200, 0.8),
+    tableBorderBottom: color.tableBorderBottom
   };
 }

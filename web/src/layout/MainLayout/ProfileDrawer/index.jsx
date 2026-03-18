@@ -88,11 +88,7 @@ const ProfileDrawer = ({ open, onClose }) => {
               justifyContent: 'center',
               alignItems: 'center',
               borderRadius: '50%',
-              background: `linear-gradient(90deg, 
-            ${theme.palette.primary.main}, 
-            ${theme.palette.secondary.main}, 
-            ${theme.palette.primary.light}, 
-            ${theme.palette.primary.main})`
+              background: theme.palette.primary.gradient
             }}
           >
             <Avatar
@@ -218,11 +214,11 @@ const ProfileDrawer = ({ open, onClose }) => {
               py: 1,
               textTransform: 'none',
               fontWeight: 'normal',
-              color: '#ab1632',
-              bgcolor: '#FFDDD5', // 自定义颜色
+              color: theme.palette.error.dark,
+              bgcolor: theme.palette.error.lighter,
               transition: 'transform 0.2s ease-in-out, background-color 0.2s ease-in-out', // 添加过渡效果
               '&:hover': {
-                bgcolor: '#fdb5a5', // 悬停时的颜色
+                bgcolor: theme.palette.error.light,
                 transform: 'scale(1.03)' // 悬停时放大
               }
             }}

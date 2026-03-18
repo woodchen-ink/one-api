@@ -5,23 +5,27 @@
 @import '~react-perfect-scrollbar/dist/css/styles.css';
 
 :root {
-  --czl-foreground: #141413;
-  --czl-background: #f7f5f0;
-  --czl-primary: #141413;
-  --czl-accent: #9a6540;
-  --czl-destructive: #b85e48;
-  --czl-success: #5e7245;
-  --czl-highlight: #f2d879;
+  --czl-foreground: #10131a;
+  --czl-background: #f2f5f9;
+  --czl-primary: #1b2152;
+  --czl-accent: #4b669a;
+  --czl-destructive: #9d6877;
+  --czl-success: #5e7e80;
+  --czl-highlight: #d9e6f5;
+  --czl-brand-start: #1d2088;
+  --czl-brand-end: #2ea7e0;
 }
 
 html[data-theme='dark'] {
-  --czl-foreground: #ebe8e1;
-  --czl-background: #1f1d1b;
-  --czl-primary: #d49a73;
-  --czl-accent: #756a5e;
-  --czl-destructive: #cf726a;
-  --czl-success: #7fa67f;
-  --czl-highlight: #4d4632;
+  --czl-foreground: #eef3f8;
+  --czl-background: #10141c;
+  --czl-primary: #2a367a;
+  --czl-accent: #7b90bf;
+  --czl-destructive: #c08998;
+  --czl-success: #7e9fa1;
+  --czl-highlight: #2b3b57;
+  --czl-brand-start: #1d2088;
+  --czl-brand-end: #2ea7e0;
 }
 
 // ==============================|| LIGHT BOX ||============================== //

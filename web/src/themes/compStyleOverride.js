@@ -11,13 +11,15 @@ export default function componentStyleOverrides(theme) {
           font-family: -apple-system, BlinkMacSystemFont, 'Noto Sans SC', system-ui, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
         }
         :root {
-          --czl-foreground: ${theme.mode === 'dark' ? '#EBE8E1' : '#141413'};
-          --czl-background: ${theme.mode === 'dark' ? '#1F1D1B' : '#F7F5F0'};
-          --czl-primary: ${theme.mode === 'dark' ? '#D49A73' : '#141413'};
-          --czl-accent: ${theme.mode === 'dark' ? '#756A5E' : '#9A6540'};
-          --czl-destructive: ${theme.mode === 'dark' ? '#CF726A' : '#B85E48'};
-          --czl-success: ${theme.mode === 'dark' ? '#7FA67F' : '#5E7245'};
-          --czl-highlight: ${theme.mode === 'dark' ? '#4D4632' : '#F2D879'};
+          --czl-foreground: ${theme.mode === 'dark' ? '#EEF3F8' : '#10131A'};
+          --czl-background: ${theme.mode === 'dark' ? '#10141C' : '#F6F7F8'};
+          --czl-primary: ${theme.mode === 'dark' ? '#2A367A' : '#1B2152'};
+          --czl-accent: ${theme.mode === 'dark' ? '#7B90BF' : '#4B669A'};
+          --czl-destructive: ${theme.mode === 'dark' ? '#C08998' : '#9D6877'};
+          --czl-success: ${theme.mode === 'dark' ? '#7E9FA1' : '#5E7E80'};
+          --czl-highlight: ${theme.mode === 'dark' ? '#2B3B57' : '#D9E6F5'};
+          --czl-brand-start: #1D2088;
+          --czl-brand-end: #2EA7E0;
         }
         html, body {
           -webkit-font-smoothing: antialiased;
@@ -32,11 +34,7 @@ export default function componentStyleOverrides(theme) {
         body {
           color: var(--czl-foreground);
           background-color: var(--czl-background);
-          background-image:
-            radial-gradient(circle at 12% 8%, ${isDark ? varAlpha('#D49A73', 0.05) : varAlpha('#C08259', 0.08)} 0%, transparent 32%),
-            radial-gradient(circle at 86% 14%, ${isDark ? varAlpha('#756A5E', 0.08) : varAlpha('#8C7B6D', 0.1)} 0%, transparent 28%),
-            linear-gradient(${isDark ? varAlpha('#1F1D1B', 0.96) : varAlpha('#F7F5F0', 0.94)}, ${isDark ? varAlpha('#1F1D1B', 0.96) : varAlpha('#F7F5F0', 0.94)});
-          background-attachment: fixed;
+          background-image: none;
         }
         img {
           max-width: 100%;
@@ -99,7 +97,7 @@ export default function componentStyleOverrides(theme) {
           }
         },
         contained: {
-          color: isDark ? '#1F1D1B' : '#F7F5F0',
+          color: isDark ? '#EEF3F8' : '#F8FAFC',
           backgroundColor: isDark ? theme.colors?.darkPrimaryMain : theme.colors?.primaryMain,
           '&:hover': {
             backgroundColor: isDark ? theme.colors?.darkPrimaryDark : theme.colors?.primaryDark
@@ -107,14 +105,14 @@ export default function componentStyleOverrides(theme) {
         },
         containedPrimary: {
           background: isDark ? theme.colors?.darkPrimaryMain : theme.colors?.primaryMain,
-          color: isDark ? '#1F1D1B' : '#F7F5F0',
+          color: isDark ? '#EEF3F8' : '#F8FAFC',
           '&:hover': {
             background: isDark ? theme.colors?.darkPrimaryDark : theme.colors?.primaryDark
           }
         },
         containedSecondary: {
           background: isDark ? theme.colors?.darkSecondaryMain : theme.colors?.secondaryMain,
-          color: isDark ? '#EBE8E1' : '#FAF8F4',
+          color: isDark ? '#10141C' : '#F8FAFC',
           '&:hover': {
             background: isDark ? theme.colors?.darkSecondaryDark : theme.colors?.secondaryDark
           }
@@ -158,7 +156,7 @@ export default function componentStyleOverrides(theme) {
           padding: '8px',
           color: theme.darkTextPrimary,
           '&:hover': {
-            backgroundColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.04)'
+            backgroundColor: theme.headBackgroundColorHover
           }
         },
         sizeSmall: {
@@ -176,7 +174,7 @@ export default function componentStyleOverrides(theme) {
           backgroundColor: theme.paper,
           border: `1px solid ${theme.divider}`,
           borderRadius: `${theme?.customization?.borderRadius || 8}px`,
-          boxShadow: isDark ? '0 10px 26px rgba(0, 0, 0, 0.22)' : '0 8px 24px rgba(44, 40, 37, 0.08)'
+          boxShadow: isDark ? '0 10px 26px rgba(0, 0, 0, 0.28)' : '0 10px 28px rgba(16, 19, 26, 0.08)'
         },
         rounded: {
           borderRadius: `${theme?.customization?.borderRadius || 8}px`
@@ -195,13 +193,13 @@ export default function componentStyleOverrides(theme) {
           position: 'relative',
           borderRadius: `${theme?.customization?.borderRadius || 8}px`,
           padding: 0,
-          boxShadow: isDark ? '0 12px 28px rgba(0, 0, 0, 0.22)' : '0 10px 26px rgba(44, 40, 37, 0.08)',
+          boxShadow: isDark ? '0 12px 28px rgba(0, 0, 0, 0.28)' : '0 12px 30px rgba(16, 19, 26, 0.08)',
           transition: 'box-shadow 0.3s ease',
           backgroundColor: theme.paper,
           border: `1px solid ${theme.divider}`,
           overflow: 'hidden',
           '&:hover': {
-            boxShadow: isDark ? '0 16px 34px rgba(0, 0, 0, 0.3)' : '0 14px 30px rgba(44, 40, 37, 0.12)'
+            boxShadow: isDark ? '0 16px 34px rgba(0, 0, 0, 0.34)' : '0 16px 36px rgba(16, 19, 26, 0.12)'
           },
           '& .MuiTableContainer-root': {
             borderRadius: 0
@@ -364,12 +362,12 @@ export default function componentStyleOverrides(theme) {
             transition: 'border-color 0.2s ease-in-out'
           },
           '&:hover .MuiOutlinedInput-notchedOutline': {
-            borderColor: theme.darkTextPrimary,
+            borderColor: theme.colors?.secondaryMain,
             borderWidth: '1px'
           },
           '&.Mui-focused': {
             '& .MuiOutlinedInput-notchedOutline': {
-              borderColor: theme.darkTextPrimary,
+              borderColor: isDark ? theme.colors?.darkSecondaryMain : theme.colors?.primaryMain,
               borderWidth: '2px'
             }
           },
@@ -416,7 +414,7 @@ export default function componentStyleOverrides(theme) {
             fontWeight: 600,
             color: theme.darkTextSecondary,
             '&.Mui-focused': {
-              color: theme.darkTextPrimary
+              color: isDark ? theme.colors?.darkSecondaryMain : theme.colors?.primaryMain
             },
             '&.Mui-error': {
               color: theme.colors?.errorMain
@@ -549,7 +547,7 @@ export default function componentStyleOverrides(theme) {
           height: '32px',
           borderRadius: '16px',
           backgroundColor: theme.mode === 'dark' ? theme.colors?.darkPrimaryMain : theme.colors?.secondaryMain,
-          color: theme.mode === 'dark' ? '#1F1D1B' : '#FAF8F4',
+          color: theme.mode === 'dark' ? '#EEF3F8' : '#F8FAFC',
           transition: 'all 0.2s ease-in-out',
           '&.MuiChip-outlined': {
             borderColor: theme.mode === 'dark' ? varAlpha(theme.colors?.darkPrimaryMain, 0.8) : theme.colors?.secondaryMain,
@@ -583,7 +581,7 @@ export default function componentStyleOverrides(theme) {
           height: '26px',
           fontSize: '0.75rem',
           backgroundColor: theme.mode === 'dark' ? varAlpha(theme.colors?.darkSecondaryMain, 0.9) : theme.colors?.errorMain,
-          color: theme.mode === 'dark' ? '#EBE8E1' : '#FAF8F4',
+          color: theme.mode === 'dark' ? '#10141C' : '#F8FAFC',
           '& .MuiChip-label': {
             padding: '0 10px',
             lineHeight: '26px'
@@ -824,30 +822,30 @@ export default function componentStyleOverrides(theme) {
         },
         standardSuccess: {
           backgroundColor: theme.mode === 'dark' ? varAlpha(theme.colors?.successMain, 0.2) : theme.colors?.successLight,
-          color: theme.mode === 'dark' ? '#EBE8E1' : theme.colors?.successDark,
+          color: theme.mode === 'dark' ? '#DCE7E7' : theme.colors?.successDark,
           '& .MuiAlert-icon': {
             color: theme.mode === 'dark' ? theme.colors?.successMain : theme.colors?.successMain
           }
         },
         standardError: {
           backgroundColor: theme.mode === 'dark' ? varAlpha(theme.colors?.errorMain, 0.22) : theme.colors?.errorLight,
-          color: theme.mode === 'dark' ? '#F6E5E0' : theme.colors?.errorDark,
+          color: theme.mode === 'dark' ? '#F1D7DE' : theme.colors?.errorDark,
           '& .MuiAlert-icon': {
             color: theme.mode === 'dark' ? theme.colors?.errorMain : theme.colors?.errorMain
           }
         },
         standardWarning: {
-          backgroundColor: theme.mode === 'dark' ? 'rgba(242, 216, 121, 0.16)' : theme.colors?.warningLight,
-          color: theme.mode === 'dark' ? '#FBF5DC' : theme.colors?.warningDark,
+          backgroundColor: theme.mode === 'dark' ? varAlpha(theme.colors?.warningMain, 0.2) : theme.colors?.warningLight,
+          color: theme.mode === 'dark' ? '#DDE4F3' : theme.colors?.warningDark,
           '& .MuiAlert-icon': {
-            color: theme.mode === 'dark' ? '#F2D879' : theme.colors?.warningMain
+            color: theme.mode === 'dark' ? theme.colors?.warningMain : theme.colors?.warningMain
           }
         },
         standardInfo: {
-          backgroundColor: theme.mode === 'dark' ? varAlpha(theme.colors?.secondaryMain, 0.2) : varAlpha(theme.colors?.secondaryMain, 0.12),
-          color: theme.mode === 'dark' ? '#EBE8E1' : theme.colors?.primaryDark,
+          backgroundColor: theme.mode === 'dark' ? varAlpha(theme.colors?.darkSecondaryMain, 0.16) : varAlpha(theme.colors?.secondaryMain, 0.1),
+          color: theme.mode === 'dark' ? '#E4EAF3' : theme.colors?.primaryDark,
           '& .MuiAlert-icon': {
-            color: theme.mode === 'dark' ? theme.colors?.darkPrimaryMain : theme.colors?.secondaryMain
+            color: theme.mode === 'dark' ? theme.colors?.darkSecondaryMain : theme.colors?.secondaryMain
           }
         }
       }
