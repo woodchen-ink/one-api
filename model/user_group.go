@@ -12,7 +12,6 @@ import (
 	"strings"
 	"sync"
 
-	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
 
@@ -203,31 +202,6 @@ func (c *UserGroup) Update() error {
 				tokenCacheKeys[token.Key] = struct{}{}
 			}
 
-			var logs []Log
-			if err := tx.Select("id", "metadata").Find(&logs).Error; err != nil {
-				return err
-			}
-			for _, logItem := range logs {
-				metadata := logItem.Metadata.Data()
-				updated := false
-
-				if groupName, ok := metadata["group_name"].(string); ok && groupName == oldSymbol {
-					metadata["group_name"] = newSymbol
-					updated = true
-				}
-				if backupGroupName, ok := metadata["backup_group_name"].(string); ok && backupGroupName == oldSymbol {
-					metadata["backup_group_name"] = newSymbol
-					updated = true
-				}
-				if !updated {
-					continue
-				}
-
-				newMetadata := datatypes.NewJSONType(metadata)
-				if err := tx.Model(&Log{}).Where("id = ?", logItem.Id).Update("metadata", newMetadata).Error; err != nil {
-					return err
-				}
-			}
 		}
 
 		return tx.Model(&UserGroup{}).
