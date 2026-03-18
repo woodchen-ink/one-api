@@ -148,7 +148,8 @@ func (c *UserGroup) Update() error {
 	userCacheIDs := make([]int, 0)
 	tokenCacheKeys := make(map[string]struct{})
 
-	err = DB.Transaction(func(tx *gorm.DB) error {
+	renameDB := DB.Session(&gorm.Session{PrepareStmt: false})
+	err = renameDB.Transaction(func(tx *gorm.DB) error {
 		if oldSymbol != newSymbol {
 			var count int64
 			if err := tx.Model(&UserGroup{}).Where("symbol = ? AND id <> ?", newSymbol, c.Id).Count(&count).Error; err != nil {
