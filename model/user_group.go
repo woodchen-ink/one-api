@@ -45,7 +45,7 @@ var allowedUserGroupOrderFields = map[string]bool{
 
 func GetUserGroupsList(params *SearchUserGroupParams) (*DataResult[UserGroup], error) {
 	var userGroups []*UserGroup
-	db := DB
+	db := DB.Session(&gorm.Session{PrepareStmt: false})
 
 	if params.Name != "" {
 		db = db.Where("name LIKE ?", params.Name+"%")
@@ -60,14 +60,14 @@ func GetUserGroupsList(params *SearchUserGroupParams) (*DataResult[UserGroup], e
 
 func GetUserGroupsById(id int) (*UserGroup, error) {
 	var userGroup UserGroup
-	err := DB.Where("id = ?", id).First(&userGroup).Error
+	err := DB.Session(&gorm.Session{PrepareStmt: false}).Where("id = ?", id).First(&userGroup).Error
 	return &userGroup, err
 }
 
 func GetUserGroupsAll(isPublic bool) ([]*UserGroup, error) {
 	var userGroups []*UserGroup
 
-	db := DB.Where("enable = ?", true)
+	db := DB.Session(&gorm.Session{PrepareStmt: false}).Where("enable = ?", true)
 	if isPublic {
 		db = db.Where("public = ?", true)
 	}
@@ -118,14 +118,16 @@ func (c *UserGroup) Create() error {
 	c.normalize()
 	c.IsDefault = false
 
-	err := DB.Create(c).Error
+	db := DB.Session(&gorm.Session{PrepareStmt: false})
+	err := db.Create(c).Error
 	if err == nil {
-		GlobalUserGroupRatio.Load()
+		GlobalUserGroupRatio.loadWithDB(db)
 	}
 	return err
 }
 
 func (c *UserGroup) Update() error {
+	renameDB := DB.Session(&gorm.Session{PrepareStmt: false})
 	c.normalize()
 	if c.Id == 0 {
 		return errors.New("id 涓虹┖")
@@ -137,7 +139,8 @@ func (c *UserGroup) Update() error {
 		return errors.New("name 涓嶈兘涓虹┖")
 	}
 
-	current, err := GetUserGroupsById(c.Id)
+	current := &UserGroup{}
+	err := renameDB.Where("id = ?", c.Id).First(current).Error
 	if err != nil {
 		return err
 	}
@@ -148,7 +151,6 @@ func (c *UserGroup) Update() error {
 	userCacheIDs := make([]int, 0)
 	tokenCacheKeys := make(map[string]struct{})
 
-	renameDB := DB.Session(&gorm.Session{PrepareStmt: false})
 	err = renameDB.Transaction(func(tx *gorm.DB) error {
 		if oldSymbol != newSymbol {
 			var count int64
@@ -234,7 +236,7 @@ func (c *UserGroup) Update() error {
 			Updates(c).Error
 	})
 	if err == nil {
-		GlobalUserGroupRatio.Load()
+		GlobalUserGroupRatio.loadWithDB(renameDB)
 		if config.RedisEnabled {
 			for _, userID := range userCacheIDs {
 				redis.RedisDel(fmt.Sprintf(UserGroupCacheKey, userID))
@@ -249,18 +251,20 @@ func (c *UserGroup) Update() error {
 }
 
 func (c *UserGroup) Delete() error {
-	err := DB.Delete(c).Error
+	db := DB.Session(&gorm.Session{PrepareStmt: false})
+	err := db.Delete(c).Error
 
 	if err == nil {
-		GlobalUserGroupRatio.Load()
+		GlobalUserGroupRatio.loadWithDB(db)
 	}
 	return err
 }
 
 func ChangeUserGroupEnable(id int, enable bool) error {
-	err := DB.Model(&UserGroup{}).Where("id = ?", id).Update("enable", enable).Error
+	db := DB.Session(&gorm.Session{PrepareStmt: false})
+	err := db.Model(&UserGroup{}).Where("id = ?", id).Update("enable", enable).Error
 	if err == nil {
-		GlobalUserGroupRatio.Load()
+		GlobalUserGroupRatio.loadWithDB(db)
 	}
 	return err
 }
@@ -275,7 +279,12 @@ type UserGroupRatio struct {
 var GlobalUserGroupRatio = UserGroupRatio{}
 
 func (cgrm *UserGroupRatio) Load() {
-	userGroups, err := GetUserGroupsAll(false)
+	cgrm.loadWithDB(DB.Session(&gorm.Session{PrepareStmt: false}))
+}
+
+func (cgrm *UserGroupRatio) loadWithDB(db *gorm.DB) {
+	var userGroups []*UserGroup
+	err := db.Where("enable = ?", true).Find(&userGroups).Error
 	if err != nil {
 		return
 	}
