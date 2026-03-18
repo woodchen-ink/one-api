@@ -1,26 +1,35 @@
 package model
 
 import (
+	"errors"
 	"fmt"
+	"one-api/common"
 	"one-api/common/config"
 	"one-api/common/limit"
 	"one-api/common/logger"
 	"one-api/common/redis"
 	"sort"
+	"strings"
 	"sync"
+
+	"gorm.io/datatypes"
+	"gorm.io/gorm"
 )
+
+const DefaultUserGroupSymbol = "default"
 
 type UserGroup struct {
 	Id        int     `json:"id"`
 	Symbol    string  `json:"symbol" gorm:"type:varchar(50);uniqueIndex"`
 	Name      string  `json:"name" gorm:"type:varchar(50)"`
-	Ratio     float64 `json:"ratio" gorm:"type:decimal(10,2); default:1"`      // 倍率
-	APIRate   int     `json:"api_rate" gorm:"default:600"`                     // 每分组允许的请求数
-	Public    bool    `json:"public" form:"public" gorm:"default:false"`       // 是否为公开分组，如果是，则可以被用户在令牌中选择
-	Promotion bool    `json:"promotion" form:"promotion" gorm:"default:false"` // 是否是自动升级用户组， 如果是则用户充值金额满足条件自动升级
-	Min       int     `json:"min" form:"min" gorm:"default:0"`                 // 晋级条件最小值
-	Max       int     `json:"max" form:"max" gorm:"default:0"`                 // 晋级条件最大值
-	Enable    *bool   `json:"enable" form:"enable" gorm:"default:true"`        // 是否启用
+	Ratio     float64 `json:"ratio" gorm:"type:decimal(10,2); default:1"`
+	APIRate   int     `json:"api_rate" gorm:"default:600"`
+	Public    bool    `json:"public" form:"public" gorm:"default:false"`
+	Promotion bool    `json:"promotion" form:"promotion" gorm:"default:false"`
+	Min       int     `json:"min" form:"min" gorm:"default:0"`
+	Max       int     `json:"max" form:"max" gorm:"default:0"`
+	Enable    *bool   `json:"enable" form:"enable" gorm:"default:true"`
+	IsDefault bool    `json:"is_default" form:"is_default" gorm:"default:false"`
 }
 
 type SearchUserGroupParams struct {
@@ -67,7 +76,48 @@ func GetUserGroupsAll(isPublic bool) ([]*UserGroup, error) {
 	return userGroups, err
 }
 
+func (c *UserGroup) normalize() {
+	c.Symbol = strings.TrimSpace(c.Symbol)
+	c.Name = strings.TrimSpace(c.Name)
+}
+
+func getUserGroupColumnName() string {
+	if common.UsingPostgreSQL {
+		return `"group"`
+	}
+	return "`group`"
+}
+
+func GetDefaultUserGroup() (*UserGroup, error) {
+	var userGroup UserGroup
+	err := DB.Where("is_default = ?", true).First(&userGroup).Error
+	if err == nil {
+		return &userGroup, nil
+	}
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, err
+	}
+
+	err = DB.Where("symbol = ?", DefaultUserGroupSymbol).First(&userGroup).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return &userGroup, nil
+}
+
+func GetDefaultUserGroupSymbol() (string, error) {
+	userGroup, err := GetDefaultUserGroup()
+	if err != nil {
+		return "", err
+	}
+	return userGroup.Symbol, nil
+}
+
 func (c *UserGroup) Create() error {
+	c.normalize()
+	c.IsDefault = false
+
 	err := DB.Create(c).Error
 	if err == nil {
 		GlobalUserGroupRatio.Load()
@@ -76,9 +126,122 @@ func (c *UserGroup) Create() error {
 }
 
 func (c *UserGroup) Update() error {
-	err := DB.Select("name", "ratio", "public", "api_rate", "promotion", "min", "max").Updates(c).Error
+	c.normalize()
+	if c.Id == 0 {
+		return errors.New("id 涓虹┖")
+	}
+	if c.Symbol == "" {
+		return errors.New("symbol 涓嶈兘涓虹┖")
+	}
+	if c.Name == "" {
+		return errors.New("name 涓嶈兘涓虹┖")
+	}
+
+	current, err := GetUserGroupsById(c.Id)
+	if err != nil {
+		return err
+	}
+
+	oldSymbol := current.Symbol
+	newSymbol := c.Symbol
+	groupCol := getUserGroupColumnName()
+	userCacheIDs := make([]int, 0)
+	tokenCacheKeys := make(map[string]struct{})
+
+	err = DB.Transaction(func(tx *gorm.DB) error {
+		if oldSymbol != newSymbol {
+			var count int64
+			if err := tx.Model(&UserGroup{}).Where("symbol = ? AND id <> ?", newSymbol, c.Id).Count(&count).Error; err != nil {
+				return err
+			}
+			if count > 0 {
+				return errors.New("鐢ㄦ埛缁勬爣璇嗗凡瀛樺湪")
+			}
+
+			if err := tx.Model(&User{}).Where(groupCol+" = ?", oldSymbol).Pluck("id", &userCacheIDs).Error; err != nil {
+				return err
+			}
+
+			var linkedTokens []Token
+			if err := tx.Select("id", "key").Where(groupCol+" = ? OR backup_group = ?", oldSymbol, oldSymbol).Find(&linkedTokens).Error; err != nil {
+				return err
+			}
+			for _, token := range linkedTokens {
+				tokenCacheKeys[token.Key] = struct{}{}
+			}
+
+			if err := tx.Model(&User{}).Where(groupCol+" = ?", oldSymbol).Update("group", newSymbol).Error; err != nil {
+				return err
+			}
+			if err := tx.Model(&Token{}).Where(groupCol+" = ?", oldSymbol).Update("group", newSymbol).Error; err != nil {
+				return err
+			}
+			if err := tx.Model(&Token{}).Where("backup_group = ?", oldSymbol).Update("backup_group", newSymbol).Error; err != nil {
+				return err
+			}
+
+			var tokens []Token
+			if err := tx.Select("id", "key", "setting").Find(&tokens).Error; err != nil {
+				return err
+			}
+			for _, token := range tokens {
+				setting := token.Setting.Data()
+				if setting.BillingTag == nil || *setting.BillingTag != oldSymbol {
+					continue
+				}
+
+				newBillingTag := newSymbol
+				setting.BillingTag = &newBillingTag
+				token.Setting.Set(setting)
+
+				if err := tx.Model(&Token{}).Where("id = ?", token.Id).Update("setting", token.Setting).Error; err != nil {
+					return err
+				}
+				tokenCacheKeys[token.Key] = struct{}{}
+			}
+
+			var logs []Log
+			if err := tx.Select("id", "metadata").Find(&logs).Error; err != nil {
+				return err
+			}
+			for _, logItem := range logs {
+				metadata := logItem.Metadata.Data()
+				updated := false
+
+				if groupName, ok := metadata["group_name"].(string); ok && groupName == oldSymbol {
+					metadata["group_name"] = newSymbol
+					updated = true
+				}
+				if backupGroupName, ok := metadata["backup_group_name"].(string); ok && backupGroupName == oldSymbol {
+					metadata["backup_group_name"] = newSymbol
+					updated = true
+				}
+				if !updated {
+					continue
+				}
+
+				newMetadata := datatypes.NewJSONType(metadata)
+				if err := tx.Model(&Log{}).Where("id = ?", logItem.Id).Update("metadata", newMetadata).Error; err != nil {
+					return err
+				}
+			}
+		}
+
+		return tx.Model(&UserGroup{}).
+			Where("id = ?", c.Id).
+			Select("symbol", "name", "ratio", "public", "api_rate", "promotion", "min", "max").
+			Updates(c).Error
+	})
 	if err == nil {
 		GlobalUserGroupRatio.Load()
+		if config.RedisEnabled {
+			for _, userID := range userCacheIDs {
+				redis.RedisDel(fmt.Sprintf(UserGroupCacheKey, userID))
+			}
+			for tokenKey := range tokenCacheKeys {
+				redis.RedisDel(fmt.Sprintf(UserTokensKey, tokenKey))
+			}
+		}
 	}
 
 	return err
@@ -213,45 +376,44 @@ func (cgrm *UserGroupRatio) GetAPILimiter(symbol string) limit.RateLimiter {
 // and upgrades the user to that group if a match is found.
 // The cumulative recharge amount is calculated as Quota + UsedQuota + rechargeAmount.
 func CheckAndUpgradeUserGroup(userId int, rechargeAmount int) error {
-	// Get user's current quota and used quota
 	user := &User{}
 	err := DB.Where("id = ?", userId).First(user).Error
 	if err != nil {
 		return err
 	}
 
-	// Calculate cumulative recharge amount
 	cumulativeAmount := user.Quota + user.UsedQuota + rechargeAmount
-	logger.SysError(fmt.Sprintf("use:%f q:%f  cumulative:%f rechargeAmount:%f", (float64)(user.UsedQuota)/config.QuotaPerUnit, (float64)(user.Quota)/config.QuotaPerUnit, cumulativeAmount, rechargeAmount))
-	// Get all promotion-enabled user groups
+	logger.SysError(fmt.Sprintf(
+		"use:%f q:%f cumulative:%f rechargeAmount:%f",
+		float64(user.UsedQuota)/config.QuotaPerUnit,
+		float64(user.Quota)/config.QuotaPerUnit,
+		float64(cumulativeAmount)/config.QuotaPerUnit,
+		float64(rechargeAmount)/config.QuotaPerUnit,
+	))
+
 	var promotionGroups []*UserGroup
 	err = DB.Where("promotion = ? AND enable = ?", true, true).Find(&promotionGroups).Error
 	if err != nil {
 		return err
 	}
 
-	// Find a matching group (min <= cumulativeAmount < max)
 	var targetGroup *UserGroup
 	for _, group := range promotionGroups {
-		var minQuota = (float64)(group.Min) * config.QuotaPerUnit
-		var maxQuota = (float64)(group.Max) * config.QuotaPerUnit
-		if (float64)(cumulativeAmount) >= minQuota && (group.Max == 0 || (float64)(cumulativeAmount) < maxQuota) {
-			// If multiple groups match, choose the one with higher min value
+		minQuota := float64(group.Min) * config.QuotaPerUnit
+		maxQuota := float64(group.Max) * config.QuotaPerUnit
+		if float64(cumulativeAmount) >= minQuota && (group.Max == 0 || float64(cumulativeAmount) < maxQuota) {
 			if targetGroup == nil || group.Min > targetGroup.Min {
 				targetGroup = group
 			}
 		}
 	}
 
-	// If a matching group is found, upgrade the user
 	if targetGroup != nil && targetGroup.Symbol != user.Group {
-		// Update user's group
 		err = DB.Model(&User{}).Where("id = ?", userId).Update("group", targetGroup.Symbol).Error
 		if err != nil {
 			return err
 		}
 
-		// Delete cache if Redis is enabled
 		if config.RedisEnabled {
 			redis.RedisDel(fmt.Sprintf(UserGroupCacheKey, userId))
 		}

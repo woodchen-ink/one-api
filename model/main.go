@@ -57,6 +57,10 @@ func createRootAccountIfNeed() error {
 			AccessToken: utils.GetUUID(),
 			Quota:       100000000,
 		}
+		defaultGroupSymbol, defaultGroupErr := GetDefaultUserGroupSymbol()
+		if defaultGroupErr == nil && defaultGroupSymbol != "" {
+			rootUser.Group = defaultGroupSymbol
+		}
 		DB.Create(&rootUser)
 	}
 	return nil

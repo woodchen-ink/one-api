@@ -255,6 +255,30 @@ func addOldTokenMaxId() *gormigrate.Migration {
 	}
 }
 
+func addUserGroupDefaultFlag() *gormigrate.Migration {
+	return &gormigrate.Migration{
+		ID: "202603180001",
+		Migrate: func(tx *gorm.DB) error {
+			if !tx.Migrator().HasColumn(&UserGroup{}, "is_default") {
+				return nil
+			}
+
+			var count int64
+			if err := tx.Model(&UserGroup{}).Where("is_default = ?", true).Count(&count).Error; err != nil {
+				return err
+			}
+			if count > 0 {
+				return nil
+			}
+
+			return tx.Model(&UserGroup{}).Where("symbol = ?", DefaultUserGroupSymbol).Update("is_default", true).Error
+		},
+		Rollback: func(tx *gorm.DB) error {
+			return nil
+		},
+	}
+}
+
 func addExtraRatios() *gormigrate.Migration {
 	return &gormigrate.Migration{
 		ID: "202504300001",
@@ -453,6 +477,7 @@ func migrationAfter(db *gorm.DB) error {
 		addStatistics(),
 		changeChannelApiVersion(),
 		initUserGroup(),
+		addUserGroupDefaultFlag(),
 		addOldTokenMaxId(),
 		addExtraRatios(),
 		migrateTokenLimitsStructure(),

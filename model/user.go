@@ -139,6 +139,13 @@ func (user *User) Insert(inviterId int) error {
 	user.AccessToken = utils.GetUUID()
 	user.AffCode = utils.GetRandomString(4)
 	user.CreatedTime = utils.GetTimestamp()
+	if user.Group == "" {
+		defaultGroupSymbol, err := GetDefaultUserGroupSymbol()
+		if err != nil {
+			return err
+		}
+		user.Group = defaultGroupSymbol
+	}
 	result := DB.Create(user)
 	if result.Error != nil {
 		return result.Error

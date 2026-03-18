@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import * as Yup from 'yup';
 import { Formik } from 'formik';
 import { useTheme } from '@mui/material/styles';
-import { useState, useEffect } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -21,6 +21,7 @@ import {
 import { showSuccess, showError, trims } from 'utils/common';
 import { API } from 'utils/api';
 import { useTranslation } from 'react-i18next';
+import { UserContext } from 'contexts/UserContext';
 
 const validationSchema = Yup.object().shape({
   is_edit: Yup.boolean(),
@@ -48,6 +49,7 @@ const EditModal = ({ open, userGroupId, onCancel, onOk }) => {
   const theme = useTheme();
   const [inputs, setInputs] = useState(originInputs);
   const { t } = useTranslation();
+  const { loadUser, loadUserGroup: reloadUserGroupMap } = useContext(UserContext);
 
   const submit = async (values, { setErrors, setStatus, setSubmitting }) => {
     setSubmitting(true);
@@ -62,11 +64,9 @@ const EditModal = ({ open, userGroupId, onCancel, onOk }) => {
       }
       const { success, message } = res.data;
       if (success) {
-        if (values.is_edit) {
-          showSuccess(t('userPage.saveSuccess'));
-        } else {
-          showSuccess(t('userPage.saveSuccess'));
-        }
+        showSuccess(t('userPage.saveSuccess'));
+        await loadUser();
+        reloadUserGroupMap();
         setSubmitting(false);
         setStatus({ success: true });
         onOk(true);
@@ -125,7 +125,6 @@ const EditModal = ({ open, userGroupId, onCancel, onOk }) => {
                   onChange={handleChange}
                   inputProps={{ autoComplete: 'symbol' }}
                   aria-describedby="helper-text-channel-symbol-label"
-                  disabled={values.is_edit}
                 />
                 {touched.symbol && errors.symbol ? (
                   <FormHelperText error id="helper-tex-channel-symbol-label">

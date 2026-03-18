@@ -66,8 +66,7 @@ func AddUserGroup(c *gin.Context) {
 
 func UpdateUserGroup(c *gin.Context) {
 	userGroup := model.UserGroup{}
-	err := c.ShouldBindJSON(&userGroup)
-	if err != nil {
+	if err := c.ShouldBindJSON(&userGroup); err != nil {
 		common.APIRespondWithError(c, http.StatusOK, err)
 		return
 	}
@@ -92,8 +91,8 @@ func DeleteUserGroup(c *gin.Context) {
 		return
 	}
 
-	if userGroup.Symbol == "default" {
-		common.APIRespondWithError(c, http.StatusOK, errors.New("默认用户组不能删除"))
+	if userGroup.IsDefault {
+		common.APIRespondWithError(c, http.StatusOK, errors.New("default user group cannot be deleted"))
 		return
 	}
 
@@ -106,7 +105,6 @@ func DeleteUserGroup(c *gin.Context) {
 		"success": true,
 		"message": "",
 	})
-
 }
 
 func ChangeUserGroupEnable(c *gin.Context) {
@@ -128,10 +126,10 @@ func ChangeUserGroupEnable(c *gin.Context) {
 		return
 	}
 
-	if *userGroup.Enable && userGroup.Symbol == "default" {
+	if *userGroup.Enable && userGroup.IsDefault {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
-			"message": "不能关闭默认的用户组,请设置一个默认组后，再关闭",
+			"message": "default user group cannot be disabled",
 		})
 		return
 	}

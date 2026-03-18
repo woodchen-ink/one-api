@@ -268,9 +268,6 @@ func SetApiRouter(router *gin.Engine) {
 			paymentRoute.DELETE("/:id", controller.DeletePayment)
 		}
 
-		taskRoute := apiRouter.Group("/task")
-		taskRoute.GET("/self", middleware.UserAuth(), controller.GetUserAllTask)
-		taskRoute.GET("/", middleware.AdminAuth(), controller.GetAllTask)
 	}
 
 	sseRouter := router.Group("/api/sse")

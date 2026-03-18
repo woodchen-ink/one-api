@@ -299,8 +299,9 @@ export default function Profile() {
   }, [status]);
 
   const getGroupInfo = () => {
+    const defaultGroup = Object.values(userGroupMap).find((group) => group?.is_default);
     if (!inputs.group || !userGroupMap[inputs.group]) {
-      return inputs.group || 'default';
+      return inputs.group || defaultGroup?.name || '-';
     }
     const group = userGroupMap[inputs.group];
     return `${t('profilePage.group')}: ${group.name} (${t('profilePage.rate')}: ${group.ratio} / ${t('profilePage.speed')}: ${group.api_rate})`;
