@@ -688,7 +688,7 @@ const BaseIndex = () => {
                   >
                     开始使用
                   </Button>
-                  <Button
+                  {/* <Button
                     component={Link}
                     href="https://docs.czl.net/czloapi/"
                     target="_blank"
@@ -711,7 +711,7 @@ const BaseIndex = () => {
                     }}
                   >
                     查看文档
-                  </Button>
+                  </Button> */}
                 </Stack>
 
                 <Grid container spacing={1.5} sx={{ pt: 0.5 }}>
