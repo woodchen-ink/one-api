@@ -1,8 +1,8 @@
 package controller
 
 import (
-	"net/http"
 	"czloapi/model"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -43,5 +43,23 @@ func GetUserGroupRatio(c *gin.Context) {
 		"success": true,
 		"message": "",
 		"data":    UserGroup,
+	})
+}
+
+func GetPricingUserGroupRatio(c *gin.Context) {
+	groupRatio := model.GlobalUserGroupRatio.GetAll()
+	userGroup := make(map[string]*model.UserGroup)
+
+	for k, v := range groupRatio {
+		if !model.IsPricingVisibleUserGroup(k) {
+			continue
+		}
+		userGroup[k] = v
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "",
+		"data":    userGroup,
 	})
 }

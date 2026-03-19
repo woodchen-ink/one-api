@@ -1366,6 +1366,7 @@
     "name": "Name",
     "nameTip": "Name for users",
     "public": "Is it public?",
+    "publicTip": "Controls whether other users can explicitly select this group when creating a key. It does not affect pricing display on the home page.",
     "promotion": "Auto Upgrade",
     "promotionTip": "When enabled, users will automatically upgrade to this group when their recharge amount meets the min-max conditions.",
     "min": "Min Amount",

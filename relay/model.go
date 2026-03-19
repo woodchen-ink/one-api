@@ -1,8 +1,6 @@
 package relay
 
 import (
-	"fmt"
-	"net/http"
 	"czloapi/common"
 	"czloapi/common/config"
 	"czloapi/common/utils"
@@ -10,6 +8,8 @@ import (
 	"czloapi/providers/claude"
 	"czloapi/providers/gemini"
 	"czloapi/types"
+	"fmt"
+	"net/http"
 	"sort"
 	"strings"
 
@@ -255,13 +255,37 @@ func getAvailableModels(groupName string) map[string]*AvailableModelResponse {
 		publicGroups = append(publicGroups, groupName)
 	}
 
+	return getAvailableModelsByGroups(publicModels, publicGroups)
+}
+
+func AvailablePricingModel(c *gin.Context) {
+	publicModels := model.ChannelGroup.GetModelsGroups()
+	allGroups := model.GlobalUserGroupRatio.GetAllSorted()
+	groupSymbols := make([]string, 0, len(allGroups))
+
+	for _, group := range allGroups {
+		if !model.IsPricingVisibleUserGroup(group.Symbol) {
+			continue
+		}
+		groupSymbols = append(groupSymbols, group.Symbol)
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "",
+		"data":    getAvailableModelsByGroups(publicModels, groupSymbols),
+	})
+}
+
+func getAvailableModelsByGroups(publicModels map[string]map[string]bool, groupsToExpose []string) map[string]*AvailableModelResponse {
+
 	availableModels := make(map[string]*AvailableModelResponse, len(publicModels))
 
 	for modelName, group := range publicModels {
 		groups := []string{}
-		for _, publicGroup := range publicGroups {
-			if group[publicGroup] {
-				groups = append(groups, publicGroup)
+		for _, groupSymbol := range groupsToExpose {
+			if group[groupSymbol] {
+				groups = append(groups, groupSymbol)
 			}
 		}
 

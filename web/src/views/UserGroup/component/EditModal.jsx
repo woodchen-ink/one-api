@@ -268,6 +268,7 @@ const EditModal = ({ open, userGroupId, onCancel, onOk }) => {
                   }
                   label={t('userGroup.public')}
                 />
+                <FormHelperText id="helper-tex-channel-public-label">{t('userGroup.publicTip')}</FormHelperText>
               </FormControl>
 
               <DialogActions>

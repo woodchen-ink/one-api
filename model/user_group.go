@@ -1,13 +1,13 @@
 package model
 
 import (
-	"errors"
-	"fmt"
 	"czloapi/common"
 	"czloapi/common/config"
 	"czloapi/common/limit"
 	"czloapi/common/logger"
 	"czloapi/common/redis"
+	"errors"
+	"fmt"
 	"sort"
 	"strings"
 	"sync"
@@ -15,7 +15,14 @@ import (
 	"gorm.io/gorm"
 )
 
-const DefaultUserGroupSymbol = "default"
+const (
+	DefaultUserGroupSymbol = "Lite"
+	AdminUserGroupSymbol   = "Admin"
+)
+
+func IsPricingVisibleUserGroup(symbol string) bool {
+	return !strings.EqualFold(strings.TrimSpace(symbol), AdminUserGroupSymbol)
+}
 
 type UserGroup struct {
 	Id        int     `json:"id"`

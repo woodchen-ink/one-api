@@ -75,7 +75,7 @@ export default function ModelPrice() {
   // 获取可用模型
   const fetchAvailableModels = useCallback(async () => {
     try {
-      const res = await API.get('/api/available_model');
+      const res = await API.get('/api/pricing_model');
       const { success, message, data } = res.data;
       if (success) {
         setAvailableModels(data);
@@ -110,11 +110,17 @@ export default function ModelPrice() {
   // 获取用户组
   const fetchUserGroupMap = useCallback(async () => {
     try {
-      const res = await API.get('/api/user_group_map');
+      const res = await API.get('/api/pricing_group_map');
       const { success, message, data } = res.data;
       if (success) {
         setUserGroupMap(data);
-        const currentGroupKey = user?.group && data[user.group] ? user.group : Object.keys(data)[0];
+        const sortedGroupEntries = Object.entries(data).sort(([, a], [, b]) => {
+          if (a.ratio !== b.ratio) {
+            return a.ratio - b.ratio;
+          }
+          return a.id - b.id;
+        });
+        const currentGroupKey = user?.group && data[user.group] ? user.group : sortedGroupEntries[0]?.[0];
         setSelectedGroup(currentGroupKey || '');
       } else {
         showError(message);
