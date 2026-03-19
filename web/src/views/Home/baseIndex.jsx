@@ -179,7 +179,7 @@ const NativeRoutePanel = ({ nativeRoutes }) => {
       sx={{
         position: 'relative',
         overflow: 'hidden',
-        borderRadius: '28px',
+        borderRadius: '24px',
         border: `1px solid ${alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.34 : 0.16)}`,
         background:
           theme.palette.mode === 'dark'
@@ -187,17 +187,19 @@ const NativeRoutePanel = ({ nativeRoutes }) => {
             : `linear-gradient(145deg, ${alpha(theme.palette.background.paper, 0.98)} 0%, ${alpha(theme.palette.primary.light, 0.1)} 100%)`,
         boxShadow:
           theme.palette.mode === 'dark'
-            ? '0 28px 60px rgba(0, 0, 0, 0.34)'
-            : `0 28px 60px ${alpha(theme.palette.primary.main, 0.14)}`,
+            ? '0 22px 48px rgba(0, 0, 0, 0.28)'
+            : `0 22px 48px ${alpha(theme.palette.primary.main, 0.12)}`,
         backdropFilter: 'blur(16px)',
-        p: { xs: 2.5, md: 3 },
+        p: { xs: 2.25, md: 2.5 },
+        maxWidth: { lg: 560 },
+        ml: { lg: 'auto' },
         isolation: 'isolate',
         '&::before': {
           content: '""',
           position: 'absolute',
           inset: 'auto -15% -35% auto',
-          width: { xs: 220, md: 280 },
-          height: { xs: 220, md: 280 },
+          width: { xs: 180, md: 220 },
+          height: { xs: 180, md: 220 },
           borderRadius: '50%',
           background: `radial-gradient(circle, ${alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.24 : 0.16)} 0%, transparent 72%)`,
           animation: 'heroOrb 10s ease-in-out infinite'
@@ -252,14 +254,15 @@ const NativeRoutePanel = ({ nativeRoutes }) => {
         }}
       />
 
-      <Stack spacing={2.5} sx={{ position: 'relative', zIndex: 1 }}>
+      <Stack spacing={2} sx={{ position: 'relative', zIndex: 1 }}>
         <Stack direction="row" justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'center' }} spacing={2}>
           <Box>
             <Chip
               icon={<HubOutlinedIcon sx={{ fontSize: '1rem !important' }} />}
               label="Native Route Matrix"
+              size="small"
               sx={{
-                mb: 1.5,
+                mb: 1.25,
                 color: 'primary.main',
                 borderColor: alpha(theme.palette.primary.main, 0.24),
                 backgroundColor: alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.16 : 0.08),
@@ -270,10 +273,10 @@ const NativeRoutePanel = ({ nativeRoutes }) => {
               variant="outlined"
             />
             <Typography
-              variant="h4"
               sx={{
                 fontWeight: 600,
-                mb: 0.75,
+                fontSize: { xs: '1.35rem', md: '1.65rem' },
+                mb: 0.5,
                 letterSpacing: '-0.03em',
                 color: 'text.primary'
               }}
@@ -281,11 +284,11 @@ const NativeRoutePanel = ({ nativeRoutes }) => {
               支持的原生厂家与路径
             </Typography>
             <Typography
-              variant="body1"
               sx={{
                 color: 'text.secondary',
-                lineHeight: 1.75,
-                maxWidth: '520px'
+                fontSize: '0.95rem',
+                lineHeight: 1.7,
+                maxWidth: '460px'
               }}
             >
               直接复用本站域名访问 OpenAI Compatible、Claude 与 Gemini 的原生路径，降低迁移成本，同时保留原生 SDK
@@ -298,20 +301,20 @@ const NativeRoutePanel = ({ nativeRoutes }) => {
               display: { xs: 'none', md: 'flex' },
               alignItems: 'center',
               justifyContent: 'center',
-              minWidth: 84,
-              height: 84,
-              borderRadius: '24px',
+              minWidth: 68,
+              height: 68,
+              borderRadius: '20px',
               border: `1px solid ${alpha(theme.palette.primary.main, 0.18)}`,
               backgroundColor: alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.14 : 0.08),
               boxShadow: `inset 0 0 0 1px ${alpha(theme.palette.common.white, theme.palette.mode === 'dark' ? 0.04 : 0.4)}`,
               animation: 'signalFloat 5s ease-in-out infinite'
             }}
           >
-            <MemoryOutlinedIcon color="primary" sx={{ fontSize: '2rem' }} />
+            <MemoryOutlinedIcon color="primary" sx={{ fontSize: '1.7rem' }} />
           </Box>
         </Stack>
 
-        <Grid container spacing={1.5}>
+        <Grid container spacing={1.25}>
           {[
             { label: '原生厂商', value: `${nativeRoutes.length}`, icon: <MemoryOutlinedIcon fontSize="small" /> },
             { label: '可用路径', value: `${totalRoutes}`, icon: <PolylineOutlinedIcon fontSize="small" /> },
@@ -320,8 +323,8 @@ const NativeRoutePanel = ({ nativeRoutes }) => {
             <Grid item xs={12} sm={4} key={item.label}>
               <Box
                 sx={{
-                  p: { xs: 1.25, md: 1.5 },
-                  borderRadius: '18px',
+                  p: { xs: 1.1, md: 1.25 },
+                  borderRadius: '16px',
                   border: `1px solid ${alpha(theme.palette.divider, 0.8)}`,
                   backgroundColor: alpha(theme.palette.background.default, theme.palette.mode === 'dark' ? 0.54 : 0.56)
                 }}
@@ -333,10 +336,9 @@ const NativeRoutePanel = ({ nativeRoutes }) => {
                   </Typography>
                 </Stack>
                 <Typography
-                  variant="h5"
                   sx={{
                     fontWeight: 700,
-                    fontSize: { xs: '1rem', md: '1.2rem' },
+                    fontSize: { xs: '0.95rem', md: '1.05rem' },
                     color: 'text.primary'
                   }}
                 >
@@ -347,14 +349,14 @@ const NativeRoutePanel = ({ nativeRoutes }) => {
           ))}
         </Grid>
 
-        <Stack spacing={1.5}>
+        <Stack spacing={1.1}>
           {nativeRoutes.map((item, index) => (
             <Box
               key={item.provider}
               sx={{
                 position: 'relative',
-                p: { xs: 1.75, md: 2.25 },
-                borderRadius: '22px',
+                p: { xs: 1.4, md: 1.7 },
+                borderRadius: '18px',
                 border: `1px solid ${alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.2 : 0.12)}`,
                 background:
                   theme.palette.mode === 'dark'
@@ -371,24 +373,25 @@ const NativeRoutePanel = ({ nativeRoutes }) => {
                 }
               }}
             >
-              <Stack direction="row" justifyContent="space-between" spacing={2} sx={{ mb: 1.75 }}>
+              <Stack direction="row" justifyContent="space-between" spacing={1.5} sx={{ mb: 1.25 }}>
                 <Box>
                   <Typography
                     variant="overline"
                     sx={{
                       display: 'block',
                       color: 'primary.main',
-                      letterSpacing: '0.12em'
+                      letterSpacing: '0.1em',
+                      lineHeight: 1.5
                     }}
                   >
                     {item.vendor}
                   </Typography>
                   <Typography
-                    variant="h5"
                     sx={{
                       fontWeight: 600,
                       color: 'text.primary',
-                      fontSize: { xs: '1.1rem', md: '1.25rem' }
+                      fontSize: { xs: '1rem', md: '1.1rem' },
+                      lineHeight: 1.3
                     }}
                   >
                     {item.provider}
@@ -397,15 +400,16 @@ const NativeRoutePanel = ({ nativeRoutes }) => {
 
                 <Box
                   sx={{
-                    minWidth: 44,
-                    height: 44,
-                    borderRadius: '14px',
+                    minWidth: 38,
+                    height: 38,
+                    borderRadius: '12px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     border: `1px solid ${alpha(theme.palette.primary.main, 0.18)}`,
                     color: 'primary.main',
                     fontWeight: 700,
+                    fontSize: '0.85rem',
                     backgroundColor: alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.18 : 0.08)
                   }}
                 >
@@ -418,8 +422,8 @@ const NativeRoutePanel = ({ nativeRoutes }) => {
                   <Box
                     key={route}
                     sx={{
-                      p: 1.25,
-                      borderRadius: '16px',
+                      p: 1,
+                      borderRadius: '14px',
                       border: `1px solid ${alpha(theme.palette.divider, 0.8)}`,
                       backgroundColor: alpha(theme.palette.background.paper, theme.palette.mode === 'dark' ? 0.32 : 0.76)
                     }}
@@ -428,7 +432,7 @@ const NativeRoutePanel = ({ nativeRoutes }) => {
                       variant="caption"
                       sx={{
                         display: 'block',
-                        mb: 0.5,
+                        mb: 0.35,
                         color: 'text.secondary',
                         letterSpacing: '0.08em'
                       }}
@@ -439,7 +443,7 @@ const NativeRoutePanel = ({ nativeRoutes }) => {
                       variant="body2"
                       sx={{
                         fontFamily: '"Roboto Mono", "SFMono-Regular", Consolas, monospace',
-                        fontSize: '0.84rem',
+                        fontSize: '0.8rem',
                         color: 'text.primary',
                         wordBreak: 'break-all'
                       }}
@@ -607,7 +611,7 @@ const BaseIndex = () => {
         />
         <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1, py: { xs: 8, md: 10 } }}>
           <Grid container spacing={{ xs: 5, md: 7 }} alignItems="center">
-            <Grid item xs={12} lg={5}>
+            <Grid item xs={12} lg={7}>
               <Stack spacing={3}>
                 <Chip
                   label="AI Native Gateway"
@@ -752,7 +756,7 @@ const BaseIndex = () => {
               </Stack>
             </Grid>
 
-            <Grid item xs={12} lg={7}>
+            <Grid item xs={12} lg={5} sx={{ display: 'flex' }}>
               <NativeRoutePanel nativeRoutes={nativeRoutes} />
             </Grid>
           </Grid>
