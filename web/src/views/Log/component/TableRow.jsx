@@ -53,7 +53,7 @@ function LogTableRow({ item, userIsAdmin, userGroup, columnVisibility }) {
   let request_time = item.request_time / 1000;
   let request_time_str = request_time.toFixed(2) + ' S';
 
-  const { totalInputTokens, totalOutputTokens, show, tokenDetails, cacheMetrics, cacheCost } = useMemo(() => calculateTokens(item), [item]);
+  const { totalInputTokens, totalOutputTokens, tokenDetails, cacheCost } = useMemo(() => calculateTokens(item), [item]);
 
   return (
     <>
@@ -124,8 +124,8 @@ function LogTableRow({ item, userIsAdmin, userGroup, columnVisibility }) {
           </TableCell>
         )}
         {columnVisibility.tokens && (
-          <TableCell sx={{ p: '10px 8px' }}>
-            {viewTokens(item, t, totalInputTokens, totalOutputTokens, show, tokenDetails, cacheMetrics)}
+          <TableCell sx={{ p: '10px 8px', whiteSpace: 'nowrap', textAlign: 'center' }}>
+            {viewTokens(item, t, totalInputTokens, totalOutputTokens, tokenDetails)}
           </TableCell>
         )}
         {columnVisibility.quota && <TableCell sx={{ p: '10px 8px' }}>{viewQuota(item, t, cacheCost)}</TableCell>}
@@ -313,18 +313,23 @@ const MetadataTypography = styled(Typography)(({ theme }) => ({
   }
 }));
 
-function viewTokens(item, t, totalInputTokens, totalOutputTokens, show, tokenDetails, cacheMetrics = []) {
+function viewTokens(item, t, totalInputTokens, totalOutputTokens, tokenDetails) {
   const { prompt_tokens, completion_tokens } = item;
+  const detailMetrics = (tokenDetails || [])
+    .filter((detail) => ['cached_tokens', 'cached_write_tokens', 'cached_read_tokens', 'reasoning_tokens'].includes(detail.key))
+    .map((detail) => ({
+      ...detail,
+      shortLabel: getTokenShortLabel(detail.key)
+    }));
 
   if (!prompt_tokens && !completion_tokens) return '';
 
   const content = (
     <Box
       sx={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-        gap: 0.5,
-        minWidth: 120
+        display: 'inline-grid',
+        gridTemplateColumns: 'repeat(2, 75px)',
+        gap: 0.5
       }}
     >
       <TokenMetric icon="material-symbols:input-rounded" color="info.main" value={prompt_tokens || 0} />
@@ -332,15 +337,21 @@ function viewTokens(item, t, totalInputTokens, totalOutputTokens, show, tokenDet
     </Box>
   );
 
-  const contentWithCache = (
-    <Stack spacing={0.5}>
+  const contentWithDetails = (
+    <Stack spacing={0.5} alignItems="flex-start">
       {content}
-      {cacheMetrics.length > 0 && (
-        <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
-          {cacheMetrics.map((metric) => (
-            <CacheMetricPill key={metric.key} icon={getCacheIcon(metric.key)} value={metric.value} />
+      {detailMetrics.length > 0 && (
+        <Box
+          sx={{
+            display: 'inline-grid',
+            gridTemplateColumns: 'repeat(2, 75px)',
+            gap: 0.5
+          }}
+        >
+          {detailMetrics.map((metric) => (
+            <TokenMetric key={metric.key} icon={getMetricIcon(metric.key)} value={metric.value} />
           ))}
-        </Stack>
+        </Box>
       )}
     </Stack>
   );
@@ -351,7 +362,7 @@ function viewTokens(item, t, totalInputTokens, totalOutputTokens, show, tokenDet
         <>
           <MetadataTypography>{`${t('logPage.totalInputTokens')}: ${totalInputTokens}`}</MetadataTypography>
           <MetadataTypography>{`${t('logPage.totalOutputTokens')}: ${totalOutputTokens}`}</MetadataTypography>
-          {cacheMetrics.map((metric) => (
+          {detailMetrics.map((metric) => (
             <MetadataTypography key={metric.key}>{`${metric.shortLabel}: ${metric.value}`}</MetadataTypography>
           ))}
         </>
@@ -359,7 +370,7 @@ function viewTokens(item, t, totalInputTokens, totalOutputTokens, show, tokenDet
       placement="top"
       arrow
     >
-      <span style={{ cursor: 'help' }}>{contentWithCache}</span>
+      <span style={{ cursor: 'help', display: 'inline-block', textAlign: 'left' }}>{contentWithDetails}</span>
     </Tooltip>
   );
 }
@@ -398,7 +409,7 @@ function viewQuota(item, t, cacheCost = 0) {
         </Stack>
       ))}
 
-      {(metadata?.input_price != null || metadata?.output_price != null) && (
+      {/* {(metadata?.input_price != null || metadata?.output_price != null) && (
         <Stack spacing={0.5}>
           <MetadataTypography>{`输入单价 $${formatUSD(metadata.input_price || 0)} / 1M Token`}</MetadataTypography>
           <MetadataTypography>{`输出单价 $${formatUSD(metadata.output_price || 0)} / 1M Token`}</MetadataTypography>
@@ -416,11 +427,11 @@ function viewQuota(item, t, cacheCost = 0) {
               </MetadataTypography>
             ))}
         </Stack>
-      )}
+      )} */}
 
-      {metadata?.billing_context && (
+      {/* {metadata?.billing_context && (
         <MetadataTypography>{`Prompt=${metadata.billing_context.prompt_tokens || 0} / Request=${metadata.billing_context.request_tokens || 0}`}</MetadataTypography>
-      )}
+      )} */}
 
       {(metadata?.billing_rules || []).map((rule, index) => {
         const summary = summarizeRule(rule);
@@ -561,7 +572,7 @@ function calculateTokens(item) {
       .filter((detail) => ['cached_tokens', 'cached_write_tokens', 'cached_read_tokens'].includes(detail.key))
       .map((detail) => ({
         ...detail,
-        shortLabel: getCacheShortLabel(detail.key)
+        shortLabel: getTokenShortLabel(detail.key)
       }));
     const cacheCost = cacheMetrics.reduce((sum, detail) => sum + (detail.cost || 0), 0);
 
@@ -611,8 +622,8 @@ function calculateTokens(item) {
     .filter((detail) => ['cached_tokens', 'cached_write_tokens', 'cached_read_tokens'].includes(detail.key))
     .map((detail) => ({
       ...detail,
-      shortLabel: getCacheShortLabel(detail.key)
-    }));
+        shortLabel: getTokenShortLabel(detail.key)
+      }));
   const cacheCost = cacheMetrics.reduce((sum, detail) => sum + (detail.cost || 0), 0);
 
   return {
@@ -625,11 +636,12 @@ function calculateTokens(item) {
   };
 }
 
-function getCacheShortLabel(key) {
+function getTokenShortLabel(key) {
   const labels = {
     cached_tokens: 'Cache',
     cached_write_tokens: 'Cache Write',
-    cached_read_tokens: 'Cache Read'
+    cached_read_tokens: 'Cache Read',
+    reasoning_tokens: 'Reasoning'
   };
 
   return labels[key] || key;
@@ -655,10 +667,6 @@ function getMetricIcon(key) {
   return icons[key] || 'mdi:circle-outline';
 }
 
-function getCacheIcon(key) {
-  return getMetricIcon(key);
-}
-
 function TokenMetric({ icon, color, value }) {
   return (
     <Box
@@ -668,7 +676,7 @@ function TokenMetric({ icon, color, value }) {
         gap: 0.5,
         px: 0.75,
         py: 0.45,
-        borderRadius: 1,
+        borderRadius: 0.6,
         bgcolor: 'action.hover'
       }}
     >
@@ -683,31 +691,5 @@ function TokenMetric({ icon, color, value }) {
 TokenMetric.propTypes = {
   icon: PropTypes.string.isRequired,
   color: PropTypes.string.isRequired,
-  value: PropTypes.number.isRequired
-};
-
-function CacheMetricPill({ icon, value }) {
-  return (
-    <Box
-      sx={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 0.5,
-        px: 0.75,
-        py: 0.2,
-        borderRadius: 999,
-        bgcolor: 'action.hover'
-      }}
-    >
-      <Icon icon={icon} width={12} />
-      <Typography variant="caption" sx={{ fontWeight: 700 }}>
-        {value}
-      </Typography>
-    </Box>
-  );
-}
-
-CacheMetricPill.propTypes = {
-  icon: PropTypes.string.isRequired,
   value: PropTypes.number.isRequired
 };
