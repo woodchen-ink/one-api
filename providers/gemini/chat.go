@@ -1,14 +1,14 @@
 package gemini
 
 import (
-	"encoding/json"
-	"net/http"
 	"czloapi/common"
 	"czloapi/common/config"
 	"czloapi/common/requester"
 	"czloapi/common/utils"
 	"czloapi/providers/base"
 	"czloapi/types"
+	"encoding/json"
+	"net/http"
 	"strings"
 )
 
@@ -173,12 +173,12 @@ func ConvertFromChatOpenai(request *types.ChatCompletionRequest) (*GeminiChatReq
 
 	if request.Reasoning != nil {
 		thinkingConfig := &ThinkingConfig{}
-		
+
 		// Set ThinkingBudget when MaxTokens >= 0
 		if request.Reasoning.MaxTokens >= 0 {
 			thinkingConfig.ThinkingBudget = &request.Reasoning.MaxTokens
 		}
-		
+
 		// Convert effort to thinkingLevel
 		if request.Reasoning.Effort != "" {
 			effortToLevelMap := map[string]string{
@@ -191,7 +191,7 @@ func ConvertFromChatOpenai(request *types.ChatCompletionRequest) (*GeminiChatReq
 				thinkingConfig.ThinkingLevel = level
 			}
 		}
-		
+
 		// Only set ThinkingConfig if at least one parameter is set
 		if thinkingConfig.ThinkingBudget != nil || thinkingConfig.ThinkingLevel != "" {
 			geminiRequest.GenerationConfig.ThinkingConfig = thinkingConfig
@@ -497,6 +497,9 @@ func ConvertOpenAIUsage(geminiUsage *GeminiUsageMetadata) types.Usage {
 		CompletionTokens: geminiUsage.CandidatesTokenCount + geminiUsage.ThoughtsTokenCount,
 		TotalTokens:      geminiUsage.TotalTokenCount,
 
+		PromptTokensDetails: types.PromptTokensDetails{
+			CachedTokens: geminiUsage.CachedContentTokenCount,
+		},
 		CompletionTokensDetails: types.CompletionTokensDetails{
 			ReasoningTokens: geminiUsage.ThoughtsTokenCount,
 		},

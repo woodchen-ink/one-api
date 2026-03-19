@@ -1,10 +1,11 @@
 import PropTypes from 'prop-types';
 import { useMemo, memo } from 'react';
 import { ArrowForward } from '@mui/icons-material';
+import { Icon } from '@iconify/react';
 
 import Badge from '@mui/material/Badge';
 
-import { TableRow, TableCell, Stack, Tooltip, Typography } from '@mui/material';
+import { Box, TableRow, TableCell, Stack, Tooltip, Typography } from '@mui/material';
 
 import { timestamp2string, renderQuota } from 'utils/common';
 import Label from 'ui-component/Label';
@@ -52,7 +53,7 @@ function LogTableRow({ item, userIsAdmin, userGroup, columnVisibility }) {
   let request_time = item.request_time / 1000;
   let request_time_str = request_time.toFixed(2) + ' S';
 
-  const { totalInputTokens, totalOutputTokens, show, tokenDetails } = useMemo(() => calculateTokens(item), [item]);
+  const { totalInputTokens, totalOutputTokens, show, tokenDetails, cacheMetrics, cacheCost } = useMemo(() => calculateTokens(item), [item]);
 
   return (
     <>
@@ -123,9 +124,11 @@ function LogTableRow({ item, userIsAdmin, userGroup, columnVisibility }) {
           </TableCell>
         )}
         {columnVisibility.tokens && (
-          <TableCell sx={{ p: '10px 8px' }}>{viewTokens(item, t, totalInputTokens, totalOutputTokens, show, tokenDetails)}</TableCell>
+          <TableCell sx={{ p: '10px 8px' }}>
+            {viewTokens(item, t, totalInputTokens, totalOutputTokens, show, tokenDetails, cacheMetrics)}
+          </TableCell>
         )}
-        {columnVisibility.quota && <TableCell sx={{ p: '10px 8px' }}>{viewQuota(item, t)}</TableCell>}
+        {columnVisibility.quota && <TableCell sx={{ p: '10px 8px' }}>{viewQuota(item, t, cacheCost)}</TableCell>}
         {columnVisibility.source_ip && <TableCell sx={{ p: '10px 8px' }}>{item.source_ip || ''}</TableCell>}
       </TableRow>
     </>
@@ -310,26 +313,39 @@ const MetadataTypography = styled(Typography)(({ theme }) => ({
   }
 }));
 
-function viewTokens(item, t, totalInputTokens, totalOutputTokens, show, tokenDetails) {
+function viewTokens(item, t, totalInputTokens, totalOutputTokens, show, tokenDetails, cacheMetrics = []) {
   const { prompt_tokens, completion_tokens } = item;
 
   if (!prompt_tokens && !completion_tokens) return '';
 
   const content = (
-    <span style={{ whiteSpace: 'nowrap' }}>
-      <Typography component="span" variant="caption" color="text.secondary">
-        {prompt_tokens || 0}
-      </Typography>
-      <Typography component="span" variant="caption" color="text.disabled" sx={{ mx: 0.5 }}>
-        /
-      </Typography>
-      <Typography component="span" variant="caption" color="text.primary">
-        {completion_tokens || 0}
-      </Typography>
-    </span>
+    <Box
+      sx={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+        gap: 0.5,
+        minWidth: 120
+      }}
+    >
+      <TokenMetric icon="material-symbols:input-rounded" color="info.main" value={prompt_tokens || 0} />
+      <TokenMetric icon="material-symbols:output-rounded" color="success.main" value={completion_tokens || 0} />
+    </Box>
   );
 
-  if (!show) return content;
+  const contentWithCache = (
+    <Stack spacing={0.5}>
+      {content}
+      {cacheMetrics.length > 0 && (
+        <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
+          {cacheMetrics.map((metric) => (
+            <CacheMetricPill key={metric.key} icon={getCacheIcon(metric.key)} value={metric.value} />
+          ))}
+        </Stack>
+      )}
+    </Stack>
+  );
+
+  if (!show) return contentWithCache;
 
   const tooltipContent = tokenDetails.map(({ key, label, value, unitPrice, cost }) => (
     <MetadataTypography key={key}>{`${label}: ${value} x $${formatUSD(unitPrice)} / 1M = $${formatUSD(cost)}`}</MetadataTypography>
@@ -348,13 +364,13 @@ function viewTokens(item, t, totalInputTokens, totalOutputTokens, show, tokenDet
         placement="top"
         arrow
       >
-        <span style={{ cursor: 'help' }}>{content}</span>
+        <span style={{ cursor: 'help' }}>{contentWithCache}</span>
       </Tooltip>
     </Badge>
   );
 }
 
-function viewQuota(item, t) {
+function viewQuota(item, t, cacheCost = 0) {
   const displayValue = item.quota ? renderQuota(item.quota, 6) : '$0';
   const metadata = item?.metadata;
   const hasBillingInfo =
@@ -362,55 +378,76 @@ function viewQuota(item, t) {
     (Array.isArray(metadata?.billing_rules) && metadata.billing_rules.length > 0) ||
     (Array.isArray(metadata?.billing_breakdown) && metadata.billing_breakdown.length > 0);
 
+  const content = (
+    <Stack spacing={0.5}>
+      <Typography variant="body2">{displayValue}</Typography>
+      {cacheCost > 0 && (
+        <Typography variant="caption" color="info.main">
+          {`缓存计费 $${formatUSD(cacheCost)}`}
+        </Typography>
+      )}
+    </Stack>
+  );
+
   if (!hasBillingInfo) {
-    return displayValue;
+    return content;
   }
 
-  const tooltipContent = [];
-  if (metadata?.billing_context) {
-    tooltipContent.push(
-      <MetadataTypography key="billing-context">
-        {`Prompt=${metadata.billing_context.prompt_tokens || 0}, Request=${metadata.billing_context.request_tokens || 0}`}
-      </MetadataTypography>
-    );
-  }
+  const tooltipContent = (
+    <Stack spacing={1}>
+      <Typography variant="subtitle2" sx={{ color: '#fff', fontWeight: 700 }}>
+        成本明细
+      </Typography>
 
-  if (metadata?.original_input_price != null || metadata?.original_output_price != null) {
-    tooltipContent.push(
-      <MetadataTypography key="original-price">
-        {`Base: in $${formatUSD(metadata.original_input_price || 0)} / 1M, out $${formatUSD(metadata.original_output_price || 0)} / 1M`}
-      </MetadataTypography>
-    );
-  }
+      {(metadata?.billing_breakdown || []).map((detail, index) => (
+        <Stack key={`billing-breakdown-${index}`} direction="row" justifyContent="space-between" spacing={2}>
+          <Stack direction="row" spacing={0.75} alignItems="center">
+            <Icon icon={getMetricIcon(detail.metric)} width={14} />
+            <Typography variant="caption" sx={{ color: '#d1d5db' }}>
+              {formatBillingMetricLabel(detail.metric)}
+            </Typography>
+          </Stack>
+          <Typography variant="caption" sx={{ color: '#fff', fontWeight: 600 }}>
+            ${formatUSD(detail.cost_usd || 0)}
+          </Typography>
+        </Stack>
+      ))}
 
-  if (metadata?.input_price != null || metadata?.output_price != null) {
-    tooltipContent.push(
-      <MetadataTypography key="final-price">
-        {`Final: in $${formatUSD(metadata.input_price || 0)} / 1M, out $${formatUSD(metadata.output_price || 0)} / 1M`}
-      </MetadataTypography>
-    );
-  }
+      {(metadata?.input_price != null || metadata?.output_price != null) && (
+        <Stack spacing={0.5}>
+          <MetadataTypography>{`输入单价 $${formatUSD(metadata.input_price || 0)} / 1M Token`}</MetadataTypography>
+          <MetadataTypography>{`输出单价 $${formatUSD(metadata.output_price || 0)} / 1M Token`}</MetadataTypography>
+        </Stack>
+      )}
 
-  (metadata?.billing_rules || []).forEach((rule, index) => {
-    const summary = summarizeRule(rule);
-    tooltipContent.push(
-      <MetadataTypography key={`billing-rule-${index}`}>
-        {`Rule: ${rule.name || `rule-${index + 1}`} (${rule.strategy || 'override'})${summary ? ` | ${summary}` : ''}`}
-      </MetadataTypography>
-    );
-  });
+      {metadata?.billing_context && (
+        <MetadataTypography>{`Prompt=${metadata.billing_context.prompt_tokens || 0} / Request=${metadata.billing_context.request_tokens || 0}`}</MetadataTypography>
+      )}
 
-  (metadata?.billing_breakdown || []).forEach((detail, index) => {
-    tooltipContent.push(
-      <MetadataTypography key={`billing-breakdown-${index}`}>
-        {`${formatBillingMetricLabel(detail.metric)}: ${detail.quantity || 0} x $${formatUSD(detail.unit_price || 0)} = $${formatUSD(detail.cost_usd || 0)}`}
-      </MetadataTypography>
-    );
-  });
+      {(metadata?.billing_rules || []).map((rule, index) => {
+        const summary = summarizeRule(rule);
+        return (
+          <MetadataTypography
+            key={`billing-rule-${index}`}
+          >{`${rule.name || `rule-${index + 1}`}${summary ? ` | ${summary}` : ''}`}</MetadataTypography>
+        );
+      })}
+
+      <Box sx={{ height: 1, bgcolor: 'rgba(255,255,255,0.12)' }} />
+      <Stack direction="row" justifyContent="space-between">
+        <Typography variant="caption" sx={{ color: '#d1d5db' }}>
+          计费
+        </Typography>
+        <Typography variant="caption" sx={{ color: '#22c55e', fontWeight: 700 }}>
+          {displayValue}
+        </Typography>
+      </Stack>
+    </Stack>
+  );
 
   return (
-    <Tooltip title={<>{tooltipContent}</>} placement="top" arrow>
-      <span style={{ cursor: 'help' }}>{displayValue}</span>
+    <Tooltip title={tooltipContent} placement="top" arrow>
+      <span style={{ cursor: 'help' }}>{content}</span>
     </Tooltip>
   );
 }
@@ -506,7 +543,9 @@ function calculateTokens(item) {
       totalInputTokens: prompt_tokens || 0,
       totalOutputTokens: completion_tokens || 0,
       show: false,
-      tokenDetails: []
+      tokenDetails: [],
+      cacheMetrics: [],
+      cacheCost: 0
     };
   }
 
@@ -520,12 +559,21 @@ function calculateTokens(item) {
         unitPrice: detail.unit_price || 0,
         cost: detail.cost_usd || 0
       }));
+    const cacheMetrics = tokenDetails
+      .filter((detail) => ['cached_tokens', 'cached_write_tokens', 'cached_read_tokens'].includes(detail.key))
+      .map((detail) => ({
+        ...detail,
+        shortLabel: getCacheShortLabel(detail.key)
+      }));
+    const cacheCost = cacheMetrics.reduce((sum, detail) => sum + (detail.cost || 0), 0);
 
     return {
       totalInputTokens: metadata?.billing_context?.prompt_tokens ?? prompt_tokens ?? 0,
       totalOutputTokens: completion_tokens || 0,
       show: tokenDetails.length > 0,
-      tokenDetails
+      tokenDetails,
+      cacheMetrics,
+      cacheCost
     };
   }
 
@@ -561,11 +609,107 @@ function calculateTokens(item) {
       };
     })
     .filter(Boolean);
+  const cacheMetrics = tokenDetails
+    .filter((detail) => ['cached_tokens', 'cached_write_tokens', 'cached_read_tokens'].includes(detail.key))
+    .map((detail) => ({
+      ...detail,
+      shortLabel: getCacheShortLabel(detail.key)
+    }));
+  const cacheCost = cacheMetrics.reduce((sum, detail) => sum + (detail.cost || 0), 0);
 
   return {
     totalInputTokens,
     totalOutputTokens,
     show: tokenDetails.length > 0,
-    tokenDetails
+    tokenDetails,
+    cacheMetrics,
+    cacheCost
   };
 }
+
+function getCacheShortLabel(key) {
+  const labels = {
+    cached_tokens: 'Cache',
+    cached_write_tokens: 'Cache Write',
+    cached_read_tokens: 'Cache Read'
+  };
+
+  return labels[key] || key;
+}
+
+function getMetricIcon(key) {
+  const icons = {
+    input: 'material-symbols:input-rounded',
+    output: 'material-symbols:output-rounded',
+    cached_tokens: 'mdi:database-outline',
+    cached_write_tokens: 'mdi:database-arrow-up-outline',
+    cached_read_tokens: 'mdi:database-arrow-down-outline',
+    input_audio_tokens: 'mdi:waveform',
+    output_audio_tokens: 'mdi:waveform',
+    reasoning_tokens: 'mdi:head-lightbulb-outline',
+    input_text_tokens: 'mdi:text-box-outline',
+    output_text_tokens: 'mdi:text-box-outline',
+    input_image_tokens: 'mdi:image-outline',
+    output_image_tokens: 'mdi:image-outline',
+    request: 'mdi:cash-register'
+  };
+
+  return icons[key] || 'mdi:circle-outline';
+}
+
+function getCacheIcon(key) {
+  return getMetricIcon(key);
+}
+
+function TokenMetric({ icon, color, value }) {
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 0.5,
+        px: 0.75,
+        py: 0.45,
+        borderRadius: 1,
+        bgcolor: 'action.hover'
+      }}
+    >
+      <Icon icon={icon} width={14} />
+      <Typography variant="caption" color={color} sx={{ fontWeight: 700 }}>
+        {value}
+      </Typography>
+    </Box>
+  );
+}
+
+TokenMetric.propTypes = {
+  icon: PropTypes.string.isRequired,
+  color: PropTypes.string.isRequired,
+  value: PropTypes.number.isRequired
+};
+
+function CacheMetricPill({ icon, value }) {
+  return (
+    <Box
+      sx={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 0.5,
+        px: 0.75,
+        py: 0.2,
+        borderRadius: 999,
+        bgcolor: 'action.hover'
+      }}
+    >
+      <Icon icon={icon} width={12} />
+      <Typography variant="caption" sx={{ fontWeight: 700 }}>
+        {value}
+      </Typography>
+    </Box>
+  );
+}
+
+CacheMetricPill.propTypes = {
+  icon: PropTypes.string.isRequired,
+  value: PropTypes.number.isRequired
+};
