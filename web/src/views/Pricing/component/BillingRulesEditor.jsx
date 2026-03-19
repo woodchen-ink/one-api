@@ -19,7 +19,14 @@ import { Icon } from '@iconify/react';
 import { ExtraRatiosSelector } from './ExtraRatiosSelector';
 import { billingRuleStrategyOptions, createEmptyBillingRule, summarizeBillingRule } from './billingRules';
 
-export default function BillingRulesEditor({ value = [], onChange, priceStartAdornment, unit = 'M' }) {
+export default function BillingRulesEditor({
+  value = [],
+  onChange,
+  priceStartAdornment,
+  unit = 'M',
+  currentChannelType = null,
+  ownedby = []
+}) {
   const theme = useTheme();
 
   const updateRule = (index, updater) => {
@@ -244,7 +251,12 @@ export default function BillingRulesEditor({ value = [], onChange, priceStartAdo
                     <Typography variant="body2" fontWeight={600} sx={{ mb: 1 }}>
                       扩展价格调整
                     </Typography>
-                    <ExtraRatiosSelector value={rule?.extra_ratios || {}} onChange={(next) => handleExtraRatiosChange(index, next)} />
+                    <ExtraRatiosSelector
+                      value={rule?.extra_ratios || {}}
+                      onChange={(next) => handleExtraRatiosChange(index, next)}
+                      currentChannelType={currentChannelType}
+                      ownedby={ownedby}
+                    />
                   </Box>
                 </Stack>
               </Box>
@@ -260,5 +272,7 @@ BillingRulesEditor.propTypes = {
   value: PropTypes.array,
   onChange: PropTypes.func.isRequired,
   priceStartAdornment: PropTypes.func,
-  unit: PropTypes.string
+  unit: PropTypes.string,
+  currentChannelType: PropTypes.number,
+  ownedby: PropTypes.array
 };

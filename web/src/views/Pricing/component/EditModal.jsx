@@ -590,7 +590,12 @@ const EditModal = ({
     if (singleMode) {
       return (
         <Paper variant="outlined" sx={{ p: 2, mt: 2 }}>
-          <ExtraRatiosSelector value={inputs.extra_ratios} onChange={handleChangeExtraRatios} />
+          <ExtraRatiosSelector
+            value={inputs.extra_ratios}
+            onChange={handleChangeExtraRatios}
+            currentChannelType={inputs.channel_type}
+            ownedby={ownedby}
+          />
         </Paper>
       );
     }
@@ -602,6 +607,8 @@ const EditModal = ({
           onChange={(newExtraRatios) => {
             setFieldValue('extra_ratios', newExtraRatios);
           }}
+          currentChannelType={values.channel_type}
+          ownedby={ownedby}
           handleStartAdornment={priceStartAdornment}
         />
       </FormControl>
@@ -619,6 +626,8 @@ const EditModal = ({
             onChange={handleChangeBillingRules}
             priceStartAdornment={priceStartAdornment}
             unit={localUnit}
+            currentChannelType={inputs.channel_type}
+            ownedby={ownedby}
           />
         </Paper>
       );
@@ -633,6 +642,8 @@ const EditModal = ({
           }}
           priceStartAdornment={priceStartAdornment}
           unit={localUnit}
+          currentChannelType={values.channel_type}
+          ownedby={ownedby}
         />
       </FormControl>
     );

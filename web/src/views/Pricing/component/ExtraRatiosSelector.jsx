@@ -1,12 +1,12 @@
 import PropTypes from 'prop-types';
 import { useTheme, alpha } from '@mui/material/styles';
 import { useState, useMemo } from 'react';
-import { Box, Typography, FormControl, InputLabel, OutlinedInput, Select, MenuItem, IconButton, Stack, Tooltip } from '@mui/material';
+import { Box, Chip, Typography, FormControl, InputLabel, OutlinedInput, Select, MenuItem, IconButton, Stack, Tooltip } from '@mui/material';
 import { Icon } from '@iconify/react';
 import { useTranslation } from 'react-i18next';
 import { extraRatiosConfig } from './config';
 
-export const ExtraRatiosSelector = ({ value = {}, onChange }) => {
+export const ExtraRatiosSelector = ({ value = {}, onChange, currentChannelType = null, ownedby = [] }) => {
   const { t } = useTranslation();
   const theme = useTheme();
   const [selectedRatio, setSelectedRatio] = useState('');
@@ -52,6 +52,34 @@ export const ExtraRatiosSelector = ({ value = {}, onChange }) => {
     return extraRatiosConfig.find((item) => item.key === key);
   };
 
+  const isRecommendedForCurrentChannel = (config) => {
+    if (!currentChannelType || !Array.isArray(config?.channelTypes) || config.channelTypes.length === 0) {
+      return false;
+    }
+
+    return config.channelTypes.includes(currentChannelType);
+  };
+
+  const currentChannelLabel = useMemo(() => {
+    if (!currentChannelType) {
+      return '';
+    }
+
+    return ownedby.find((item) => item.value === currentChannelType)?.label || '';
+  }, [currentChannelType, ownedby]);
+
+  const sortedAvailableRatios = useMemo(() => {
+    return [...availableRatios].sort((a, b) => {
+      const aRecommended = isRecommendedForCurrentChannel(a) ? 0 : 1;
+      const bRecommended = isRecommendedForCurrentChannel(b) ? 0 : 1;
+      if (aRecommended !== bRecommended) {
+        return aRecommended - bRecommended;
+      }
+
+      return a.name.localeCompare(b.name, 'zh-CN');
+    });
+  }, [availableRatios, currentChannelType]);
+
   // 获取图标
   const getIcon = (isPrompt) => {
     return isPrompt ? 'material-symbols:input-rounded' : 'material-symbols:output-rounded';
@@ -88,6 +116,11 @@ export const ExtraRatiosSelector = ({ value = {}, onChange }) => {
       <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1.5 }}>
         `缓存价格` 多用于 OpenAI / Gemini 这类统一缓存计费；`缓存写入 / 缓存读取` 主要用于 Claude Prompt Caching。
       </Typography>
+      {currentChannelLabel && (
+        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1.5 }}>
+          当前渠道类型：{currentChannelLabel}。下拉列表会优先把更常用的扩展价格排在前面。
+        </Typography>
+      )}
 
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ mb: 2 }}>
         <FormControl fullWidth>
@@ -105,12 +138,13 @@ export const ExtraRatiosSelector = ({ value = {}, onChange }) => {
                 </Typography>
               </MenuItem>
             ) : (
-              availableRatios.map((option) => (
+              sortedAvailableRatios.map((option) => (
                 <MenuItem key={option.key} value={option.key}>
                   <Stack spacing={0.25} sx={{ py: 0.25 }}>
                     <Stack direction="row" alignItems="center" spacing={1}>
                       <Icon icon={getIcon(option.isPrompt)} color={getIconColor(option.isPrompt)} width={16} />
                       <Typography variant="body2">{option.name}</Typography>
+                      {isRecommendedForCurrentChannel(option) && <Chip size="small" color="primary" label="推荐" sx={{ height: 18 }} />}
                     </Stack>
                     <Typography variant="caption" color="text.secondary" sx={{ pl: 3 }}>
                       适用渠道：{option.channels}
@@ -176,6 +210,10 @@ export const ExtraRatiosSelector = ({ value = {}, onChange }) => {
                 >
                   {getRatioNameByKey(config.key)}
                 </Typography>
+                {isRecommendedForCurrentChannel(config) && <Chip size="small" color="primary" label="当前渠道常用" sx={{ height: 20 }} />}
+                {currentChannelType && !isRecommendedForCurrentChannel(config) && (
+                  <Chip size="small" color="warning" variant="outlined" label="当前渠道需确认" sx={{ height: 20 }} />
+                )}
                 <FormControl size="small" sx={{ width: '40%', minWidth: 120 }}>
                   <OutlinedInput
                     type="number"
@@ -251,5 +289,7 @@ export const ExtraRatiosSelector = ({ value = {}, onChange }) => {
 ExtraRatiosSelector.propTypes = {
   value: PropTypes.object,
   onChange: PropTypes.func.isRequired,
+  currentChannelType: PropTypes.number,
+  ownedby: PropTypes.array,
   handleStartAdornment: PropTypes.func
 };
