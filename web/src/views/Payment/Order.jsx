@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import PropTypes from 'prop-types';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { showError, trims } from 'utils/common';
 import { useTranslation } from 'react-i18next';
 
@@ -10,7 +11,7 @@ import LinearProgress from '@mui/material/LinearProgress';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import Toolbar from '@mui/material/Toolbar';
 
-import { Button, Card, Stack, Container, Typography, Box } from '@mui/material';
+import { Button, Card, Container, Box } from '@mui/material';
 import LogTableRow from './component/OrderTableRow';
 import KeywordTableHead from 'ui-component/TableHead';
 import TableToolBar from './component/OrderTableToolBar';
@@ -20,7 +21,12 @@ import { Icon } from '@iconify/react';
 import dayjs from 'dayjs';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 
-export default function Order() {
+export default function Order({
+  apiPath = '/api/payment/order',
+  storageKey = 'paymentOrder',
+  showUserId = true,
+  showGatewayId = true
+}) {
   const { t } = useTranslation();
 
   const originalKeyword = {
@@ -36,7 +42,7 @@ export default function Order() {
   const [page, setPage] = useState(0);
   const [order, setOrder] = useState('desc');
   const [orderBy, setOrderBy] = useState('created_at');
-  const [rowsPerPage, setRowsPerPage] = useState(() => getPageSize('paymentOrder'));
+  const [rowsPerPage, setRowsPerPage] = useState(() => getPageSize(storageKey));
   const [listCount, setListCount] = useState(0);
   const [searching, setSearching] = useState(false);
   const [toolBarValue, setToolBarValue] = useState(originalKeyword);
@@ -61,7 +67,7 @@ export default function Order() {
     const newRowsPerPage = parseInt(event.target.value, 10);
     setPage(0);
     setRowsPerPage(newRowsPerPage);
-    savePageSize('paymentOrder', newRowsPerPage);
+    savePageSize(storageKey, newRowsPerPage);
   };
 
   const searchLogs = async () => {
@@ -80,7 +86,7 @@ export default function Order() {
       if (orderBy) {
         orderBy = order === 'desc' ? '-' + orderBy : orderBy;
       }
-      const res = await API.get('/api/payment/order', {
+      const res = await API.get(apiPath, {
         params: {
           page: page + 1,
           size: rowsPerPage,
@@ -99,7 +105,27 @@ export default function Order() {
       console.error(error);
     }
     setSearching(false);
-  }, []);
+  }, [apiPath]);
+
+  const headLabel = useMemo(
+    () =>
+      [
+        { id: 'created_at', label: t('orderlogPage.tableHeaders.created_at'), disableSort: false },
+        { id: 'gateway_name', label: t('orderlogPage.tableHeaders.gateway_name'), disableSort: true },
+        { id: 'gateway_type', label: t('orderlogPage.tableHeaders.gateway_type'), disableSort: true },
+        showGatewayId ? { id: 'gateway_id', label: t('orderlogPage.tableHeaders.gateway_id'), disableSort: false } : null,
+        showUserId ? { id: 'user_id', label: t('orderlogPage.tableHeaders.user_id'), disableSort: false } : null,
+        { id: 'trade_no', label: t('orderlogPage.tableHeaders.trade_no'), disableSort: true },
+        { id: 'gateway_no', label: t('orderlogPage.tableHeaders.gateway_no'), disableSort: true },
+        { id: 'amount', label: t('orderlogPage.tableHeaders.amount'), disableSort: true },
+        { id: 'fee', label: t('orderlogPage.tableHeaders.fee'), disableSort: true },
+        { id: 'discount', label: t('orderlogPage.tableHeaders.discount'), disableSort: true },
+        { id: 'order_amount', label: t('orderlogPage.tableHeaders.order_amount'), disableSort: true },
+        { id: 'quota', label: t('orderlogPage.tableHeaders.quota'), disableSort: true },
+        { id: 'status', label: t('orderlogPage.tableHeaders.status'), disableSort: false }
+      ].filter(Boolean),
+    [showGatewayId, showUserId, t]
+  );
 
   // 处理刷新
   const handleRefresh = async () => {
@@ -118,7 +144,12 @@ export default function Order() {
     <>
       <Card>
         <Box component="form" noValidate>
-          <TableToolBar filterName={toolBarValue} handleFilterName={handleToolBarValue} />
+          <TableToolBar
+            filterName={toolBarValue}
+            handleFilterName={handleToolBarValue}
+            showGatewayId={showGatewayId}
+            showUserId={showUserId}
+          />
         </Box>
         <Toolbar
           sx={{
@@ -144,27 +175,10 @@ export default function Order() {
         <PerfectScrollbar component="div">
           <TableContainer sx={{ overflow: 'unset' }}>
             <Table sx={{ minWidth: 800 }}>
-              <KeywordTableHead
-                order={order}
-                orderBy={orderBy}
-                onRequestSort={handleSort}
-                headLabel={[
-                  { id: 'created_at', label: t('orderlogPage.tableHeaders.created_at'), disableSort: false },
-                  { id: 'gateway_id', label: t('orderlogPage.tableHeaders.gateway_id'), disableSort: false },
-                  { id: 'user_id', label: t('orderlogPage.tableHeaders.user_id'), disableSort: false },
-                  { id: 'trade_no', label: t('orderlogPage.tableHeaders.trade_no'), disableSort: true },
-                  { id: 'gateway_no', label: t('orderlogPage.tableHeaders.gateway_no'), disableSort: true },
-                  { id: 'amount', label: t('orderlogPage.tableHeaders.amount'), disableSort: true },
-                  { id: 'fee', label: t('orderlogPage.tableHeaders.fee'), disableSort: true },
-                  { id: 'discount', label: t('orderlogPage.tableHeaders.discount'), disableSort: true },
-                  { id: 'order_amount', label: t('orderlogPage.tableHeaders.order_amount'), disableSort: true },
-                  { id: 'quota', label: t('orderlogPage.tableHeaders.quota'), disableSort: true },
-                  { id: 'status', label: t('orderlogPage.tableHeaders.status'), disableSort: false }
-                ]}
-              />
+              <KeywordTableHead order={order} orderBy={orderBy} onRequestSort={handleSort} headLabel={headLabel} />
               <TableBody>
                 {orderList.map((row, index) => (
-                  <LogTableRow item={row} key={`${row.id}_${index}`} />
+                  <LogTableRow item={row} key={`${row.id}_${index}`} showGatewayId={showGatewayId} showUserId={showUserId} />
                 ))}
               </TableBody>
             </Table>
@@ -185,3 +199,10 @@ export default function Order() {
     </>
   );
 }
+
+Order.propTypes = {
+  apiPath: PropTypes.string,
+  storageKey: PropTypes.string,
+  showUserId: PropTypes.bool,
+  showGatewayId: PropTypes.bool
+};

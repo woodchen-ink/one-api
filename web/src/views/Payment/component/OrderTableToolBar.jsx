@@ -8,36 +8,40 @@ import { useTranslation } from 'react-i18next';
 import 'dayjs/locale/zh-cn';
 // ----------------------------------------------------------------------
 
-export default function OrderTableToolBar({ filterName, handleFilterName }) {
+export default function OrderTableToolBar({ filterName, handleFilterName, showGatewayId = true, showUserId = true }) {
   const { t } = useTranslation();
 
   return (
     <>
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 3, sm: 2, md: 4 }} padding={'24px'} paddingBottom={'0px'}>
-        <FormControl>
-          <InputLabel htmlFor="channel-gateway_id-label">{t('orderlogPage.gatewayIdLabel')}</InputLabel>
-          <OutlinedInput
-            id="gateway_id"
-            name="gateway_id"
-            sx={{ minWidth: '100%' }}
-            label={t('orderlogPage.gatewayIdLabel')}
-            value={filterName.gateway_id}
-            onChange={handleFilterName}
-            placeholder={t('orderlogPage.placeholder.gatewayId')}
-          />
-        </FormControl>
-        <FormControl>
-          <InputLabel htmlFor="channel-user_id-label">{t('orderlogPage.userIdLabel')}</InputLabel>
-          <OutlinedInput
-            id="user_id"
-            name="user_id"
-            sx={{ minWidth: '100%' }}
-            label={t('orderlogPage.userIdLabel')}
-            value={filterName.user_id}
-            onChange={handleFilterName}
-            placeholder={t('orderlogPage.placeholder.userId')}
-          />
-        </FormControl>
+        {showGatewayId && (
+          <FormControl>
+            <InputLabel htmlFor="channel-gateway_id-label">{t('orderlogPage.gatewayIdLabel')}</InputLabel>
+            <OutlinedInput
+              id="gateway_id"
+              name="gateway_id"
+              sx={{ minWidth: '100%' }}
+              label={t('orderlogPage.gatewayIdLabel')}
+              value={filterName.gateway_id}
+              onChange={handleFilterName}
+              placeholder={t('orderlogPage.placeholder.gatewayId')}
+            />
+          </FormControl>
+        )}
+        {showUserId && (
+          <FormControl>
+            <InputLabel htmlFor="channel-user_id-label">{t('orderlogPage.userIdLabel')}</InputLabel>
+            <OutlinedInput
+              id="user_id"
+              name="user_id"
+              sx={{ minWidth: '100%' }}
+              label={t('orderlogPage.userIdLabel')}
+              value={filterName.user_id}
+              onChange={handleFilterName}
+              placeholder={t('orderlogPage.placeholder.userId')}
+            />
+          </FormControl>
+        )}
         <FormControl>
           <InputLabel htmlFor="channel-trade_no-label">{t('orderlogPage.tradeNoLabel')}</InputLabel>
           <OutlinedInput
@@ -128,7 +132,7 @@ export default function OrderTableToolBar({ filterName, handleFilterName }) {
             {Object.values(StatusType).map((option) => {
               return (
                 <MenuItem key={option.value} value={option.value}>
-                  {option.name}
+                  {t(`orderlogPage.statusMap.${option.value}`)}
                 </MenuItem>
               );
             })}
@@ -141,5 +145,7 @@ export default function OrderTableToolBar({ filterName, handleFilterName }) {
 
 OrderTableToolBar.propTypes = {
   filterName: PropTypes.object,
-  handleFilterName: PropTypes.func
+  handleFilterName: PropTypes.func,
+  showGatewayId: PropTypes.bool,
+  showUserId: PropTypes.bool
 };

@@ -19,6 +19,8 @@ type Order struct {
 	ID            int            `json:"id"`
 	UserId        int            `json:"user_id"`
 	GatewayId     int            `json:"gateway_id"`
+	GatewayName   string         `json:"gateway_name" gorm:"-"`
+	GatewayType   string         `json:"gateway_type" gorm:"-"`
 	TradeNo       string         `json:"trade_no" gorm:"type:varchar(50);uniqueIndex"`
 	GatewayNo     string         `json:"gateway_no" gorm:"type:varchar(100)"`
 	Amount        int            `json:"amount" gorm:"default:0"`
@@ -109,7 +111,63 @@ func GetOrderList(params *SearchOrderParams) (*DataResult[Order], error) {
 		db = db.Where("created_at <= ?", params.EndTimestamp)
 	}
 
-	return PaginateAndOrder(db, &params.PaginationParams, &orders, allowedOrderFields)
+	result, err := PaginateAndOrder(db, &params.PaginationParams, &orders, allowedOrderFields)
+	if err != nil {
+		return nil, err
+	}
+
+	err = fillOrderPaymentInfo(*result.Data)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func fillOrderPaymentInfo(orders []*Order) error {
+	if len(orders) == 0 {
+		return nil
+	}
+
+	gatewayIDs := make([]int, 0, len(orders))
+	seenGatewayIDs := make(map[int]struct{}, len(orders))
+	for _, order := range orders {
+		if order == nil || order.GatewayId == 0 {
+			continue
+		}
+		if _, ok := seenGatewayIDs[order.GatewayId]; ok {
+			continue
+		}
+		seenGatewayIDs[order.GatewayId] = struct{}{}
+		gatewayIDs = append(gatewayIDs, order.GatewayId)
+	}
+
+	if len(gatewayIDs) == 0 {
+		return nil
+	}
+
+	var payments []*Payment
+	err := DB.Model(&Payment{}).Select("id, name, type").Where("id IN ?", gatewayIDs).Find(&payments).Error
+	if err != nil {
+		return err
+	}
+
+	paymentMap := make(map[int]*Payment, len(payments))
+	for _, payment := range payments {
+		paymentMap[payment.ID] = payment
+	}
+
+	for _, order := range orders {
+		if order == nil {
+			continue
+		}
+		if payment, ok := paymentMap[order.GatewayId]; ok {
+			order.GatewayName = payment.Name
+			order.GatewayType = payment.Type
+		}
+	}
+
+	return nil
 }
 
 type OrderStatistics struct {

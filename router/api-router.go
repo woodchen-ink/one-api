@@ -90,6 +90,7 @@ func SetApiRouter(router *gin.Engine) {
 				// selfRoute.GET("/aff", controller.GetAffCode)
 				selfRoute.POST("/topup", controller.TopUp)
 				selfRoute.GET("/payment", controller.GetUserPaymentList)
+				selfRoute.GET("/order", controller.GetUserOrderList)
 				selfRoute.POST("/order", controller.CreateOrder)
 				selfRoute.GET("/order/status", controller.CheckOrderStatus)
 			}

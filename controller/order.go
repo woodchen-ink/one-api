@@ -148,7 +148,6 @@ func PaymentCallback(c *gin.Context) {
 		logger.SysError(fmt.Sprintf("gateway callback failed to find order, trade_no: %s,", payNotify.TradeNo))
 		return
 	}
-	fmt.Println(order.Status, order.Status != model.OrderStatusPending)
 
 	if order.Status != model.OrderStatusPending {
 		return
@@ -200,6 +199,28 @@ func CheckOrderStatus(c *gin.Context) {
 	})
 }
 
+func GetUserOrderList(c *gin.Context) {
+	var params model.SearchOrderParams
+	if err := c.ShouldBindQuery(&params); err != nil {
+		common.APIRespondWithError(c, http.StatusOK, err)
+		return
+	}
+
+	params.UserId = c.GetInt("id")
+
+	orders, err := model.GetOrderList(&params)
+	if err != nil {
+		common.APIRespondWithError(c, http.StatusOK, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "",
+		"data":    orders,
+	})
+}
+
 // discountMoney优惠金额 fee手续费，payMoney实付金额
 // discountMoney优惠金额 fee手续费，payMoney实付金额
 func calculateOrderAmount(payment *model.Payment, amount int) (discountMoney, fee, payMoney float64) {
@@ -215,7 +236,7 @@ func calculateOrderAmount(payment *model.Payment, amount int) (discountMoney, fe
 	for thresholdStr, discountRate := range discountData {
 		threshold, err := strconv.Atoi(thresholdStr)
 		if err != nil {
-			fmt.Printf("Invalid threshold: %s\n", thresholdStr)
+			logger.SysError(fmt.Sprintf("invalid recharge discount threshold: %s", thresholdStr))
 			continue
 		}
 

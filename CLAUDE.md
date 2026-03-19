@@ -101,6 +101,7 @@ The provider system implements a plugin-based architecture in `providers/`:
 #### Frontend React Structure
 - `web/src/` - React application source
   - `views/` - Main application pages (Dashboard, Channel, User management, etc.)
+    - Includes a self-service order management page for users to review recharge orders and payment references
   - `layout/` - Layout components (MainLayout, MinimalLayout)
   - `ui-component/` - Reusable UI components and Material-UI wrappers
   - `contexts/` - React context providers (User, Status management)
@@ -124,6 +125,7 @@ The provider system implements a plugin-based architecture in `providers/`:
 - Channel load balancing, failover, and health monitoring
 - Real-time usage analytics and billing integration
 - Payment processing with multiple gateways
+- Users can review their own recharge orders, including trade numbers and gateway order numbers, from the web console
 - Telegram bot integration for user interactions
 - Prometheus metrics collection and monitoring
 - WebSocket support for real-time features

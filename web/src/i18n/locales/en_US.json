@@ -624,8 +624,10 @@
   "nova 映射": "nova mapping",
   "onyx 映射": "onyx mapping",
   "operation": "Operation",
+  "order": "Order Management",
   "orderlogPage": {
     "endTimeLabel": "End Time",
+    "emptyGatewayNo": "Waiting for gateway callback",
     "gatewayIdLabel": "Gateway ID",
     "gatewayNoLabel": "Gateway Order Number",
     "placeholder": {
@@ -643,11 +645,25 @@
       "status2": "Status 2",
       "status3": "Status 3"
     },
+    "statusMap": {
+      "closed": "Closed",
+      "failed": "Payment Failed",
+      "pending": "Pending Payment",
+      "success": "Payment Successful"
+    },
+    "paymentTypeMap": {
+      "alipay": "Alipay",
+      "epay": "EPay",
+      "stripe": "Stripe",
+      "wxpay": "WeChat Pay"
+    },
     "tableHeaders": {
       "amount": "Recharge Amount",
       "created_at": "Time",
       "discount": "Discount Amount",
       "fee": "Fee",
+      "gateway_name": "Gateway Name",
+      "gateway_type": "Payment Method",
       "gateway_id": "Payment Gateway",
       "gateway_no": "Gateway Order Number",
       "order_amount": "Actual Payment Amount",
