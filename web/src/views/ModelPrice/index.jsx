@@ -38,6 +38,7 @@ import ModelCard from './component/ModelCard';
 import ModelDetailModal from './component/ModelDetailModal';
 import { MODALITY_OPTIONS } from 'constants/Modality';
 import Label from 'ui-component/Label';
+import { extraRatiosConfig } from '../Pricing/component/config';
 
 // ----------------------------------------------------------------------
 export default function ModelPrice() {
@@ -45,6 +46,7 @@ export default function ModelPrice() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const ownedby = useSelector((state) => state.siteInfo?.ownedby);
+  const user = useSelector((state) => state.account?.user);
 
   const [availableModels, setAvailableModels] = useState({});
   const [modelInfoMap, setModelInfoMap] = useState({});
@@ -55,7 +57,6 @@ export default function ModelPrice() {
   const [selectedModality, setSelectedModality] = useState('all');
   const [selectedTag, setSelectedTag] = useState('all');
   const [unit, setUnit] = useState('M');
-  const [onlyShowAvailable, setOnlyShowAvailable] = useState(true);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [viewMode, setViewMode] = useState('card'); // 'card' or 'list'
@@ -113,14 +114,15 @@ export default function ModelPrice() {
       const { success, message, data } = res.data;
       if (success) {
         setUserGroupMap(data);
-        setSelectedGroup(Object.keys(data)[0]);
+        const currentGroupKey = user?.group && data[user.group] ? user.group : Object.keys(data)[0];
+        setSelectedGroup(currentGroupKey || '');
       } else {
         showError(message);
       }
     } catch (error) {
       console.error(error);
     }
-  }, []);
+  }, [user?.group]);
 
   useEffect(() => {
     fetchAvailableModels();
@@ -165,7 +167,7 @@ export default function ModelPrice() {
         if (selectedOwnedBy !== 'all' && model.owned_by !== selectedOwnedBy) return false;
 
         // 仅显示可用
-        if (onlyShowAvailable && !model.groups.includes(selectedGroup)) return false;
+        if (selectedGroup && !model.groups.includes(selectedGroup)) return false;
 
         // 搜索
         if (searchQuery) {
@@ -227,16 +229,22 @@ export default function ModelPrice() {
           return {
             groupName: grp.name,
             groupKey: key,
-            input: hasGroupAccess ? grp.ratio * model.price.input : 0,
-            output: hasGroupAccess ? grp.ratio * model.price.output : 0,
+            available: hasGroupAccess,
+            input: hasGroupAccess ? grp.ratio * model.price.input : null,
+            output: hasGroupAccess ? grp.ratio * model.price.output : null,
             type: model.price.type,
             ratio: grp.ratio,
             extraRatios:
               model.price.extra_ratios && hasGroupAccess
-                ? Object.fromEntries(Object.entries(model.price.extra_ratios).map(([k, v]) => [k, (grp.ratio * v).toFixed(6)]))
+                ? Object.fromEntries(Object.entries(model.price.extra_ratios).map(([k, v]) => [k, grp.ratio * v]))
                 : null
           };
         });
+
+        const selectedGroupExtraRatios =
+          model.price.extra_ratios && hasAccess
+            ? Object.fromEntries(Object.entries(model.price.extra_ratios).map(([k, v]) => [k, group.ratio * v]))
+            : null;
 
         return {
           model: modelName,
@@ -244,10 +252,16 @@ export default function ModelPrice() {
           modelInfo: modelInfoMap[modelName],
           price,
           group: hasAccess ? group : null,
+          hasAccess,
           type: model.price.type,
           priceData: {
             price: model.price,
-            allGroupPrices
+            allGroupPrices,
+            selectedGroupKey: selectedGroup,
+            selectedGroupName: group?.name,
+            selectedGroupHasAccess: hasAccess,
+            selectedGroupRatio: group?.ratio || 0,
+            selectedGroupExtraRatios
           }
         };
       })
@@ -259,7 +273,6 @@ export default function ModelPrice() {
   }, [
     availableModels,
     selectedOwnedBy,
-    onlyShowAvailable,
     selectedGroup,
     searchQuery,
     modelInfoMap,
@@ -280,7 +293,7 @@ export default function ModelPrice() {
   // 重置页码
   useEffect(() => {
     setPage(1);
-  }, [selectedOwnedBy, selectedGroup, searchQuery, selectedModality, selectedTag, onlyShowAvailable, pageSize]);
+  }, [selectedOwnedBy, selectedGroup, searchQuery, selectedModality, selectedTag, pageSize]);
 
   const handlePageChange = (event, value) => {
     setPage(value);
@@ -316,10 +329,6 @@ export default function ModelPrice() {
     }
   };
 
-  const toggleOnlyShowAvailable = () => {
-    setOnlyShowAvailable((prev) => !prev);
-  };
-
   const uniqueOwnedBy = [
     'all',
     ...[...new Set(Object.values(availableModels).map((model) => model.owned_by))].sort((a, b) => {
@@ -342,6 +351,10 @@ export default function ModelPrice() {
     } catch (e) {
       return [];
     }
+  };
+
+  const getExtraRatioName = (key) => {
+    return extraRatiosConfig.find((item) => item.key === key)?.name || key;
   };
 
   const clearSearch = () => {
@@ -802,225 +815,94 @@ export default function ModelPrice() {
 
         {/* 用户组标签 */}
         <Box sx={{ mb: 0 }}>
+          <Typography
+            variant="subtitle1"
+            sx={{
+              fontWeight: 600,
+              color: theme.palette.text.primary,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+              mb: 1.5
+            }}
+          >
+            <Icon icon="eva:people-outline" width={18} height={18} />
+            {t('modelpricePage.group')}
+          </Typography>
           <Box
             sx={{
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'space-between',
-              mb: 1.5
-            }}
-          >
-            <Typography
-              variant="subtitle1"
-              sx={{
-                fontWeight: 600,
-                color: theme.palette.text.primary,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1
-              }}
-            >
-              <Icon icon="eva:people-outline" width={18} height={18} />
-              {t('modelpricePage.group')}
-            </Typography>
-
-            <Tooltip title={onlyShowAvailable ? t('modelpricePage.showAll') : t('modelpricePage.onlyAvailable')} arrow>
-              <ButtonBase
-                onClick={toggleOnlyShowAvailable}
-                sx={{
-                  position: 'relative',
-                  borderRadius: '20px',
-                  overflow: 'hidden',
-                  transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
-                  '&:hover': {
-                    transform: 'translateY(-1px)',
-                    boxShadow: theme.palette.mode === 'dark' ? '0 3px 10px rgba(0,0,0,0.4)' : '0 3px 10px rgba(0,0,0,0.1)'
-                  },
-                  '&:active': {
-                    transform: 'translateY(0px)'
-                  }
-                }}
-              >
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1,
-                    py: 0.6,
-                    px: 1.5,
-                    background: onlyShowAvailable
-                      ? theme.palette.mode === 'dark'
-                        ? `linear-gradient(45deg, ${alpha(theme.palette.primary.main, 0.8)}, ${alpha(theme.palette.primary.dark, 0.9)})`
-                        : `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`
-                      : theme.palette.mode === 'dark'
-                        ? alpha(theme.palette.background.paper, 0.6)
-                        : alpha(theme.palette.background.paper, 1),
-                    border: `1px solid ${
-                      onlyShowAvailable
-                        ? theme.palette.primary.main
-                        : theme.palette.mode === 'dark'
-                          ? alpha('#fff', 0.1)
-                          : alpha('#000', 0.08)
-                    }`,
-                    borderRadius: '20px',
-                    boxShadow: onlyShowAvailable
-                      ? `0 2px 8px ${alpha(theme.palette.primary.main, 0.4)}`
-                      : theme.palette.mode === 'dark'
-                        ? '0 2px 6px rgba(0,0,0,0.2)'
-                        : '0 2px 6px rgba(0,0,0,0.05)'
-                  }}
-                >
-                  <Box
-                    sx={{
-                      width: 20,
-                      height: 20,
-                      borderRadius: '50%',
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      backgroundColor: onlyShowAvailable
-                        ? '#fff'
-                        : theme.palette.mode === 'dark'
-                          ? alpha(theme.palette.primary.main, 0.2)
-                          : alpha(theme.palette.primary.main, 0.1),
-                      transition: 'all 0.2s ease'
-                    }}
-                  >
-                    <Icon
-                      icon={onlyShowAvailable ? 'eva:checkmark-outline' : 'eva:funnel-outline'}
-                      width={14}
-                      height={14}
-                      color={onlyShowAvailable ? theme.palette.primary.main : theme.palette.text.secondary}
-                    />
-                  </Box>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      fontWeight: 600,
-                      color: onlyShowAvailable ? '#fff' : theme.palette.text.primary,
-                      fontSize: '0.75rem',
-                      letterSpacing: '0.01em',
-                      textTransform: 'uppercase'
-                    }}
-                  >
-                    {t('modelpricePage.onlyAvailable')}
-                  </Typography>
-                </Box>
-              </ButtonBase>
-            </Tooltip>
-          </Box>
-          <Box
-            sx={{
-              display: 'flex',
+              gap: 1,
               flexWrap: 'wrap',
-              gap: 1
+              p: 1.5,
+              borderRadius: '10px',
+              backgroundColor:
+                theme.palette.mode === 'dark' ? alpha(theme.palette.background.default, 0.5) : theme.palette.background.default,
+              border: `1px solid ${theme.palette.mode === 'dark' ? alpha('#fff', 0.08) : alpha('#000', 0.05)}`
             }}
           >
             {Object.entries(userGroupMap).map(([key, group]) => {
               const isSelected = selectedGroup === key;
+
               return (
-                <Tooltip
+                <ButtonBase
                   key={key}
-                  title={group.ratio > 0 ? `${t('modelpricePage.rate')}: x${group.ratio}` : t('modelpricePage.free')}
-                  arrow
+                  onClick={() => handleGroupChange(key)}
+                  sx={{
+                    borderRadius: '6px',
+                    overflow: 'hidden',
+                    transition: 'all 0.2s ease',
+                    transform: isSelected ? 'translateY(-1px)' : 'none',
+                    '&:hover': {
+                      transform: 'translateY(-1px)'
+                    }
+                  }}
                 >
-                  <ButtonBase
-                    onClick={() => handleGroupChange(key)}
+                  <Box
                     sx={{
-                      position: 'relative',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      py: 0.75,
+                      px: 1.5,
                       borderRadius: '6px',
-                      overflow: 'hidden',
-                      transition: 'all 0.2s ease',
-                      transform: isSelected ? 'translateY(-1px)' : 'none',
-                      '&:hover': {
-                        transform: 'translateY(-1px)'
-                      }
+                      backgroundColor: isSelected
+                        ? alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.25 : 0.1)
+                        : theme.palette.mode === 'dark'
+                          ? alpha(theme.palette.background.paper, 0.6)
+                          : alpha(theme.palette.background.paper, 1),
+                      border: `1px solid ${
+                        isSelected ? theme.palette.primary.main : theme.palette.mode === 'dark' ? alpha('#fff', 0.08) : alpha('#000', 0.05)
+                      }`
                     }}
                   >
-                    <Box
+                    <Icon
+                      icon={isSelected ? 'eva:checkmark-circle-2-fill' : 'eva:radio-button-off-outline'}
+                      width={16}
+                      height={16}
+                      color={isSelected ? theme.palette.primary.main : theme.palette.text.secondary}
+                    />
+                    <Typography
+                      variant="body2"
                       sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1,
-                        py: 0.75,
-                        px: 1.5,
-                        borderRadius: '6px',
-                        backgroundColor: isSelected
-                          ? alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.25 : 0.1)
-                          : theme.palette.mode === 'dark'
-                            ? alpha(theme.palette.background.default, 0.5)
-                            : theme.palette.background.default,
-                        border: `1px solid ${
-                          isSelected
-                            ? theme.palette.primary.main
-                            : theme.palette.mode === 'dark'
-                              ? alpha('#fff', 0.08)
-                              : alpha('#000', 0.05)
-                        }`,
-                        boxShadow: isSelected ? `0 2px 8px ${alpha(theme.palette.primary.main, 0.2)}` : 'none'
+                        fontWeight: isSelected ? 600 : 500,
+                        color: isSelected ? theme.palette.primary.main : theme.palette.text.primary,
+                        fontSize: '0.8125rem'
                       }}
                     >
-                      <Icon
-                        icon={isSelected ? 'eva:checkmark-circle-2-fill' : 'eva:radio-button-off-outline'}
-                        width={16}
-                        height={16}
-                        color={isSelected ? theme.palette.primary.main : theme.palette.text.secondary}
-                      />
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          fontWeight: isSelected ? 600 : 500,
-                          color: isSelected ? theme.palette.primary.main : theme.palette.text.primary,
-                          fontSize: '0.8125rem'
-                        }}
-                      >
-                        {group.name}
-                      </Typography>
-                      {group.ratio > 0 ? (
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            minWidth: 24,
-                            height: 16,
-                            borderRadius: '4px',
-                            backgroundColor:
-                              group.ratio > 1
-                                ? alpha(theme.palette.warning.main, theme.palette.mode === 'dark' ? 0.3 : 0.2)
-                                : alpha(theme.palette.info.main, theme.palette.mode === 'dark' ? 0.3 : 0.2),
-                            color: group.ratio > 1 ? theme.palette.warning.main : theme.palette.info.main,
-                            fontSize: '0.6875rem',
-                            fontWeight: 600,
-                            px: 0.5
-                          }}
-                        >
-                          x{group.ratio}
-                        </Box>
-                      ) : (
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            minWidth: 24,
-                            height: 16,
-                            borderRadius: '4px',
-                            backgroundColor: alpha(theme.palette.success.main, theme.palette.mode === 'dark' ? 0.3 : 0.2),
-                            color: theme.palette.success.main,
-                            fontSize: '0.6875rem',
-                            fontWeight: 600,
-                            px: 0.5
-                          }}
-                        >
-                          {t('modelpricePage.free')}
-                        </Box>
-                      )}
-                    </Box>
-                  </ButtonBase>
-                </Tooltip>
+                      {group.name}
+                    </Typography>
+                    <Label color={group.ratio > 1 ? 'warning' : 'info'} variant="soft" sx={{ fontSize: '0.7rem' }}>
+                      x{group.ratio}
+                    </Label>
+                  </Box>
+                </ButtonBase>
               );
             })}
+            <Typography variant="body2" color="text.secondary">
+              仅展示当前分组可用的模型
+            </Typography>
           </Box>
         </Box>
       </Card>
@@ -1042,6 +924,8 @@ export default function ModelPrice() {
                       modelInfo={model.modelInfo}
                       price={model.price}
                       group={model.group}
+                      hasAccess={model.hasAccess}
+                      extraRatios={model.priceData.selectedGroupExtraRatios}
                       ownedbyIcon={getIconByName(model.provider)}
                       unit={unit}
                       type={model.type}
@@ -1059,8 +943,10 @@ export default function ModelPrice() {
                       <TableCell>{t('modelpricePage.modelName')}</TableCell>
                       <TableCell align="center">{t('modelpricePage.type')}</TableCell>
                       <TableCell align="center">{t('modelpricePage.provider')}</TableCell>
+                      <TableCell align="center">{t('modelpricePage.group')}</TableCell>
                       <TableCell align="left">{t('modelpricePage.inputPrice')}</TableCell>
                       <TableCell align="left">{t('modelpricePage.outputPrice')}</TableCell>
+                      <TableCell align="left">{t('modelpricePage.extraRatios')}</TableCell>
                       <TableCell align="center">{t('common.action')}</TableCell>
                     </TableRow>
                   </TableHead>
@@ -1135,47 +1021,58 @@ export default function ModelPrice() {
                             <Typography variant="body2">{model.provider}</Typography>
                           </Box>
                         </TableCell>
-                        <TableCell align="left">
-                          <Stack spacing={0.5}>
-                            {model.priceData.allGroupPrices.map((groupPrice) => (
-                              <Box key={groupPrice.groupKey} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <Typography variant="caption" color="text.secondary" sx={{ minWidth: 40 }}>
-                                  {groupPrice.groupName}:
-                                </Typography>
-                                <Typography variant="body2" color="success.main" fontWeight="bold">
-                                  {groupPrice.input > 0
-                                    ? formatPrice(groupPrice.input, model.type === 'tokens' ? 'tokens' : 'times')
-                                    : t('modelpricePage.free')}
-                                </Typography>
-                                {groupPrice.input > 0 && (
-                                  <Typography variant="caption" color="success.main">
-                                    (x{groupPrice.ratio})
-                                  </Typography>
-                                )}
-                              </Box>
-                            ))}
-                          </Stack>
+                        <TableCell align="center">
+                          {model.hasAccess ? (
+                            <Stack direction="row" spacing={0.5} justifyContent="center" alignItems="center">
+                              <Label color="primary" variant="soft">
+                                {model.priceData.selectedGroupName}
+                              </Label>
+                              <Label color={model.priceData.selectedGroupRatio > 1 ? 'warning' : 'info'} variant="soft">
+                                x{model.priceData.selectedGroupRatio}
+                              </Label>
+                            </Stack>
+                          ) : (
+                            <Label color="default" variant="outlined">
+                              {t('modelpricePage.noneGroup')}
+                            </Label>
+                          )}
                         </TableCell>
                         <TableCell align="left">
-                          <Stack spacing={0.5}>
-                            {model.priceData.allGroupPrices.map((groupPrice) => (
-                              <Box key={groupPrice.groupKey} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <Typography variant="caption" color="text.secondary" sx={{ minWidth: 40 }}>
-                                  {groupPrice.groupName}:
-                                </Typography>
-                                <Typography variant="body2" color="success.main" fontWeight="bold">
-                                  {groupPrice.output > 0
-                                    ? formatPrice(groupPrice.output, model.type === 'tokens' ? 'tokens' : 'times')
-                                    : t('modelpricePage.free')}
-                                </Typography>
-                                {groupPrice.output > 0 && (
-                                  <Typography variant="caption" color="success.main">
-                                    (x{groupPrice.ratio})
-                                  </Typography>
-                                )}
-                              </Box>
-                            ))}
-                          </Stack>
+                          {model.hasAccess ? (
+                            <Label color="success" variant="outlined">
+                              {formatPrice(model.price.input, model.type === 'tokens' ? 'tokens' : 'times')}
+                            </Label>
+                          ) : (
+                            <Typography variant="body2" color="text.secondary">
+                              {t('modelpricePage.noneGroup')}
+                            </Typography>
+                          )}
+                        </TableCell>
+                        <TableCell align="left">
+                          {model.hasAccess ? (
+                            <Label color="warning" variant="outlined">
+                              {formatPrice(model.price.output, model.type === 'tokens' ? 'tokens' : 'times')}
+                            </Label>
+                          ) : (
+                            <Typography variant="body2" color="text.secondary">
+                              {t('modelpricePage.noneGroup')}
+                            </Typography>
+                          )}
+                        </TableCell>
+                        <TableCell align="left">
+                          {model.hasAccess && model.priceData.selectedGroupExtraRatios ? (
+                            <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
+                              {Object.entries(model.priceData.selectedGroupExtraRatios).map(([key, value]) => (
+                                <Label key={key} color="default" variant="soft" sx={{ maxWidth: 220 }}>
+                                  {`${getExtraRatioName(key)}: ${formatPrice(value, 'tokens')}`}
+                                </Label>
+                              ))}
+                            </Stack>
+                          ) : (
+                            <Typography variant="body2" color="text.secondary">
+                              {model.hasAccess ? '-' : t('modelpricePage.noneGroup')}
+                            </Typography>
+                          )}
                         </TableCell>
                         <TableCell align="center">
                           <IconButton onClick={() => handleViewDetail(model)} size="small">

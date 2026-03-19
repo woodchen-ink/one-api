@@ -24,6 +24,7 @@ import Label from 'ui-component/Label';
 import { MODALITY_OPTIONS } from 'constants/Modality';
 import { copy } from 'utils/common';
 import { useTranslation } from 'react-i18next';
+import { extraRatiosConfig } from '../../Pricing/component/config';
 
 // ----------------------------------------------------------------------
 
@@ -259,6 +260,29 @@ export default function ModelDetailModal({ open, onClose, model, provider, model
           </Typography>
 
           {/* 价格表格 */}
+          {priceData?.selectedGroupName && (
+            <Box
+              sx={{
+                mb: 2,
+                p: 1.5,
+                borderRadius: '8px',
+                backgroundColor: priceData.selectedGroupHasAccess
+                  ? alpha(theme.palette.primary.main, 0.08)
+                  : alpha(theme.palette.warning.main, 0.1),
+                border: `1px solid ${
+                  priceData.selectedGroupHasAccess ? alpha(theme.palette.primary.main, 0.2) : alpha(theme.palette.warning.main, 0.25)
+                }`
+              }}
+            >
+              <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>
+                当前查看分组：{priceData.selectedGroupName}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                当前倍率 x{priceData.selectedGroupRatio}
+              </Typography>
+            </Box>
+          )}
+
           <TableContainer
             sx={{
               border: `1px solid ${theme.palette.mode === 'dark' ? alpha('#fff', 0.08) : alpha('#000', 0.08)}`,
@@ -284,14 +308,26 @@ export default function ModelDetailModal({ open, onClose, model, provider, model
                         </Label>
                       </TableCell>
                       <TableCell>
-                        <Label color="success" variant="outlined">
-                          {formatPrice(groupPrice.input, groupPrice?.type)}
-                        </Label>
+                        {groupPrice.available ? (
+                          <Label color="success" variant="outlined">
+                            {formatPrice(groupPrice.input, groupPrice?.type)}
+                          </Label>
+                        ) : (
+                          <Label color="default" variant="outlined">
+                            {t('modelpricePage.noneGroup')}
+                          </Label>
+                        )}
                       </TableCell>
                       <TableCell>
-                        <Label color="warning" variant="outlined">
-                          {formatPrice(groupPrice.output, groupPrice?.type)}
-                        </Label>
+                        {groupPrice.available ? (
+                          <Label color="warning" variant="outlined">
+                            {formatPrice(groupPrice.output, groupPrice?.type)}
+                          </Label>
+                        ) : (
+                          <Label color="default" variant="outlined">
+                            {t('modelpricePage.noneGroup')}
+                          </Label>
+                        )}
                       </TableCell>
                     </TableRow>
                   );
@@ -302,7 +338,7 @@ export default function ModelDetailModal({ open, onClose, model, provider, model
         </Box>
 
         {/* 其他信息 */}
-        {priceData?.price?.extra_ratios && Object.keys(priceData.price.extra_ratios).length > 0 && (
+        {priceData?.selectedGroupExtraRatios && Object.keys(priceData.selectedGroupExtraRatios).length > 0 && (
           <Box sx={{ mt: 3 }}>
             <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
               <Icon icon="eva:bar-chart-outline" width={20} height={20} />
@@ -311,10 +347,10 @@ export default function ModelDetailModal({ open, onClose, model, provider, model
               </Typography>
             </Stack>
             <Stack spacing={1}>
-              {Object.entries(priceData.price.extra_ratios).map(([key, value]) => (
+              {Object.entries(priceData.selectedGroupExtraRatios).map(([key, value]) => (
                 <Stack key={key} direction="row" alignItems="center" spacing={2}>
                   <Typography variant="body2" color="text.secondary" sx={{ minWidth: 80 }}>
-                    {extraPriceNames[key] || key}:
+                    {extraRatiosConfig.find((item) => item.key === key)?.name || extraPriceNames[key] || key}:
                   </Typography>
                   <Typography variant="body2" sx={{ fontWeight: 500 }}>
                     {formatPrice(value, 'tokens')}

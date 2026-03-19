@@ -7,9 +7,22 @@ import Label from 'ui-component/Label';
 import { MODALITY_OPTIONS } from 'constants/Modality';
 import { copy } from 'utils/common';
 import { useTranslation } from 'react-i18next';
+import { extraRatiosConfig } from '../../Pricing/component/config';
 // ----------------------------------------------------------------------
 
-export default function ModelCard({ model, provider, modelInfo, price, group, ownedbyIcon, type, formatPrice, onViewDetail }) {
+export default function ModelCard({
+  model,
+  provider,
+  modelInfo,
+  price,
+  group,
+  hasAccess,
+  extraRatios,
+  ownedbyIcon,
+  type,
+  formatPrice,
+  onViewDetail
+}) {
   const theme = useTheme();
   const { t } = useTranslation();
   // 解析输入输出模态
@@ -33,6 +46,7 @@ export default function ModelCard({ model, provider, modelInfo, price, group, ow
   const inputModalities = modelInfo ? getModalities(modelInfo.input_modalities) : [];
   const outputModalities = modelInfo ? getModalities(modelInfo.output_modalities) : [];
   const tags = modelInfo ? getTags(modelInfo.tags) : [];
+  const getExtraRatioName = (key) => extraRatiosConfig.find((item) => item.key === key)?.name || key;
 
   const isPriceAvailable = typeof price.input === 'number' && typeof price.output === 'number';
 
@@ -290,6 +304,21 @@ export default function ModelCard({ model, provider, modelInfo, price, group, ow
               </Stack>
             </Box>
           )}
+
+          {hasAccess && extraRatios && Object.keys(extraRatios).length > 0 && (
+            <Box sx={{ mt: 1.5 }}>
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.75, fontSize: '0.7rem' }}>
+                {t('modelpricePage.extraRatios')}
+              </Typography>
+              <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
+                {Object.entries(extraRatios).map(([key, value]) => (
+                  <Label key={key} color="default" variant="soft" sx={{ fontSize: '0.68rem', py: 0.2, px: 0.65 }}>
+                    {`${getExtraRatioName(key)}: ${formatPrice(value, 'tokens')}`}
+                  </Label>
+                ))}
+              </Stack>
+            </Box>
+          )}
         </Box>
 
         {/* 操作按钮 */}
@@ -322,6 +351,8 @@ ModelCard.propTypes = {
   modelInfo: PropTypes.object,
   price: PropTypes.object.isRequired,
   group: PropTypes.object,
+  hasAccess: PropTypes.bool,
+  extraRatios: PropTypes.object,
   ownedbyIcon: PropTypes.string,
   unit: PropTypes.string,
   type: PropTypes.string,
