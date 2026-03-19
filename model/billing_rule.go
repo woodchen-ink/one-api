@@ -2,7 +2,6 @@ package model
 
 import (
 	"fmt"
-	"czloapi/common/config"
 	"sort"
 	"strings"
 )
@@ -181,13 +180,11 @@ func (r BillingRule) Validate(index int) error {
 }
 
 func (p *Price) GetBillingRules() []BillingRule {
-	rules := []BillingRule(nil)
-	if p.BillingRules != nil {
-		rules = p.BillingRules.Data()
+	if p.BillingRules == nil {
+		return nil
 	}
-	if len(rules) == 0 {
-		rules = getImplicitBillingRulesForModel(p.Model)
-	}
+
+	rules := p.BillingRules.Data()
 	if len(rules) == 0 {
 		return nil
 	}
@@ -201,47 +198,6 @@ func (p *Price) GetBillingRules() []BillingRule {
 		}
 	}
 	return copied
-}
-
-func getImplicitBillingRulesForModel(modelName string) []BillingRule {
-	switch {
-	case strings.HasPrefix(modelName, "gpt-5.4-pro"), strings.HasPrefix(modelName, "gpt-5.4"):
-		return []BillingRule{
-			{
-				Name:     "builtin-openai-long-context",
-				Priority: 100,
-				Strategy: BillingRuleStrategyMultiply,
-				Match: BillingRuleMatch{
-					PromptTokensGT: intPtr(272000),
-				},
-				Input:  floatPtr(2),
-				Output: floatPtr(1.5),
-				ExtraRatios: map[string]float64{
-					config.UsageExtraCache:      2,
-					config.UsageExtraCachedRead: 2,
-				},
-			},
-		}
-	case strings.HasPrefix(modelName, "gemini-2.5-pro"):
-		return []BillingRule{
-			{
-				Name:     "builtin-gemini-long-prompt",
-				Priority: 100,
-				Strategy: BillingRuleStrategyMultiply,
-				Match: BillingRuleMatch{
-					PromptTokensGT: intPtr(200000),
-				},
-				Input:  floatPtr(2),
-				Output: floatPtr(1.5),
-				ExtraRatios: map[string]float64{
-					config.UsageExtraCache:       2,
-					config.UsageExtraCachedWrite: 2,
-				},
-			},
-		}
-	default:
-		return nil
-	}
 }
 
 func (p *Price) ValidateBillingRules() error {
@@ -371,12 +327,4 @@ func cloneFloatMap(source map[string]float64) map[string]float64 {
 	}
 
 	return target
-}
-
-func intPtr(value int) *int {
-	return &value
-}
-
-func floatPtr(value float64) *float64 {
-	return &value
 }

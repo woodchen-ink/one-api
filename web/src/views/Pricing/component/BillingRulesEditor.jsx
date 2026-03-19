@@ -160,36 +160,45 @@ export default function BillingRulesEditor({ value = [], onChange, priceStartAdo
                     <Typography variant="body2" fontWeight={600} sx={{ mb: 1 }}>
                       匹配条件
                     </Typography>
-                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} flexWrap="wrap">
+                    <Box
+                      sx={{
+                        display: 'grid',
+                        gridTemplateColumns: {
+                          xs: '1fr',
+                          sm: 'repeat(2, minmax(0, 1fr))'
+                        },
+                        gap: 2
+                      }}
+                    >
                       <TextField
+                        fullWidth
                         label="Prompt >"
                         type="number"
                         value={rule?.match?.prompt_tokens_gt ?? ''}
                         onChange={(event) => handleMatchChange(index, 'prompt_tokens_gt', event.target.value)}
-                        sx={{ minWidth: 160 }}
                       />
                       <TextField
+                        fullWidth
                         label="Prompt <="
                         type="number"
                         value={rule?.match?.prompt_tokens_lte ?? ''}
                         onChange={(event) => handleMatchChange(index, 'prompt_tokens_lte', event.target.value)}
-                        sx={{ minWidth: 160 }}
                       />
                       <TextField
+                        fullWidth
                         label="Request >"
                         type="number"
                         value={rule?.match?.request_tokens_gt ?? ''}
                         onChange={(event) => handleMatchChange(index, 'request_tokens_gt', event.target.value)}
-                        sx={{ minWidth: 160 }}
                       />
                       <TextField
+                        fullWidth
                         label="Request <="
                         type="number"
                         value={rule?.match?.request_tokens_lte ?? ''}
                         onChange={(event) => handleMatchChange(index, 'request_tokens_lte', event.target.value)}
-                        sx={{ minWidth: 160 }}
                       />
-                    </Stack>
+                    </Box>
                   </Box>
 
                   <Box>

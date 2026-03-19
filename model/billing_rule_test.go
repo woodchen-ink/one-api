@@ -9,6 +9,14 @@ import (
 	"gorm.io/datatypes"
 )
 
+func intPtr(value int) *int {
+	return &value
+}
+
+func floatPtr(value float64) *float64 {
+	return &value
+}
+
 func TestPriceResolveBillingAppliesOverrideAndMultiplyRules(t *testing.T) {
 	extraRatios := datatypes.NewJSONType(map[string]float64{
 		config.UsageExtraCachedRead: 0.25,
@@ -56,22 +64,5 @@ func TestPriceResolveBillingAppliesOverrideAndMultiplyRules(t *testing.T) {
 	if assert.Len(t, resolution.MatchedRules, 2) {
 		assert.Equal(t, "long-context", resolution.MatchedRules[0].Name)
 		assert.Equal(t, "cached-read-premium", resolution.MatchedRules[1].Name)
-	}
-}
-
-func TestPriceResolveBillingUsesImplicitRulesWhenExplicitRulesMissing(t *testing.T) {
-	price := &Price{
-		Model:  "gemini-2.5-pro",
-		Type:   TokensPriceType,
-		Input:  1.25,
-		Output: 10,
-	}
-
-	resolution := price.ResolveBilling(NewBillingContext(250001, 250001))
-
-	assert.Equal(t, 2.5, resolution.Input)
-	assert.Equal(t, 15.0, resolution.Output)
-	if assert.Len(t, resolution.MatchedRules, 1) {
-		assert.Equal(t, "builtin-gemini-long-prompt", resolution.MatchedRules[0].Name)
 	}
 }
