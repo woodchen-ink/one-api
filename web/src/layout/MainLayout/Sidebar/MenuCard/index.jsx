@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 
 // material-ui
 import { styled, useTheme, alpha } from '@mui/material/styles';
-import { Avatar, Card, CardContent, Box, Typography, Chip, LinearProgress, Stack, Tooltip, Button } from '@mui/material';
+import { Avatar, Card, CardContent, Box, Typography, Chip, LinearProgress, Stack, Button } from '@mui/material';
 import User1 from 'assets/images/users/user-round.svg';
 import { useNavigate } from 'react-router-dom';
 import { IconHeadset } from '@tabler/icons-react';
@@ -68,18 +68,18 @@ const MenuCard = () => {
   const { t } = useTranslation();
   const [balance, setBalance] = useState(0);
   const [usedQuota, setUsedQuota] = useState(0);
-  const [requestCount, setRequestCount] = useState(0);
 
   const quotaPerUnit = localStorage.getItem('quota_per_unit') || 500000;
 
-  const totalQuota = parseFloat(balance) + parseFloat(usedQuota);
-  const progressValue = (parseFloat(usedQuota) / totalQuota) * 100;
+  const balanceValue = parseFloat(balance) || 0;
+  const usedQuotaValue = parseFloat(usedQuota) || 0;
+  const totalQuota = balanceValue + usedQuotaValue;
+  const progressValue = totalQuota > 0 ? (usedQuotaValue / totalQuota) * 100 : 0;
 
   useEffect(() => {
     if (user) {
       setBalance(((user.quota || 0) / quotaPerUnit).toFixed(2));
       setUsedQuota(((user.used_quota || 0) / quotaPerUnit).toFixed(2));
-      setRequestCount(user.request_count || 0);
     }
   }, [user, quotaPerUnit]);
 
@@ -158,26 +158,38 @@ const MenuCard = () => {
         </Stack>
 
         <Box sx={{ mt: 1 }}>
-          <Stack direction="row" alignItems="center" mb={0.5}>
+          <Box
+            sx={{
+              mb: 1,
+              p: 1.25,
+              borderRadius: 2,
+              border: `1px solid ${alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.28 : 0.14)}`,
+              background:
+                theme.palette.mode === 'dark'
+                  ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.18)} 0%, ${alpha(theme.palette.background.paper, 0.08)} 100%)`
+                  : `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.primary.light, 0.16)} 100%)`
+            }}
+          >
             <Typography
               variant="body2"
               color="text.secondary"
-              sx={{ fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: 0.5, mr: 'auto' }}
+              sx={{ fontSize: '0.72rem', display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.35 }}
             >
-              <Icon icon="solar:wallet-money-linear" width={12} />
-              {t('sidebar.remainingBalance')}: ${balance}
+              <Icon icon="solar:wallet-money-linear" width={13} />
+              {t('sidebar.remainingBalance')}
             </Typography>
-            <Tooltip title={t('dashboard_index.calls')}>
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{ fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: 0.5 }}
-              >
-                <Icon icon="solar:call-linear" width={12} />
-                {new Intl.NumberFormat().format(requestCount)}
-              </Typography>
-            </Tooltip>
-          </Stack>
+            <Typography
+              sx={{
+                fontSize: '1.35rem',
+                fontWeight: 800,
+                lineHeight: 1.1,
+                letterSpacing: '-0.02em',
+                color: theme.palette.text.primary
+              }}
+            >
+              ${balance}
+            </Typography>
+          </Box>
 
           <Box sx={{ position: 'relative' }}>
             <ProgressBarWrapper>
@@ -191,19 +203,28 @@ const MenuCard = () => {
                 }}
               />
             </ProgressBarWrapper>
-            <Typography
-              variant="caption"
-              component="div"
-              sx={{
-                fontSize: '0.7rem',
-                color: 'text.secondary',
-                position: 'relative',
-                textAlign: 'right',
-                mt: 0.5
-              }}
-            >
-              {`$${usedQuota} (${Math.round(progressValue)}%)`}
-            </Typography>
+            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 0.5 }}>
+              <Typography
+                variant="caption"
+                component="div"
+                sx={{
+                  fontSize: '0.7rem',
+                  color: 'text.secondary'
+                }}
+              >
+                {`${t('token_index.usedQuota')}: $${usedQuota}`}
+              </Typography>
+              <Typography
+                variant="caption"
+                component="div"
+                sx={{
+                  fontSize: '0.7rem',
+                  color: 'text.secondary'
+                }}
+              >
+                {`${Math.round(progressValue)}%`}
+              </Typography>
+            </Stack>
           </Box>
         </Box>
         <Button
