@@ -59,14 +59,14 @@ func setOpenAIRouter(router *gin.Engine) {
 
 func setClaudeRouter(router *gin.Engine) {
 	rootClaudeRouter := router.Group("/v1")
-	rootClaudeRouter.Use(middleware.APIEnabled("claude"), middleware.RelayCluadePanicRecover(), middleware.ClaudeAuth(), middleware.Distribute(), middleware.DynamicRedisRateLimiter())
+	rootClaudeRouter.Use(middleware.RelayCluadePanicRecover(), middleware.ClaudeAuth(), middleware.Distribute(), middleware.DynamicRedisRateLimiter())
 	{
 		rootClaudeRouter.POST("/messages", relay.Relay)
 	}
 
 	relayClaudeRouter := router.Group("/claude")
 	relayV1Router := relayClaudeRouter.Group("/v1")
-	relayV1Router.Use(middleware.APIEnabled("claude"), middleware.RelayCluadePanicRecover(), middleware.ClaudeAuth(), middleware.Distribute(), middleware.DynamicRedisRateLimiter())
+	relayV1Router.Use(middleware.RelayCluadePanicRecover(), middleware.ClaudeAuth(), middleware.Distribute(), middleware.DynamicRedisRateLimiter())
 	{
 		relayV1Router.POST("/messages", relay.Relay)
 		relayV1Router.GET("/models", relay.ListClaudeModelsByToken)
@@ -75,7 +75,7 @@ func setClaudeRouter(router *gin.Engine) {
 
 func setGeminiRouter(router *gin.Engine) {
 	rootGeminiRouter := router.Group("/")
-	rootGeminiRouter.Use(middleware.APIEnabled("gemini"), middleware.RelayGeminiPanicRecover(), middleware.GeminiAuth(), middleware.Distribute(), middleware.DynamicRedisRateLimiter())
+	rootGeminiRouter.Use(middleware.RelayGeminiPanicRecover(), middleware.GeminiAuth(), middleware.Distribute(), middleware.DynamicRedisRateLimiter())
 	{
 		rootGeminiRouter.POST("/v1/models/:model", relay.Relay)
 		rootGeminiRouter.POST("/v1beta/models/:model", relay.Relay)
@@ -83,7 +83,7 @@ func setGeminiRouter(router *gin.Engine) {
 	}
 
 	relayGeminiRouter := router.Group("/gemini")
-	relayGeminiRouter.Use(middleware.APIEnabled("gemini"), middleware.RelayGeminiPanicRecover(), middleware.GeminiAuth(), middleware.Distribute(), middleware.DynamicRedisRateLimiter())
+	relayGeminiRouter.Use(middleware.RelayGeminiPanicRecover(), middleware.GeminiAuth(), middleware.Distribute(), middleware.DynamicRedisRateLimiter())
 	{
 		relayGeminiRouter.POST("/:version/models/:model", relay.Relay)
 		relayGeminiRouter.GET("/:version/models", relay.ListGeminiModelsByToken)

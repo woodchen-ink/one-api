@@ -56,8 +56,6 @@ const OperationSetting = () => {
     RechargeDiscount: '',
     CFWorkerImageUrl: '',
     CFWorkerImageKey: '',
-    ClaudeAPIEnabled: '',
-    GeminiAPIEnabled: '',
     DisableChannelKeywords: '',
     EnableSafe: '',
     SafeToolName: '',
@@ -493,23 +491,6 @@ const OperationSetting = () => {
       </SubCard>
       <SubCard title={t('setting_index.operationSettings.otherSettings.title')}>
         <Stack justifyContent="flex-start" alignItems="flex-start" spacing={2}>
-          <Stack
-            direction={{ sm: 'column', md: 'row' }}
-            spacing={{ xs: 3, sm: 2, md: 4 }}
-            justifyContent="flex-start"
-            alignItems="flex-start"
-          >
-            <FormControlLabel
-              sx={{ marginLeft: '0px' }}
-              label={t('setting_index.operationSettings.otherSettings.claudeAPIEnabled')}
-              control={<Checkbox checked={inputs.ClaudeAPIEnabled === 'true'} onChange={handleInputChange} name="ClaudeAPIEnabled" />}
-            />
-            <FormControlLabel
-              sx={{ marginLeft: '0px' }}
-              label={t('setting_index.operationSettings.otherSettings.geminiAPIEnabled')}
-              control={<Checkbox checked={inputs.GeminiAPIEnabled === 'true'} onChange={handleInputChange} name="GeminiAPIEnabled" />}
-            />
-          </Stack>
           <Stack spacing={2}>
             <Alert severity="info">{t('setting_index.operationSettings.otherSettings.alert')}</Alert>
             <FormControl>

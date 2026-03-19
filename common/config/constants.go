@@ -210,12 +210,6 @@ var UPTIMEKUMA_ENABLE = false
 var UPTIMEKUMA_DOMAIN = ""
 var UPTIMEKUMA_STATUS_PAGE_NAME = ""
 
-// Gemini
-var GeminiAPIEnabled = true
-
-// Claude
-var ClaudeAPIEnabled = true
-
 const (
 	RoleGuestUser    = 0
 	RoleCommonUser   = 1

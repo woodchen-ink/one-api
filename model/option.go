@@ -112,9 +112,6 @@ func InitOptionMap() {
 	config.GlobalOption.RegisterInt("OldTokenMaxId", &config.OldTokenMaxId)
 	config.GlobalOption.RegisterBool("GitHubOldIdCloseEnabled", &config.GitHubOldIdCloseEnabled)
 
-	config.GlobalOption.RegisterBool("GeminiAPIEnabled", &config.GeminiAPIEnabled)
-	config.GlobalOption.RegisterBool("ClaudeAPIEnabled", &config.ClaudeAPIEnabled)
-
 	config.GlobalOption.RegisterCustom("DisableChannelKeywords", func() string {
 		return common.DisableChannelKeywordsInstance.GetKeywords()
 	}, func(value string) error {
