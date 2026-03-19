@@ -4,13 +4,13 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"czloapi/common"
+	"czloapi/common/utils"
+	"czloapi/types"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
-	"czloapi/common"
-	"czloapi/common/utils"
-	"czloapi/types"
 	"strconv"
 	"strings"
 
@@ -74,6 +74,7 @@ func (r *HTTPRequester) NewRequest(method, url string, setters ...requestOption)
 
 // 发送请求
 func (r *HTTPRequester) SendRequest(req *http.Request, response any, outputResp bool) (*http.Response, *types.OpenAIErrorWithStatusCode) {
+	ensureHTTPClient()
 	resp, err := HTTPClient.Do(req)
 	if err != nil {
 		return nil, common.ErrorWrapper(err, "http_request_failed", http.StatusInternalServerError)
@@ -113,6 +114,7 @@ func (r *HTTPRequester) SendRequest(req *http.Request, response any, outputResp 
 
 // 发送请求 RAW
 func (r *HTTPRequester) SendRequestRaw(req *http.Request) (*http.Response, *types.OpenAIErrorWithStatusCode) {
+	ensureHTTPClient()
 	// 发送请求
 	resp, err := HTTPClient.Do(req)
 	if err != nil {

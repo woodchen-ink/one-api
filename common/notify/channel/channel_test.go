@@ -3,6 +3,8 @@ package channel_test
 import (
 	"context"
 	"fmt"
+	"os"
+	"strings"
 	"testing"
 
 	"czloapi/common/notify/channel"
@@ -19,8 +21,27 @@ func InitConfig() {
 	requester.InitHttpClient()
 }
 
-func TestDingTalkSend(t *testing.T) {
+func requireNotifyIntegrationTest(t *testing.T, configKeys ...string) {
+	t.Helper()
+	if os.Getenv("RUN_INTEGRATION_TESTS") != "1" {
+		t.Skip("requires real notification credentials; set RUN_INTEGRATION_TESTS=1 to run")
+	}
+
 	InitConfig()
+
+	missing := make([]string, 0)
+	for _, key := range configKeys {
+		if viper.GetString(key) == "" {
+			missing = append(missing, key)
+		}
+	}
+	if len(missing) > 0 {
+		t.Skipf("missing integration config: %s", strings.Join(missing, ", "))
+	}
+}
+
+func TestDingTalkSend(t *testing.T) {
+	requireNotifyIntegrationTest(t, "notify.dingtalk.token", "notify.dingtalk.secret")
 	access_token := viper.GetString("notify.dingtalk.token")
 	secret := viper.GetString("notify.dingtalk.secret")
 	dingTalk := channel.NewDingTalk(access_token, secret)
@@ -31,7 +52,7 @@ func TestDingTalkSend(t *testing.T) {
 }
 
 func TestDingTalkSendWithKeyWord(t *testing.T) {
-	InitConfig()
+	requireNotifyIntegrationTest(t, "notify.dingtalk.token", "notify.dingtalk.keyWord")
 	access_token := viper.GetString("notify.dingtalk.token")
 	keyWord := viper.GetString("notify.dingtalk.keyWord")
 
@@ -42,7 +63,7 @@ func TestDingTalkSendWithKeyWord(t *testing.T) {
 }
 
 func TestDingTalkSendError(t *testing.T) {
-	InitConfig()
+	requireNotifyIntegrationTest(t, "notify.dingtalk.token")
 	access_token := viper.GetString("notify.dingtalk.token")
 	secret := "test"
 	dingTalk := channel.NewDingTalk(access_token, secret)
@@ -53,7 +74,7 @@ func TestDingTalkSendError(t *testing.T) {
 }
 
 func TestLarkSend(t *testing.T) {
-	InitConfig()
+	requireNotifyIntegrationTest(t, "notify.lark.token", "notify.lark.secret")
 	access_token := viper.GetString("notify.lark.token")
 	secret := viper.GetString("notify.lark.secret")
 	dingTalk := channel.NewLark(access_token, secret)
@@ -64,7 +85,7 @@ func TestLarkSend(t *testing.T) {
 }
 
 func TestLarkSendWithKeyWord(t *testing.T) {
-	InitConfig()
+	requireNotifyIntegrationTest(t, "notify.lark.token", "notify.lark.keyWord")
 	access_token := viper.GetString("notify.lark.token")
 	keyWord := viper.GetString("notify.lark.keyWord")
 
@@ -75,7 +96,7 @@ func TestLarkSendWithKeyWord(t *testing.T) {
 }
 
 func TestLarkSendError(t *testing.T) {
-	InitConfig()
+	requireNotifyIntegrationTest(t, "notify.lark.token")
 	access_token := viper.GetString("notify.lark.token")
 	secret := "test"
 	dingTalk := channel.NewLark(access_token, secret)
@@ -86,7 +107,7 @@ func TestLarkSendError(t *testing.T) {
 }
 
 func TestPushdeerSend(t *testing.T) {
-	InitConfig()
+	requireNotifyIntegrationTest(t, "notify.pushdeer.pushkey")
 	pushkey := viper.GetString("notify.pushdeer.pushkey")
 	dingTalk := channel.NewPushdeer(pushkey, "")
 
@@ -96,7 +117,7 @@ func TestPushdeerSend(t *testing.T) {
 }
 
 func TestPushdeerSendError(t *testing.T) {
-	InitConfig()
+	requireNotifyIntegrationTest(t)
 	pushkey := "test"
 	dingTalk := channel.NewPushdeer(pushkey, "")
 
@@ -106,7 +127,7 @@ func TestPushdeerSendError(t *testing.T) {
 }
 
 func TestTelegramSend(t *testing.T) {
-	InitConfig()
+	requireNotifyIntegrationTest(t, "notify.telegram.bot_api_key", "notify.telegram.chat_id")
 	secret := viper.GetString("notify.telegram.bot_api_key")
 	chatID := viper.GetString("notify.telegram.chat_id")
 	httpProxy := viper.GetString("notify.telegram.http_proxy")
@@ -118,7 +139,7 @@ func TestTelegramSend(t *testing.T) {
 }
 
 func TestTelegramSendError(t *testing.T) {
-	InitConfig()
+	requireNotifyIntegrationTest(t, "notify.telegram.chat_id")
 	secret := "test"
 	chatID := viper.GetString("notify.telegram.chat_id")
 	dingTalk := channel.NewTelegram(secret, chatID, "")

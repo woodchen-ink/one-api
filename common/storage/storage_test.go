@@ -3,6 +3,8 @@ package storage_test
 import (
 	"encoding/base64"
 	"fmt"
+	"os"
+	"strings"
 	"testing"
 
 	"czloapi/common/utils"
@@ -22,8 +24,28 @@ func InitConfig() {
 	viper.ReadInConfig()
 	requester.InitHttpClient()
 }
-func TestALIOSSUpload(t *testing.T) {
+
+func requireStorageIntegrationTest(t *testing.T, configKeys ...string) {
+	t.Helper()
+	if os.Getenv("RUN_INTEGRATION_TESTS") != "1" {
+		t.Skip("requires real storage credentials; set RUN_INTEGRATION_TESTS=1 to run")
+	}
+
 	InitConfig()
+
+	missing := make([]string, 0)
+	for _, key := range configKeys {
+		if viper.GetString(key) == "" {
+			missing = append(missing, key)
+		}
+	}
+	if len(missing) > 0 {
+		t.Skipf("missing integration config: %s", strings.Join(missing, ", "))
+	}
+}
+
+func TestALIOSSUpload(t *testing.T) {
+	requireStorageIntegrationTest(t, "storage.alioss.endpoint", "storage.alioss.accessKeyId", "storage.alioss.accessKeySecret", "storage.alioss.bucketName")
 	endpoint := viper.GetString("storage.alioss.endpoint")
 	accessKeyId := viper.GetString("storage.alioss.accessKeyId")
 	accessKeySecret := viper.GetString("storage.alioss.accessKeySecret")
@@ -41,7 +63,7 @@ func TestALIOSSUpload(t *testing.T) {
 	assert.Nil(t, err)
 }
 func TestSMMSUpload(t *testing.T) {
-	InitConfig()
+	requireStorageIntegrationTest(t, "storage.smms.secret")
 	smSecret := viper.GetString("storage.smms.secret")
 	smUpload := drives.NewSMUpload(smSecret)
 
@@ -57,7 +79,7 @@ func TestSMMSUpload(t *testing.T) {
 }
 
 func TestImgurUpload(t *testing.T) {
-	InitConfig()
+	requireStorageIntegrationTest(t, "storage.imgur.client_id")
 	imgurClientId := viper.GetString("storage.imgur.client_id")
 	imgurUpload := drives.NewImgurUpload(imgurClientId)
 

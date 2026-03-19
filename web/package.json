@@ -61,8 +61,8 @@
     "start": "vite preview",
     "build": "vite build --outDir build",
     "i18n": "lobe-i18n",
-    "lint": "eslint \"src/**/*.{js,jsx,ts,tsx}\"",
-    "lint:fix": "eslint --fix \"src/**/*.{js,jsx,ts,tsx}\"",
+    "lint": "eslint --format unix \"src/**/*.{js,jsx,ts,tsx}\"",
+    "lint:fix": "eslint --format unix --fix \"src/**/*.{js,jsx,ts,tsx}\"",
     "prettier": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\""
   },
   "eslintConfig": {

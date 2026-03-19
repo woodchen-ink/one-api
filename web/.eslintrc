@@ -75,7 +75,7 @@
       }
     ],
     "no-unused-vars": [
-      "error",
+      "warn",
       {
         "ignoreRestSiblings": false
       }
@@ -92,6 +92,5 @@
         "endOfLine": "auto"
       }
     ]
-  },
-  "requireConfigFile": false
+  }
 }

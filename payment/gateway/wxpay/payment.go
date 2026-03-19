@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
 	"czloapi/model"
 	"czloapi/payment/types"
 
@@ -102,9 +103,18 @@ func (w *WeChatPay) HandleCallback(c *gin.Context, gatewayConfig string) (*types
 		c.Status(http.StatusNoContent)
 		return nil, fmt.Errorf("WeChat Transaction failed: %v", notifyReq.EventType)
 	}
-	if *transaction.TradeState != "SUCCESS" {
+	if transaction.TradeState == nil || *transaction.TradeState != "SUCCESS" {
 		c.Status(http.StatusNoContent)
-		return nil, fmt.Errorf("tradeNo: %s, TransactionId: %s,  err: %v", transaction.OutTradeNo, transaction.TransactionId, err)
+		return nil, fmt.Errorf(
+			"tradeNo: %s, transactionId: %s, tradeState: %s",
+			getStringValue(transaction.OutTradeNo),
+			getStringValue(transaction.TransactionId),
+			getStringValue(transaction.TradeState),
+		)
+	}
+	if transaction.OutTradeNo == nil || transaction.TransactionId == nil {
+		c.Status(http.StatusNoContent)
+		return nil, errors.New("wechat callback missing transaction identifiers")
 	}
 
 	payNotify := &types.PayNotify{
@@ -127,4 +137,11 @@ func getWeChatConfig(gatewayConfig string) (*WeChatConfig, error) {
 
 func (w *WeChatPay) CreatedPay(_ string, _ *model.Payment) error {
 	return nil
+}
+
+func getStringValue(value *string) string {
+	if value == nil {
+		return ""
+	}
+	return *value
 }

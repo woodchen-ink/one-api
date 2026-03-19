@@ -2,11 +2,14 @@ package requester
 
 import (
 	"net/http"
-	"czloapi/common/utils"
+	"sync"
 	"time"
+
+	"czloapi/common/utils"
 )
 
 var HTTPClient *http.Client
+var httpClientOnce sync.Once
 
 func InitHttpClient() {
 	trans := &http.Transport{
@@ -22,4 +25,8 @@ func InitHttpClient() {
 	if relayTimeout > 0 {
 		HTTPClient.Timeout = time.Duration(relayTimeout) * time.Second
 	}
+}
+
+func ensureHTTPClient() {
+	httpClientOnce.Do(InitHttpClient)
 }

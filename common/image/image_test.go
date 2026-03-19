@@ -8,6 +8,7 @@ import (
 	_ "image/png"
 	"io"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"testing"
@@ -44,7 +45,16 @@ var (
 	}
 )
 
+func requireImageNetworkTest(t *testing.T) {
+	t.Helper()
+	if os.Getenv("RUN_INTEGRATION_TESTS") != "1" {
+		t.Skip("requires external image hosts; set RUN_INTEGRATION_TESTS=1 to run")
+	}
+}
+
 func TestDecode(t *testing.T) {
+	requireImageNetworkTest(t)
+
 	// Bytes read: varies sometimes
 	// jpeg: 1063892
 	// png: 294462
@@ -90,6 +100,8 @@ func TestDecode(t *testing.T) {
 }
 
 func TestBase64(t *testing.T) {
+	requireImageNetworkTest(t)
+
 	// Bytes read:
 	// jpeg: 1063892
 	// png: 294462
@@ -143,6 +155,8 @@ func TestBase64(t *testing.T) {
 }
 
 func TestGetImageSize(t *testing.T) {
+	requireImageNetworkTest(t)
+
 	for i, c := range cases {
 		t.Run("Decode:"+strconv.Itoa(i), func(t *testing.T) {
 			width, height, err := img.GetImageSize(c.url)
@@ -154,6 +168,8 @@ func TestGetImageSize(t *testing.T) {
 }
 
 func TestGetImageSizeFromBase64(t *testing.T) {
+	requireImageNetworkTest(t)
+
 	for i, c := range cases {
 		t.Run("Decode:"+strconv.Itoa(i), func(t *testing.T) {
 			resp, err := http.Get(c.url)
@@ -171,6 +187,8 @@ func TestGetImageSizeFromBase64(t *testing.T) {
 }
 
 func TestGetImageFromUrl(t *testing.T) {
+	requireImageNetworkTest(t)
+
 	for i, c := range cases {
 		t.Run("Decode:"+strconv.Itoa(i), func(t *testing.T) {
 			resp, err := http.Get(c.url)
