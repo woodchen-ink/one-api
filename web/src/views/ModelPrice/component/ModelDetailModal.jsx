@@ -25,6 +25,7 @@ import { MODALITY_OPTIONS } from 'constants/Modality';
 import { copy } from 'utils/common';
 import { useTranslation } from 'react-i18next';
 import { extraRatiosConfig } from '../../Pricing/component/config';
+import { hasBillingRules, summarizeBillingRule } from '../../Pricing/component/billingRules';
 
 // ----------------------------------------------------------------------
 
@@ -354,6 +355,29 @@ export default function ModelDetailModal({ open, onClose, model, provider, model
                   </Typography>
                   <Typography variant="body2" sx={{ fontWeight: 500 }}>
                     {formatPrice(value, 'tokens')}
+                  </Typography>
+                </Stack>
+              ))}
+            </Stack>
+          </Box>
+        )}
+
+        {hasBillingRules(priceData?.price?.billing_rules) && (
+          <Box sx={{ mt: 3 }}>
+            <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
+              <Icon icon="mdi:source-branch" width={20} height={20} />
+              <Typography variant="h5" sx={{ fontWeight: 600 }}>
+                分档计费规则
+              </Typography>
+            </Stack>
+            <Stack spacing={1}>
+              {priceData.price.billing_rules.map((rule, index) => (
+                <Stack key={`${rule.name || 'rule'}-${index}`} direction="row" alignItems="center" spacing={2}>
+                  <Label color="info" variant="soft">
+                    {rule.name || `Rule ${index + 1}`}
+                  </Label>
+                  <Typography variant="body2" color="text.secondary">
+                    {summarizeBillingRule(rule) || rule.strategy}
                   </Typography>
                 </Stack>
               ))}

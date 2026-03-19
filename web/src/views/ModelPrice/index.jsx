@@ -926,6 +926,7 @@ export default function ModelPrice() {
                       group={model.group}
                       hasAccess={model.hasAccess}
                       extraRatios={model.priceData.selectedGroupExtraRatios}
+                      billingRules={model.priceData.price.billing_rules}
                       ownedbyIcon={getIconByName(model.provider)}
                       unit={unit}
                       type={model.type}
@@ -947,6 +948,7 @@ export default function ModelPrice() {
                       <TableCell align="left">{t('modelpricePage.inputPrice')}</TableCell>
                       <TableCell align="left">{t('modelpricePage.outputPrice')}</TableCell>
                       <TableCell align="left">{t('modelpricePage.extraRatios')}</TableCell>
+                      <TableCell align="left">分档规则</TableCell>
                       <TableCell align="center">{t('common.action')}</TableCell>
                     </TableRow>
                   </TableHead>
@@ -1071,6 +1073,21 @@ export default function ModelPrice() {
                           ) : (
                             <Typography variant="body2" color="text.secondary">
                               {model.hasAccess ? '-' : t('modelpricePage.noneGroup')}
+                            </Typography>
+                          )}
+                        </TableCell>
+                        <TableCell align="left">
+                          {model.priceData.price.billing_rules?.length > 0 ? (
+                            <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
+                              {model.priceData.price.billing_rules.map((rule, index) => (
+                                <Label key={`${rule.name || 'rule'}-${index}`} color="info" variant="soft">
+                                  {rule.name || `Rule ${index + 1}`}
+                                </Label>
+                              ))}
+                            </Stack>
+                          ) : (
+                            <Typography variant="body2" color="text.secondary">
+                              -
                             </Typography>
                           )}
                         </TableCell>

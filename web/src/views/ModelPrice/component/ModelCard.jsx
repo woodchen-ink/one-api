@@ -8,6 +8,7 @@ import { MODALITY_OPTIONS } from 'constants/Modality';
 import { copy } from 'utils/common';
 import { useTranslation } from 'react-i18next';
 import { extraRatiosConfig } from '../../Pricing/component/config';
+import { hasBillingRules, summarizeBillingRule } from '../../Pricing/component/billingRules';
 // ----------------------------------------------------------------------
 
 export default function ModelCard({
@@ -18,6 +19,7 @@ export default function ModelCard({
   group,
   hasAccess,
   extraRatios,
+  billingRules,
   ownedbyIcon,
   type,
   formatPrice,
@@ -47,6 +49,7 @@ export default function ModelCard({
   const outputModalities = modelInfo ? getModalities(modelInfo.output_modalities) : [];
   const tags = modelInfo ? getTags(modelInfo.tags) : [];
   const getExtraRatioName = (key) => extraRatiosConfig.find((item) => item.key === key)?.name || key;
+  const hasRuleConfig = hasBillingRules(billingRules);
 
   const isPriceAvailable = typeof price.input === 'number' && typeof price.output === 'number';
 
@@ -319,6 +322,26 @@ export default function ModelCard({
               </Stack>
             </Box>
           )}
+
+          {hasRuleConfig && (
+            <Box sx={{ mt: 1.5 }}>
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.75, fontSize: '0.7rem' }}>
+                分档计费规则
+              </Typography>
+              <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
+                {billingRules.map((rule, index) => (
+                  <Label
+                    key={`${rule.name || 'rule'}-${index}`}
+                    color="info"
+                    variant="soft"
+                    sx={{ fontSize: '0.68rem', py: 0.2, px: 0.65 }}
+                  >
+                    {rule.name || summarizeBillingRule(rule) || `Rule ${index + 1}`}
+                  </Label>
+                ))}
+              </Stack>
+            </Box>
+          )}
         </Box>
 
         {/* 操作按钮 */}
@@ -353,6 +376,7 @@ ModelCard.propTypes = {
   group: PropTypes.object,
   hasAccess: PropTypes.bool,
   extraRatios: PropTypes.object,
+  billingRules: PropTypes.array,
   ownedbyIcon: PropTypes.string,
   unit: PropTypes.string,
   type: PropTypes.string,
