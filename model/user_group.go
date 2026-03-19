@@ -188,27 +188,6 @@ func (c *UserGroup) Update() error {
 			if err := tx.Model(&Token{}).Where("backup_group = ?", oldSymbol).Update("backup_group", newSymbol).Error; err != nil {
 				return err
 			}
-
-			var tokens []Token
-			if err := tx.Select("id", "key", "setting").Find(&tokens).Error; err != nil {
-				return err
-			}
-			for _, token := range tokens {
-				setting := token.Setting.Data()
-				if setting.BillingTag == nil || *setting.BillingTag != oldSymbol {
-					continue
-				}
-
-				newBillingTag := newSymbol
-				setting.BillingTag = &newBillingTag
-				token.Setting.Set(setting)
-
-				if err := tx.Model(&Token{}).Where("id = ?", token.Id).Update("setting", token.Setting).Error; err != nil {
-					return err
-				}
-				tokenCacheKeys[token.Key] = struct{}{}
-			}
-
 		}
 
 		return tx.Model(&UserGroup{}).

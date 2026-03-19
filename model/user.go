@@ -1,13 +1,13 @@
 package model
 
 import (
-	"errors"
-	"fmt"
 	"czloapi/common"
 	"czloapi/common/config"
 	"czloapi/common/logger"
 	"czloapi/common/redis"
 	"czloapi/common/utils"
+	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -402,19 +402,6 @@ func IsAdmin(userId int) bool {
 		return false
 	}
 	return user.Role >= config.RoleAdminUser
-}
-
-func IsReliable(userId int) bool {
-	if userId == 0 {
-		return false
-	}
-	var user User
-	err := DB.Where("id = ?", userId).Select("role").Find(&user).Error
-	if err != nil {
-		logger.SysError("no such user " + err.Error())
-		return false
-	}
-	return user.Role >= config.RoleReliableUser
 }
 
 func IsUserEnabled(userId int) (bool, error) {

@@ -30,11 +30,10 @@ import {
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
-import { showSuccess, showError, useIsReliable } from 'utils/common'; //renderQuotaWithPrompt,
+import { showSuccess, showError } from 'utils/common'; //renderQuotaWithPrompt,
 import { API } from 'utils/api';
 import { useTranslation } from 'react-i18next';
 import 'dayjs/locale/zh-cn';
-
 
 let quotaPerUnit = parseFloat(localStorage.getItem('quota_per_unit'));
 
@@ -91,7 +90,6 @@ const originInputs = {
 const EditModal = ({ open, tokenId, onCancel, onOk, userGroupOptions, adminMode = false }) => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const userIsReliable = useIsReliable();
   const [inputs, setInputs] = useState(originInputs);
   const [modelOptions, setModelOptions] = useState([]);
   const [ownedByIcons, setOwnedByIcons] = useState({});
@@ -535,43 +533,6 @@ const EditModal = ({ open, tokenId, onCancel, onOk, userGroupOptions, adminMode 
                   />
                 </FormControl>
               )}
-
-              {/* 费用标签 - 仅管理员可见 */}
-              {userIsReliable && (
-                <>
-                  <Divider sx={{ margin: '16px 0px' }} />
-                  <Typography variant="h4" color="primary">
-                    {t('token_index.billingTag')}
-                  </Typography>
-                  <Typography variant="caption">{t('token_index.billingTagInfo')}</Typography>
-                  <Grid container spacing={2} mt={2}>
-                    <Grid item xs={12} md={6}>
-                      <FormControl fullWidth>
-                        <InputLabel>{t('token_index.billingTagLabel')}</InputLabel>
-                        <Select
-                          label={t('token_index.billingTagLabel')}
-                          name="setting.billing_tag"
-                          value={values?.setting?.billing_tag || ''}
-                          onChange={(e) => {
-                            const value = e.target.value === '' ? null : e.target.value;
-                            setFieldValue('setting.billing_tag', value);
-                          }}
-                          variant={'outlined'}
-                        >
-                          <MenuItem value="">-</MenuItem>
-                          {userGroupOptions.map((option) => (
-                            <MenuItem key={option.value} value={option.value}>
-                              {option.label}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                        <FormHelperText>{t('token_index.billingTagHelper')}</FormHelperText>
-                      </FormControl>
-                    </Grid>
-                  </Grid>
-                </>
-              )}
-
               <DialogActions>
                 <Button onClick={onCancel}>{t('token_index.cancel')}</Button>
                 <Button disableElevation disabled={isSubmitting} type="submit" variant="contained" color="primary">

@@ -1,12 +1,12 @@
 package controller
 
 import (
-	"errors"
-	"net/http"
 	"czloapi/common"
 	"czloapi/common/config"
 	"czloapi/common/utils"
 	"czloapi/model"
+	"errors"
+	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -14,7 +14,6 @@ import (
 
 func GetUserTokensList(c *gin.Context) {
 	userId := c.GetInt("id")
-	userRole := c.GetInt("role")
 	var params model.GenericParams
 	if err := c.ShouldBindQuery(&params); err != nil {
 		common.APIRespondWithError(c, http.StatusOK, err)
@@ -25,15 +24,6 @@ func GetUserTokensList(c *gin.Context) {
 	if err != nil {
 		common.APIRespondWithError(c, http.StatusOK, err)
 		return
-	}
-
-	// 对于非可信用户，隐藏 BillingTag 字段
-	if userRole < config.RoleReliableUser {
-		for _, token := range *tokens.Data {
-			setting := token.Setting.Data()
-			setting.BillingTag = nil
-			token.Setting.Set(setting)
-		}
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -67,7 +57,6 @@ func GetTokensListByAdmin(c *gin.Context) {
 func GetToken(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	userId := c.GetInt("id")
-	userRole := c.GetInt("role")
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -82,13 +71,6 @@ func GetToken(c *gin.Context) {
 			"message": err.Error(),
 		})
 		return
-	}
-
-	// 对于非可信用户，隐藏 BillingTag 字段
-	if userRole < config.RoleReliableUser {
-		setting := token.Setting.Data()
-		setting.BillingTag = nil
-		token.Setting.Set(setting)
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -133,7 +115,6 @@ func GetPlaygroundToken(c *gin.Context) {
 
 func AddToken(c *gin.Context) {
 	userId := c.GetInt("id")
-	userRole := c.GetInt("role")
 	token := model.Token{}
 	err := c.ShouldBindJSON(&token)
 	if err != nil {
@@ -177,11 +158,6 @@ func AddToken(c *gin.Context) {
 	if err != nil {
 		common.APIRespondWithError(c, http.StatusOK, err)
 		return
-	}
-
-	// 非可信用户不能设置 BillingTag
-	if userRole < config.RoleReliableUser {
-		setting.BillingTag = nil
 	}
 
 	cleanToken := model.Token{
@@ -230,7 +206,6 @@ func DeleteToken(c *gin.Context) {
 
 func UpdateToken(c *gin.Context) {
 	userId := c.GetInt("id")
-	userRole := c.GetInt("role")
 	statusOnly := c.Query("status_only")
 	token := model.Token{}
 	err := c.ShouldBindJSON(&token)
@@ -312,15 +287,6 @@ func UpdateToken(c *gin.Context) {
 		cleanToken.UnlimitedQuota = token.UnlimitedQuota
 		cleanToken.Group = token.Group
 		cleanToken.BackupGroup = token.BackupGroup
-
-		// 处理 BillingTag: 非可信用户保持原值不变
-		oldSetting := cleanToken.Setting.Data()
-		if userRole < config.RoleReliableUser {
-			// 非可信用户：保持原来的 BillingTag，忽略前端传入的值
-			newSetting.BillingTag = oldSetting.BillingTag
-		}
-		// 可信用户：直接使用前端传入的值（包括空值，用于清除 BillingTag）
-
 		cleanToken.Setting.Set(newSetting)
 	}
 	err = cleanToken.Update()
@@ -330,13 +296,6 @@ func UpdateToken(c *gin.Context) {
 			"message": err.Error(),
 		})
 		return
-	}
-
-	// 对于非可信用户，返回数据时隐藏 BillingTag 字段
-	if userRole < config.RoleReliableUser {
-		responseSetting := cleanToken.Setting.Data()
-		responseSetting.BillingTag = nil
-		cleanToken.Setting.Set(responseSetting)
 	}
 
 	c.JSON(http.StatusOK, gin.H{

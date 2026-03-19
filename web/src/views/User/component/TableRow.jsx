@@ -30,9 +30,8 @@ import { useTranslation } from 'react-i18next';
 function renderRole(t, role) {
   switch (role) {
     case 1:
-      return <Label color="default">{t('userPage.cUserRole')}</Label>;
     case 3:
-      return <Label color="primary">{t('userPage.reliableUserRole')}</Label>;
+      return <Label color="default">{t('userPage.cUserRole')}</Label>;
     case 10:
       return <Label color="orange">{t('userPage.adminUserRole')}</Label>;
     case 100:
@@ -74,14 +73,14 @@ export default function UsersTableRow({ item, manageUser, handleOpenModal, setMo
 
   const handleChangeQuota = async () => {
     let quota;
-    
+
     if (quotaMode === 'change') {
       if (money === 0) {
         showError(t('userPage.changeQuotaNotEmpty'));
         return;
       }
       quota = Number(renderQuotaByMoney(money));
-      
+
       if (money < 0 && Math.abs(quota) > item.quota) {
         showError(t('userPage.changeQuotaNotEnough'));
         return;
@@ -160,12 +159,12 @@ export default function UsersTableRow({ item, manageUser, handleOpenModal, setMo
               <Icon icon="ri:mail-fill" color={item.email ? theme.palette.grey[900] : theme.palette.grey[400]} />
             </Tooltip>
             <Tooltip title={item.czlconnect_id ? `CZL: ${item.czlconnect_id}` : t('profilePage.notBound')} placement="top">
-              <img 
-                src={CZLConnectIcon} 
-                alt="czlconnect" 
-                width={16} 
-                height={16} 
-                style={{ 
+              <img
+                src={CZLConnectIcon}
+                alt="czlconnect"
+                width={16}
+                height={16}
+                style={{
                   filter: item.czlconnect_id ? 'none' : 'grayscale(100%) opacity(0.5)'
                 }}
               />
@@ -206,19 +205,6 @@ export default function UsersTableRow({ item, manageUser, handleOpenModal, setMo
           >
             <Icon icon="solar:user-bold-duotone" style={{ marginRight: '16px' }} />
             {t('userPage.setCommonUser')}
-          </MenuItem>
-        )}
-
-        {/* 设置为可信内部员工 - 只对非可信内部员工和非超级管理员显示 */}
-        {item.role !== 100 && item.role !== 3 && (
-          <MenuItem
-            onClick={() => {
-              handleCloseMenu();
-              manageUser(item.username, 'set_role', 3);
-            }}
-          >
-            <Icon icon="solar:verified-check-bold-duotone" style={{ marginRight: '16px' }} />
-            {t('userPage.setReliable')}
           </MenuItem>
         )}
 
@@ -275,23 +261,14 @@ export default function UsersTableRow({ item, manageUser, handleOpenModal, setMo
         </DialogActions>
       </Dialog>
 
-      <Dialog
-        open={openChangeQuota}
-        onClose={() => setOpenChangeQuota(false)}
-      >
+      <Dialog open={openChangeQuota} onClose={() => setOpenChangeQuota(false)}>
         <DialogTitle>{t('userPage.changeQuota')}</DialogTitle>
         <DialogContent>
           <Stack direction="row" spacing={2} sx={{ mb: 2, mt: 2 }}>
-            <Button 
-              variant={quotaMode === 'change' ? 'contained' : 'outlined'}
-              onClick={() => setQuotaMode('change')}
-            >
+            <Button variant={quotaMode === 'change' ? 'contained' : 'outlined'} onClick={() => setQuotaMode('change')}>
               {t('userPage.changeMode')}
             </Button>
-            <Button 
-              variant={quotaMode === 'final' ? 'contained' : 'outlined'}
-              onClick={() => setQuotaMode('final')}
-            >
+            <Button variant={quotaMode === 'final' ? 'contained' : 'outlined'} onClick={() => setQuotaMode('final')}>
               {t('userPage.finalMode')}
             </Button>
           </Stack>

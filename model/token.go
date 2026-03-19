@@ -1,8 +1,6 @@
 package model
 
 import (
-	"errors"
-	"fmt"
 	"czloapi/common"
 	"czloapi/common/config"
 	"czloapi/common/database"
@@ -10,6 +8,8 @@ import (
 	"czloapi/common/redis"
 	"czloapi/common/stmp"
 	"czloapi/common/utils"
+	"errors"
+	"fmt"
 
 	"gorm.io/gorm"
 )
@@ -64,9 +64,8 @@ func (token *Token) AfterCreate(tx *gorm.DB) (err error) {
 }
 
 type TokenSetting struct {
-	Heartbeat  HeartbeatSetting `json:"heartbeat,omitempty"`
-	Limits     LimitsConfig     `json:"limits,omitempty"`
-	BillingTag *string          `json:"billing_tag,omitempty"` // 费用标签，用于按分组统计费用，仅可信内部员工和管理员可见
+	Heartbeat HeartbeatSetting `json:"heartbeat,omitempty"`
+	Limits    LimitsConfig     `json:"limits,omitempty"`
 }
 
 type HeartbeatSetting struct {

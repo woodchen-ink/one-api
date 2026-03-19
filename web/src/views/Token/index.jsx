@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from 'react';
-import { showError, showSuccess, trims, copy, useIsReliable, useIsAdmin } from 'utils/common';
+import { showError, showSuccess, trims, copy, useIsAdmin } from 'utils/common';
 
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -56,7 +56,6 @@ export default function Token() {
   const [editTokenId, setEditTokenId] = useState(0);
   const siteInfo = useSelector((state) => state.siteInfo);
   const { userGroup } = useSelector((state) => state.account);
-  const userIsReliable = useIsReliable();
   const userIsAdmin = useIsAdmin();
 
   // 管理员搜索相关状态
@@ -372,19 +371,17 @@ export default function Token() {
                       { id: 'owner', label: t('token_index.owner'), disableSort: true },
                       { id: 'name', label: t('token_index.name'), disableSort: false },
                       { id: 'group', label: t('token_index.userGroup') + ' / ' + t('token_index.userBackupGroup'), disableSort: false },
-                      { id: 'billing_tag', label: t('token_index.billingTag'), disableSort: true, hide: !userIsReliable },
                       { id: 'status', label: t('token_index.status'), disableSort: false },
                       { id: 'quota', label: t('token_index.usedQuota') + ' / ' + t('token_index.remainingQuota'), disableSort: true },
                       { id: 'time', label: t('token_index.createdTime') + ' / ' + t('token_index.expiryTime'), disableSort: true },
                       { id: 'accessed_time', label: t('token_index.accessedTime'), disableSort: true },
                       { id: 'action', label: t('token_index.actions'), disableSort: true }
-                    ].filter((col) => !col.hide);
+                    ];
                   } else {
                     // 普通模式
                     return [
                       { id: 'name', label: t('token_index.name'), disableSort: false },
                       { id: 'group', label: t('token_index.userGroup'), disableSort: false },
-                      { id: 'billing_tag', label: t('token_index.billingTag'), disableSort: true, hide: !userIsReliable },
                       { id: 'status', label: t('token_index.status'), disableSort: false },
                       { id: 'used_quota', label: t('token_index.usedQuota'), disableSort: false },
                       { id: 'remain_quota', label: t('token_index.remainingQuota'), disableSort: false },
@@ -392,7 +389,7 @@ export default function Token() {
                       { id: 'expired_time', label: t('token_index.expiryTime'), disableSort: false },
                       { id: 'accessed_time', label: t('token_index.accessedTime'), disableSort: true },
                       { id: 'action', label: t('token_index.actions'), disableSort: true }
-                    ].filter((col) => !col.hide);
+                    ];
                   }
                 })()}
               />
@@ -404,7 +401,6 @@ export default function Token() {
                     key={row.id}
                     handleOpenModal={handleOpenModal}
                     userGroup={userGroup}
-                    userIsReliable={userIsReliable}
                     isAdminSearch={adminSearchEnabled && (adminSearchUserId || adminSearchTokenId)}
                   />
                 ))}

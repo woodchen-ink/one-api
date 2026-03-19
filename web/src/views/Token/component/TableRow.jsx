@@ -22,7 +22,6 @@ import { Icon } from '@iconify/react';
 
 import { useTranslation } from 'react-i18next';
 
-
 function statusInfo(t, status) {
   switch (status) {
     case 1:
@@ -38,7 +37,7 @@ function statusInfo(t, status) {
   }
 }
 
-export default function TokensTableRow({ item, manageToken, handleOpenModal, userGroup, userIsReliable, isAdminSearch }) {
+export default function TokensTableRow({ item, manageToken, handleOpenModal, userGroup, isAdminSearch }) {
   const { t } = useTranslation();
   const [openDelete, setOpenDelete] = useState(false);
   const [statusSwitch, setStatusSwitch] = useState(item.status);
@@ -91,11 +90,6 @@ export default function TokensTableRow({ item, manageToken, handleOpenModal, use
             <Label color={userGroup[item.group]?.color}>{userGroup[item.group]?.name || '跟随用户'}</Label>
           )}
         </TableCell>
-        {userIsReliable && (
-          <TableCell>
-            <Label color={userGroup[item.setting?.billing_tag]?.color}>{userGroup[item.setting?.billing_tag]?.name || '-'}</Label>
-          </TableCell>
-        )}
         <TableCell>
           <Tooltip
             title={(() => {
@@ -148,9 +142,7 @@ export default function TokensTableRow({ item, manageToken, handleOpenModal, use
           </>
         )}
 
-        <TableCell>
-          {item.accessed_time ? timestamp2string(item.accessed_time) : '-'}
-        </TableCell>
+        <TableCell>{item.accessed_time ? timestamp2string(item.accessed_time) : '-'}</TableCell>
 
         <TableCell>
           <Stack direction="row" justifyContent="center" alignItems="center" spacing={0.5}>
@@ -196,6 +188,5 @@ TokensTableRow.propTypes = {
   manageToken: PropTypes.func,
   handleOpenModal: PropTypes.func,
   userGroup: PropTypes.object,
-  userIsReliable: PropTypes.bool,
   isAdminSearch: PropTypes.bool
 };

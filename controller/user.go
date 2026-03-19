@@ -1,16 +1,16 @@
 package controller
 
 import (
-	"encoding/json"
-	"errors"
-	"fmt"
-	"math"
-	"net/http"
 	"czloapi/common"
 	"czloapi/common/config"
 	"czloapi/common/limit"
 	"czloapi/common/utils"
 	"czloapi/model"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"math"
+	"net/http"
 	"strconv"
 	"time"
 
@@ -668,23 +668,6 @@ func ManageUser(c *gin.Context) {
 			return
 		}
 		user.Role = config.RoleCommonUser
-	case "set_reliable":
-		// 设置为可信内部员工：管理员及以上能操作
-		if myRole < config.RoleAdminUser {
-			c.JSON(http.StatusOK, gin.H{
-				"success": false,
-				"message": "只有管理员或超级管理员可以设置可信内部员工",
-			})
-			return
-		}
-		if user.Role == config.RoleRootUser {
-			c.JSON(http.StatusOK, gin.H{
-				"success": false,
-				"message": "无法修改超级管理员的身份",
-			})
-			return
-		}
-		user.Role = config.RoleReliableUser
 	}
 
 	if err := user.Update(false); err != nil {

@@ -114,11 +114,9 @@ export default function Users() {
         valueData = { username, action: value === 1 ? 'enable' : 'disable' };
         break;
       case 'set_role':
-        // value 是目标角色：1=普通用户, 3=可信内部员工, 10=管理员
+        // value 是目标角色：1=普通用户, 10=管理员
         if (value === 1) {
           valueData = { username, action: 'demote' };
-        } else if (value === 3) {
-          valueData = { username, action: 'set_reliable' };
         } else if (value === 10) {
           valueData = { username, action: 'promote' };
         }

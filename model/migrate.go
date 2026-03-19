@@ -1,9 +1,9 @@
 package model
 
 import (
-	"encoding/json"
 	"czloapi/common/config"
 	"czloapi/common/logger"
+	"encoding/json"
 	"strconv"
 	"strings"
 
@@ -387,6 +387,26 @@ func migratePricingToUSD() *gormigrate.Migration {
 	}
 }
 
+func migrateReliableUsersToCommon() *gormigrate.Migration {
+	return &gormigrate.Migration{
+		ID: "202603190002",
+		Migrate: func(tx *gorm.DB) error {
+			if !tx.Migrator().HasTable("users") {
+				return nil
+			}
+
+			const legacyReliableUserRole = 3
+
+			return tx.Model(&User{}).
+				Where("role = ?", legacyReliableUserRole).
+				Update("role", config.RoleCommonUser).Error
+		},
+		Rollback: func(tx *gorm.DB) error {
+			return nil
+		},
+	}
+}
+
 func migrateTokenLimitsStructure() *gormigrate.Migration {
 	return &gormigrate.Migration{
 		ID: "202510160002",
@@ -533,6 +553,7 @@ func migrationAfter(db *gorm.DB) error {
 		addOldTokenMaxId(),
 		addExtraRatios(),
 		migratePricingToUSD(),
+		migrateReliableUsersToCommon(),
 		migrateTokenLimitsStructure(),
 	})
 	return m.Migrate()
