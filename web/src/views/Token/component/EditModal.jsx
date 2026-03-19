@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types';
 import * as Yup from 'yup';
 import { Formik } from 'formik'; // 1. 导入 useFormikContext
-import { useTheme } from '@mui/material/styles';
 import { useState, useEffect } from 'react';
 import dayjs from 'dayjs';
 import ModelLimitSelector from './ModelLimitSelector';
@@ -11,8 +10,8 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  Divider,
   Alert,
+  Box,
   FormControl,
   InputLabel,
   OutlinedInput,
@@ -36,6 +35,25 @@ import { useTranslation } from 'react-i18next';
 import 'dayjs/locale/zh-cn';
 
 let quotaPerUnit = parseFloat(localStorage.getItem('quota_per_unit'));
+
+const mergeBackupGroups = (backupGroup, fallbackGroups = []) => {
+  const groups = [];
+  [backupGroup, ...fallbackGroups].forEach((group) => {
+    if (!group || groups.includes(group)) {
+      return;
+    }
+    groups.push(group);
+  });
+  return groups;
+};
+
+const splitBackupGroups = (backupGroups = []) => {
+  const normalizedGroups = backupGroups.filter((group, index) => group && backupGroups.indexOf(group) === index);
+  return {
+    backupGroup: normalizedGroups[0] || '',
+    fallbackGroups: normalizedGroups.slice(1)
+  };
+};
 
 const validationSchema = Yup.object().shape({
   is_edit: Yup.boolean(),
@@ -69,6 +87,7 @@ const originInputs = {
   unlimited_quota: true,
   group: '',
   backup_group: '',
+  backup_groups: [],
   setting: {
     heartbeat: {
       enabled: false,
@@ -89,7 +108,6 @@ const originInputs = {
 
 const EditModal = ({ open, tokenId, onCancel, onOk, userGroupOptions, adminMode = false }) => {
   const { t } = useTranslation();
-  const theme = useTheme();
   const [inputs, setInputs] = useState(originInputs);
   const [modelOptions, setModelOptions] = useState([]);
   const [ownedByIcons, setOwnedByIcons] = useState({});
@@ -134,30 +152,42 @@ const EditModal = ({ open, tokenId, onCancel, onOk, userGroupOptions, adminMode 
 
   const submit = async (values, { setErrors, setStatus, setSubmitting }) => {
     setSubmitting(true);
-    // values.remain_quota = parseInt(values.remain_quota);
-    values.setting.heartbeat.timeout_seconds = parseInt(values.setting.heartbeat.timeout_seconds);
-    // 确保使用parseFloat确保处理小数
-    values.remain_quota = parseFloat(values.remain_quota) * quotaPerUnit;
+    const { backupGroup, fallbackGroups } = splitBackupGroups(values.backup_groups);
+    const payload = {
+      ...values,
+      remain_quota: parseFloat(values.remain_quota) * quotaPerUnit,
+      backup_group: backupGroup,
+      setting: {
+        ...values.setting,
+        heartbeat: {
+          ...values.setting.heartbeat,
+          timeout_seconds: parseInt(values.setting.heartbeat.timeout_seconds)
+        },
+        limits: {
+          ...values.setting.limits,
+          limits_ip_setting: {
+            ...values.setting?.limits?.limits_ip_setting,
+            whitelist: values.setting?.limits?.limits_ip_setting?.whitelist?.filter((ip) => ip.trim() !== '') || []
+          }
+        },
+        fallback_groups: fallbackGroups
+      }
+    };
+    delete payload.backup_groups;
 
-    // 过滤掉空的 IP 行
-    if (values.setting?.limits?.limits_ip_setting?.whitelist) {
-      values.setting.limits.limits_ip_setting.whitelist = values.setting.limits.limits_ip_setting.whitelist.filter(
-        (ip) => ip.trim() !== ''
-      );
-    }
     let res;
     try {
       if (values.is_edit) {
         // 管理员模式使用管理员专用接口
         const apiPath = adminMode ? `/api/token/admin` : `/api/token/`;
-        const payload = { ...values, id: parseInt(tokenId) };
+        payload.id = parseInt(tokenId);
         // 管理员模式下传递 user_id
         if (adminMode && values.user_id) {
           payload.user_id = parseInt(values.user_id);
         }
         res = await API.put(apiPath, payload);
       } else {
-        res = await API.post(`/api/token/`, values);
+        res = await API.post(`/api/token/`, payload);
       }
       const { success, message } = res.data;
       if (success) {
@@ -208,8 +238,10 @@ const EditModal = ({ open, tokenId, onCancel, onOk, userGroupOptions, adminMode 
           tokenData.setting.limits.limit_model_setting = originInputs.setting.limits.limit_model_setting;
         if (!tokenData.setting.limits.limits_ip_setting)
           tokenData.setting.limits.limits_ip_setting = originInputs.setting.limits.limits_ip_setting;
+        if (!tokenData.setting.fallback_groups) tokenData.setting.fallback_groups = [];
         if (!tokenData.setting.limits.limit_model_setting.models) tokenData.setting.limits.limit_model_setting.models = [];
         if (!tokenData.setting.limits.limits_ip_setting.whitelist) tokenData.setting.limits.limits_ip_setting.whitelist = [];
+        tokenData.backup_groups = mergeBackupGroups(tokenData.backup_group, tokenData.setting.fallback_groups);
         setInputs(tokenData);
       } else {
         showError(message);
@@ -235,28 +267,56 @@ const EditModal = ({ open, tokenId, onCancel, onOk, userGroupOptions, adminMode 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tokenId, adminMode]);
 
+  const sectionSx = {
+    border: '1px solid',
+    borderColor: 'divider',
+    borderRadius: 2,
+    p: 2
+  };
+
+  const sectionHeaderSx = {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 0.5,
+    mb: 1.5
+  };
+
+  const compactFieldSx = {
+    mt: 0
+  };
+
   return (
-    <Dialog open={open} onClose={onCancel} fullWidth maxWidth={'md'}>
-      <DialogTitle sx={{ margin: '0px', fontWeight: 700, lineHeight: '1.55556', padding: '24px', fontSize: '1.125rem' }}>
+    <Dialog
+      open={open}
+      onClose={onCancel}
+      fullWidth
+      maxWidth="sm"
+      PaperProps={{
+        sx: {
+          maxHeight: '88vh'
+        }
+      }}
+    >
+      <DialogTitle sx={{ m: 0, px: 2.5, py: 2, fontWeight: 700, lineHeight: 1.4, fontSize: '1.05rem' }}>
         {tokenId ? t('token_index.editToken') : t('token_index.createToken')}
       </DialogTitle>
-      <Divider />
-      <DialogContent>
+      <DialogContent dividers sx={{ px: 2.5, py: 2 }}>
         <Formik initialValues={inputs} enableReinitialize validationSchema={validationSchema} onSubmit={submit}>
           {({ errors, handleBlur, handleChange, handleSubmit, touched, values, setFieldError, setFieldValue, isSubmitting }) => (
-            <form noValidate onSubmit={handleSubmit}>
+            <Box component="form" noValidate onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {/* 管理员模式下显示用户转移字段 */}
               {adminMode && values.is_edit && (
                 <>
-                  <Alert severity="warning" sx={{ mb: 2 }}>
+                  <Alert severity="warning" sx={{ mb: -0.5 }}>
                     {t('token_index.adminEditWarning')}
                   </Alert>
-                  <FormControl fullWidth sx={{ ...theme.typography.otherInput }}>
+                  <FormControl fullWidth sx={{ ...compactFieldSx }}>
                     <InputLabel htmlFor="token-user-id-label">{t('token_index.transferToUser')}</InputLabel>
                     <OutlinedInput
                       id="token-user-id-label"
                       label={t('token_index.transferToUser')}
                       type="number"
+                      size="small"
                       value={values.user_id || ''}
                       name="user_id"
                       onBlur={handleBlur}
@@ -268,278 +328,399 @@ const EditModal = ({ open, tokenId, onCancel, onOk, userGroupOptions, adminMode 
                   </FormControl>
                 </>
               )}
-              <FormControl fullWidth error={Boolean(touched.name && errors.name)} sx={{ ...theme.typography.otherInput }}>
-                <InputLabel htmlFor="channel-name-label">{t('token_index.name')}</InputLabel>
-                <OutlinedInput
-                  id="channel-name-label"
-                  label={t('token_index.name')}
-                  type="text"
-                  value={values.name}
-                  name="name"
-                  onBlur={handleBlur}
-                  onChange={handleChange}
-                  inputProps={{ autoComplete: 'name' }}
-                  aria-describedby="helper-text-channel-name-label"
-                />
-                {touched.name && errors.name && (
-                  <FormHelperText error id="helper-tex-channel-name-label">
-                    {errors.name}
-                  </FormHelperText>
-                )}
-              </FormControl>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={values.expired_time === -1}
-                    onClick={() => {
-                      if (values.expired_time === -1) {
-                        setFieldValue('expired_time', Math.floor(Date.now() / 1000));
-                      } else {
-                        setFieldValue('expired_time', -1);
+              <Box sx={sectionSx}>
+                <Grid container spacing={1.5}>
+                  <Grid item xs={12}>
+                    <FormControl fullWidth error={Boolean(touched.name && errors.name)} sx={compactFieldSx}>
+                      <InputLabel htmlFor="channel-name-label">{t('token_index.name')}</InputLabel>
+                      <OutlinedInput
+                        id="channel-name-label"
+                        label={t('token_index.name')}
+                        type="text"
+                        size="small"
+                        value={values.name}
+                        name="name"
+                        onBlur={handleBlur}
+                        onChange={handleChange}
+                        inputProps={{ autoComplete: 'name' }}
+                        aria-describedby="helper-text-channel-name-label"
+                      />
+                      {touched.name && errors.name && (
+                        <FormHelperText error id="helper-tex-channel-name-label">
+                          {errors.name}
+                        </FormHelperText>
+                      )}
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <FormControlLabel
+                      sx={{ m: 0, minHeight: 40 }}
+                      control={
+                        <Switch
+                          size="small"
+                          checked={values.expired_time === -1}
+                          onClick={() => {
+                            if (values.expired_time === -1) {
+                              setFieldValue('expired_time', Math.floor(Date.now() / 1000));
+                            } else {
+                              setFieldValue('expired_time', -1);
+                            }
+                          }}
+                        />
                       }
-                    }}
-                  />
-                }
-                label={t('token_index.neverExpires')}
-              />
-              {values.expired_time !== -1 && (
-                <FormControl fullWidth error={Boolean(touched.expired_time && errors.expired_time)} sx={{ ...theme.typography.otherInput }}>
-                  <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={'zh-cn'}>
-                    <DateTimePicker
-                      label={t('token_index.expiryTime')}
-                      ampm={false}
-                      value={dayjs.unix(values.expired_time)}
-                      onError={(newError) => {
-                        if (newError === null) {
-                          setFieldError('expired_time', null);
-                        } else {
-                          setFieldError('expired_time', t('token_index.invalidDate'));
-                        }
-                      }}
-                      onChange={(newValue) => {
-                        //在 Formik 中处理 expired_time 时，应该避免在值未更改的情况下更新状态，这可以通过比较新旧值来实现
-                        const newUnix = newValue.unix();
-                        if (values.expired_time !== newUnix) {
-                          setFieldValue('expired_time', newUnix);
-                        }
-                      }}
-                      slotProps={{
-                        actionBar: {
-                          actions: ['today', 'accept']
-                        }
-                      }}
+                      label={t('token_index.neverExpires')}
                     />
-                  </LocalizationProvider>
-                  {errors.expired_time && (
-                    <FormHelperText error id="helper-tex-channel-expired_time-label">
-                      {errors.expired_time}
-                    </FormHelperText>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <FormControlLabel
+                      sx={{ m: 0, minHeight: 40 }}
+                      control={
+                        <Switch
+                          size="small"
+                          checked={values.unlimited_quota === true}
+                          onClick={() => {
+                            setFieldValue('unlimited_quota', !values.unlimited_quota);
+                          }}
+                        />
+                      }
+                      label={t('token_index.unlimitedQuota')}
+                    />
+                  </Grid>
+                  {values.expired_time !== -1 && (
+                    <Grid item xs={12}>
+                      <FormControl fullWidth error={Boolean(touched.expired_time && errors.expired_time)} sx={compactFieldSx}>
+                        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={'zh-cn'}>
+                          <DateTimePicker
+                            label={t('token_index.expiryTime')}
+                            ampm={false}
+                            value={dayjs.unix(values.expired_time)}
+                            onError={(newError) => {
+                              if (newError === null) {
+                                setFieldError('expired_time', null);
+                              } else {
+                                setFieldError('expired_time', t('token_index.invalidDate'));
+                              }
+                            }}
+                            onChange={(newValue) => {
+                              const newUnix = newValue.unix();
+                              if (values.expired_time !== newUnix) {
+                                setFieldValue('expired_time', newUnix);
+                              }
+                            }}
+                            slotProps={{
+                              textField: {
+                                size: 'small'
+                              },
+                              actionBar: {
+                                actions: ['today', 'accept']
+                              }
+                            }}
+                          />
+                        </LocalizationProvider>
+                        {errors.expired_time && (
+                          <FormHelperText error id="helper-tex-channel-expired_time-label">
+                            {errors.expired_time}
+                          </FormHelperText>
+                        )}
+                      </FormControl>
+                    </Grid>
                   )}
-                </FormControl>
-              )}
-              <FormControl fullWidth>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={values.unlimited_quota === true}
-                      onClick={() => {
-                        setFieldValue('unlimited_quota', !values.unlimited_quota);
-                      }}
+                  <Grid item xs={12}>
+                    <FormControl fullWidth error={Boolean(touched.remain_quota && errors.remain_quota)} sx={compactFieldSx}>
+                      <InputLabel htmlFor="channel-remain_quota-label">{t('token_index.quota')}</InputLabel>
+                      <OutlinedInput
+                        id="channel-remain_quota-label"
+                        label={t('token_index.quota')}
+                        type="text"
+                        size="small"
+                        value={values.remain_quota}
+                        name="remain_quota"
+                        startAdornment={<InputAdornment position="start">$</InputAdornment>}
+                        onBlur={handleBlur}
+                        onChange={handleChange}
+                        aria-describedby="helper-text-channel-remain_quota-label"
+                        disabled={values.unlimited_quota}
+                      />
+
+                      {touched.remain_quota && errors.remain_quota && (
+                        <FormHelperText error id="helper-tex-channel-remain_quota-label">
+                          {errors.remain_quota}
+                        </FormHelperText>
+                      )}
+                    </FormControl>
+                  </Grid>
+                </Grid>
+                <Alert severity="info" sx={{ mt: 1.5, py: 0 }}>
+                  {t('token_index.quotaNote')}
+                </Alert>
+              </Box>
+
+              <Box sx={sectionSx}>
+                <Box sx={sectionHeaderSx}>
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    {t('token_index.heartbeat')}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {t('token_index.heartbeatTip')}
+                  </Typography>
+                </Box>
+
+                <Grid container spacing={1.5} alignItems="flex-start">
+                  <Grid item xs={12} sm={5}>
+                    <FormControlLabel
+                      sx={{ m: 0, minHeight: 40 }}
+                      control={
+                        <Switch
+                          size="small"
+                          checked={values?.setting?.heartbeat?.enabled === true}
+                          onClick={() => {
+                            setFieldValue('setting.heartbeat.enabled', !values.setting?.heartbeat?.enabled);
+                          }}
+                        />
+                      }
+                      label={t('token_index.heartbeat')}
                     />
-                  }
-                  label={t('token_index.unlimitedQuota')}
-                />
-              </FormControl>
-              <FormControl fullWidth error={Boolean(touched.remain_quota && errors.remain_quota)} sx={{ ...theme.typography.otherInput }}>
-                <InputLabel htmlFor="channel-remain_quota-label">{t('token_index.quota')}</InputLabel>
-                <OutlinedInput
-                  id="channel-remain_quota-label"
-                  label={t('token_index.quota')}
-                  type="text" // 支持输入小数
-                  value={values.remain_quota}
-                  name="remain_quota"
-                  startAdornment={<InputAdornment position="start">$</InputAdornment>}
-                  onBlur={handleBlur}
-                  onChange={handleChange}
-                  aria-describedby="helper-text-channel-remain_quota-label"
-                  disabled={values.unlimited_quota}
-                />
+                  </Grid>
 
-                {touched.remain_quota && errors.remain_quota && (
-                  <FormHelperText error id="helper-tex-channel-remain_quota-label">
-                    {errors.remain_quota}
-                  </FormHelperText>
-                )}
-              </FormControl>
-              <Alert severity="info">{t('token_index.quotaNote')}</Alert>
-              <Divider sx={{ margin: '16px 0px' }} />
-              <Typography variant="h4">{t('token_index.heartbeat')}</Typography>
-              <Typography variant="caption">{t('token_index.heartbeatTip')}</Typography>
+                  {values?.setting?.heartbeat?.enabled && (
+                    <Grid item xs={12} sm={7}>
+                      <FormControl fullWidth size="small">
+                        <InputLabel>{t('token_index.heartbeatTimeout')}</InputLabel>
+                        <OutlinedInput
+                          id="channel-heartbeat-timeout-label"
+                          label={t('token_index.heartbeatTimeout')}
+                          type="number"
+                          size="small"
+                          value={values?.setting?.heartbeat?.timeout_seconds}
+                          onChange={(e) => {
+                            setFieldValue('setting.heartbeat.timeout_seconds', e.target.value);
+                          }}
+                        />
 
-              <FormControl fullWidth>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={values?.setting?.heartbeat?.enabled === true}
-                      onClick={() => {
-                        setFieldValue('setting.heartbeat.enabled', !values.setting?.heartbeat?.enabled);
-                      }}
-                    />
-                  }
-                  label={t('token_index.heartbeat')}
-                />
-              </FormControl>
-
-              {values?.setting?.heartbeat?.enabled && (
-                <FormControl fullWidth>
-                  <InputLabel>{t('token_index.heartbeatTimeout')}</InputLabel>
-                  <OutlinedInput
-                    id="channel-heartbeat-timeout-label"
-                    label={t('token_index.heartbeatTimeout')}
-                    type="number"
-                    value={values?.setting?.heartbeat?.timeout_seconds}
-                    onChange={(e) => {
-                      setFieldValue('setting.heartbeat.timeout_seconds', e.target.value);
-                    }}
-                  />
-
-                  {touched.setting?.heartbeat?.timeout_seconds && errors.setting?.heartbeat?.timeout_seconds ? (
-                    <FormHelperText error id="helper-tex-channel-heartbeat-timeout-label">
-                      {errors.setting?.heartbeat?.timeout_seconds}
-                    </FormHelperText>
-                  ) : (
-                    <FormHelperText id="helper-tex-channel-heartbeat-timeout-label">
-                      {t('token_index.heartbeatTimeoutHelperText')}
-                    </FormHelperText>
+                        {touched.setting?.heartbeat?.timeout_seconds && errors.setting?.heartbeat?.timeout_seconds ? (
+                          <FormHelperText error id="helper-tex-channel-heartbeat-timeout-label">
+                            {errors.setting?.heartbeat?.timeout_seconds}
+                          </FormHelperText>
+                        ) : (
+                          <FormHelperText id="helper-tex-channel-heartbeat-timeout-label">
+                            {t('token_index.heartbeatTimeoutHelperText')}
+                          </FormHelperText>
+                        )}
+                      </FormControl>
+                    </Grid>
                   )}
-                </FormControl>
-              )}
-
-              <Divider sx={{ margin: '16px 0px' }} />
-              <Typography variant="h4">{t('token_index.selectGroup')}</Typography>
-              <Typography variant="caption">{t('token_index.selectGroupInfo')}</Typography>
-              <Grid container spacing={2} mt={2}>
-                <Grid item xs={12} md={6}>
-                  <FormControl fullWidth>
-                    <InputLabel>{t('token_index.userGroup')}</InputLabel>
-                    <Select
-                      label={t('token_index.userGroup')}
-                      name="group"
-                      value={values.group || '-1'}
-                      onChange={(e) => {
-                        const value = e.target.value === '-1' ? '' : e.target.value;
-                        setFieldValue('group', value);
-                        if (values.backup_group === value && value !== '') {
-                          setFieldValue('backup_group', '');
-                        }
-                      }}
-                      variant={'outlined'}
-                    >
-                      <MenuItem value="-1">跟随用户分组</MenuItem>
-                      {userGroupOptions.map((option) => (
-                        <MenuItem key={option.value} value={option.value}>
-                          {option.label}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
                 </Grid>
-                <Grid item xs={12} md={6}>
-                  <FormControl fullWidth>
-                    <InputLabel>{t('token_index.userBackupGroup')}</InputLabel>
-                    <Select
-                      label={t('token_index.userBackupGroup')}
-                      name="backup_group"
-                      value={values.backup_group || '-1'}
-                      onChange={(e) => {
-                        const value = e.target.value === '-1' ? '' : e.target.value;
-                        setFieldValue('backup_group', value);
+              </Box>
+
+              <Box sx={sectionSx}>
+                <Box sx={sectionHeaderSx}>
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    {t('token_index.selectGroup')}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {t('token_index.selectGroupInfo')}
+                  </Typography>
+                </Box>
+
+                <Grid container spacing={1.5}>
+                  <Grid item xs={12} md={6}>
+                    <FormControl fullWidth>
+                      <InputLabel>{t('token_index.userGroup')}</InputLabel>
+                      <Select
+                        size="small"
+                        label={t('token_index.userGroup')}
+                        name="group"
+                        value={values.group || '-1'}
+                        onChange={(e) => {
+                          const value = e.target.value === '-1' ? '' : e.target.value;
+                          setFieldValue('group', value);
+                          if (value !== '') {
+                            setFieldValue(
+                              'backup_groups',
+                              (values.backup_groups || []).filter((group) => group !== value)
+                            );
+                          }
+                        }}
+                        variant={'outlined'}
+                      >
+                        <MenuItem value="-1">跟随用户分组</MenuItem>
+                        {userGroupOptions.map((option) => (
+                          <MenuItem key={option.value} value={option.value}>
+                            {option.label}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Button
+                      fullWidth
+                      size="small"
+                      variant="outlined"
+                      onClick={() => {
+                        const nextOption = userGroupOptions.find(
+                          (option) => option.value !== values.group && !(values.backup_groups || []).includes(option.value)
+                        );
+                        if (!nextOption) {
+                          return;
+                        }
+                        setFieldValue('backup_groups', [...(values.backup_groups || []), nextOption.value]);
                       }}
-                      variant={'outlined'}
+                      disabled={
+                        !userGroupOptions.some(
+                          (option) => option.value !== values.group && !(values.backup_groups || []).includes(option.value)
+                        )
+                      }
+                      sx={{ height: 40 }}
                     >
-                      <MenuItem value="-1">无备用分组</MenuItem>
-                      {userGroupOptions.map((option) => (
-                        <MenuItem key={option.value} value={option.value} disabled={values.group === option.value && values.group !== ''}>
-                          {option.label}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
+                      {t('token_index.addBackupGroup')}
+                    </Button>
+                    <FormHelperText>{t('token_index.backupGroupInfo')}</FormHelperText>
+                  </Grid>
+                  {(values.backup_groups || []).map((backupGroup, index) => {
+                    const availableOptions = userGroupOptions.filter(
+                      (option) =>
+                        option.value !== values.group &&
+                        (option.value === backupGroup || !(values.backup_groups || []).includes(option.value))
+                    );
+
+                    return (
+                      <Grid item xs={12} key={`backup-group-${index}`}>
+                        <Grid container spacing={2}>
+                          <Grid item xs={12} md={8}>
+                            <FormControl fullWidth>
+                              <InputLabel>{`${t('token_index.userBackupGroup')} ${index + 1}`}</InputLabel>
+                              <Select
+                                size="small"
+                                label={`${t('token_index.userBackupGroup')} ${index + 1}`}
+                                value={backupGroup}
+                                onChange={(e) => {
+                                  const nextGroups = [...(values.backup_groups || [])];
+                                  nextGroups[index] = e.target.value;
+                                  setFieldValue('backup_groups', nextGroups);
+                                }}
+                                variant={'outlined'}
+                              >
+                                {availableOptions.map((option) => (
+                                  <MenuItem key={option.value} value={option.value}>
+                                    {option.label}
+                                  </MenuItem>
+                                ))}
+                              </Select>
+                            </FormControl>
+                          </Grid>
+                          <Grid item xs={12} md={4}>
+                            <Button
+                              fullWidth
+                              size="small"
+                              color="error"
+                              variant="outlined"
+                              onClick={() => {
+                                setFieldValue(
+                                  'backup_groups',
+                                  (values.backup_groups || []).filter((_, groupIndex) => groupIndex !== index)
+                                );
+                              }}
+                              sx={{ height: 40 }}
+                            >
+                              {t('token_index.removeBackupGroup')}
+                            </Button>
+                          </Grid>
+                        </Grid>
+                      </Grid>
+                    );
+                  })}
                 </Grid>
-              </Grid>
+              </Box>
 
-              {/*令牌限制设置*/}
-              <Divider sx={{ margin: '16px 0px' }} />
-              <Typography variant="h4">{t('token_index.limits')}</Typography>
-              <Typography variant="caption">{t('token_index.limits_info')}</Typography>
+              <Box sx={sectionSx}>
+                <Box sx={sectionHeaderSx}>
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    {t('token_index.limits')}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {t('token_index.limits_info')}
+                  </Typography>
+                </Box>
 
-              {/*是否开启限制*/}
-              <FormControl fullWidth>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={values?.setting?.limits?.limit_model_setting?.enabled === true}
-                      onClick={() => {
-                        const newEnabledState = !values.setting?.limits?.limit_model_setting?.enabled;
-                        setFieldValue('setting.limits.limit_model_setting.enabled', newEnabledState);
-                        if (!newEnabledState) {
-                          setFieldValue('setting.limits.limit_model_setting.models', []);
-                        }
-                      }}
+                <Grid container spacing={1.5}>
+                  <Grid item xs={12}>
+                    <FormControlLabel
+                      sx={{ m: 0, minHeight: 40 }}
+                      control={
+                        <Switch
+                          size="small"
+                          checked={values?.setting?.limits?.limit_model_setting?.enabled === true}
+                          onClick={() => {
+                            const newEnabledState = !values.setting?.limits?.limit_model_setting?.enabled;
+                            setFieldValue('setting.limits.limit_model_setting.enabled', newEnabledState);
+                            if (!newEnabledState) {
+                              setFieldValue('setting.limits.limit_model_setting.models', []);
+                            }
+                          }}
+                        />
+                      }
+                      label={t('token_index.limits_models_switch')}
                     />
-                  }
-                  label={t('token_index.limits_models_switch')}
-                />
-              </FormControl>
-              {values?.setting?.limits?.limit_model_setting?.enabled && (
-                <ModelLimitSelector modelOptions={modelOptions} getModelIcon={getModelIcon} />
-              )}
-
-              {/* IP 白名单限制 */}
-              <Divider sx={{ margin: '16px 0px' }} />
-              <Typography variant="caption">{t('token_index.limits_ip_whitelist_info')}</Typography>
-
-              <FormControl fullWidth>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={values?.setting?.limits?.limits_ip_setting?.enabled === true}
-                      onClick={() => {
-                        const newEnabledState = !values.setting?.limits?.limits_ip_setting?.enabled;
-                        setFieldValue('setting.limits.limits_ip_setting.enabled', newEnabledState);
-                        if (!newEnabledState) {
-                          setFieldValue('setting.limits.limits_ip_setting.whitelist', []);
-                        }
-                      }}
+                  </Grid>
+                  {values?.setting?.limits?.limit_model_setting?.enabled && (
+                    <Grid item xs={12}>
+                      <ModelLimitSelector modelOptions={modelOptions} getModelIcon={getModelIcon} />
+                    </Grid>
+                  )}
+                  <Grid item xs={12}>
+                    <Typography variant="caption" color="text.secondary">
+                      {t('token_index.limits_ip_whitelist_info')}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <FormControlLabel
+                      sx={{ m: 0, minHeight: 40 }}
+                      control={
+                        <Switch
+                          size="small"
+                          checked={values?.setting?.limits?.limits_ip_setting?.enabled === true}
+                          onClick={() => {
+                            const newEnabledState = !values.setting?.limits?.limits_ip_setting?.enabled;
+                            setFieldValue('setting.limits.limits_ip_setting.enabled', newEnabledState);
+                            if (!newEnabledState) {
+                              setFieldValue('setting.limits.limits_ip_setting.whitelist', []);
+                            }
+                          }}
+                        />
+                      }
+                      label={t('token_index.limits_ip_whitelist_switch')}
                     />
-                  }
-                  label={t('token_index.limits_ip_whitelist_switch')}
-                />
-              </FormControl>
+                  </Grid>
 
-              {values?.setting?.limits?.limits_ip_setting?.enabled && (
-                <FormControl fullWidth sx={{ ...theme.typography.otherInput }}>
-                  <TextField
-                    label={t('token_index.limits_ip_whitelist_input')}
-                    multiline
-                    rows={6}
-                    value={values?.setting?.limits?.limits_ip_setting?.whitelist?.join('\n') || ''}
-                    onChange={(e) => {
-                      const lines = e.target.value.split('\n');
-                      setFieldValue('setting.limits.limits_ip_setting.whitelist', lines);
-                    }}
-                    placeholder="192.168.1.1&#10;10.0.0.0/8&#10;172.16.0.0/12"
-                    helperText={t('token_index.limits_ip_whitelist_helper')}
-                  />
-                </FormControl>
-              )}
-              <DialogActions>
+                  {values?.setting?.limits?.limits_ip_setting?.enabled && (
+                    <Grid item xs={12}>
+                      <FormControl fullWidth sx={compactFieldSx}>
+                        <TextField
+                          size="small"
+                          label={t('token_index.limits_ip_whitelist_input')}
+                          multiline
+                          rows={4}
+                          value={values?.setting?.limits?.limits_ip_setting?.whitelist?.join('\n') || ''}
+                          onChange={(e) => {
+                            const lines = e.target.value.split('\n');
+                            setFieldValue('setting.limits.limits_ip_setting.whitelist', lines);
+                          }}
+                          placeholder="192.168.1.1&#10;10.0.0.0/8&#10;172.16.0.0/12"
+                          helperText={t('token_index.limits_ip_whitelist_helper')}
+                        />
+                      </FormControl>
+                    </Grid>
+                  )}
+                </Grid>
+              </Box>
+              <DialogActions sx={{ px: 0, pt: 0, pb: 0 }}>
                 <Button onClick={onCancel}>{t('token_index.cancel')}</Button>
                 <Button disableElevation disabled={isSubmitting} type="submit" variant="contained" color="primary">
                   {t('token_index.submit')}
                 </Button>
               </DialogActions>
-            </form>
+            </Box>
           )}
         </Formik>
       </DialogContent>

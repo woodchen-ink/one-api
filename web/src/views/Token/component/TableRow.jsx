@@ -37,10 +37,27 @@ function statusInfo(t, status) {
   }
 }
 
+function getTokenGroups(item) {
+  const groups = [];
+  const appendGroup = (group, fallback) => {
+    if (!group || groups.some((itemGroup) => itemGroup.value === group)) {
+      return;
+    }
+    groups.push({ value: group, fallback });
+  };
+
+  appendGroup(item.group, false);
+  appendGroup(item.backup_group, true);
+  (item.setting?.fallback_groups || []).forEach((group) => appendGroup(group, true));
+
+  return groups;
+}
+
 export default function TokensTableRow({ item, manageToken, handleOpenModal, userGroup, isAdminSearch }) {
   const { t } = useTranslation();
   const [openDelete, setOpenDelete] = useState(false);
   const [statusSwitch, setStatusSwitch] = useState(item.status);
+  const tokenGroups = getTokenGroups(item);
   const handleDeleteOpen = () => {
     setOpenDelete(true);
   };
@@ -79,16 +96,17 @@ export default function TokensTableRow({ item, manageToken, handleOpenModal, use
         )}
         <TableCell>{item.name}</TableCell>
         <TableCell>
-          {isAdminSearch ? (
-            // 管理员搜索模式：分组/备用分组两行显示
-            <Stack direction="column" spacing={0.5}>
-              <Label color={userGroup[item.group]?.color}>{userGroup[item.group]?.name || '跟随用户'}</Label>
-              <Label color={userGroup[item.backup_group]?.color}>{userGroup[item.backup_group]?.name || '-'}</Label>
-            </Stack>
-          ) : (
-            // 普通模式：只显示分组
+          <Stack direction="column" spacing={0.5}>
             <Label color={userGroup[item.group]?.color}>{userGroup[item.group]?.name || '跟随用户'}</Label>
-          )}
+            {tokenGroups
+              .filter((group) => group.fallback)
+              .map((group) => (
+                <Label key={group.value} color={userGroup[group.value]?.color}>
+                  {userGroup[group.value]?.name || group.value}
+                </Label>
+              ))}
+            {isAdminSearch && tokenGroups.length === 1 && <Label color="default">-</Label>}
+          </Stack>
         </TableCell>
         <TableCell>
           <Tooltip

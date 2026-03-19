@@ -2,11 +2,6 @@ package relay
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
-	"fmt"
-	"io"
-	"net/http"
 	"czloapi/common"
 	"czloapi/common/config"
 	"czloapi/common/logger"
@@ -18,6 +13,11 @@ import (
 	"czloapi/providers"
 	providersBase "czloapi/providers/base"
 	"czloapi/types"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
+	"net/http"
 	"regexp"
 	"strings"
 	"time"
@@ -194,15 +194,16 @@ func fetchChannelById(channelId int) (*model.Channel, error) {
 // GroupManager 统一管理分组逻辑
 type GroupManager struct {
 	primaryGroup string
-	backupGroup  string
+	backupGroups []string
 	context      *gin.Context
 }
 
 // NewGroupManager 创建分组管理器
 func NewGroupManager(c *gin.Context) *GroupManager {
+	backupGroups, _ := utils.GetGinValue[[]string](c, "token_backup_groups")
 	return &GroupManager{
 		primaryGroup: c.GetString("token_group"),
-		backupGroup:  c.GetString("token_backup_group"),
+		backupGroups: backupGroups,
 		context:      c,
 	}
 }
@@ -218,22 +219,30 @@ func (gm *GroupManager) TryWithGroups(modelName string, filters []model.Channels
 		logger.LogError(gm.context.Request.Context(), fmt.Sprintf("主分组 %s 失败: %v", gm.primaryGroup, err))
 	}
 
-	// 如果主分组失败，尝试备用分组
-	if gm.backupGroup != "" && gm.backupGroup != gm.primaryGroup {
-		logger.LogInfo(gm.context.Request.Context(), fmt.Sprintf("尝试使用备用分组: %s", gm.backupGroup))
-		channel, err := gm.tryGroup(gm.backupGroup, modelName, filters, operation)
+	// 如果主分组失败，按顺序尝试备用分组
+	lastTriedGroup := gm.primaryGroup
+	for _, backupGroup := range gm.backupGroups {
+		if backupGroup == "" || backupGroup == gm.primaryGroup {
+			continue
+		}
+
+		lastTriedGroup = backupGroup
+		logger.LogInfo(gm.context.Request.Context(), fmt.Sprintf("尝试使用备用分组: %s", backupGroup))
+		channel, err := gm.tryGroup(backupGroup, modelName, filters, operation)
 		if err == nil {
 			// 更新上下文中的分组信息
 			gm.context.Set("is_backupGroup", true)
-			if err := gm.setGroupRatio(gm.backupGroup); err != nil {
+			gm.context.Set("token_backup_group", backupGroup)
+			gm.context.Set("token_group", backupGroup)
+			if err := gm.setGroupRatio(backupGroup); err != nil {
 				return nil, fmt.Errorf("设置备用分组倍率失败: %v", err)
 			}
 			return channel, nil
 		}
-		logger.LogError(gm.context.Request.Context(), fmt.Sprintf("备用分组 %s 也失败: %v", gm.backupGroup, err))
-		return nil, gm.createGroupError(gm.backupGroup, modelName, channel)
+		logger.LogError(gm.context.Request.Context(), fmt.Sprintf("备用分组 %s 失败: %v", backupGroup, err))
 	}
-	return nil, gm.createGroupError(gm.primaryGroup, modelName, nil)
+
+	return nil, gm.createGroupError(lastTriedGroup, modelName, nil)
 }
 
 // tryGroup 尝试使用指定分组

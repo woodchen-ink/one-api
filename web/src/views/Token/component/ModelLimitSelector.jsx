@@ -109,6 +109,7 @@ const ModelLimitSelector = ({ modelOptions, getModelIcon }) => {
     <FormControl fullWidth sx={{ ...theme.typography.otherInput }}>
       <Autocomplete
         multiple
+        size="small"
         disableListWrap
         options={sortedModelOptions}
         groupBy={groupBy}

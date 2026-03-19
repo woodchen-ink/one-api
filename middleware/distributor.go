@@ -1,9 +1,9 @@
 package middleware
 
 import (
+	"czloapi/model"
 	"fmt"
 	"net/http"
-	"czloapi/model"
 
 	"github.com/gin-gonic/gin"
 )
@@ -25,10 +25,10 @@ func (gd *GroupDistributor) SetupGroups() error {
 	gd.context.Set("group", userGroup)
 
 	tokenGroup := gd.context.GetString("token_group")
-	backupGroup := gd.context.GetString("token_backup_group")
+	backupGroups := getContextBackupGroups(gd.context)
 
 	// 统一分组优先级逻辑
-	effectiveGroup := gd.determineEffectiveGroup(tokenGroup, backupGroup, userGroup)
+	effectiveGroup := gd.determineEffectiveGroup(tokenGroup, backupGroups, userGroup)
 	gd.context.Set("token_group", effectiveGroup)
 
 	// 设置分组比例
@@ -36,14 +36,28 @@ func (gd *GroupDistributor) SetupGroups() error {
 }
 
 // determineEffectiveGroup 确定有效的分组
-func (gd *GroupDistributor) determineEffectiveGroup(tokenGroup, backupGroup, userGroup string) string {
+func (gd *GroupDistributor) determineEffectiveGroup(tokenGroup string, backupGroups []string, userGroup string) string {
 	if tokenGroup != "" {
 		return tokenGroup
 	}
-	if backupGroup != "" {
-		return backupGroup
+	if len(backupGroups) > 0 {
+		return backupGroups[0]
 	}
 	return userGroup
+}
+
+func getContextBackupGroups(c *gin.Context) []string {
+	value, ok := c.Get("token_backup_groups")
+	if !ok {
+		return nil
+	}
+
+	backupGroups, ok := value.([]string)
+	if !ok {
+		return nil
+	}
+
+	return backupGroups
 }
 
 // setGroupRatio 设置分组倍率

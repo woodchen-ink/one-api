@@ -1,11 +1,11 @@
 package middleware
 
 import (
-	"fmt"
-	"net/http"
 	"czloapi/common/config"
 	"czloapi/common/utils"
 	"czloapi/model"
+	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/gin-contrib/sessions"
@@ -132,7 +132,13 @@ func tokenAuth(c *gin.Context, key string) {
 	c.Set("token_id", token.Id)
 	c.Set("token_name", token.Name)
 	c.Set("token_group", token.Group)
-	c.Set("token_backup_group", token.BackupGroup)
+	backupGroups := model.MergeTokenFallbackGroups(token.Group, token.BackupGroup, token.Setting.Data().FallbackGroups)
+	if len(backupGroups) > 0 {
+		c.Set("token_backup_group", backupGroups[0])
+	} else {
+		c.Set("token_backup_group", "")
+	}
+	c.Set("token_backup_groups", backupGroups)
 	c.Set("token_unlimited_quota", token.UnlimitedQuota)
 	c.Set("token_setting", utils.GetPointer(token.Setting.Data()))
 	if err := checkLimitIP(c); err != nil {

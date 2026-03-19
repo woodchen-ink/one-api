@@ -132,31 +132,19 @@ func AddToken(c *gin.Context) {
 		return
 	}
 
-	if token.Group != "" {
-		err = validateTokenGroup(token.Group, userId)
-		if err != nil {
-			c.JSON(http.StatusOK, gin.H{
-				"success": false,
-				"message": err.Error(),
-			})
-			return
-		}
-	}
-	if token.BackupGroup != "" {
-		err = validateTokenGroup(token.BackupGroup, userId)
-		if err != nil {
-			c.JSON(http.StatusOK, gin.H{
-				"success": false,
-				"message": err.Error(),
-			})
-			return
-		}
-	}
-
 	setting := token.Setting.Data()
 	err = validateTokenSetting(&setting)
 	if err != nil {
 		common.APIRespondWithError(c, http.StatusOK, err)
+		return
+	}
+
+	backupGroup, err := normalizeAndValidateTokenGroups(token.Group, token.BackupGroup, &setting, userId, validateTokenGroup)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": err.Error(),
+		})
 		return
 	}
 
@@ -170,7 +158,7 @@ func AddToken(c *gin.Context) {
 		RemainQuota:    token.RemainQuota,
 		UnlimitedQuota: token.UnlimitedQuota,
 		Group:          token.Group,
-		BackupGroup:    token.BackupGroup,
+		BackupGroup:    backupGroup,
 	}
 	cleanToken.Setting.Set(setting)
 	err = cleanToken.Insert()
@@ -256,37 +244,25 @@ func UpdateToken(c *gin.Context) {
 		}
 	}
 
-	if cleanToken.Group != token.Group && token.Group != "" {
-		err = validateTokenGroup(token.Group, userId)
-		if err != nil {
-			c.JSON(http.StatusOK, gin.H{
-				"success": false,
-				"message": err.Error(),
-			})
-			return
-		}
-	}
-	if cleanToken.BackupGroup != token.BackupGroup && token.BackupGroup != "" {
-		err = validateTokenGroup(token.BackupGroup, userId)
-		if err != nil {
-			c.JSON(http.StatusOK, gin.H{
-				"success": false,
-				"message": err.Error(),
-			})
-			return
-		}
-	}
-
 	if statusOnly != "" {
 		cleanToken.Status = token.Status
 	} else {
+		backupGroup, err := normalizeAndValidateTokenGroups(token.Group, token.BackupGroup, &newSetting, userId, validateTokenGroup)
+		if err != nil {
+			c.JSON(http.StatusOK, gin.H{
+				"success": false,
+				"message": err.Error(),
+			})
+			return
+		}
+
 		// If you add more fields, please also update token.Update()
 		cleanToken.Name = token.Name
 		cleanToken.ExpiredTime = token.ExpiredTime
 		cleanToken.RemainQuota = token.RemainQuota
 		cleanToken.UnlimitedQuota = token.UnlimitedQuota
 		cleanToken.Group = token.Group
-		cleanToken.BackupGroup = token.BackupGroup
+		cleanToken.BackupGroup = backupGroup
 		cleanToken.Setting.Set(newSetting)
 	}
 	err = cleanToken.Update()
@@ -376,36 +352,24 @@ func UpdateTokenByAdmin(c *gin.Context) {
 		targetUserId = token.UserId
 	}
 
-	if cleanToken.Group != token.Group && token.Group != "" {
-		err = validateTokenGroupForUser(token.Group, targetUserId)
-		if err != nil {
-			c.JSON(http.StatusOK, gin.H{
-				"success": false,
-				"message": err.Error(),
-			})
-			return
-		}
-	}
-	if cleanToken.BackupGroup != token.BackupGroup && token.BackupGroup != "" {
-		err = validateTokenGroupForUser(token.BackupGroup, targetUserId)
-		if err != nil {
-			c.JSON(http.StatusOK, gin.H{
-				"success": false,
-				"message": err.Error(),
-			})
-			return
-		}
-	}
-
 	if statusOnly != "" {
 		cleanToken.Status = token.Status
 	} else {
+		backupGroup, err := normalizeAndValidateTokenGroups(token.Group, token.BackupGroup, &newSetting, targetUserId, validateTokenGroupForUser)
+		if err != nil {
+			c.JSON(http.StatusOK, gin.H{
+				"success": false,
+				"message": err.Error(),
+			})
+			return
+		}
+
 		cleanToken.Name = token.Name
 		cleanToken.ExpiredTime = token.ExpiredTime
 		cleanToken.RemainQuota = token.RemainQuota
 		cleanToken.UnlimitedQuota = token.UnlimitedQuota
 		cleanToken.Group = token.Group
-		cleanToken.BackupGroup = token.BackupGroup
+		cleanToken.BackupGroup = backupGroup
 		cleanToken.Setting.Set(newSetting)
 
 		// 管理员可以转移token给其他用户
@@ -479,4 +443,33 @@ func validateTokenSetting(setting *model.TokenSetting) error {
 	}
 
 	return nil
+}
+
+func normalizeAndValidateTokenGroups(
+	tokenGroup string,
+	backupGroup string,
+	setting *model.TokenSetting,
+	userId int,
+	validateGroup func(string, int) error,
+) (string, error) {
+	if tokenGroup != "" {
+		if err := validateGroup(tokenGroup, userId); err != nil {
+			return "", err
+		}
+	}
+
+	fallbackGroups := model.MergeTokenFallbackGroups(tokenGroup, backupGroup, setting.FallbackGroups)
+	for _, group := range fallbackGroups {
+		if err := validateGroup(group, userId); err != nil {
+			return "", err
+		}
+	}
+
+	if len(fallbackGroups) == 0 {
+		setting.FallbackGroups = nil
+		return "", nil
+	}
+
+	setting.FallbackGroups = append([]string(nil), fallbackGroups[1:]...)
+	return fallbackGroups[0], nil
 }

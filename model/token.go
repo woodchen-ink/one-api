@@ -10,6 +10,7 @@ import (
 	"czloapi/common/utils"
 	"errors"
 	"fmt"
+	"strings"
 
 	"gorm.io/gorm"
 )
@@ -64,8 +65,9 @@ func (token *Token) AfterCreate(tx *gorm.DB) (err error) {
 }
 
 type TokenSetting struct {
-	Heartbeat HeartbeatSetting `json:"heartbeat,omitempty"`
-	Limits    LimitsConfig     `json:"limits,omitempty"`
+	Heartbeat      HeartbeatSetting `json:"heartbeat,omitempty"`
+	Limits         LimitsConfig     `json:"limits,omitempty"`
+	FallbackGroups []string         `json:"fallback_groups,omitempty"`
 }
 
 type HeartbeatSetting struct {
@@ -86,6 +88,34 @@ type LimitModelSetting struct {
 type LimitsIPSetting struct {
 	Enabled   bool     `json:"enabled"`
 	Whitelist []string `json:"whitelist"`
+}
+
+func MergeTokenFallbackGroups(primaryGroup, backupGroup string, fallbackGroups []string) []string {
+	groups := make([]string, 0, 1+len(fallbackGroups))
+	seen := make(map[string]struct{}, len(fallbackGroups)+1)
+
+	if primaryGroup != "" {
+		seen[primaryGroup] = struct{}{}
+	}
+
+	appendGroup := func(group string) {
+		group = strings.TrimSpace(group)
+		if group == "" {
+			return
+		}
+		if _, ok := seen[group]; ok {
+			return
+		}
+		seen[group] = struct{}{}
+		groups = append(groups, group)
+	}
+
+	appendGroup(backupGroup)
+	for _, group := range fallbackGroups {
+		appendGroup(group)
+	}
+
+	return groups
 }
 
 func GetUserTokensList(userId int, params *GenericParams) (*DataResult[Token], error) {

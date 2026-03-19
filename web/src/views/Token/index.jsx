@@ -381,7 +381,7 @@ export default function Token() {
                     // 普通模式
                     return [
                       { id: 'name', label: t('token_index.name'), disableSort: false },
-                      { id: 'group', label: t('token_index.userGroup'), disableSort: false },
+                      { id: 'group', label: t('token_index.userGroup') + ' / ' + t('token_index.userBackupGroup'), disableSort: false },
                       { id: 'status', label: t('token_index.status'), disableSort: false },
                       { id: 'used_quota', label: t('token_index.usedQuota'), disableSort: false },
                       { id: 'remain_quota', label: t('token_index.remainingQuota'), disableSort: false },
