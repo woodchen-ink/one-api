@@ -35,9 +35,6 @@ const SystemSetting = () => {
     GitHubClientId: '',
     GitHubClientSecret: '',
     GitHubOldIdCloseEnabled: '',
-    LarkAuthEnabled: '',
-    LarkClientId: '',
-    LarkClientSecret: '',
     CZLConnectAuthEnabled: '',
     CZLConnectClientId: '',
     CZLConnectClientSecret: '',
@@ -56,10 +53,6 @@ const SystemSetting = () => {
     SMTPToken: '',
     ServerAddress: '',
     Footer: '',
-    WeChatAuthEnabled: '',
-    WeChatServerAddress: '',
-    WeChatServerToken: '',
-    WeChatAccountQRCodeImageURL: '',
     TurnstileCheckEnabled: '',
     TurnstileSiteKey: '',
     TurnstileSecretKey: '',
@@ -109,8 +102,6 @@ const SystemSetting = () => {
       case 'EmailVerificationEnabled':
       case 'GitHubOAuthEnabled':
       case 'GitHubOldIdCloseEnabled':
-      case 'WeChatAuthEnabled':
-      case 'LarkAuthEnabled':
       case 'CZLConnectAuthEnabled':
       case 'OIDCAuthEnabled':
       case 'TurnstileCheckEnabled':
@@ -168,14 +159,9 @@ const SystemSetting = () => {
       name === 'OIDCIssuer' ||
       name === 'OIDCScopes' ||
       name === 'OIDCUsernameClaims' ||
-      name === 'WeChatServerAddress' ||
-      name === 'WeChatServerToken' ||
-      name === 'WeChatAccountQRCodeImageURL' ||
       name === 'TurnstileSiteKey' ||
       name === 'TurnstileSecretKey' ||
       name === 'EmailDomainWhitelist' ||
-      name === 'LarkClientId' ||
-      name === 'LarkClientSecret' ||
       name === 'CZLConnectClientId' ||
       name === 'CZLConnectClientSecret' ||
       name === 'CZLConnectRedirectUri'
@@ -211,18 +197,6 @@ const SystemSetting = () => {
 
   const submitEmailDomainWhitelist = async () => {
     await updateOption('EmailDomainWhitelist', inputs.EmailDomainWhitelist.join(','));
-  };
-
-  const submitWeChat = async () => {
-    if (originInputs['WeChatServerAddress'] !== inputs.WeChatServerAddress) {
-      await updateOption('WeChatServerAddress', removeTrailingSlash(inputs.WeChatServerAddress));
-    }
-    if (originInputs['WeChatAccountQRCodeImageURL'] !== inputs.WeChatAccountQRCodeImageURL) {
-      await updateOption('WeChatAccountQRCodeImageURL', inputs.WeChatAccountQRCodeImageURL);
-    }
-    if (originInputs['WeChatServerToken'] !== inputs.WeChatServerToken && inputs.WeChatServerToken !== '') {
-      await updateOption('WeChatServerToken', inputs.WeChatServerToken);
-    }
   };
 
   const submitGitHubOAuth = async () => {
@@ -263,15 +237,6 @@ const SystemSetting = () => {
     }
     if (originInputs['TurnstileSecretKey'] !== inputs.TurnstileSecretKey && inputs.TurnstileSecretKey !== '') {
       await updateOption('TurnstileSecretKey', inputs.TurnstileSecretKey);
-    }
-  };
-
-  const submitLarkOAuth = async () => {
-    if (originInputs['LarkClientId'] !== inputs.LarkClientId) {
-      await updateOption('LarkClientId', inputs.LarkClientId);
-    }
-    if (originInputs['LarkClientSecret'] !== inputs.LarkClientSecret && inputs.LarkClientSecret !== '') {
-      await updateOption('LarkClientSecret', inputs.LarkClientSecret);
     }
   };
 
@@ -352,18 +317,6 @@ const SystemSetting = () => {
               <FormControlLabel
                 label={t('setting_index.systemSettings.configureLoginRegister.gitHubOAuth')}
                 control={<Checkbox checked={inputs.GitHubOAuthEnabled === 'true'} onChange={handleInputChange} name="GitHubOAuthEnabled" />}
-              />
-            </Grid>
-            <Grid xs={12} md={3}>
-              <FormControlLabel
-                label={t('setting_index.systemSettings.configureLoginRegister.weChatAuth')}
-                control={<Checkbox checked={inputs.WeChatAuthEnabled === 'true'} onChange={handleInputChange} name="WeChatAuthEnabled" />}
-              />
-            </Grid>
-            <Grid xs={12} md={3}>
-              <FormControlLabel
-                label={t('setting_index.systemSettings.configureLoginRegister.larkAuth')}
-                control={<Checkbox checked={inputs.LarkAuthEnabled === 'true'} onChange={handleInputChange} name="LarkAuthEnabled" />}
               />
             </Grid>
             <Grid xs={12} md={3}>
@@ -682,131 +635,6 @@ const SystemSetting = () => {
             <Grid xs={12}>
               <Button variant="contained" onClick={submitCZLConnectOAuth}>
                 {t('setting_index.systemSettings.configureCZLConnectOAuth.saveButton')}
-              </Button>
-            </Grid>
-          </Grid>
-        </SubCard>
-
-        <SubCard
-          title={t('setting_index.systemSettings.configureWeChatServer.title')}
-          subTitle={
-            <span>
-              {t('setting_index.systemSettings.configureWeChatServer.subTitle')}
-              <a href="https://github.com/songquanpeng/wechat-server" target="_blank" rel="noopener noreferrer">
-                {t('setting_index.systemSettings.configureWeChatServer.learnLink')}
-              </a>
-              {t('setting_index.systemSettings.configureWeChatServer.learn')}
-            </span>
-          }
-        >
-          <Grid container spacing={{ xs: 3, sm: 2, md: 4 }}>
-            <Grid xs={12} md={4}>
-              <FormControl fullWidth>
-                <InputLabel htmlFor="WeChatServerAddress">
-                  {t('setting_index.systemSettings.configureWeChatServer.serverAddress')}
-                </InputLabel>
-                <OutlinedInput
-                  id="WeChatServerAddress"
-                  name="WeChatServerAddress"
-                  value={inputs.WeChatServerAddress || ''}
-                  onChange={handleInputChange}
-                  label={t('setting_index.systemSettings.configureWeChatServer.serverAddress')}
-                  placeholder={t('setting_index.systemSettings.configureWeChatServer.serverAddressPlaceholder')}
-                  disabled={loading}
-                />
-              </FormControl>
-            </Grid>
-            <Grid xs={12} md={4}>
-              <FormControl fullWidth>
-                <InputLabel htmlFor="WeChatServerToken">{t('setting_index.systemSettings.configureWeChatServer.accessToken')}</InputLabel>
-                <OutlinedInput
-                  id="WeChatServerToken"
-                  name="WeChatServerToken"
-                  value={inputs.WeChatServerToken || ''}
-                  onChange={handleInputChange}
-                  label={t('setting_index.systemSettings.configureWeChatServer.accessToken')}
-                  placeholder={t('setting_index.systemSettings.configureWeChatServer.accessTokenPlaceholder')}
-                  disabled={loading}
-                />
-              </FormControl>
-            </Grid>
-            <Grid xs={12} md={4}>
-              <FormControl fullWidth>
-                <InputLabel htmlFor="WeChatAccountQRCodeImageURL">
-                  {t('setting_index.systemSettings.configureWeChatServer.qrCodeImage')}
-                </InputLabel>
-                <OutlinedInput
-                  id="WeChatAccountQRCodeImageURL"
-                  name="WeChatAccountQRCodeImageURL"
-                  value={inputs.WeChatAccountQRCodeImageURL || ''}
-                  onChange={handleInputChange}
-                  label={t('setting_index.systemSettings.configureWeChatServer.qrCodeImage')}
-                  placeholder={t('setting_index.systemSettings.configureWeChatServer.qrCodeImagePlaceholder')}
-                  disabled={loading}
-                />
-              </FormControl>
-            </Grid>
-            <Grid xs={12}>
-              <Button variant="contained" onClick={submitWeChat}>
-                {t('setting_index.systemSettings.configureWeChatServer.saveButton')}
-              </Button>
-            </Grid>
-          </Grid>
-        </SubCard>
-
-        <SubCard
-          title={t('setting_index.systemSettings.configureFeishuAuthorization.title')}
-          subTitle={
-            <span>
-              {' '}
-              {t('setting_index.systemSettings.configureFeishuAuthorization.subTitle')}
-              <a href="https://open.feishu.cn/app" target="_blank" rel="noreferrer">
-                {t('setting_index.systemSettings.configureFeishuAuthorization.manageLink')}
-              </a>
-              {t('setting_index.systemSettings.configureFeishuAuthorization.manage')}
-            </span>
-          }
-        >
-          <Grid container spacing={{ xs: 3, sm: 2, md: 4 }}>
-            <Grid xs={12}>
-              <Alert severity="info" sx={{ wordWrap: 'break-word' }}>
-                {t('setting_index.systemSettings.configureFeishuAuthorization.alert1')} <code>{inputs.ServerAddress}</code>
-                {t('setting_index.systemSettings.configureFeishuAuthorization.alert2')} <code>{`${inputs.ServerAddress}/oauth/lark`}</code>
-              </Alert>
-            </Grid>
-            <Grid xs={12} md={6}>
-              <FormControl fullWidth>
-                <InputLabel htmlFor="LarkClientId">{t('setting_index.systemSettings.configureFeishuAuthorization.appId')}</InputLabel>
-                <OutlinedInput
-                  id="LarkClientId"
-                  name="LarkClientId"
-                  value={inputs.LarkClientId || ''}
-                  onChange={handleInputChange}
-                  label={t('setting_index.systemSettings.configureFeishuAuthorization.appId')}
-                  placeholder={t('setting_index.systemSettings.configureFeishuAuthorization.appIdPlaceholder')}
-                  disabled={loading}
-                />
-              </FormControl>
-            </Grid>
-            <Grid xs={12} md={6}>
-              <FormControl fullWidth>
-                <InputLabel htmlFor="LarkClientSecret">
-                  {t('setting_index.systemSettings.configureFeishuAuthorization.appSecret')}
-                </InputLabel>
-                <OutlinedInput
-                  id="LarkClientSecret"
-                  name="LarkClientSecret"
-                  value={inputs.LarkClientSecret || ''}
-                  onChange={handleInputChange}
-                  label={t('setting_index.systemSettings.configureFeishuAuthorization.appSecret')}
-                  placeholder={t('setting_index.systemSettings.configureFeishuAuthorization.appSecretPlaceholder')}
-                  disabled={loading}
-                />
-              </FormControl>
-            </Grid>
-            <Grid xs={12}>
-              <Button variant="contained" onClick={submitLarkOAuth}>
-                {t('setting_index.systemSettings.configureFeishuAuthorization.saveButton')}
               </Button>
             </Grid>
           </Grid>

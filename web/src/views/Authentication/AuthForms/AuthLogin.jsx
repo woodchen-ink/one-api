@@ -27,19 +27,16 @@ import { Formik } from 'formik';
 // project imports
 import useLogin from 'hooks/useLogin';
 import AnimateButton from 'ui-component/extended/AnimateButton';
-import WechatModal from 'views/Authentication/AuthForms/WechatModal';
 
 // assets
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
 import Github from 'assets/images/icons/github.svg';
-import Wechat from 'assets/images/icons/wechat.svg';
-import Lark from 'assets/images/icons/lark.svg';
 import Oidc from 'assets/images/icons/oidc.svg';
 import Webauthn from 'assets/images/icons/webauthn.svg';
 import CZLConnect from 'assets/images/icons/czlconnect.svg';
-import { onGitHubOAuthClicked, onLarkOAuthClicked,  onOIDCAuthClicked, onWebAuthnClicked, onCZLConnectOAuthClicked } from 'utils/common';
+import { onGitHubOAuthClicked, onOIDCAuthClicked, onWebAuthnClicked, onCZLConnectOAuthClicked } from 'utils/common';
 import { useTranslation } from 'react-i18next';
 
 // ============================|| FIREBASE - LOGIN ||============================ //
@@ -47,25 +44,16 @@ import { useTranslation } from 'react-i18next';
 const LoginForm = ({ ...others }) => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const { login, wechatLogin } = useLogin();
-  const [openWechat, setOpenWechat] = useState(false);
+  const { login } = useLogin();
   const matchDownSM = useMediaQuery(theme.breakpoints.down('md'));
   const customization = useSelector((state) => state.customization);
   const siteInfo = useSelector((state) => state.siteInfo);
   // const [checked, setChecked] = useState(true);
 
   let tripartiteLogin = false;
-  if (siteInfo.github_oauth || siteInfo.wechat_login || siteInfo.lark_client_id || siteInfo.oidc_auth || siteInfo.czlconnect_auth) {
+  if (siteInfo.github_oauth || siteInfo.oidc_auth || siteInfo.czlconnect_auth) {
     tripartiteLogin = true;
   }
-
-  const handleWechatOpen = () => {
-    setOpenWechat(true);
-  };
-
-  const handleWechatClose = () => {
-    setOpenWechat(false);
-  };
 
   const [showPassword, setShowPassword] = useState(false);
   const handleClickShowPassword = () => {
@@ -97,49 +85,6 @@ const LoginForm = ({ ...others }) => {
                     <img src={Github} alt="github" width={25} height={25} style={{ marginRight: matchDownSM ? 8 : 16 }} />
                   </Box>
                   {t('login.useGithubLogin')}
-                </Button>
-              </AnimateButton>
-            </Grid>
-          )}
-          {siteInfo.wechat_login && (
-            <Grid item xs={12}>
-              <AnimateButton>
-                <Button
-                  disableElevation
-                  fullWidth
-                  onClick={handleWechatOpen}
-                  size="large"
-                  variant="outlined"
-                  sx={{
-                    ...theme.typography.LoginButton
-                  }}
-                >
-                  <Box sx={{ mr: { xs: 1, sm: 2, width: 20 }, display: 'flex', alignItems: 'center' }}>
-                    <img src={Wechat} alt="Wechat" width={25} height={25} style={{ marginRight: matchDownSM ? 8 : 16 }} />
-                  </Box>
-                  {t('login.useWechatLogin')}
-                </Button>
-              </AnimateButton>
-              <WechatModal open={openWechat} handleClose={handleWechatClose} wechatLogin={wechatLogin} qrCode={siteInfo.wechat_qrcode} />
-            </Grid>
-          )}
-          {siteInfo.lark_login && (
-            <Grid item xs={12}>
-              <AnimateButton>
-                <Button
-                  disableElevation
-                  fullWidth
-                  onClick={() => onLarkOAuthClicked(siteInfo.lark_client_id)}
-                  size="large"
-                  variant="outlined"
-                  sx={{
-                    ...theme.typography.LoginButton
-                  }}
-                >
-                  <Box sx={{ mr: { xs: 1, sm: 2, width: 20 }, display: 'flex', alignItems: 'center' }}>
-                    <img src={Lark} alt="Lark" width={25} height={25} style={{ marginRight: matchDownSM ? 8 : 16 }} />
-                  </Box>
-                  {t('login.useLarkLogin')}
                 </Button>
               </AnimateButton>
             </Grid>

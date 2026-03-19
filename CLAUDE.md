@@ -56,7 +56,7 @@ This is a multi-provider AI API gateway that provides a unified OpenAI-compatibl
 - **Backend**: Go REST API using Gin framework that serves both API and static content
 - **Database**: GORM-based data layer supporting MySQL, PostgreSQL, and SQLite
 - **Caching**: Redis and Freecache for performance optimization
-- **Authentication**: Multiple OAuth providers (GitHub, WeChat, Lark, OIDC) plus JWT tokens
+- **Authentication**: GitHub OAuth, OIDC, CZLConnect, plus JWT tokens
 
 ### Key Directories
 

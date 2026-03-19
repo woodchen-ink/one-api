@@ -833,10 +833,6 @@ func Unbind(c *gin.Context) {
 	case "github":
 		updates["github_id"] = ""
 		updates["github_id_new"] = nil
-	case "wechat":
-		updates["wechat_id"] = ""
-	case "lark":
-		updates["lark_id"] = ""
 	case "oidc":
 		updates["oidc_id"] = ""
 	default:

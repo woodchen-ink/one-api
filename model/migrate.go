@@ -407,6 +407,46 @@ func migrateReliableUsersToCommon() *gormigrate.Migration {
 	}
 }
 
+func removeDeprecatedOAuthAuth() *gormigrate.Migration {
+	return &gormigrate.Migration{
+		ID: "202603190003",
+		Migrate: func(tx *gorm.DB) error {
+			if tx.Migrator().HasTable("users") {
+				if tx.Migrator().HasColumn(&User{}, "wechat_id") {
+					if err := tx.Migrator().DropColumn(&User{}, "wechat_id"); err != nil {
+						return err
+					}
+				}
+				if tx.Migrator().HasColumn(&User{}, "lark_id") {
+					if err := tx.Migrator().DropColumn(&User{}, "lark_id"); err != nil {
+						return err
+					}
+				}
+			}
+
+			if tx.Migrator().HasTable("options") {
+				optionKeys := []string{
+					"WeChatAuthEnabled",
+					"WeChatServerAddress",
+					"WeChatServerToken",
+					"WeChatAccountQRCodeImageURL",
+					"LarkAuthEnabled",
+					"LarkClientId",
+					"LarkClientSecret",
+				}
+				if err := tx.Where("key IN ?", optionKeys).Delete(&Option{}).Error; err != nil {
+					return err
+				}
+			}
+
+			return nil
+		},
+		Rollback: func(tx *gorm.DB) error {
+			return nil
+		},
+	}
+}
+
 func migrateTokenLimitsStructure() *gormigrate.Migration {
 	return &gormigrate.Migration{
 		ID: "202510160002",
@@ -554,6 +594,7 @@ func migrationAfter(db *gorm.DB) error {
 		addExtraRatios(),
 		migratePricingToUSD(),
 		migrateReliableUsersToCommon(),
+		removeDeprecatedOAuthAuth(),
 		migrateTokenLimitsStructure(),
 	})
 	return m.Migrate()

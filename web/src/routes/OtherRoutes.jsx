@@ -9,7 +9,6 @@ import MinimalLayout from 'layout/MinimalLayout';
 const AuthLogin = Loadable(lazy(() => import('views/Authentication/Auth/Login')));
 const AuthRegister = Loadable(lazy(() => import('views/Authentication/Auth/Register')));
 const GitHubOAuth = Loadable(lazy(() => import('views/Authentication/Auth/GitHubOAuth')));
-const LarkOAuth = Loadable(lazy(() => import('views/Authentication/Auth/LarkOAuth')));
 const CZLConnectOAuth = Loadable(lazy(() => import('views/Authentication/Auth/CZLConnectOAuth')));
 const OIDCOAuth = Loadable(lazy(() => import('views/Authentication/Auth/OIDCOAuth')));
 const ForgetPassword = Loadable(lazy(() => import('views/Authentication/Auth/ForgetPassword')));
@@ -69,10 +68,6 @@ const OtherRoutes = {
     {
       path: '/oauth/oidc',
       element: <OIDCOAuth />
-    },
-    {
-      path: '/oauth/lark',
-      element: <LarkOAuth />
     },
     {
       path: '/oauth/czlconnect',

@@ -30,16 +30,7 @@ import {
 import Grid from '@mui/material/Unstable_Grid2';
 import SubCard from 'ui-component/cards/SubCard';
 import MainCard from 'ui-component/cards/MainCard';
-import {
-  IconBrandWechat,
-  IconBrandGithub,
-  IconMail,
-  IconBrandOauth,
-  IconSettings,
-  IconLink,
-  IconShieldLock,
-  IconKey
-} from '@tabler/icons-react';
+import { IconBrandGithub, IconMail, IconBrandOauth, IconSettings, IconLink, IconShieldLock, IconKey } from '@tabler/icons-react';
 import { API } from 'utils/api';
 import {
   showError,
@@ -47,16 +38,14 @@ import {
   onGitHubOAuthClicked,
   copy,
   trims,
-  onLarkOAuthClicked, onCZLConnectOAuthClicked,
+  onCZLConnectOAuthClicked,
   onWebAuthnRegister,
   getWebAuthnCredentials,
   deleteWebAuthnCredential
 } from 'utils/common';
 import * as Yup from 'yup';
-import WechatModal from 'views/Authentication/AuthForms/WechatModal';
 import { useSelector } from 'react-redux';
 import EmailModal from './component/EmailModal';
-import LarkIcon from 'assets/images/icons/lark.svg';
 import CZLConnectIcon from 'assets/images/icons/czlconnect.svg';
 import { useTheme } from '@mui/material/styles';
 
@@ -91,7 +80,6 @@ export default function Profile() {
   const [inputs, setInputs] = useState([]);
   const [turnstileEnabled, setTurnstileEnabled] = useState(false);
   const [turnstileSiteKey, setTurnstileSiteKey] = useState('');
-  const [openWechat, setOpenWechat] = useState(false);
   const [openEmail, setOpenEmail] = useState(false);
   const [webAuthnCredentials, setWebAuthnCredentials] = useState([]);
   const [loadingWebAuthn, setLoadingWebAuthn] = useState(false);
@@ -108,14 +96,6 @@ export default function Profile() {
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
-  };
-
-  const handleWechatOpen = () => {
-    setOpenWechat(true);
-  };
-
-  const handleWechatClose = () => {
-    setOpenWechat(false);
   };
 
   const handleInputChange = (event) => {
@@ -214,21 +194,6 @@ export default function Profile() {
   const cancelDelete = () => {
     setConfirmDeleteOpen(false);
     setCredentialToDelete(null);
-  };
-
-  const bindWeChat = async (code) => {
-    if (code === '') return;
-    try {
-      const res = await API.get(`/api/oauth/wechat/bind?code=${code}`);
-      const { success, message } = res.data;
-      if (success) {
-        showSuccess(t('profilePage.wechatBindSuccess'));
-      }
-      return { success, message };
-    } catch (err) {
-      // 请求失败，设置错误信息
-      return { success: false, message: '' };
-    }
   };
 
   const handleUnbind = (type) => {
@@ -498,48 +463,6 @@ export default function Profile() {
                     ))}
                 </ListItem>
               )}
-              {status.wechat_login && (
-                <ListItem divider>
-                  <ListItemAvatar>
-                    <Avatar sx={{ bgcolor: '#07C160', color: '#fff' }}>
-                      <IconBrandWechat />
-                    </Avatar>
-                  </ListItemAvatar>
-                  <ListItemText
-                    primary={
-                      matchDownSM ? (
-                        <Box display="flex" justifyContent="space-between" alignItems="center">
-                          <Typography variant="body1">WeChat</Typography>
-                          {inputs.wechat_id ? (
-                            <Button size="small" variant="outlined" color="error" onClick={() => handleUnbind('wechat')}>
-                              {t('profilePage.unbind')}
-                            </Button>
-                          ) : (
-                            <Button size="small" variant="outlined" onClick={handleWechatOpen}>
-                              {t('profilePage.bind')}
-                            </Button>
-                          )}
-                        </Box>
-                      ) : (
-                        'WeChat'
-                      )
-                    }
-                    secondary={inputs.wechat_id ? `${t('profilePage.bound')}: ${inputs.wechat_id}` : t('profilePage.unbound')}
-                    secondaryTypographyProps={matchDownSM ? {} : { noWrap: true }}
-                    sx={matchDownSM ? {} : { minWidth: 0, mr: 2 }}
-                  />
-                  {!matchDownSM &&
-                    (inputs.wechat_id ? (
-                      <Button variant="outlined" color="error" onClick={() => handleUnbind('wechat')} sx={{ ml: 2 }}>
-                        {t('profilePage.unbind')}
-                      </Button>
-                    ) : (
-                      <Button variant="outlined" onClick={handleWechatOpen} sx={{ ml: 2 }}>
-                        {t('profilePage.bind')}
-                      </Button>
-                    ))}
-                </ListItem>
-              )}
               {status.github_oauth && (
                 <ListItem divider>
                   <ListItemAvatar>
@@ -577,46 +500,6 @@ export default function Profile() {
                       </Button>
                     ) : (
                       <Button variant="outlined" onClick={() => onGitHubOAuthClicked(status.github_client_id, true)} sx={{ ml: 2 }}>
-                        {t('profilePage.bind')}
-                      </Button>
-                    ))}
-                </ListItem>
-              )}
-              {status.lark_client_id && (
-                <ListItem divider>
-                  <ListItemAvatar>
-                    <Avatar src={LarkIcon} sx={{ bgcolor: 'transparent' }} />
-                  </ListItemAvatar>
-                  <ListItemText
-                    primary={
-                      matchDownSM ? (
-                        <Box display="flex" justifyContent="space-between" alignItems="center">
-                          <Typography variant="body1">Lark</Typography>
-                          {inputs.lark_id ? (
-                            <Button size="small" variant="outlined" color="error" onClick={() => handleUnbind('lark')}>
-                              {t('profilePage.unbind')}
-                            </Button>
-                          ) : (
-                            <Button size="small" variant="outlined" onClick={() => onLarkOAuthClicked(status.lark_client_id)}>
-                              {t('profilePage.bind')}
-                            </Button>
-                          )}
-                        </Box>
-                      ) : (
-                        'Lark'
-                      )
-                    }
-                    secondary={inputs.lark_id ? `${t('profilePage.bound')}: ${inputs.lark_id}` : t('profilePage.unbound')}
-                    secondaryTypographyProps={matchDownSM ? {} : { noWrap: true }}
-                    sx={matchDownSM ? {} : { minWidth: 0, mr: 2 }}
-                  />
-                  {!matchDownSM &&
-                    (inputs.lark_id ? (
-                      <Button variant="outlined" color="error" onClick={() => handleUnbind('lark')} sx={{ ml: 2 }}>
-                        {t('profilePage.unbind')}
-                      </Button>
-                    ) : (
-                      <Button variant="outlined" onClick={() => onLarkOAuthClicked(status.lark_client_id)} sx={{ ml: 2 }}>
                         {t('profilePage.bind')}
                       </Button>
                     ))}
@@ -748,7 +631,6 @@ export default function Profile() {
           </SubCard>
         </CustomTabPanel>
       </MainCard>
-      <WechatModal open={openWechat} handleClose={handleWechatClose} wechatLogin={bindWeChat} qrCode={status.wechat_qrcode} />
       <EmailModal
         open={openEmail}
         turnstileSiteKey={turnstileSiteKey}

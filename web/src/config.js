@@ -28,10 +28,6 @@ const config = {
     turnstile_check: false,
     turnstile_site_key: '',
     version: '',
-    wechat_login: false,
-    wechat_qrcode: '',
-    lark_login: false,
-    lark_client_id: '',
     telegram_bot: '',
     isLoading: true // 添加加载状态
   }

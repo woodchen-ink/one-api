@@ -29,9 +29,7 @@ type User struct {
 	OidcId           string         `json:"oidc_id" gorm:"column:oidc_id;index"`
 	GitHubId         string         `json:"github_id" gorm:"column:github_id;index"`
 	GitHubIdNew      int            `json:"github_id_new" gorm:"column:github_id_new;index"`
-	WeChatId         string         `json:"wechat_id" gorm:"column:wechat_id;index"`
 	TelegramId       int64          `json:"telegram_id" gorm:"bigint,column:telegram_id;default:0;"`
-	LarkId           string         `json:"lark_id" gorm:"column:lark_id;index"`
 	CZLConnectId     int            `json:"czlconnect_id" gorm:"column:czlconnect_id;index"`
 	VerificationCode string         `json:"verification_code" gorm:"-:all"`                                    // this field is only for Email verification, don't save it to database!
 	AccessToken      string         `json:"access_token" gorm:"type:char(32);column:access_token;uniqueIndex"` // this token is for system management
@@ -284,22 +282,6 @@ func (user *User) FillUserByGitHubIdNew() error {
 	return nil
 }
 
-func (user *User) FillUserByWeChatId() error {
-	if user.WeChatId == "" {
-		return errors.New("WeChat id 为空！")
-	}
-	DB.Where(User{WeChatId: user.WeChatId}).First(user)
-	return nil
-}
-
-func (user *User) FillUserByLarkId() error {
-	if user.LarkId == "" {
-		return errors.New("lark id 为空！")
-	}
-	DB.Where(User{LarkId: user.LarkId}).First(user)
-	return nil
-}
-
 func (user *User) FillUserByCZLConnectId() error {
 	if user.CZLConnectId == 0 {
 		return errors.New("CZLConnect id 为空！")
@@ -355,20 +337,12 @@ func IsEmailAlreadyTaken(email string) bool {
 	return IsFieldAlreadyTaken("email", email)
 }
 
-func IsWeChatIdAlreadyTaken(wechatId string) bool {
-	return IsFieldAlreadyTaken("wechat_id", wechatId)
-}
-
 func IsGitHubIdAlreadyTaken(githubId string) bool {
 	return IsFieldAlreadyTaken("github_id", githubId)
 }
 
 func IsGitHubIdNewAlreadyTaken(githubIdNew int) bool {
 	return IsFieldAlreadyTaken("github_id_new", githubIdNew)
-}
-
-func IsLarkIdAlreadyTaken(larkId string) bool {
-	return IsFieldAlreadyTaken("lark_id", larkId)
 }
 
 func IsCZLConnectIdAlreadyTaken(czlConnectId int) bool {

@@ -8,6 +8,16 @@ import (
 	"time"
 )
 
+var deprecatedOptionKeys = map[string]struct{}{
+	"WeChatAuthEnabled":           {},
+	"WeChatServerAddress":         {},
+	"WeChatServerToken":           {},
+	"WeChatAccountQRCodeImageURL": {},
+	"LarkAuthEnabled":             {},
+	"LarkClientId":                {},
+	"LarkClientSecret":            {},
+}
+
 type Option struct {
 	Key   string `json:"key" gorm:"primaryKey"`
 	Value string `json:"value"`
@@ -30,8 +40,6 @@ func InitOptionMap() {
 	config.GlobalOption.RegisterBool("PasswordRegisterEnabled", &config.PasswordRegisterEnabled)
 	config.GlobalOption.RegisterBool("EmailVerificationEnabled", &config.EmailVerificationEnabled)
 	config.GlobalOption.RegisterBool("GitHubOAuthEnabled", &config.GitHubOAuthEnabled)
-	config.GlobalOption.RegisterBool("WeChatAuthEnabled", &config.WeChatAuthEnabled)
-	config.GlobalOption.RegisterBool("LarkAuthEnabled", &config.LarkAuthEnabled)
 	config.GlobalOption.RegisterBool("CZLConnectAuthEnabled", &config.CZLConnectAuthEnabled)
 	config.GlobalOption.RegisterBool("OIDCAuthEnabled", &config.OIDCAuthEnabled)
 	config.GlobalOption.RegisterBool("TurnstileCheckEnabled", &config.TurnstileCheckEnabled)
@@ -76,10 +84,6 @@ func InitOptionMap() {
 	config.GlobalOption.RegisterString("OIDCIssuer", &config.OIDCIssuer)
 	config.GlobalOption.RegisterString("OIDCScopes", &config.OIDCScopes)
 	config.GlobalOption.RegisterString("OIDCUsernameClaims", &config.OIDCUsernameClaims)
-
-	config.GlobalOption.RegisterString("WeChatServerAddress", &config.WeChatServerAddress)
-	config.GlobalOption.RegisterString("WeChatServerToken", &config.WeChatServerToken)
-	config.GlobalOption.RegisterString("WeChatAccountQRCodeImageURL", &config.WeChatAccountQRCodeImageURL)
 	config.GlobalOption.RegisterString("TurnstileSiteKey", &config.TurnstileSiteKey)
 	config.GlobalOption.RegisterString("TurnstileSecretKey", &config.TurnstileSecretKey)
 	config.GlobalOption.RegisterInt("QuotaForNewUser", &config.QuotaForNewUser)
@@ -138,6 +142,9 @@ func loadOptionsFromDatabase() {
 	for _, option := range options {
 		err := config.GlobalOption.Set(option.Key, option.Value)
 		if err != nil {
+			if _, deprecated := deprecatedOptionKeys[option.Key]; deprecated {
+				continue
+			}
 			logger.SysError("failed to update option map: " + err.Error())
 		}
 	}

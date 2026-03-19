@@ -518,7 +518,6 @@
     "githubCountError": "An error occurred, retrying {{count}}...",
     "githubError": "The operation failed and redirected to the login interface...",
     "githubLogin": "GitHub login",
-    "larkLogin": "Feishu Login",
     "oidcCountError": "An error occurred, retrying for the {{count}} time...",
     "oidcError": "Operation failed, redirecting to the login page...",
     "oidcLogin": "OIDC Login",
@@ -530,14 +529,10 @@
     "czlconnectError": "CZLConnect login failed, please try again later!",
     "czlconnectCountError": "CZLConnect login failed {{count}} times, please try again later!",
     "useGithubLogin": "Log in using Github",
-    "useLarkLogin": "Log in using Feishu",
     "useCZLConnectLogin": "Log in using CZLConnect",
     "useOIDCLogin": "Use OIDC Login",
-    "useWechatLogin": "Log in with Wechat",
     "usernameOrEmail": "Username/Email",
-    "usernameRequired": "Username/Email is required",
-    "wechatLoginInfo": "Please use WeChat to scan the QR code to follow the official account and enter the \"verification code\" to obtain the verification code (valid within three minutes)",
-    "wechatVerificationCodeLogin": "WeChat verification code login"
+    "usernameRequired": "Username/Email is required"
   },
   "midjourneyPage": {
     "channel": "Channel",
@@ -783,9 +778,7 @@
     "accountBinding": "Account Binding",
     "bindEmail": "Bind Email",
     "bindGitHubAccount": "Bind GitHub Account",
-    "bindLarkAccount": "Bind Lark Account",
     "bindCZLConnectAccount": "Bind CZLConnect Account",
-    "bindWechatAccount": "Bind WeChat Account",
     "changeEmail": "Change Email",
     "displayName": "Display Name",
     "generateToken": "Generate Access Token",
@@ -793,7 +786,6 @@
     "inputPasswordPlaceholder": "Enter password",
     "inputUsernamePlaceholder": "Enter username",
     "keepSafe": "Keep it safe. Reset immediately if leaked.",
-    "lark": "Lark",
     "notBound": "Not Bound",
     "other": "Other",
     "password": "Password",
@@ -813,7 +805,6 @@
     "username": "Username",
     "usernameMinLength": "Username must be at least 3 characters long",
     "usernameRequired": "Username cannot be empty",
-    "wechatBindSuccess": "WeChat account successfully bound!",
     "yourTokenIs": "Your access token is:",
     "registerWebauthn": "Register WebAuthn Credential",
     "webauthnManagement": "WebAuthn Credential Management",
@@ -1092,19 +1083,6 @@
         "subTitle": "Prevent malicious users from registering with temporary email addresses",
         "title": "Configure Email Domain Whitelist"
       },
-      "configureFeishuAuthorization": {
-        "alert1": "Enter Homepage URL",
-        "alert2": "and Redirect URL",
-        "appId": "App ID",
-        "appIdPlaceholder": "Enter App ID",
-        "appSecret": "App Secret",
-        "appSecretPlaceholder": "Sensitive information will not be sent to the frontend",
-        "manage": "Manage your Feishu app",
-        "manageLink": "Click here",
-        "saveButton": "Save Feishu OAuth Settings",
-        "subTitle": "To support login and registration via Feishu.",
-        "title": "Configure Feishu Authorization"
-      },
       "configureGitHubOAuthApp": {
         "alert1": "Enter Homepage URL",
         "alert2": "and Authorization callback URL",
@@ -1137,15 +1115,13 @@
         "emailVerification": "Email Verification Required for Password Register",
         "gitHubOAuth": "Allow Login & Register via GitHub",
         "gitHubOldIdClose": "Disable logging in with old GitHub ID.",
-        "larkAuth": "Allow Login & Register via Lark",
         "czlconnectAuth": "Allow Login & Register via CZLConnect",
         "oidcAuth": "Enable login & registration via OIDC account",
         "passwordLogin": "Allow Password Login",
         "passwordRegister": "Allow Password Register",
         "registerEnabled": "Allow New User Registration (Disabling this will prevent any new registrations)",
         "title": "Configure Login and Register",
-        "turnstileCheck": "Enable Turnstile User Verification",
-        "weChatAuth": "Allow Login & Register via WeChat"
+        "turnstileCheck": "Enable Turnstile User Verification"
       },
       "configureOIDCAuthorization": {
         "alert1": "Fill in the homepage link",
@@ -1190,19 +1166,6 @@
         "siteKeyPlaceholder": "Enter your registered Turnstile Site Key",
         "subTitle": "To support user verification.",
         "title": "Configure Turnstile"
-      },
-      "configureWeChatServer": {
-        "accessToken": "WeChat Server Access Token",
-        "accessTokenPlaceholder": "Sensitive information will not be sent to the frontend",
-        "learn": "Learn about WeChat Server",
-        "learnLink": "Click here",
-        "qrCodeImage": "WeChat Official Account QR Code Image Link",
-        "qrCodeImagePlaceholder": "Enter an image link",
-        "saveButton": "Save WeChat Server Settings",
-        "serverAddress": "WeChat Server Server Address",
-        "serverAddressPlaceholder": "e.g., https://yourdomain.com",
-        "subTitle": "To support login and registration via WeChat.",
-        "title": "Configure WeChat Server"
       },
       "generalSettings": {
         "serverAddress": "Server Address",

@@ -465,13 +465,6 @@ export async function deleteWebAuthnCredential(credentialId, showError, showSucc
   }
 }
 
-export async function onLarkOAuthClicked(lark_client_id) {
-  const state = await getOAuthState();
-  if (!state) return;
-  let redirect_uri = `${window.location.origin}/oauth/lark`;
-  window.open(`https://open.feishu.cn/open-apis/authen/v1/authorize?redirect_uri=${redirect_uri}&app_id=${lark_client_id}&state=${state}`);
-}
-
 export async function onCZLConnectOAuthClicked(czlconnect_client_id, isBind = false) {
   const state = await getOAuthState();
   if (!state) return;
