@@ -564,8 +564,8 @@ func GetOldPricesList() []*Price {
 			Model:       modelName,
 			Type:        TokensPriceType,
 			ChannelType: price.ChannelType,
-			Input:       oldPrice[0],
-			Output:      oldPrice[1],
+			Input:       LegacyTokenPriceToUSDPerMillion(oldPrice[0]),
+			Output:      LegacyTokenPriceToUSDPerMillion(oldPrice[1]),
 		})
 	}
 

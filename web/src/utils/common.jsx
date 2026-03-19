@@ -734,11 +734,11 @@ export function ValueFormatter(value, onlyUsd = false, unitMillion = false) {
   }
 
   let decimalValue = new Decimal(value.toString());
-  if (unitMillion) {
-    decimalValue = decimalValue.mul(1000);
+  if (!unitMillion) {
+    decimalValue = decimalValue.div(1000);
   }
 
-  let usd = decimalValue.mul(0.002).toPrecision(6);
+  let usd = decimalValue.toPrecision(6);
 
   if (onlyUsd) {
     usd = usd.replace(/(\.\d*?[1-9])0+$|\.0*$/, '$1');
@@ -746,7 +746,7 @@ export function ValueFormatter(value, onlyUsd = false, unitMillion = false) {
     return `$${usd}`;
   }
 
-  let rmb = decimalValue.mul(0.014).toPrecision(6);
+  let rmb = decimalValue.mul(7).toPrecision(6);
 
   usd = usd.replace(/(\.\d*?[1-9])0+$|\.0*$/, '$1');
   rmb = rmb.replace(/(\.\d*?[1-9])0+$|\.0*$/, '$1');

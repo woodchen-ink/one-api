@@ -201,17 +201,13 @@ const Pricing = () => {
         </Button>
       </ButtonGroup>
       <Alert severity="info">
-        <b>{t('pricingPage.currencyInfo1')}</b>
-        {t('pricingPage.currencyInfo2')}
+        当前价格配置为直接美元计费。
         <br />
-        <b>{t('pricingPage.currencyInfo3')}</b>
-        {t('pricingPage.currencyInfo4')}
+        Token 模型价格默认按 `USD / 1M tokens` 录入和展示。
         <br />
+        按次模型价格按 `USD / 次` 录入和计费。
         <br />
-        <b>{t('pricingPage.currencyInfo5')}</b>
-        {t('pricingPage.currencyInfo6')}
-        <br />
-        {t('pricingPage.currencyInfo7')}
+        运行时只会再叠加分组倍率，不再存在模型倍率或缓存倍率换算。
       </Alert>
 
       {noPriceModel.length > 0 && (

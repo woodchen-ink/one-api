@@ -30,6 +30,18 @@ import { useTranslation } from 'react-i18next';
 export default function ModelDetailModal({ open, onClose, model, provider, modelInfo, priceData, ownedbyIcon, formatPrice }) {
   const theme = useTheme();
   const { t } = useTranslation();
+  const extraPriceNames = {
+    cached_tokens: '缓存价格',
+    cached_write_tokens: '缓存写入价格',
+    cached_read_tokens: '缓存读取价格',
+    input_audio_tokens: '音频输入价格',
+    output_audio_tokens: '音频输出价格',
+    reasoning_tokens: '推理价格',
+    input_text_tokens: '输入文本价格',
+    output_text_tokens: '输出文本价格',
+    input_image_tokens: '输入图片价格',
+    output_image_tokens: '输出图片价格'
+  };
   if (!model) return null;
   // 解析模态和标签
   const getModalities = (modalitiesStr) => {
@@ -302,10 +314,10 @@ export default function ModelDetailModal({ open, onClose, model, provider, model
               {Object.entries(priceData.price.extra_ratios).map(([key, value]) => (
                 <Stack key={key} direction="row" alignItems="center" spacing={2}>
                   <Typography variant="body2" color="text.secondary" sx={{ minWidth: 80 }}>
-                    {t(`modelpricePage.${key}`)}:
+                    {extraPriceNames[key] || key}:
                   </Typography>
                   <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                    {value}
+                    {formatPrice(value, 'tokens')}
                   </Typography>
                 </Stack>
               ))}

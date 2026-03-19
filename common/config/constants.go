@@ -23,7 +23,7 @@ var TopUpLink = ""
 var ChatLink = ""
 var ChatLinks = ""
 var AnalyticsCode = ""
-var QuotaPerUnit = 500 * 1000.0 // $0.002 / 1K tokens
+var QuotaPerUnit = 500 * 1000.0 // internal quota units per USD
 var DisplayInCurrencyEnabled = true
 
 // 是否开启用户月账单功能

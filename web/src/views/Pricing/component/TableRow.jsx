@@ -6,7 +6,7 @@ import { Icon } from '@iconify/react';
 import { useTranslation } from 'react-i18next';
 import { ValueFormatter } from 'utils/common';
 
-const PricesTableRow = ({ item, onEdit, onDelete, ownedby, unit = 'K' }) => {
+const PricesTableRow = ({ item, onEdit, onDelete, ownedby, unit = 'M' }) => {
   const { t } = useTranslation();
   const theme = useTheme();
   const models = item.models;
@@ -70,22 +70,32 @@ const PricesTableRow = ({ item, onEdit, onDelete, ownedby, unit = 'K' }) => {
     return ValueFormatter(value, true, isM) + unitLabel;
   };
 
+  const formatExtraPrice = (value) => {
+    if (value === 0) {
+      return 'Free';
+    }
+
+    const isM = unit === 'M';
+    const unitLabel = isM ? '/ 1M' : '/ 1K';
+    return ValueFormatter(value, true, isM) + unitLabel;
+  };
+
   // 判断是否有extra_ratios
   const hasExtraRatios = item.extra_ratios && Object.keys(item.extra_ratios).length > 0;
 
   // 为extra_ratios中的key获取更易读的名称
   const getReadableRatioName = (key) => {
     const ratioNames = {
-      cached_tokens: t('modelpricePage.cached_tokens'),
-      cached_write_tokens: t('modelpricePage.cached_write_tokens'),
-      cached_read_tokens: t('modelpricePage.cached_read_tokens'),
-      input_audio_tokens: t('modelpricePage.input_audio_tokens'),
-      output_audio_tokens: t('modelpricePage.output_audio_tokens'),
-      reasoning_tokens: t('modelpricePage.reasoning_tokens'),
-      input_text_tokens: t('modelpricePage.input_text_tokens'),
-      output_text_tokens: t('modelpricePage.output_text_tokens'),
-      input_image_tokens: t('modelpricePage.input_image_tokens'),
-      output_image_tokens: t('modelpricePage.output_image_tokens')
+      cached_tokens: '缓存价格',
+      cached_write_tokens: '缓存写入价格',
+      cached_read_tokens: '缓存读取价格',
+      input_audio_tokens: '音频输入价格',
+      output_audio_tokens: '音频输出价格',
+      reasoning_tokens: '推理价格',
+      input_text_tokens: '输入文本价格',
+      output_text_tokens: '输出文本价格',
+      input_image_tokens: '输入图片价格',
+      output_image_tokens: '输出图片价格'
     };
 
     return ratioNames[key] || key;
@@ -299,7 +309,7 @@ const PricesTableRow = ({ item, onEdit, onDelete, ownedby, unit = 'K' }) => {
                         fontSize: '0.68rem'
                       }}
                     >
-                      {value}
+                      {formatExtraPrice(value)}
                     </Typography>
                   </Box>
                 }

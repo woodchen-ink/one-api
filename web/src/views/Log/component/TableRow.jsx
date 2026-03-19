@@ -339,8 +339,8 @@ function viewTokens(item, t, totalInputTokens, totalOutputTokens, show, tokenDet
 
   if (!show) return content;
 
-  const tooltipContent = tokenDetails.map(({ key, label, tokens, value, rate, labelParams }) => (
-    <MetadataTypography key={key}>{`${t(label, labelParams)}: ${value} *  (${rate} - 1) = ${tokens}`}</MetadataTypography>
+  const tooltipContent = tokenDetails.map(({ key, label, value, unitPrice, cost }) => (
+    <MetadataTypography key={key}>{`${label}: ${value} x $${formatUSD(unitPrice)} / 1M = $${formatUSD(cost)}`}</MetadataTypography>
   ));
 
   return (
@@ -349,12 +349,8 @@ function viewTokens(item, t, totalInputTokens, totalOutputTokens, show, tokenDet
         title={
           <>
             {tooltipContent}
-            <MetadataTypography>
-              {t('logPage.totalInputTokens')}: {totalInputTokens}
-            </MetadataTypography>
-            <MetadataTypography>
-              {t('logPage.totalOutputTokens')}: {totalOutputTokens}
-            </MetadataTypography>
+            <MetadataTypography>{`${t('logPage.totalInputTokens')}: ${totalInputTokens}`}</MetadataTypography>
+            <MetadataTypography>{`${t('logPage.totalOutputTokens')}: ${totalOutputTokens}`}</MetadataTypography>
           </>
         }
         placement="top"
@@ -364,6 +360,48 @@ function viewTokens(item, t, totalInputTokens, totalOutputTokens, show, tokenDet
       </Tooltip>
     </Badge>
   );
+}
+
+function formatUSD(value) {
+  if (value == null) {
+    return '0';
+  }
+
+  const formatted = value >= 1 ? value.toFixed(4) : value.toFixed(6);
+  return formatted.replace(/(\.\d*?[1-9])0+$|\.0*$/, '$1');
+}
+
+function legacyRateToPricePerMillion(rate) {
+  if (rate == null) {
+    return null;
+  }
+
+  return rate * 2;
+}
+
+function getLegacyBasePrice(metadata, isInput) {
+  const directKey = isInput ? 'input_price' : 'output_price';
+  if (metadata?.[directKey] != null) {
+    return metadata[directKey];
+  }
+
+  const legacyKey = isInput ? 'input_ratio' : 'output_ratio';
+  return legacyRateToPricePerMillion(metadata?.[legacyKey]);
+}
+
+function getExtraTokenPrice(metadata, key, isInput) {
+  const directPrice = metadata?.[`${key}_price`];
+  if (directPrice != null) {
+    return directPrice;
+  }
+
+  const legacyRatio = metadata?.[`${key}_ratio`];
+  const basePrice = getLegacyBasePrice(metadata, isInput);
+  if (legacyRatio != null && basePrice != null) {
+    return legacyRatio * basePrice;
+  }
+
+  return null;
 }
 
 function calculateTokens(item) {
@@ -378,101 +416,43 @@ function calculateTokens(item) {
     };
   }
 
-  let totalInputTokens = prompt_tokens;
-  let totalOutputTokens = completion_tokens;
-  let show = false;
-
-  const input_audio_tokens = metadata?.input_audio_tokens_ratio || 1;
-  const output_audio_tokens = metadata?.output_audio_tokens_ratio || 1;
-  const input_image_tokens = metadata?.input_image_tokens_ratio || 1;
-  const output_image_tokens = metadata?.output_image_tokens_ratio || 1;
-
-  const cached_ratio = metadata?.cached_tokens_ratio || 1;
-  const cached_write_ratio = metadata?.cached_write_tokens_ratio || 1;
-  const cached_read_ratio = metadata?.cached_read_tokens_ratio || 1;
-  const reasoning_tokens = metadata?.reasoning_tokens_ratio || 1;
-  const input_text_tokens_ratio = metadata?.input_text_tokens_ratio || 1;
-  const output_text_tokens_ratio = metadata?.output_text_tokens_ratio || 1;
+  const totalInputTokens = prompt_tokens;
+  const totalOutputTokens = completion_tokens;
 
   const tokenDetails = [
-    {
-      key: 'input_text_tokens',
-      label: 'logPage.inputTextTokens',
-      rate: input_text_tokens_ratio,
-      labelParams: { ratio: input_text_tokens_ratio }
-    },
-    {
-      key: 'output_text_tokens',
-      label: 'logPage.outputTextTokens',
-      rate: output_text_tokens_ratio,
-      labelParams: { ratio: output_text_tokens_ratio }
-    },
-    {
-      key: 'input_audio_tokens',
-      label: 'logPage.inputAudioTokens',
-      rate: input_audio_tokens,
-      labelParams: { ratio: input_audio_tokens }
-    },
-    {
-      key: 'output_audio_tokens',
-      label: 'logPage.outputAudioTokens',
-      rate: output_audio_tokens,
-      labelParams: { ratio: output_audio_tokens }
-    },
-    { key: 'cached_tokens', label: 'logPage.cachedTokens', rate: cached_ratio, labelParams: { ratio: cached_ratio } },
-    {
-      key: 'cached_write_tokens',
-      label: 'logPage.cachedWriteTokens',
-      rate: cached_write_ratio,
-      labelParams: { ratio: cached_write_ratio }
-    },
-    { key: 'cached_read_tokens', label: 'logPage.cachedReadTokens', rate: cached_read_ratio, labelParams: { ratio: cached_read_ratio } },
-    { key: 'reasoning_tokens', label: 'logPage.reasoningTokens', rate: reasoning_tokens, labelParams: { ratio: reasoning_tokens } },
-    {
-      key: 'input_image_tokens',
-      label: 'logPage.inputImageTokens',
-      rate: input_image_tokens,
-      labelParams: { ratio: input_image_tokens }
-    },
-    {
-      key: 'output_image_tokens',
-      label: 'logPage.outputImageTokens',
-      rate: output_image_tokens,
-      labelParams: { ratio: output_image_tokens }
-    }
+    { key: 'input_text_tokens', label: 'Input Text Tokens', isInput: true },
+    { key: 'output_text_tokens', label: 'Output Text Tokens', isInput: false },
+    { key: 'input_audio_tokens', label: 'Input Audio Tokens', isInput: true },
+    { key: 'output_audio_tokens', label: 'Output Audio Tokens', isInput: false },
+    { key: 'cached_tokens', label: 'Cached Tokens', isInput: true },
+    { key: 'cached_write_tokens', label: 'Cached Write Tokens', isInput: true },
+    { key: 'cached_read_tokens', label: 'Cached Read Tokens', isInput: true },
+    { key: 'reasoning_tokens', label: 'Reasoning Tokens', isInput: false },
+    { key: 'input_image_tokens', label: 'Input Image Tokens', isInput: true },
+    { key: 'output_image_tokens', label: 'Output Image Tokens', isInput: false }
   ]
     .filter(({ key }) => metadata[key] > 0)
-    .map(({ key, label, rate, labelParams }) => {
-      const tokens = Math.ceil(metadata[key] * (rate - 1));
-
-      // Check if this token type affects input or output totals
-      const isInputToken = [
-        'input_text_tokens',
-        'output_text_tokens',
-        'input_audio_tokens',
-        'cached_tokens',
-        'cached_write_tokens',
-        'cached_read_tokens',
-        'input_image_tokens'
-      ].includes(key);
-
-      const isOutputToken = ['output_audio_tokens', 'reasoning_tokens', 'output_image_tokens'].includes(key);
-
-      if (isInputToken) {
-        totalInputTokens += tokens;
-        show = true;
-      } else if (isOutputToken) {
-        totalOutputTokens += tokens;
-        show = true;
+    .map(({ key, label, isInput }) => {
+      const value = metadata[key];
+      const unitPrice = getExtraTokenPrice(metadata, key, isInput);
+      if (unitPrice == null) {
+        return null;
       }
 
-      return { key, label, tokens, value: metadata[key], rate, labelParams };
-    });
+      return {
+        key,
+        label,
+        value,
+        unitPrice,
+        cost: (value * unitPrice) / 1000000
+      };
+    })
+    .filter(Boolean);
 
   return {
     totalInputTokens,
     totalOutputTokens,
-    show,
+    show: tokenDetails.length > 0,
     tokenDetails
   };
 }

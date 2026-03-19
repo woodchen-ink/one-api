@@ -5,13 +5,14 @@ import (
 	"errors"
 	"math"
 	"net/http"
+	"time"
+
 	"one-api/common"
 	"one-api/common/config"
 	"one-api/common/logger"
 	"one-api/common/utils"
 	"one-api/model"
 	"one-api/types"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -21,11 +22,11 @@ type Quota struct {
 	promptTokens     int
 	price            model.Price
 	groupName        string
-	isBackupGroup    bool // 新增字段记录是否使用备用分组
+	isBackupGroup    bool
 	backupGroupName  string
 	groupRatio       float64
-	inputRatio       float64
-	outputRatio      float64
+	inputPrice       float64
+	outputPrice      float64
 	preConsumedQuota int
 	cacheQuota       int
 	userId           int
@@ -52,7 +53,7 @@ func NewQuota(c *gin.Context, modelName string, promptTokens int) *Quota {
 		tokenId:        c.GetInt("token_id"),
 		unlimitedQuota: c.GetBool("token_unlimited_quota"),
 		HandelStatus:   false,
-		isBackupGroup:  isBackupGroup, // 记录是否使用备用分组
+		isBackupGroup:  isBackupGroup,
 	}
 
 	if reasoningMetadata, ok := utils.GetGinValue[*types.LogReasoningMetadata](c, types.LogReasoningMetadataContextKey); ok && reasoningMetadata != nil {
@@ -67,19 +68,18 @@ func NewQuota(c *gin.Context, modelName string, promptTokens int) *Quota {
 	quota.price = *model.PricingInstance.GetPrice(quota.modelName)
 	quota.groupName = c.GetString("token_group")
 	quota.backupGroupName = c.GetString("token_backup_group")
-	quota.groupRatio = c.GetFloat64("group_ratio") // 这里的倍率已经在 common.go 中正确设置了
-	quota.inputRatio = quota.price.GetInput() * quota.groupRatio
-	quota.outputRatio = quota.price.GetOutput() * quota.groupRatio
+	quota.groupRatio = c.GetFloat64("group_ratio")
+	quota.inputPrice = quota.price.GetInput()
+	quota.outputPrice = quota.price.GetOutput()
 
 	return quota
-
 }
 
 func (q *Quota) PreQuotaConsumption() *types.OpenAIErrorWithStatusCode {
 	if q.price.Type == model.TimesPriceType {
-		q.preConsumedQuota = int(1000 * q.inputRatio)
-	} else if q.price.Input != 0 || q.price.Output != 0 {
-		q.preConsumedQuota = int(float64(q.promptTokens)*q.inputRatio) + config.PreConsumedQuota
+		q.preConsumedQuota = q.getFlatPriceQuota(q.inputPrice)
+	} else if q.inputPrice != 0 || q.outputPrice != 0 {
+		q.preConsumedQuota = q.getTokenPriceQuota(q.promptTokens, q.inputPrice) + config.PreConsumedQuota
 	}
 
 	if q.preConsumedQuota == 0 {
@@ -101,10 +101,7 @@ func (q *Quota) PreQuotaConsumption() *types.OpenAIErrorWithStatusCode {
 	}
 
 	if userQuota > 100*q.preConsumedQuota {
-		// in this case, we do not pre-consume quota
-		// because the user has enough quota
 		q.preConsumedQuota = 0
-		// common.LogInfo(c.Request.Context(), fmt.Sprintf("user %d has enough quota %d, trusted and no need to pre-consume", userId, userQuota))
 	}
 
 	if q.preConsumedQuota > 0 {
@@ -118,17 +115,19 @@ func (q *Quota) PreQuotaConsumption() *types.OpenAIErrorWithStatusCode {
 	return nil
 }
 
-// 更新用户实时配额
 func (q *Quota) UpdateUserRealtimeQuota(usage *types.UsageEvent, nowUsage *types.UsageEvent) error {
 	usage.Merge(nowUsage)
 
-	// 不开启Redis，则不更新实时配额
 	if !config.RedisEnabled {
 		return nil
 	}
 
-	promptTokens, completionTokens := q.getComputeTokensByUsageEvent(nowUsage)
-	increaseQuota := q.GetTotalQuota(promptTokens, completionTokens, nil)
+	increaseQuota := q.GetTotalQuota(
+		nowUsage.InputTokens,
+		nowUsage.OutputTokens,
+		nowUsage.GetExtraTokens(),
+		nil,
+	)
 
 	cacheQuota, err := model.CacheIncreaseUserRealtimeQuota(q.userId, increaseQuota)
 	if err != nil {
@@ -148,7 +147,7 @@ func (q *Quota) UpdateUserRealtimeQuota(usage *types.UsageEvent, nowUsage *types
 	return nil
 }
 
-func (q *Quota) completedQuotaConsumption(usage *types.Usage, tokenName string, isStream bool, sourceIp string, ctx context.Context) error {
+func (q *Quota) completedQuotaConsumption(usage *types.Usage, tokenName string, isStream bool, sourceIP string, ctx context.Context) error {
 	defer func() {
 		if q.cacheQuota > 0 {
 			model.CacheDecreaseUserRealtimeQuota(q.userId, q.cacheQuota)
@@ -183,7 +182,7 @@ func (q *Quota) completedQuotaConsumption(usage *types.Usage, tokenName string, 
 		q.getRequestTime(),
 		isStream,
 		q.GetLogMeta(usage, q.requestPath),
-		sourceIp,
+		sourceIP,
 	)
 	model.UpdateUserUsedQuotaAndRequestCount(q.userId, quota)
 
@@ -193,7 +192,6 @@ func (q *Quota) completedQuotaConsumption(usage *types.Usage, tokenName string, 
 func (q *Quota) Undo(c *gin.Context) {
 	if q.HandelStatus {
 		go func(ctx context.Context) {
-			// return pre-consumed quota
 			err := model.PostConsumeTokenQuotaWithInfo(q.tokenId, q.userId, q.unlimitedQuota, -q.preConsumedQuota)
 			if err != nil {
 				logger.LogError(ctx, "error return pre-consumed quota: "+err.Error())
@@ -206,7 +204,7 @@ func (q *Quota) Consume(c *gin.Context, usage *types.Usage, isStream bool) {
 	tokenName := c.GetString("token_name")
 	q.startTime = c.GetTime("requestStartTime")
 	q.requestPath = c.Request.URL.Path
-	// 如果没有报错，则消费配额
+
 	go func(ctx context.Context) {
 		err := q.completedQuotaConsumption(usage, tokenName, isStream, common.GetClientIP(c), ctx)
 		if err != nil {
@@ -215,19 +213,23 @@ func (q *Quota) Consume(c *gin.Context, usage *types.Usage, isStream bool) {
 	}(c.Request.Context())
 }
 
-func (q *Quota) GetInputRatio() float64 {
-	return q.inputRatio
+func (q *Quota) GetInputQuota(tokens int) int {
+	if q.price.Type == model.TimesPriceType {
+		return q.getFlatPriceQuota(q.inputPrice)
+	}
+
+	return q.getTokenPriceQuota(tokens, q.inputPrice)
 }
 
 func (q *Quota) GetLogMeta(usage *types.Usage, requestPath ...string) map[string]any {
 	meta := map[string]any{
 		"group_name":        q.groupName,
 		"backup_group_name": q.backupGroupName,
-		"is_backup_group":   q.isBackupGroup, // 添加是否使用备用分组的标识
+		"is_backup_group":   q.isBackupGroup,
 		"price_type":        q.price.Type,
 		"group_ratio":       q.groupRatio,
-		"input_ratio":       q.price.GetInput(),
-		"output_ratio":      q.price.GetOutput(),
+		"input_price":       q.price.GetInput(),
+		"output_price":      q.price.GetOutput(),
 	}
 
 	if len(requestPath) > 0 && requestPath[0] != "" {
@@ -241,11 +243,9 @@ func (q *Quota) GetLogMeta(usage *types.Usage, requestPath ...string) map[string
 
 	if usage != nil {
 		extraTokens := usage.GetExtraTokens()
-
 		for key, value := range extraTokens {
 			meta[key] = value
-			extraRatio := q.price.GetExtraRatio(key)
-			meta[key+"_ratio"] = extraRatio
+			meta[key+"_price"] = q.price.GetExtraPrice(key)
 		}
 	}
 
@@ -264,87 +264,70 @@ func (q *Quota) getRequestTime() int {
 	return int(time.Since(q.startTime).Milliseconds())
 }
 
-// 通过 token 数获取消费配额
-func (q *Quota) GetTotalQuota(promptTokens, completionTokens int, extraBilling map[string]types.ExtraBilling) (quota int) {
+func (q *Quota) getTokenPriceQuota(tokens int, unitPrice float64) int {
+	if tokens <= 0 || unitPrice <= 0 || q.groupRatio <= 0 {
+		return 0
+	}
+
+	return int(math.Ceil(float64(tokens) * unitPrice * q.groupRatio * config.QuotaPerUnit / 1000000.0))
+}
+
+func (q *Quota) getFlatPriceQuota(unitPrice float64) int {
+	if unitPrice <= 0 || q.groupRatio <= 0 {
+		return 0
+	}
+
+	return int(math.Ceil(unitPrice * q.groupRatio * config.QuotaPerUnit))
+}
+
+func (q *Quota) GetTotalQuota(promptTokens, completionTokens int, extraTokens map[string]int, extraBilling map[string]types.ExtraBilling) (quota int) {
 	if q.price.Type == model.TimesPriceType {
-		quota = int(1000 * q.inputRatio)
+		quota = q.getFlatPriceQuota(q.inputPrice)
 	} else {
-		quota = int(math.Ceil((float64(promptTokens) * q.inputRatio) + (float64(completionTokens) * q.outputRatio)))
+		quota += q.getTokenPriceQuota(promptTokens, q.inputPrice)
+		quota += q.getTokenPriceQuota(completionTokens, q.outputPrice)
+		for key, value := range extraTokens {
+			quota += q.getTokenPriceQuota(value, q.price.GetExtraPrice(key))
+		}
 	}
 
 	q.GetExtraBillingData(extraBilling)
 	extraBillingQuota := 0
 	if q.extraBillingData != nil {
 		for _, value := range q.extraBillingData {
-			extraBillingQuota += int(math.Ceil(
-				float64(value.Price)*float64(config.QuotaPerUnit),
-			)) * value.CallCount
+			extraBillingQuota += int(math.Ceil(float64(value.Price)*float64(config.QuotaPerUnit))) * value.CallCount
 		}
 	}
 
 	if extraBillingQuota > 0 {
-		quota += int(math.Ceil(
-			float64(extraBillingQuota) * q.groupRatio,
-		))
+		quota += int(math.Ceil(float64(extraBillingQuota) * q.groupRatio))
 	}
 
-	if q.inputRatio != 0 && quota <= 0 {
+	totalChargeableTokens := promptTokens + completionTokens
+	for _, value := range extraTokens {
+		totalChargeableTokens += value
+	}
+
+	if (q.inputPrice != 0 || q.outputPrice != 0) && totalChargeableTokens > 0 && quota <= 0 {
 		quota = 1
 	}
-	totalTokens := promptTokens + completionTokens
-	if totalTokens == 0 {
-		// in this case, must be some error happened
-		// we cannot just return, because we may have to return the pre-consumed quota
+	if q.price.Type != model.TimesPriceType && totalChargeableTokens == 0 && extraBillingQuota == 0 {
 		quota = 0
 	}
 
 	return quota
 }
 
-// 获取计算的 token 数
-func (q *Quota) getComputeTokensByUsage(usage *types.Usage) (promptTokens, completionTokens int) {
-	promptTokens = usage.PromptTokens
-	completionTokens = usage.CompletionTokens
-
-	extraTokens := usage.GetExtraTokens()
-
-	for key, value := range extraTokens {
-		extraRatio := q.price.GetExtraRatio(key)
-		if model.GetExtraPriceIsPrompt(key) {
-			promptTokens += model.GetIncreaseTokens(value, extraRatio)
-		} else {
-			completionTokens += model.GetIncreaseTokens(value, extraRatio)
-		}
-	}
-
-	return
-}
-
-func (q *Quota) getComputeTokensByUsageEvent(usage *types.UsageEvent) (promptTokens, completionTokens int) {
-	promptTokens = usage.InputTokens
-	completionTokens = usage.OutputTokens
-	extraTokens := usage.GetExtraTokens()
-
-	for key, value := range extraTokens {
-		extraRatio := q.price.GetExtraRatio(key)
-		if model.GetExtraPriceIsPrompt(key) {
-			promptTokens += model.GetIncreaseTokens(value, extraRatio)
-		} else {
-			completionTokens += model.GetIncreaseTokens(value, extraRatio)
-		}
-	}
-
-	return
-}
-
-// 通过 usage 获取消费配额
 func (q *Quota) GetTotalQuotaByUsage(usage *types.Usage) (quota int) {
-	promptTokens, completionTokens := q.getComputeTokensByUsage(usage)
-	return q.GetTotalQuota(promptTokens, completionTokens, usage.ExtraBilling)
+	return q.GetTotalQuota(
+		usage.PromptTokens,
+		usage.CompletionTokens,
+		usage.GetExtraTokens(),
+		usage.ExtraBilling,
+	)
 }
 
 func (q *Quota) GetFirstResponseTime() int64 {
-	// 先判断 firstResponseTime 是否为0
 	if q.firstResponseTime.IsZero() {
 		return 0
 	}
@@ -363,6 +346,8 @@ type ExtraBillingData struct {
 }
 
 func (q *Quota) GetExtraBillingData(extraBilling map[string]types.ExtraBilling) {
+	q.extraBillingData = nil
+
 	if extraBilling == nil {
 		return
 	}
@@ -374,7 +359,6 @@ func (q *Quota) GetExtraBillingData(extraBilling map[string]types.ExtraBilling) 
 			CallCount: value.CallCount,
 			Price:     getDefaultExtraServicePrice(serviceType, q.modelName, value.Type),
 		}
-
 	}
 
 	if len(extraBillingData) == 0 {

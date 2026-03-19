@@ -1,6 +1,7 @@
 package model
 
 import (
+	"encoding/json"
 	"one-api/common/config"
 
 	"github.com/shopspring/decimal"
@@ -9,23 +10,37 @@ import (
 )
 
 const (
-	TokensPriceType    = "tokens"
-	TimesPriceType     = "times"
-	DefaultPrice       = 30.0
-	DollarRate         = 0.002
-	RMBRate            = 0.014
-	DefaultCacheRatios = 0.5
-	DefaultAudioRatio  = 40
+	TokensPriceType  = "tokens"
+	TimesPriceType   = "times"
+	DefaultPrice     = 60.0
+	LegacyDollarRate = 0.002
+	RMBRate          = 0.014
 
 	DefaultCachedWriteRatio = 1.25
 	DefaultCachedReadRatio  = 0.1
 )
 
-func GetIncreaseTokens(tokens int, ratio float64) int {
-	return int(float64(tokens) * (ratio - 1))
+func LegacyTokenPriceToUSDPerMillion(price float64) float64 {
+	if price <= 0 {
+		return 0
+	}
+
+	return decimal.NewFromFloat(price).
+		Mul(decimal.NewFromFloat(LegacyDollarRate * 1000)).
+		InexactFloat64()
 }
 
-var ExtraKeyIsPrompt = map[string]bool{
+func LegacyTimesPriceToUSD(price float64) float64 {
+	if price <= 0 {
+		return 0
+	}
+
+	return decimal.NewFromFloat(price).
+		Mul(decimal.NewFromFloat(LegacyDollarRate)).
+		InexactFloat64()
+}
+
+var ExtraKeyUsesInputPrice = map[string]bool{
 	config.UsageExtraCache:             true,
 	config.UsageExtraCachedWrite:       true,
 	config.UsageExtraCachedRead:        true,
@@ -38,11 +53,16 @@ var ExtraKeyIsPrompt = map[string]bool{
 	config.UsageExtraOutputImageTokens: false,
 }
 
-func GetExtraPriceIsPrompt(key string) bool {
-	return ExtraKeyIsPrompt[key]
+func GetExtraPriceUsesInputPrice(key string) bool {
+	useInputPrice, ok := ExtraKeyUsesInputPrice[key]
+	if !ok {
+		return true
+	}
+
+	return useInputPrice
 }
 
-var defaultExtraPrice = map[string]float64{
+var defaultExtraPriceFactor = map[string]float64{
 	config.UsageExtraCache:            1,
 	config.UsageExtraCachedWrite:      1.25,
 	config.UsageExtraCachedRead:       0.1,
@@ -120,20 +140,27 @@ func (price *Price) GetOutput() float64 {
 	return price.Output
 }
 
-func (price *Price) GetExtraRatio(key string) float64 {
+func (price *Price) GetExtraPrice(key string) float64 {
 	if price.ExtraRatios != nil {
 		extraRatios := price.ExtraRatios.Data()
-		if ratio, ok := extraRatios[key]; ok {
-			return ratio
+		if extraPrice, ok := extraRatios[key]; ok {
+			return extraPrice
 		}
 	}
 
-	ratio, ok := defaultExtraPrice[key]
-	if !ok {
-		return 1
+	basePrice := price.GetOutput()
+	if GetExtraPriceUsesInputPrice(key) {
+		basePrice = price.GetInput()
 	}
 
-	return ratio
+	ratio, ok := defaultExtraPriceFactor[key]
+	if !ok {
+		return basePrice
+	}
+
+	return decimal.NewFromFloat(basePrice).
+		Mul(decimal.NewFromFloat(ratio)).
+		InexactFloat64()
 }
 
 func (price *Price) FetchInputCurrencyPrice(rate float64) string {
@@ -417,8 +444,8 @@ func GetDefaultPrice() []*Price {
 			Model:       model,
 			Type:        TokensPriceType,
 			ChannelType: modelType.Type,
-			Input:       modelType.Ratio[0],
-			Output:      modelType.Ratio[1],
+			Input:       LegacyTokenPriceToUSDPerMillion(modelType.Ratio[0]),
+			Output:      LegacyTokenPriceToUSDPerMillion(modelType.Ratio[1]),
 		})
 	}
 
@@ -432,8 +459,8 @@ func GetDefaultPrice() []*Price {
 			Model:       model,
 			Type:        TimesPriceType,
 			ChannelType: config.ChannelTypeSuno,
-			Input:       sunoPrice,
-			Output:      sunoPrice,
+			Input:       LegacyTimesPriceToUSD(sunoPrice),
+			Output:      LegacyTimesPriceToUSD(sunoPrice),
 		})
 	}
 
@@ -441,6 +468,51 @@ func GetDefaultPrice() []*Price {
 }
 
 func GetDefaultExtraRatio() string {
-	return `{"gpt-4o-audio-preview":{"input_audio_tokens":40,"output_audio_tokens":20},"gpt-4o-audio-preview-2024-10-01":{"input_audio_tokens":40,"output_audio_tokens":20},"gpt-4o-audio-preview-2024-12-17":{"input_audio_tokens":16,"output_audio_tokens":8},"gpt-4o-mini-audio-preview":{"input_audio_tokens":67,"output_audio_tokens":34},"gpt-4o-mini-audio-preview-2024-12-17":{"input_audio_tokens":67,"output_audio_tokens":34},"gpt-4o-realtime-preview":{"input_audio_tokens":20,"output_audio_tokens":10},"gpt-4o-realtime-preview-2024-10-01":{"input_audio_tokens":20,"output_audio_tokens":10},"gpt-4o-realtime-preview-2024-12-17":{"input_audio_tokens":8,"output_audio_tokens":4},"gpt-4o-mini-realtime-preview":{"input_audio_tokens":17,"output_audio_tokens":8.4},"gpt-4o-mini-realtime-preview-2024-12-17":{"input_audio_tokens":17,"output_audio_tokens":8.4},"gemini-2.5-flash-preview-04-17":{"reasoning_tokens":5.833},"gpt-image-1":{"input_text_tokens": 0.5}}`
+	legacyExtraRatios := map[string]map[string]float64{
+		"gpt-4o-audio-preview":                    {"input_audio_tokens": 40, "output_audio_tokens": 20},
+		"gpt-4o-audio-preview-2024-10-01":         {"input_audio_tokens": 40, "output_audio_tokens": 20},
+		"gpt-4o-audio-preview-2024-12-17":         {"input_audio_tokens": 16, "output_audio_tokens": 8},
+		"gpt-4o-mini-audio-preview":               {"input_audio_tokens": 67, "output_audio_tokens": 34},
+		"gpt-4o-mini-audio-preview-2024-12-17":    {"input_audio_tokens": 67, "output_audio_tokens": 34},
+		"gpt-4o-realtime-preview":                 {"input_audio_tokens": 20, "output_audio_tokens": 10},
+		"gpt-4o-realtime-preview-2024-10-01":      {"input_audio_tokens": 20, "output_audio_tokens": 10},
+		"gpt-4o-realtime-preview-2024-12-17":      {"input_audio_tokens": 8, "output_audio_tokens": 4},
+		"gpt-4o-mini-realtime-preview":            {"input_audio_tokens": 17, "output_audio_tokens": 8.4},
+		"gpt-4o-mini-realtime-preview-2024-12-17": {"input_audio_tokens": 17, "output_audio_tokens": 8.4},
+		"gemini-2.5-flash-preview-04-17":          {"reasoning_tokens": 5.833},
+		"gpt-image-1":                             {"input_text_tokens": 0.5},
+	}
 
+	defaultPrices := GetDefaultPrice()
+	priceMap := make(map[string]*Price, len(defaultPrices))
+	for _, price := range defaultPrices {
+		priceMap[price.Model] = price
+	}
+
+	extraPrices := make(map[string]map[string]float64, len(legacyExtraRatios))
+	for modelName, extraRatios := range legacyExtraRatios {
+		price, ok := priceMap[modelName]
+		if !ok {
+			continue
+		}
+
+		modelExtraPrices := make(map[string]float64, len(extraRatios))
+		for key, ratio := range extraRatios {
+			basePrice := price.GetOutput()
+			if GetExtraPriceUsesInputPrice(key) {
+				basePrice = price.GetInput()
+			}
+			modelExtraPrices[key] = decimal.NewFromFloat(basePrice).
+				Mul(decimal.NewFromFloat(ratio)).
+				InexactFloat64()
+		}
+		extraPrices[modelName] = modelExtraPrices
+	}
+
+	data, err := json.Marshal(extraPrices)
+	if err != nil {
+		return "{}"
+	}
+
+	return string(data)
 }

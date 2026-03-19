@@ -88,6 +88,10 @@ The provider system implements a plugin-based architecture in `providers/`:
   - Balance checking interfaces
   - Model listing interfaces
 - Automatic model discovery and pricing updates
+- Pricing data is stored as direct USD amounts.
+  - Token prices use USD per 1M tokens.
+  - `extra_ratios` now carries direct USD prices for extra token categories rather than relative multipliers.
+  - Group ratio remains the only billing multiplier applied at runtime.
 - Support for streaming responses and WebSocket connections
 
 #### Frontend React Structure

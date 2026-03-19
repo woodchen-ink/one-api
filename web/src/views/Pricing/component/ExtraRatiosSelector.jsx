@@ -78,22 +78,22 @@ export const ExtraRatiosSelector = ({ value = {}, onChange }) => {
         }}
       >
         <Icon icon="tabler:multiplier-1-5x" width={18} height={18} color={theme.palette.primary.main} />
-        {t('pricing_edit.extraRatios')}
+        扩展价格
       </Typography>
 
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ mb: 2 }}>
         <FormControl fullWidth>
-          <InputLabel>{t('pricing_edit.selectExtraRatio')}</InputLabel>
+          <InputLabel>选择扩展价格项</InputLabel>
           <Select
             value={selectedRatio}
             onChange={(e) => setSelectedRatio(e.target.value)}
-            input={<OutlinedInput label={t('pricing_edit.selectExtraRatio')} />}
+            input={<OutlinedInput label="选择扩展价格项" />}
             disabled={availableRatios.length === 0}
           >
             {availableRatios.length === 0 ? (
               <MenuItem disabled>
                 <Typography variant="body2" color="textSecondary">
-                  {t('pricing_edit.noAvailableRatios')}
+                  没有可添加的扩展价格项
                 </Typography>
               </MenuItem>
             ) : (
@@ -214,7 +214,7 @@ export const ExtraRatiosSelector = ({ value = {}, onChange }) => {
           }}
         >
           <Typography variant="body2" color="inherit" align="center">
-            {t('pricing_edit.noExtraRatios')}
+            暂无扩展价格，请先添加
           </Typography>
         </Box>
       )}

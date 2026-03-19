@@ -197,10 +197,10 @@ export const CheckUpdates = ({ open, onCancel, onOk, row }) => {
         let extraRatiosChanges = '';
 
         if (model.input !== newModel.input) {
-          changes += `${t('CheckUpdatesTable.inputMultiplierChanged')} ${model.input} ${t('CheckUpdatesTable.to')} ${newModel.input}, `;
+          changes += `输入价格由 ${model.input} 变为 ${newModel.input}, `;
         }
         if (model.output !== newModel.output) {
-          changes += `${t('CheckUpdatesTable.outputMultiplierChanged')} ${model.output} ${t('CheckUpdatesTable.to')} ${newModel.output}, `;
+          changes += `输出价格由 ${model.output} 变为 ${newModel.output}, `;
         }
 
         // 单独处理扩展价格变动

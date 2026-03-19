@@ -335,6 +335,58 @@ func addExtraRatios() *gormigrate.Migration {
 	}
 }
 
+func migratePricingToUSD() *gormigrate.Migration {
+	return &gormigrate.Migration{
+		ID: "202603190001",
+		Migrate: func(tx *gorm.DB) error {
+			if !tx.Migrator().HasTable("prices") {
+				return nil
+			}
+
+			var prices []*Price
+			if err := tx.Find(&prices).Error; err != nil {
+				return err
+			}
+
+			for _, price := range prices {
+				convertedInput := LegacyTimesPriceToUSD(price.Input)
+				convertedOutput := LegacyTimesPriceToUSD(price.Output)
+				if price.Type == TokensPriceType {
+					convertedInput = LegacyTokenPriceToUSDPerMillion(price.Input)
+					convertedOutput = LegacyTokenPriceToUSDPerMillion(price.Output)
+				}
+
+				updates := map[string]any{
+					"input":  convertedInput,
+					"output": convertedOutput,
+				}
+
+				if price.ExtraRatios != nil {
+					extraPrices := make(map[string]float64, len(price.ExtraRatios.Data()))
+					for key, value := range price.ExtraRatios.Data() {
+						basePrice := convertedOutput
+						if GetExtraPriceUsesInputPrice(key) {
+							basePrice = convertedInput
+						}
+						extraPrices[key] = basePrice * value
+					}
+					jsonData := datatypes.NewJSONType(extraPrices)
+					updates["extra_ratios"] = jsonData
+				}
+
+				if err := tx.Model(&Price{}).Where("model = ?", price.Model).Updates(updates).Error; err != nil {
+					return err
+				}
+			}
+
+			return nil
+		},
+		Rollback: func(tx *gorm.DB) error {
+			return nil
+		},
+	}
+}
+
 func migrateTokenLimitsStructure() *gormigrate.Migration {
 	return &gormigrate.Migration{
 		ID: "202510160002",
@@ -480,6 +532,7 @@ func migrationAfter(db *gorm.DB) error {
 		addUserGroupDefaultFlag(),
 		addOldTokenMaxId(),
 		addExtraRatios(),
+		migratePricingToUSD(),
 		migrateTokenLimitsStructure(),
 	})
 	return m.Migrate()

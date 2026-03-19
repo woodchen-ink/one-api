@@ -29,7 +29,7 @@ import {
 import { showError, showSuccess, trims } from 'utils/common';
 import { API } from 'utils/api';
 import { createFilterOptions } from '@mui/material/Autocomplete';
-import { priceType, ValueFormatter } from './util';
+import { priceType } from './util';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import { useTranslation } from 'react-i18next';
@@ -64,15 +64,15 @@ const validateSingleMode = (t, values, rows) => {
   // 按次计费时只验证单次价格（input字段）
   if (values.type === 'times') {
     if (values.input === '' || values.input < 0) {
-      return t('pricing_edit.inputVal');
+      return '输入价格必须大于等于 0';
     }
   } else {
     // 按Token计费时验证输入输出价格
     if (values.input === '' || values.input < 0) {
-      return t('pricing_edit.inputVal');
+      return '输入价格必须大于等于 0';
     }
     if (values.output === '' || values.output < 0) {
-      return t('pricing_edit.outputVal');
+      return '输出价格必须大于等于 0';
     }
   }
   return false;
@@ -85,14 +85,14 @@ const getValidationSchema = (t) =>
     type: Yup.string().oneOf(['tokens', 'times'], t('pricing_edit.typeErr')).required(t('pricing_edit.requiredType')),
     channel_type: Yup.number().min(1, t('pricing_edit.channelTypeErr')).required(t('pricing_edit.requiredChannelType')),
     input: Yup.number()
-      .required(t('pricing_edit.requiredInput'))
-      .test('isPositive', t('pricing_edit.inputVal'), (value) => value !== '' && value >= 0),
+      .required('输入价格不能为空')
+      .test('isPositive', '输入价格必须大于等于 0', (value) => value !== '' && value >= 0),
     output: Yup.number().when('type', {
       is: 'tokens',
       then: (schema) =>
         schema
-          .required(t('pricing_edit.requiredOutput'))
-          .test('isPositive', t('pricing_edit.outputVal'), (value) => value !== '' && value >= 0),
+          .required('输出价格不能为空')
+          .test('isPositive', '输出价格必须大于等于 0', (value) => value !== '' && value >= 0),
       otherwise: (schema) =>
         schema
           .notRequired()
@@ -136,15 +136,14 @@ const EditModal = ({
   price = null,
   rows = [],
   onSaveSingle = null,
-  unit = 'K'
+  unit = 'M'
 }) => {
   const { t } = useTranslation();
   const theme = useTheme();
   const [inputs, setInputs] = useState(singleMode ? singleOriginInputs : multipleOriginInputs);
   const [selectModel, setSelectModel] = useState([]);
   const [errors, setErrors] = useState({});
-
-  const [unitType, setUnitType] = useState('rate');
+  const unitType = 'USD';
   const [localUnit, setLocalUnit] = useState(unit);
 
   // 当外部unit变化时同步本地unit
@@ -152,40 +151,21 @@ const EditModal = ({
     setLocalUnit(unit);
   }, [unit]);
 
-  const calculateRate = useCallback(
+  const calculatePrice = useCallback(
     (price) => {
       if (price === '') {
         return 0;
       }
-      if (unitType === 'rate') {
-        return Number(price);
-      }
 
       let priceValue = new Decimal(price);
-
-      if (localUnit === 'M') {
+      if (localUnit === 'K') {
         priceValue = priceValue.div(1000);
       }
 
-      switch (unitType) {
-        case 'USD':
-          priceValue = priceValue.div(0.002);
-          break;
-        case 'RMB':
-          priceValue = priceValue.div(0.014);
-          break;
-      }
-
-      return Number(priceValue.toFixed(4));
+      return Number(priceValue.toFixed(8));
     },
-    [unitType, localUnit]
+    [localUnit]
   );
-
-  const unitTypeOptions = [
-    { value: 'rate', label: t('modelpricePage.rate') },
-    { value: 'USD', label: 'USD' },
-    { value: 'RMB', label: 'RMB' }
-  ];
 
   const lockedOptions = [
     { value: true, label: t('pricing_edit.locked') },
@@ -199,22 +179,20 @@ const EditModal = ({
 
   const handleEndAdornment = useCallback(
     (value) => {
-      let endAdornment = '';
-
-      switch (unitType) {
-        case 'rate':
-          endAdornment = ValueFormatter(value);
-          break;
-        case 'USD':
-        case 'RMB':
-          endAdornment = Number(value) === 0 ? 'Free' : calculateRate(value) + ' Rate';
-          break;
+      if (value === '' || Number(value) === 0) {
+        return 'Free';
       }
 
-      return endAdornment;
+      if (localUnit === 'K') {
+        return `$${calculatePrice(value)} / 1M`;
+      }
+
+      return '';
     },
-    [unitType, calculateRate]
+    [calculatePrice, localUnit]
   );
+
+  const priceStartAdornment = useCallback(() => (localUnit === 'M' ? 'USD / 1M:' : 'USD / 1K:'), [localUnit]);
 
   const handleStartAdornment = useCallback(() => {
     switch (unitType) {
@@ -235,7 +213,7 @@ const EditModal = ({
     if (values.extra_ratios) {
       const processedRatios = {};
       Object.keys(values.extra_ratios).forEach((key) => {
-        processedRatios[key] = Number(values.extra_ratios[key]);
+        processedRatios[key] = calculatePrice(values.extra_ratios[key]);
       });
       values.extra_ratios = processedRatios;
     }
@@ -252,8 +230,8 @@ const EditModal = ({
 
       try {
         if (onSaveSingle) {
-          const calculatedInput = calculateRate(values.input);
-          const calculatedOutput = values.type === 'times' ? calculatedInput : calculateRate(values.output);
+          const calculatedInput = calculatePrice(values.input);
+          const calculatedOutput = values.type === 'times' ? calculatedInput : calculatePrice(values.output);
           await onSaveSingle({
             ...values,
             input: calculatedInput,
@@ -272,8 +250,8 @@ const EditModal = ({
     // 多选模式处理
     values.models = trims(values.models);
     try {
-      const calculatedInput = calculateRate(values.input);
-      const calculatedOutput = values.type === 'times' ? calculatedInput : calculateRate(values.output);
+      const calculatedInput = calculatePrice(values.input);
+      const calculatedOutput = values.type === 'times' ? calculatedInput : calculatePrice(values.output);
       const res = await API.post(`/api/prices/multiple`, {
         original_models: inputs.models,
         models: values.models,
@@ -367,8 +345,7 @@ const EditModal = ({
 
   useEffect(() => {
     if (open) {
-      setUnitType('rate');
-      setLocalUnit('K');
+      setLocalUnit('M');
     }
   }, [open]);
 
@@ -457,25 +434,16 @@ const EditModal = ({
   // 渲染单位类型切换按钮组
   const renderUnitTypeToggle = () => (
     <FormControl fullWidth sx={{ ...theme.typography.otherInput }}>
-      <Stack direction="row" spacing={2}>
-        <ToggleButtonGroup
-          value={unitType}
-          onChange={(event, newUnitType) => {
-            setUnitType(newUnitType);
-          }}
-          options={unitTypeOptions}
-          aria-label="unit toggle"
-        />
-
-        <ToggleButtonGroup
-          value={localUnit}
-          onChange={(event, newUnit) => {
+      <ToggleButtonGroup
+        value={localUnit}
+        onChange={(_event, newUnit) => {
+          if (newUnit) {
             setLocalUnit(newUnit);
-          }}
-          options={unitOptions}
-          aria-label="unit toggle"
-        />
-      </Stack>
+          }
+        }}
+        options={unitOptions}
+        aria-label="price unit toggle"
+      />
     </FormControl>
   );
 
@@ -501,7 +469,7 @@ const EditModal = ({
           type="number"
           value={value}
           name="input"
-          startAdornment={<InputAdornment position="start">{handleStartAdornment()}</InputAdornment>}
+          startAdornment={<InputAdornment position="start">{currentType === 'times' ? 'USD:' : priceStartAdornment()}</InputAdornment>}
           endAdornment={<InputAdornment position="end">{handleEndAdornment(value)}</InputAdornment>}
           onBlur={handleBlur}
           onChange={onChange}
@@ -535,7 +503,7 @@ const EditModal = ({
           type="number"
           value={value}
           name="output"
-          startAdornment={<InputAdornment position="start">{handleStartAdornment()}</InputAdornment>}
+          startAdornment={<InputAdornment position="start">{priceStartAdornment()}</InputAdornment>}
           endAdornment={<InputAdornment position="end">{handleEndAdornment(value)}</InputAdornment>}
           onBlur={handleBlur}
           onChange={onChange}
@@ -609,7 +577,7 @@ const EditModal = ({
           onChange={(newExtraRatios) => {
             setFieldValue('extra_ratios', newExtraRatios);
           }}
-          handleStartAdornment={handleStartAdornment}
+          handleStartAdornment={priceStartAdornment}
         />
       </FormControl>
     );
