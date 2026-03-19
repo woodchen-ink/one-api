@@ -117,6 +117,39 @@ const BaseIndex = () => {
   const { t } = useTranslation();
   const theme = useTheme();
 
+  const nativeRoutes = [
+    {
+      provider: 'OpenAI Compatible',
+      vendor: 'OpenAI / OpenAI-compatible',
+      routes: ['/v1/chat/completions', '/v1/responses', '/v1/embeddings']
+    },
+    {
+      provider: 'Claude Native',
+      vendor: 'Anthropic Claude',
+      routes: ['/v1/messages']
+    },
+    {
+      provider: 'Gemini Native',
+      vendor: 'Google Gemini',
+      routes: ['/v1beta/models/{model}:generateContent', '/v1beta/models/{model}:streamGenerateContent']
+    },
+    {
+      provider: 'Recraft',
+      vendor: 'Recraft AI',
+      routes: ['/recraftAI/v1/images/generations']
+    },
+    {
+      provider: 'Suno',
+      vendor: 'Suno',
+      routes: ['/suno/submit/{action}']
+    },
+    {
+      provider: 'Kling',
+      vendor: 'Kling',
+      routes: ['/kling/v1/{class}/{action}']
+    }
+  ];
+
   const features = [
     {
       icon: <SearchIcon fontSize="large" />,
@@ -271,6 +304,96 @@ const BaseIndex = () => {
       </Box>
 
       {/* 特性区域 - Apple风格 */}
+      <Box
+        sx={{
+          py: 10,
+          px: 2,
+          backgroundColor: theme.palette.mode === 'dark' ? alpha(theme.palette.background.paper, 0.4) : '#FBFBFC',
+          borderTop: `1px solid ${theme.palette.divider}`,
+          borderBottom: `1px solid ${theme.palette.divider}`
+        }}
+      >
+        <Container maxWidth="lg">
+          <Typography
+            variant="h2"
+            align="center"
+            sx={{
+              fontWeight: 300,
+              fontSize: { xs: '2rem', md: '2.5rem' },
+              mb: 2,
+              color: 'text.primary'
+            }}
+          >
+            支持的原生厂家与路径
+          </Typography>
+          <Typography
+            variant="h6"
+            align="center"
+            sx={{
+              fontWeight: 400,
+              color: 'text.secondary',
+              mb: 8,
+              maxWidth: '760px',
+              mx: 'auto',
+              lineHeight: 1.7
+            }}
+          >
+            你可以直接使用本站域名访问各厂家的原生路径。
+            <br />
+            例如 Claude 走 <strong>/v1/messages</strong>，Gemini 走 <strong>/v1beta/models/&#123;model&#125;:generateContent</strong>。
+          </Typography>
+          <Grid container spacing={3}>
+            {nativeRoutes.map((item) => (
+              <Grid item xs={12} md={6} lg={4} key={item.provider}>
+                <Card
+                  sx={{
+                    height: '100%',
+                    border: `1px solid ${theme.palette.divider}`,
+                    backgroundColor: theme.palette.background.paper,
+                    borderRadius: `${theme.shape.borderRadius}px`
+                  }}
+                >
+                  <CardContent sx={{ p: 3 }}>
+                    <Typography variant="overline" sx={{ color: 'primary.main', letterSpacing: '0.08em' }}>
+                      {item.vendor}
+                    </Typography>
+                    <Typography variant="h5" sx={{ mt: 1, mb: 2, fontWeight: 600 }}>
+                      {item.provider}
+                    </Typography>
+                    <Stack spacing={1.25}>
+                      {item.routes.map((route) => (
+                        <Box
+                          key={route}
+                          sx={{
+                            px: 1.5,
+                            py: 1.25,
+                            borderRadius: '10px',
+                            backgroundColor: theme.palette.mode === 'dark' ? alpha(theme.palette.background.default, 0.5) : '#F6F7F8',
+                            border: `1px solid ${alpha(theme.palette.divider, 0.8)}`
+                          }}
+                        >
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              fontFamily: 'Consolas, Monaco, monospace',
+                              fontSize: '0.85rem',
+                              color: 'text.primary',
+                              wordBreak: 'break-all'
+                            }}
+                          >
+                            {route}
+                          </Typography>
+                        </Box>
+                      ))}
+                    </Stack>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        </Container>
+      </Box>
+
       <Box sx={{ py: 10, px: 2, backgroundColor: '#F6F7F8' }}>
         <Container maxWidth="lg">
           <Typography

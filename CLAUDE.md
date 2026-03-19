@@ -92,6 +92,10 @@ The provider system implements a plugin-based architecture in `providers/`:
   - Token prices use USD per 1M tokens.
   - `extra_ratios` now carries direct USD prices for extra token categories rather than relative multipliers.
   - Group ratio remains the only billing multiplier applied at runtime.
+- Claude and Gemini native routes support root-path aliases for client compatibility.
+  - Claude can be called via `/v1/messages`.
+  - Gemini can be called via `/v1beta/models/:model` and `/v1/models/:model`.
+- The default homepage highlights supported providers and their native route patterns for quick onboarding.
 - Support for streaming responses and WebSocket connections
 
 #### Frontend React Structure

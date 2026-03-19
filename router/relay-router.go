@@ -74,6 +74,12 @@ func setSunoRouter(router *gin.Engine) {
 }
 
 func setClaudeRouter(router *gin.Engine) {
+	rootClaudeRouter := router.Group("/v1")
+	rootClaudeRouter.Use(middleware.APIEnabled("claude"), middleware.RelayCluadePanicRecover(), middleware.ClaudeAuth(), middleware.Distribute(), middleware.DynamicRedisRateLimiter())
+	{
+		rootClaudeRouter.POST("/messages", relay.Relay)
+	}
+
 	relayClaudeRouter := router.Group("/claude")
 	relayV1Router := relayClaudeRouter.Group("/v1")
 	relayV1Router.Use(middleware.APIEnabled("claude"), middleware.RelayCluadePanicRecover(), middleware.ClaudeAuth(), middleware.Distribute(), middleware.DynamicRedisRateLimiter())
@@ -84,6 +90,14 @@ func setClaudeRouter(router *gin.Engine) {
 }
 
 func setGeminiRouter(router *gin.Engine) {
+	rootGeminiRouter := router.Group("/")
+	rootGeminiRouter.Use(middleware.APIEnabled("gemini"), middleware.RelayGeminiPanicRecover(), middleware.GeminiAuth(), middleware.Distribute(), middleware.DynamicRedisRateLimiter())
+	{
+		rootGeminiRouter.POST("/v1/models/:model", relay.Relay)
+		rootGeminiRouter.POST("/v1beta/models/:model", relay.Relay)
+		rootGeminiRouter.GET("/v1beta/models", relay.ListGeminiModelsByToken)
+	}
+
 	relayGeminiRouter := router.Group("/gemini")
 	relayGeminiRouter.Use(middleware.APIEnabled("gemini"), middleware.RelayGeminiPanicRecover(), middleware.GeminiAuth(), middleware.Distribute(), middleware.DynamicRedisRateLimiter())
 	{

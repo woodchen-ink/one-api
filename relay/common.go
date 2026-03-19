@@ -47,15 +47,21 @@ func Path2Relay(c *gin.Context, path string) RelayBaseInterface {
 		relay = NewRelayTranscriptions(c)
 	} else if strings.HasPrefix(path, "/v1/audio/translations") {
 		relay = NewRelayTranslations(c)
-	} else if strings.HasPrefix(path, "/claude") {
+	} else if strings.HasPrefix(path, "/v1/messages") || strings.HasPrefix(path, "/claude") {
 		relay = NewRelayClaudeOnly(c)
-	} else if strings.HasPrefix(path, "/gemini") {
+	} else if isGeminiRelayPath(path) || strings.HasPrefix(path, "/gemini") {
 		relay = NewRelayGeminiOnly(c)
 	} else if strings.HasPrefix(path, "/v1/responses") {
 		relay = NewRelayResponses(c)
 	}
 
 	return relay
+}
+
+var geminiRelayPathRegex = regexp.MustCompile(`^/v[^/]+/models/[^/]+:(generateContent|streamGenerateContent)$`)
+
+func isGeminiRelayPath(path string) bool {
+	return geminiRelayPathRegex.MatchString(path)
 }
 
 func checkLimitModel(c *gin.Context, modelName string) (error error) {
