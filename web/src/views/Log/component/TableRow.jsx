@@ -47,11 +47,26 @@ function requestTimeLabelOptions(request_time) {
   return color;
 }
 
+function formatDuration(milliseconds) {
+  if (!milliseconds || milliseconds <= 0) {
+    return '-';
+  }
+
+  return `${(milliseconds / 1000).toFixed(2)} S`;
+}
+
+function getDurationValue(value) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return 0;
+  }
+
+  return parsed;
+}
+
 function LogTableRow({ item, userIsAdmin, userGroup, columnVisibility }) {
   const { t } = useTranslation();
   const LogType = useLogType();
-  let request_time = item.request_time / 1000;
-  let request_time_str = request_time.toFixed(2) + ' S';
 
   const { totalInputTokens, totalOutputTokens, tokenDetails, cacheCost } = useMemo(() => calculateTokens(item), [item]);
 
@@ -119,8 +134,8 @@ function LogTableRow({ item, userIsAdmin, userGroup, columnVisibility }) {
           </TableCell>
         )}
         {columnVisibility.duration && (
-          <TableCell sx={{ p: '10px 8px' }}>
-            <Label color={requestTimeLabelOptions(request_time)}>{item.request_time === 0 ? '-' : request_time_str}</Label>
+          <TableCell sx={{ p: '10px 8px', whiteSpace: 'nowrap', textAlign: 'center' }}>
+            {viewDuration(item, t)}
           </TableCell>
         )}
         {columnVisibility.tokens && (
@@ -240,6 +255,21 @@ function getReasoningColor(level) {
       return 'error';
     default:
       return 'default';
+  }
+}
+
+function getStatusTextColor(color) {
+  switch (color) {
+    case 'success':
+      return 'success.main';
+    case 'primary':
+      return 'primary.main';
+    case 'secondary':
+      return 'secondary.main';
+    case 'error':
+      return 'error.main';
+    default:
+      return 'text.secondary';
   }
 }
 
@@ -371,6 +401,46 @@ function viewTokens(item, t, totalInputTokens, totalOutputTokens, tokenDetails) 
       arrow
     >
       <span style={{ cursor: 'help', display: 'inline-block', textAlign: 'left' }}>{contentWithDetails}</span>
+    </Tooltip>
+  );
+}
+
+function viewDuration(item, t) {
+  const totalDuration = getDurationValue(item?.request_time);
+  const firstResponseDuration = getDurationValue(item?.metadata?.first_response);
+  const content = (
+    <Box
+      sx={{
+        display: 'inline-grid',
+        gridTemplateColumns: 'repeat(2, 75px)',
+        gap: 0.5
+      }}
+    >
+      <DurationMetric
+        icon="mdi:flash-outline"
+        value={formatDuration(firstResponseDuration)}
+        color={requestTimeLabelOptions(firstResponseDuration / 1000)}
+      />
+      <DurationMetric
+        icon="mdi:timer-sand-complete"
+        value={formatDuration(totalDuration)}
+        color={requestTimeLabelOptions(totalDuration / 1000)}
+      />
+    </Box>
+  );
+
+  return (
+    <Tooltip
+      title={
+        <>
+          <MetadataTypography>{`${t('logPage.firstDurationLabel')}: ${formatDuration(firstResponseDuration)}`}</MetadataTypography>
+          <MetadataTypography>{`${t('logPage.totalDurationLabel')}: ${formatDuration(totalDuration)}`}</MetadataTypography>
+        </>
+      }
+      placement="top"
+      arrow
+    >
+      <span style={{ cursor: 'help', display: 'inline-block' }}>{content}</span>
     </Tooltip>
   );
 }
@@ -692,4 +762,31 @@ TokenMetric.propTypes = {
   icon: PropTypes.string.isRequired,
   color: PropTypes.string.isRequired,
   value: PropTypes.number.isRequired
+};
+
+function DurationMetric({ icon, value, color }) {
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 0.5,
+        px: 0.75,
+        py: 0.45,
+        borderRadius: 0.6,
+        bgcolor: 'action.hover'
+      }}
+    >
+      <Icon icon={icon} width={14} />
+      <Typography variant="caption" sx={{ fontWeight: 700, color: getStatusTextColor(color) }}>
+        {value}
+      </Typography>
+    </Box>
+  );
+}
+
+DurationMetric.propTypes = {
+  icon: PropTypes.string.isRequired,
+  value: PropTypes.string.isRequired,
+  color: PropTypes.string.isRequired
 };

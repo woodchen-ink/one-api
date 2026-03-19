@@ -435,6 +435,8 @@
     "detailLabel": "Detail",
     "durationLabel": "Duration",
     "durationTooltip": "t/s: The number of output tokens divided by the total generation time, indicating the generation speed",
+    "firstDurationLabel": "First Time",
+    "totalDurationLabel": "Total Time",
     "groupLabel": "Group",
     "inputAudioTokens": "Input Audio Tokens",
     "inputLabel": "Input",
