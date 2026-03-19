@@ -120,7 +120,7 @@ function LogTableRow({ item, userIsAdmin, userGroup, columnVisibility }) {
         )}
         {columnVisibility.duration && (
           <TableCell sx={{ p: '10px 8px' }}>
-            <Label color={requestTimeLabelOptions(request_time)}>{item.request_time === 0 ? '无' : request_time_str}</Label>
+            <Label color={requestTimeLabelOptions(request_time)}>{item.request_time === 0 ? '-' : request_time_str}</Label>
           </TableCell>
         )}
         {columnVisibility.tokens && (
@@ -345,28 +345,22 @@ function viewTokens(item, t, totalInputTokens, totalOutputTokens, show, tokenDet
     </Stack>
   );
 
-  if (!show) return contentWithCache;
-
-  const tooltipContent = tokenDetails.map(({ key, label, value, unitPrice, cost }) => (
-    <MetadataTypography key={key}>{`${label}: ${value} x $${formatUSD(unitPrice)} / 1M = $${formatUSD(cost)}`}</MetadataTypography>
-  ));
-
   return (
-    <Badge variant="dot" color="primary">
-      <Tooltip
-        title={
-          <>
-            {tooltipContent}
-            <MetadataTypography>{`${t('logPage.totalInputTokens')}: ${totalInputTokens}`}</MetadataTypography>
-            <MetadataTypography>{`${t('logPage.totalOutputTokens')}: ${totalOutputTokens}`}</MetadataTypography>
-          </>
-        }
-        placement="top"
-        arrow
-      >
-        <span style={{ cursor: 'help' }}>{contentWithCache}</span>
-      </Tooltip>
-    </Badge>
+    <Tooltip
+      title={
+        <>
+          <MetadataTypography>{`${t('logPage.totalInputTokens')}: ${totalInputTokens}`}</MetadataTypography>
+          <MetadataTypography>{`${t('logPage.totalOutputTokens')}: ${totalOutputTokens}`}</MetadataTypography>
+          {cacheMetrics.map((metric) => (
+            <MetadataTypography key={metric.key}>{`${metric.shortLabel}: ${metric.value}`}</MetadataTypography>
+          ))}
+        </>
+      }
+      placement="top"
+      arrow
+    >
+      <span style={{ cursor: 'help' }}>{contentWithCache}</span>
+    </Tooltip>
   );
 }
 
@@ -378,16 +372,7 @@ function viewQuota(item, t, cacheCost = 0) {
     (Array.isArray(metadata?.billing_rules) && metadata.billing_rules.length > 0) ||
     (Array.isArray(metadata?.billing_breakdown) && metadata.billing_breakdown.length > 0);
 
-  const content = (
-    <Stack spacing={0.5}>
-      <Typography variant="body2">{displayValue}</Typography>
-      {cacheCost > 0 && (
-        <Typography variant="caption" color="info.main">
-          {`缓存计费 $${formatUSD(cacheCost)}`}
-        </Typography>
-      )}
-    </Stack>
-  );
+  const content = <Typography variant="body2">{displayValue}</Typography>;
 
   if (!hasBillingInfo) {
     return content;
@@ -396,7 +381,7 @@ function viewQuota(item, t, cacheCost = 0) {
   const tooltipContent = (
     <Stack spacing={1}>
       <Typography variant="subtitle2" sx={{ color: '#fff', fontWeight: 700 }}>
-        成本明细
+        成本明细{' '}
       </Typography>
 
       {(metadata?.billing_breakdown || []).map((detail, index) => (
@@ -404,7 +389,7 @@ function viewQuota(item, t, cacheCost = 0) {
           <Stack direction="row" spacing={0.75} alignItems="center">
             <Icon icon={getMetricIcon(detail.metric)} width={14} />
             <Typography variant="caption" sx={{ color: '#d1d5db' }}>
-              {formatBillingMetricLabel(detail.metric)}
+              {`${formatBillingMetricLabel(detail.metric)} ${detail.quantity || 0} x $${formatUSD(detail.unit_price || 0)} / 1M`}
             </Typography>
           </Stack>
           <Typography variant="caption" sx={{ color: '#fff', fontWeight: 600 }}>
@@ -417,6 +402,19 @@ function viewQuota(item, t, cacheCost = 0) {
         <Stack spacing={0.5}>
           <MetadataTypography>{`输入单价 $${formatUSD(metadata.input_price || 0)} / 1M Token`}</MetadataTypography>
           <MetadataTypography>{`输出单价 $${formatUSD(metadata.output_price || 0)} / 1M Token`}</MetadataTypography>
+        </Stack>
+      )}
+
+      {(metadata?.billing_breakdown || []).filter((detail) => !['input', 'output', 'request'].includes(detail.metric)).length > 0 && (
+        <Stack spacing={0.5}>
+          {(metadata?.billing_breakdown || [])
+            .filter((detail) => !['input', 'output', 'request'].includes(detail.metric))
+            .filter((detail, index, arr) => arr.findIndex((item) => item.metric === detail.metric) === index)
+            .map((detail) => (
+              <MetadataTypography key={`unit-price-${detail.metric}`}>
+                {`${formatBillingMetricLabel(detail.metric)} 单价 $${formatUSD(detail.unit_price || 0)} / 1M Token`}
+              </MetadataTypography>
+            ))}
         </Stack>
       )}
 
@@ -436,7 +434,7 @@ function viewQuota(item, t, cacheCost = 0) {
       <Box sx={{ height: 1, bgcolor: 'rgba(255,255,255,0.12)' }} />
       <Stack direction="row" justifyContent="space-between">
         <Typography variant="caption" sx={{ color: '#d1d5db' }}>
-          计费
+          计费{' '}
         </Typography>
         <Typography variant="caption" sx={{ color: '#22c55e', fontWeight: 700 }}>
           {displayValue}
