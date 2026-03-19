@@ -4,7 +4,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"one-api/model"
+	"czloapi/model"
 
 	"github.com/gin-gonic/gin"
 )

@@ -3,8 +3,8 @@ package controller
 import (
 	"errors"
 	"net/http"
-	"one-api/common"
-	"one-api/model"
+	"czloapi/common"
+	"czloapi/model"
 	"strconv"
 
 	"github.com/gin-gonic/gin"

@@ -1,6 +1,6 @@
 package xunfei
 
-import "one-api/types"
+import "czloapi/types"
 
 type XunfeiMessage struct {
 	Role    string `json:"role"`

@@ -3,9 +3,9 @@ package model
 import (
 	"context"
 	"fmt"
-	"one-api/common/config"
-	"one-api/common/logger"
-	"one-api/common/utils"
+	"czloapi/common/config"
+	"czloapi/common/logger"
+	"czloapi/common/utils"
 
 	"gorm.io/datatypes"
 	"gorm.io/gorm"

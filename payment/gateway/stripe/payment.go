@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
-	"one-api/model"
-	"one-api/payment/types"
+	"czloapi/model"
+	"czloapi/payment/types"
 	"strconv"
 
-	sysconfig "one-api/common/config"
+	sysconfig "czloapi/common/config"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stripe/stripe-go/v80"

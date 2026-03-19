@@ -38,7 +38,7 @@ export const CheckUpdates = ({ open, onCancel, onOk, row }) => {
 
   // 从localStorage获取保存的URL
   useEffect(() => {
-    const savedUrl = localStorage.getItem('oneapi_price_update_url');
+    const savedUrl = localStorage.getItem('czloapi_price_update_url');
     if (savedUrl) {
       setUrl(savedUrl);
     } else {
@@ -52,20 +52,20 @@ export const CheckUpdates = ({ open, onCancel, onOk, row }) => {
       if (res.data?.data) {
         const serviceUrl = res.data.data;
         setUrl(serviceUrl);
-        localStorage.setItem('oneapi_price_update_url', serviceUrl);
+        localStorage.setItem('czloapi_price_update_url', serviceUrl);
       }
     } catch (err) {
       console.error(err);
-      const defaultUrl = 'https://raw.githubusercontent.com/MartialBE/one-api/prices/prices.json';
+      const defaultUrl = 'https://raw.githubusercontent.com/MartialBE/czloapi/prices/prices.json';
       setUrl(defaultUrl);
-      localStorage.setItem('oneapi_price_update_url', defaultUrl);
+      localStorage.setItem('czloapi_price_update_url', defaultUrl);
     }
   };
 
   const handleUrlChange = (e) => {
     const newUrl = e.target.value;
     setUrl(newUrl);
-    localStorage.setItem('oneapi_price_update_url', newUrl);
+    localStorage.setItem('czloapi_price_update_url', newUrl);
   };
 
   const handleCheckUpdates = async () => {

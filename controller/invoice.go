@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"one-api/common"
-	"one-api/model"
+	"czloapi/common"
+	"czloapi/model"
 	"time"
 )
 

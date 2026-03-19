@@ -5,7 +5,7 @@
 <p align="center">
    <picture>
    <source media="(prefers-color-scheme: dark)" srcset="https://github.com/MartialBE/one-hub/assets/42402987/c4125d1a-5577-446d-ba15-2a71c52140c1">
-   <img height="90" src="https://raw.githubusercontent.com/MartialBE/one-api/main/web/src/assets/images/logo.svg">
+   <img height="90" src="https://raw.githubusercontent.com/MartialBE/czloapi/main/web/src/assets/images/logo.svg">
    </picture>
 </p>
 
@@ -13,23 +13,23 @@
 
 # One Hub
 
-_This project is based on [one-api](https://github.com/songquanpeng/one-api) and has been developed for the second time._
+_This project is based on [czloapi](https://github.com/songquanpeng/czloapi) and has been developed for the second time._
 
 <p align="center">
-  <a href="https://raw.githubusercontent.com/MartialBE/one-api/main/LICENSE">
-    <img src="https://img.shields.io/github/license/MartialBE/one-api?color=brightgreen" alt="license">
+  <a href="https://raw.githubusercontent.com/MartialBE/czloapi/main/LICENSE">
+    <img src="https://img.shields.io/github/license/MartialBE/czloapi?color=brightgreen" alt="license">
   </a>
   <a href="https://github.com/MartialBE/one-hub/releases/latest">
-    <img src="https://img.shields.io/github/v/release/MartialBE/one-api?color=brightgreen&include_prereleases" alt="release">
+    <img src="https://img.shields.io/github/v/release/MartialBE/czloapi?color=brightgreen&include_prereleases" alt="release">
   </a>
-  <a href="https://github.com/users/MartialBE/packages/container/package/one-api">
+  <a href="https://github.com/users/MartialBE/packages/container/package/czloapi">
     <img src="https://img.shields.io/badge/docker-ghcr.io-blue" alt="docker">
   </a>
-  <a href="https://hub.docker.com/r/martialbe/one-api">
+  <a href="https://hub.docker.com/r/martialbe/czloapi">
     <img src="https://img.shields.io/badge/docker-dockerHub-blue" alt="docker">
   </a>
-  <a href="https://goreportcard.com/report/github.com/MartialBE/one-api">
-    <img src="https://goreportcard.com/badge/github.com/MartialBE/one-api" alt="GoReportCard">
+  <a href="https://goreportcard.com/report/github.com/MartialBE/czloapi">
+    <img src="https://goreportcard.com/badge/github.com/MartialBE/czloapi" alt="GoReportCard">
   </a>
 </p>
 
@@ -101,7 +101,7 @@ If you find that a new model is missing, please update the newly added model in 
 ## Acknowledgements
 
 - This program utilizes the following open-source projects:
-  - [one-api](https://github.com/songquanpeng/one-api) serves as the foundation of this project.
+  - [czloapi](https://github.com/songquanpeng/czloapi) serves as the foundation of this project.
   - [Berry Free React Admin Template](https://github.com/codedthemes/berry-free-react-admin-template) provides the frontend interface for this project.
   - [minimal-ui-kit](https://github.com/minimal-ui-kit/material-kit-react), some styles from this project were used.
   - [new api](https://github.com/Calcium-Ion/new-api)
@@ -113,6 +113,6 @@ Special thanks to the authors and contributors of the above projects.
 <a href="https://next.ossinsight.io/widgets/official/analyze-repo-stars-history?repo_id=689214770" target="_blank" style="display: block" align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://next.ossinsight.io/widgets/official/analyze-repo-stars-history/thumbnail.png?repo_id=689214770&image_size=auto&color_scheme=dark" width="721" height="auto">
-    <img alt="Star History of MartialBE/one-api" src="https://next.ossinsight.io/widgets/official/analyze-repo-stars-history/thumbnail.png?repo_id=689214770&image_size=auto&color_scheme=light" width="721" height="auto">
+    <img alt="Star History of MartialBE/czloapi" src="https://next.ossinsight.io/widgets/official/analyze-repo-stars-history/thumbnail.png?repo_id=689214770&image_size=auto&color_scheme=light" width="721" height="auto">
   </picture>
 </a>

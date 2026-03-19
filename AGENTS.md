@@ -1,7 +1,7 @@
-# AGENTS.md — One Hub (one-api)
+# AGENTS.md — One Hub (czloapi)
 
 LLM API aggregation gateway. Go (Gin) backend + React (Vite/MUI) frontend.
-Forked from songquanpeng/one-api. Multi-provider proxy for OpenAI, Claude, Gemini, etc.
+Forked from songquanpeng/czloapi. Multi-provider proxy for OpenAI, Claude, Gemini, etc.
 
 ## Build / Run / Test Commands
 
@@ -14,7 +14,7 @@ make all
 task build
 
 # Backend only (requires web/build/ to exist)
-go build -o dist/one-api
+go build -o dist/czloapi
 
 # Hot-reload development (uses .air.toml)
 air
@@ -52,7 +52,7 @@ yarn prettier       # prettier
 ### Docker
 
 ```bash
-docker build -t one-api .
+docker build -t czloapi .
 # or
 task docker         # builds linux/amd64 + pushes image
 ```
@@ -90,7 +90,7 @@ metrics/             # Prometheus metrics
 
 ### Import Order
 
-Standard library, blank line, third-party, blank line, internal (`one-api/...`):
+Standard library, blank line, third-party, blank line, internal (`czloapi/...`):
 
 ```go
 import (
@@ -101,9 +101,9 @@ import (
     "github.com/gin-gonic/gin"
     "gorm.io/gorm"
 
-    "one-api/common"
-    "one-api/common/utils"
-    "one-api/model"
+    "czloapi/common"
+    "czloapi/common/utils"
+    "czloapi/model"
 )
 ```
 
@@ -154,7 +154,7 @@ or `common.ErrorWrapper`.
 
 ### Logging
 
-Use the custom logger (`one-api/common/logger`), backed by Zap:
+Use the custom logger (`czloapi/common/logger`), backed by Zap:
 
 ```go
 logger.SysLog("informational message")

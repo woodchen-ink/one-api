@@ -3,8 +3,8 @@ package model
 import (
 	"errors"
 	"fmt"
-	"one-api/common"
-	"one-api/common/logger"
+	"czloapi/common"
+	"czloapi/common/logger"
 	"strings"
 	"time"
 )

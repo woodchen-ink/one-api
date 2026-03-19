@@ -2,10 +2,10 @@ package vertexai
 
 import (
 	"net/http"
-	"one-api/common"
-	"one-api/common/requester"
-	"one-api/providers/vertexai/category"
-	"one-api/types"
+	"czloapi/common"
+	"czloapi/common/requester"
+	"czloapi/providers/vertexai/category"
+	"czloapi/types"
 )
 
 func (p *VertexAIProvider) CreateChatCompletion(request *types.ChatCompletionRequest) (*types.ChatCompletionResponse, *types.OpenAIErrorWithStatusCode) {

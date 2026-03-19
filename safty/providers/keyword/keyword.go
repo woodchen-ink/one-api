@@ -2,9 +2,9 @@ package keyword
 
 import (
 	"fmt"
-	"one-api/common/config"
-	"one-api/common/logger"
-	"one-api/safty/types"
+	"czloapi/common/config"
+	"czloapi/common/logger"
+	"czloapi/safty/types"
 	"strings"
 )
 

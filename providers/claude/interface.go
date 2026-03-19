@@ -1,9 +1,9 @@
 package claude
 
 import (
-	"one-api/common/requester"
-	"one-api/providers/base"
-	"one-api/types"
+	"czloapi/common/requester"
+	"czloapi/providers/base"
+	"czloapi/types"
 )
 
 type ClaudeChatInterface interface {

@@ -1,7 +1,7 @@
 package gemini
 
 import (
-	"one-api/types"
+	"czloapi/types"
 )
 
 func StringErrorWrapper(err string, code string, statusCode int, localError bool) *GeminiErrorWithStatusCode {

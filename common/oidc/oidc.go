@@ -2,8 +2,8 @@ package oidc
 
 import (
 	"context"
-	"one-api/common/config"
-	"one-api/common/logger"
+	"czloapi/common/config"
+	"czloapi/common/logger"
 	"strings"
 	"sync"
 

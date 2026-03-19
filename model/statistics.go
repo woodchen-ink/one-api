@@ -2,7 +2,7 @@ package model
 
 import (
 	"fmt"
-	"one-api/common"
+	"czloapi/common"
 	"strings"
 	"time"
 )

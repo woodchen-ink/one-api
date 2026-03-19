@@ -1,7 +1,7 @@
 package baidu
 
 import (
-	"one-api/types"
+	"czloapi/types"
 )
 
 type BaiduAccessToken struct {

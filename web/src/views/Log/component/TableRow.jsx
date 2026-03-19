@@ -46,17 +46,13 @@ function requestTimeLabelOptions(request_time) {
   return color;
 }
 
-
 function LogTableRow({ item, userIsAdmin, userGroup, columnVisibility }) {
   const { t } = useTranslation();
   const LogType = useLogType();
   let request_time = item.request_time / 1000;
   let request_time_str = request_time.toFixed(2) + ' S';
 
-
   const { totalInputTokens, totalOutputTokens, show, tokenDetails } = useMemo(() => calculateTokens(item), [item]);
-
-
 
   return (
     <>
@@ -123,21 +119,13 @@ function LogTableRow({ item, userIsAdmin, userGroup, columnVisibility }) {
         )}
         {columnVisibility.duration && (
           <TableCell sx={{ p: '10px 8px' }}>
-            <Label color={requestTimeLabelOptions(request_time)}>
-              {item.request_time === 0 ? '无' : request_time_str}
-            </Label>
+            <Label color={requestTimeLabelOptions(request_time)}>{item.request_time === 0 ? '无' : request_time_str}</Label>
           </TableCell>
         )}
         {columnVisibility.tokens && (
-          <TableCell sx={{ p: '10px 8px' }}>
-            {viewTokens(item, t, totalInputTokens, totalOutputTokens, show, tokenDetails)}
-          </TableCell>
+          <TableCell sx={{ p: '10px 8px' }}>{viewTokens(item, t, totalInputTokens, totalOutputTokens, show, tokenDetails)}</TableCell>
         )}
-        {columnVisibility.quota && (
-          <TableCell sx={{ p: '10px 8px' }}>
-            {item.quota ? renderQuota(item.quota, 6) : '$0'}
-          </TableCell>
-        )}
+        {columnVisibility.quota && <TableCell sx={{ p: '10px 8px' }}>{viewQuota(item, t)}</TableCell>}
         {columnVisibility.source_ip && <TableCell sx={{ p: '10px 8px' }}>{item.source_ip || ''}</TableCell>}
       </TableRow>
     </>
@@ -198,7 +186,11 @@ function viewModelName(model_name, isStream) {
 
 function viewReasoning(reasoning, t) {
   if (!reasoning?.enabled) {
-    return <Typography variant="body2" color="text.secondary">-</Typography>;
+    return (
+      <Typography variant="body2" color="text.secondary">
+        -
+      </Typography>
+    );
   }
 
   const label = reasoning.level ? (
@@ -362,6 +354,67 @@ function viewTokens(item, t, totalInputTokens, totalOutputTokens, show, tokenDet
   );
 }
 
+function viewQuota(item, t) {
+  const displayValue = item.quota ? renderQuota(item.quota, 6) : '$0';
+  const metadata = item?.metadata;
+  const hasBillingInfo =
+    metadata?.billing_context ||
+    (Array.isArray(metadata?.billing_rules) && metadata.billing_rules.length > 0) ||
+    (Array.isArray(metadata?.billing_breakdown) && metadata.billing_breakdown.length > 0);
+
+  if (!hasBillingInfo) {
+    return displayValue;
+  }
+
+  const tooltipContent = [];
+  if (metadata?.billing_context) {
+    tooltipContent.push(
+      <MetadataTypography key="billing-context">
+        {`Prompt=${metadata.billing_context.prompt_tokens || 0}, Request=${metadata.billing_context.request_tokens || 0}`}
+      </MetadataTypography>
+    );
+  }
+
+  if (metadata?.original_input_price != null || metadata?.original_output_price != null) {
+    tooltipContent.push(
+      <MetadataTypography key="original-price">
+        {`Base: in $${formatUSD(metadata.original_input_price || 0)} / 1M, out $${formatUSD(metadata.original_output_price || 0)} / 1M`}
+      </MetadataTypography>
+    );
+  }
+
+  if (metadata?.input_price != null || metadata?.output_price != null) {
+    tooltipContent.push(
+      <MetadataTypography key="final-price">
+        {`Final: in $${formatUSD(metadata.input_price || 0)} / 1M, out $${formatUSD(metadata.output_price || 0)} / 1M`}
+      </MetadataTypography>
+    );
+  }
+
+  (metadata?.billing_rules || []).forEach((rule, index) => {
+    const summary = summarizeRule(rule);
+    tooltipContent.push(
+      <MetadataTypography key={`billing-rule-${index}`}>
+        {`Rule: ${rule.name || `rule-${index + 1}`} (${rule.strategy || 'override'})${summary ? ` | ${summary}` : ''}`}
+      </MetadataTypography>
+    );
+  });
+
+  (metadata?.billing_breakdown || []).forEach((detail, index) => {
+    tooltipContent.push(
+      <MetadataTypography key={`billing-breakdown-${index}`}>
+        {`${formatBillingMetricLabel(detail.metric)}: ${detail.quantity || 0} x $${formatUSD(detail.unit_price || 0)} = $${formatUSD(detail.cost_usd || 0)}`}
+      </MetadataTypography>
+    );
+  });
+
+  return (
+    <Tooltip title={<>{tooltipContent}</>} placement="top" arrow>
+      <span style={{ cursor: 'help' }}>{displayValue}</span>
+    </Tooltip>
+  );
+}
+
 function formatUSD(value) {
   if (value == null) {
     return '0';
@@ -369,6 +422,47 @@ function formatUSD(value) {
 
   const formatted = value >= 1 ? value.toFixed(4) : value.toFixed(6);
   return formatted.replace(/(\.\d*?[1-9])0+$|\.0*$/, '$1');
+}
+
+function summarizeRule(rule) {
+  if (!rule?.match) {
+    return '';
+  }
+
+  const parts = [];
+  const appendPart = (label, op, value) => {
+    if (value == null || value === '') {
+      return;
+    }
+    parts.push(`${label} ${op} ${value}`);
+  };
+
+  appendPart('prompt', '>', rule.match.prompt_tokens_gt);
+  appendPart('prompt', '<=', rule.match.prompt_tokens_lte);
+  appendPart('request', '>', rule.match.request_tokens_gt);
+  appendPart('request', '<=', rule.match.request_tokens_lte);
+
+  return parts.join(', ');
+}
+
+function formatBillingMetricLabel(metric) {
+  const metricMap = {
+    input: 'Input',
+    output: 'Output',
+    cached_tokens: 'Cached Tokens',
+    cached_write_tokens: 'Cached Write Tokens',
+    cached_read_tokens: 'Cached Read Tokens',
+    input_audio_tokens: 'Input Audio Tokens',
+    output_audio_tokens: 'Output Audio Tokens',
+    reasoning_tokens: 'Reasoning Tokens',
+    input_text_tokens: 'Input Text Tokens',
+    output_text_tokens: 'Output Text Tokens',
+    input_image_tokens: 'Input Image Tokens',
+    output_image_tokens: 'Output Image Tokens',
+    request: 'Request'
+  };
+
+  return metricMap[metric] || metric;
 }
 
 function legacyRateToPricePerMillion(rate) {
@@ -407,12 +501,31 @@ function getExtraTokenPrice(metadata, key, isInput) {
 function calculateTokens(item) {
   const { prompt_tokens, completion_tokens, metadata } = item;
 
-  if (!prompt_tokens || !metadata) {
+  if (!metadata) {
     return {
       totalInputTokens: prompt_tokens || 0,
       totalOutputTokens: completion_tokens || 0,
       show: false,
       tokenDetails: []
+    };
+  }
+
+  if (Array.isArray(metadata.billing_breakdown) && metadata.billing_breakdown.length > 0) {
+    const tokenDetails = metadata.billing_breakdown
+      .filter((detail) => detail?.type === 'tokens')
+      .map((detail) => ({
+        key: detail.metric,
+        label: formatBillingMetricLabel(detail.metric),
+        value: detail.quantity || 0,
+        unitPrice: detail.unit_price || 0,
+        cost: detail.cost_usd || 0
+      }));
+
+    return {
+      totalInputTokens: metadata?.billing_context?.prompt_tokens ?? prompt_tokens ?? 0,
+      totalOutputTokens: completion_tokens || 0,
+      show: tokenDetails.length > 0,
+      tokenDetails
     };
   }
 
@@ -456,4 +569,3 @@ function calculateTokens(item) {
     tokenDetails
   };
 }
-

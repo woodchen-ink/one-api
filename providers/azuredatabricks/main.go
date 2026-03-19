@@ -8,11 +8,11 @@ import (
 	"net/http"
 	"strings"
 
-	"one-api/common"
-	"one-api/common/requester"
-	"one-api/model"
-	"one-api/providers/base"
-	"one-api/types"
+	"czloapi/common"
+	"czloapi/common/requester"
+	"czloapi/model"
+	"czloapi/providers/base"
+	"czloapi/types"
 )
 
 type AzureDatabricksProviderFactory struct{}

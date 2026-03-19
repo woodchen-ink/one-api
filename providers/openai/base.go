@@ -4,14 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"one-api/common"
-	"one-api/common/config"
-	"one-api/common/requester"
-	"one-api/model"
-	"one-api/types"
+	"czloapi/common"
+	"czloapi/common/config"
+	"czloapi/common/requester"
+	"czloapi/model"
+	"czloapi/types"
 	"strings"
 
-	"one-api/providers/base"
+	"czloapi/providers/base"
 )
 
 type OpenAIProviderFactory struct{}

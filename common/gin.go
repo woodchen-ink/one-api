@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"one-api/common/config"
-	"one-api/common/logger"
-	"one-api/types"
+	"czloapi/common/config"
+	"czloapi/common/logger"
+	"czloapi/types"
 	"strings"
 
 	"github.com/gin-gonic/gin"

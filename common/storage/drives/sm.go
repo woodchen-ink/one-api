@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"net/http"
-	"one-api/common/requester"
+	"czloapi/common/requester"
 )
 
 var smUploadURL = "https://sm.ms/api/v2/upload"

@@ -2,7 +2,7 @@ package model
 
 import (
 	"encoding/json"
-	"one-api/common/logger"
+	"czloapi/common/logger"
 	"sync"
 )
 

@@ -8,15 +8,15 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"one-api/common/requester"
-	"one-api/model"
-	"one-api/providers/base"
-	"one-api/types"
+	"czloapi/common/requester"
+	"czloapi/model"
+	"czloapi/providers/base"
+	"czloapi/types"
 	"strings"
 	"time"
 
-	"one-api/providers/bedrock/category"
-	"one-api/providers/bedrock/sigv4"
+	"czloapi/providers/bedrock/category"
+	"czloapi/providers/bedrock/sigv4"
 )
 
 type BedrockProviderFactory struct{}

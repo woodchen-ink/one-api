@@ -3,9 +3,9 @@ package relay
 import (
 	"testing"
 
-	"one-api/providers/claude"
-	"one-api/providers/gemini"
-	"one-api/types"
+	"czloapi/providers/claude"
+	"czloapi/providers/gemini"
+	"czloapi/types"
 
 	"github.com/stretchr/testify/assert"
 )

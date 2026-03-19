@@ -3,9 +3,9 @@ package controller
 import (
 	"errors"
 	"net/http"
-	"one-api/common"
-	"one-api/common/telegram"
-	"one-api/model"
+	"czloapi/common"
+	"czloapi/common/telegram"
+	"czloapi/model"
 	"strconv"
 
 	"github.com/gin-gonic/gin"

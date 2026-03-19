@@ -3,7 +3,7 @@ package check_channel
 import (
 	"encoding/json"
 	"fmt"
-	"one-api/types"
+	"czloapi/types"
 )
 
 type CheckToolProcess struct {

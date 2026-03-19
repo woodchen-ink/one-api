@@ -1,6 +1,6 @@
 package base
 
-import "one-api/types"
+import "czloapi/types"
 
 type BaseHandler struct {
 	Usage *types.Usage

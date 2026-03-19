@@ -3,7 +3,7 @@ package storage
 import (
 	"context"
 	"fmt"
-	"one-api/common/logger"
+	"czloapi/common/logger"
 )
 
 func (s *Storage) Upload(ctx context.Context, data []byte, fileName string) string {

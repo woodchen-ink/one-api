@@ -1,8 +1,8 @@
 package model
 
 import (
-	"one-api/common/config"
-	"one-api/common/logger"
+	"czloapi/common/config"
+	"czloapi/common/logger"
 	"sync"
 )
 

@@ -3,9 +3,9 @@ package task
 import (
 	"context"
 	"fmt"
-	"one-api/common"
-	"one-api/common/logger"
-	"one-api/model"
+	"czloapi/common"
+	"czloapi/common/logger"
+	"czloapi/model"
 	"sync"
 	"sync/atomic"
 	"time"

@@ -2,8 +2,8 @@ package openai
 
 import (
 	"net/http"
-	"one-api/common/config"
-	"one-api/types"
+	"czloapi/common/config"
+	"czloapi/types"
 )
 
 func (p *OpenAIProvider) CreateImageVariations(request *types.ImageEditRequest) (*types.ImageResponse, *types.OpenAIErrorWithStatusCode) {

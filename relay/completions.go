@@ -6,13 +6,14 @@ import (
 	"fmt"
 	"math"
 	"net/http"
-	"one-api/common"
-	"one-api/common/config"
-	"one-api/common/requester"
-	"one-api/common/utils"
-	providersBase "one-api/providers/base"
-	"one-api/safty"
-	"one-api/types"
+	"czloapi/common"
+	"czloapi/common/config"
+	"czloapi/common/requester"
+	"czloapi/common/utils"
+	"czloapi/model"
+	providersBase "czloapi/providers/base"
+	"czloapi/safty"
+	"czloapi/types"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -49,6 +50,10 @@ func (r *relayCompletions) setRequest() error {
 
 func (r *relayCompletions) IsStream() bool {
 	return r.request.Stream
+}
+
+func (r *relayCompletions) getBillingContext(promptTokens int) model.BillingContext {
+	return model.NewBillingContext(promptTokens, promptTokens+r.request.MaxTokens)
 }
 
 func (r *relayCompletions) getRequest() interface{} {

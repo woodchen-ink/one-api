@@ -7,33 +7,35 @@ import (
 	"net/http"
 	"time"
 
-	"one-api/common"
-	"one-api/common/config"
-	"one-api/common/logger"
-	"one-api/common/utils"
-	"one-api/model"
-	"one-api/types"
+	"czloapi/common"
+	"czloapi/common/config"
+	"czloapi/common/logger"
+	"czloapi/common/utils"
+	"czloapi/model"
+	"czloapi/types"
 
 	"github.com/gin-gonic/gin"
 )
 
 type Quota struct {
-	modelName        string
-	promptTokens     int
-	price            model.Price
-	groupName        string
-	isBackupGroup    bool
-	backupGroupName  string
-	groupRatio       float64
-	inputPrice       float64
-	outputPrice      float64
-	preConsumedQuota int
-	cacheQuota       int
-	userId           int
-	channelId        int
-	tokenId          int
-	unlimitedQuota   bool
-	HandelStatus     bool
+	modelName         string
+	promptTokens      int
+	price             model.Price
+	billingContext    model.BillingContext
+	billingResolution *model.BillingResolution
+	groupName         string
+	isBackupGroup     bool
+	backupGroupName   string
+	groupRatio        float64
+	inputPrice        float64
+	outputPrice       float64
+	preConsumedQuota  int
+	cacheQuota        int
+	userId            int
+	channelId         int
+	tokenId           int
+	unlimitedQuota    bool
+	HandelStatus      bool
 
 	startTime         time.Time
 	firstResponseTime time.Time
@@ -42,12 +44,17 @@ type Quota struct {
 	reasoningMetadata *types.LogReasoningMetadata
 }
 
-func NewQuota(c *gin.Context, modelName string, promptTokens int) *Quota {
+func NewQuota(c *gin.Context, modelName string, promptTokens int, billingContexts ...model.BillingContext) *Quota {
 	isBackupGroup := c.GetBool("is_backupGroup")
+	billingContext := model.NewBillingContext(promptTokens, promptTokens)
+	if len(billingContexts) > 0 {
+		billingContext = billingContexts[0]
+	}
 
 	quota := &Quota{
 		modelName:      modelName,
 		promptTokens:   promptTokens,
+		billingContext: billingContext,
 		userId:         c.GetInt("id"),
 		channelId:      c.GetInt("channel_id"),
 		tokenId:        c.GetInt("token_id"),
@@ -66,11 +73,12 @@ func NewQuota(c *gin.Context, modelName string, promptTokens int) *Quota {
 	}
 
 	quota.price = *model.PricingInstance.GetPrice(quota.modelName)
+	quota.billingResolution = model.PricingInstance.GetBillingResolution(quota.modelName, billingContext)
 	quota.groupName = c.GetString("token_group")
 	quota.backupGroupName = c.GetString("token_backup_group")
 	quota.groupRatio = c.GetFloat64("group_ratio")
-	quota.inputPrice = quota.price.GetInput()
-	quota.outputPrice = quota.price.GetOutput()
+	quota.inputPrice = quota.billingResolution.Input
+	quota.outputPrice = quota.billingResolution.Output
 
 	return quota
 }
@@ -221,15 +229,114 @@ func (q *Quota) GetInputQuota(tokens int) int {
 	return q.getTokenPriceQuota(tokens, q.inputPrice)
 }
 
+type BillingBreakdownItem struct {
+	Metric    string  `json:"metric"`
+	Type      string  `json:"type"`
+	Quantity  int     `json:"quantity"`
+	UnitPrice float64 `json:"unit_price"`
+	CostUSD   float64 `json:"cost_usd"`
+	Quota     int     `json:"quota"`
+}
+
+func (q *Quota) getUsageBillingContext(usage *types.Usage) model.BillingContext {
+	if usage == nil {
+		return q.billingContext
+	}
+
+	return model.NewBillingContext(
+		usage.PromptTokens,
+		usage.PromptTokens+usage.CompletionTokens,
+	)
+}
+
+func (q *Quota) getBillingResolutionForUsage(usage *types.Usage) *model.BillingResolution {
+	if usage == nil {
+		return q.billingResolution
+	}
+
+	return model.PricingInstance.GetBillingResolution(q.modelName, q.getUsageBillingContext(usage))
+}
+
+func (q *Quota) buildBillingBreakdown(usage *types.Usage, resolution *model.BillingResolution) []BillingBreakdownItem {
+	if usage == nil || resolution == nil {
+		return nil
+	}
+
+	items := make([]BillingBreakdownItem, 0, 6)
+	appendTokenItem := func(metric string, quantity int, unitPrice float64) {
+		if quantity <= 0 || unitPrice <= 0 {
+			return
+		}
+
+		items = append(items, BillingBreakdownItem{
+			Metric:    metric,
+			Type:      model.TokensPriceType,
+			Quantity:  quantity,
+			UnitPrice: unitPrice,
+			CostUSD:   float64(quantity) * unitPrice / 1000000.0,
+			Quota:     q.getTokenPriceQuota(quantity, unitPrice),
+		})
+	}
+
+	if q.price.Type == model.TimesPriceType {
+		items = append(items, BillingBreakdownItem{
+			Metric:    "request",
+			Type:      model.TimesPriceType,
+			Quantity:  1,
+			UnitPrice: resolution.Input,
+			CostUSD:   resolution.Input,
+			Quota:     q.getFlatPriceQuota(resolution.Input),
+		})
+	} else {
+		appendTokenItem("input", usage.PromptTokens, resolution.Input)
+		appendTokenItem("output", usage.CompletionTokens, resolution.Output)
+
+		for key, value := range usage.GetExtraTokens() {
+			appendTokenItem(key, value, resolution.GetExtraPrice(key))
+		}
+	}
+
+	for serviceType, value := range q.extraBillingData {
+		if value.CallCount <= 0 || value.Price <= 0 {
+			continue
+		}
+
+		items = append(items, BillingBreakdownItem{
+			Metric:    serviceType,
+			Type:      value.Type,
+			Quantity:  value.CallCount,
+			UnitPrice: value.Price,
+			CostUSD:   float64(value.CallCount) * value.Price,
+			Quota:     int(math.Ceil(float64(int(math.Ceil(value.Price*float64(config.QuotaPerUnit)))*value.CallCount) * q.groupRatio)),
+		})
+	}
+
+	return items
+}
+
 func (q *Quota) GetLogMeta(usage *types.Usage, requestPath ...string) map[string]any {
+	finalResolution := q.getBillingResolutionForUsage(usage)
+	finalContext := q.getUsageBillingContext(usage)
+
 	meta := map[string]any{
-		"group_name":        q.groupName,
-		"backup_group_name": q.backupGroupName,
-		"is_backup_group":   q.isBackupGroup,
-		"price_type":        q.price.Type,
-		"group_ratio":       q.groupRatio,
-		"input_price":       q.price.GetInput(),
-		"output_price":      q.price.GetOutput(),
+		"group_name":               q.groupName,
+		"backup_group_name":        q.backupGroupName,
+		"is_backup_group":          q.isBackupGroup,
+		"price_type":               q.price.Type,
+		"group_ratio":              q.groupRatio,
+		"original_input_price":     q.price.GetInput(),
+		"original_output_price":    q.price.GetOutput(),
+		"input_price":              finalResolution.Input,
+		"output_price":             finalResolution.Output,
+		"billing_context":          finalContext,
+		"billing_context_estimate": q.billingContext,
+	}
+
+	if q.billingResolution != nil && len(q.billingResolution.MatchedRules) > 0 {
+		meta["billing_rules_estimate"] = q.billingResolution.MatchedRules
+	}
+	if finalResolution != nil && len(finalResolution.MatchedRules) > 0 {
+		meta["billing_rules"] = finalResolution.MatchedRules
 	}
 
 	if len(requestPath) > 0 && requestPath[0] != "" {
@@ -245,8 +352,9 @@ func (q *Quota) GetLogMeta(usage *types.Usage, requestPath ...string) map[string
 		extraTokens := usage.GetExtraTokens()
 		for key, value := range extraTokens {
 			meta[key] = value
-			meta[key+"_price"] = q.price.GetExtraPrice(key)
+			meta[key+"_price"] = finalResolution.GetExtraPrice(key)
 		}
+		meta["billing_breakdown"] = q.buildBillingBreakdown(usage, finalResolution)
 	}
 
 	if q.extraBillingData != nil {
@@ -281,13 +389,32 @@ func (q *Quota) getFlatPriceQuota(unitPrice float64) int {
 }
 
 func (q *Quota) GetTotalQuota(promptTokens, completionTokens int, extraTokens map[string]int, extraBilling map[string]types.ExtraBilling) (quota int) {
+	return q.getTotalQuotaWithResolution(
+		promptTokens,
+		completionTokens,
+		extraTokens,
+		extraBilling,
+		model.PricingInstance.GetBillingResolution(q.modelName, model.NewBillingContext(promptTokens, promptTokens+completionTokens)),
+	)
+}
+
+func (q *Quota) getTotalQuotaWithResolution(
+	promptTokens, completionTokens int,
+	extraTokens map[string]int,
+	extraBilling map[string]types.ExtraBilling,
+	resolution *model.BillingResolution,
+) (quota int) {
+	if resolution == nil {
+		resolution = q.billingResolution
+	}
+
 	if q.price.Type == model.TimesPriceType {
-		quota = q.getFlatPriceQuota(q.inputPrice)
+		quota = q.getFlatPriceQuota(resolution.Input)
 	} else {
-		quota += q.getTokenPriceQuota(promptTokens, q.inputPrice)
-		quota += q.getTokenPriceQuota(completionTokens, q.outputPrice)
+		quota += q.getTokenPriceQuota(promptTokens, resolution.Input)
+		quota += q.getTokenPriceQuota(completionTokens, resolution.Output)
 		for key, value := range extraTokens {
-			quota += q.getTokenPriceQuota(value, q.price.GetExtraPrice(key))
+			quota += q.getTokenPriceQuota(value, resolution.GetExtraPrice(key))
 		}
 	}
 
@@ -308,7 +435,7 @@ func (q *Quota) GetTotalQuota(promptTokens, completionTokens int, extraTokens ma
 		totalChargeableTokens += value
 	}
 
-	if (q.inputPrice != 0 || q.outputPrice != 0) && totalChargeableTokens > 0 && quota <= 0 {
+	if (resolution.Input != 0 || resolution.Output != 0) && totalChargeableTokens > 0 && quota <= 0 {
 		quota = 1
 	}
 	if q.price.Type != model.TimesPriceType && totalChargeableTokens == 0 && extraBillingQuota == 0 {
@@ -319,11 +446,12 @@ func (q *Quota) GetTotalQuota(promptTokens, completionTokens int, extraTokens ma
 }
 
 func (q *Quota) GetTotalQuotaByUsage(usage *types.Usage) (quota int) {
-	return q.GetTotalQuota(
+	return q.getTotalQuotaWithResolution(
 		usage.PromptTokens,
 		usage.CompletionTokens,
 		usage.GetExtraTokens(),
 		usage.ExtraBilling,
+		q.getBillingResolutionForUsage(usage),
 	)
 }
 

@@ -5,12 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"math"
-	"one-api/common/config"
-	"one-api/common/logger"
+	"czloapi/common/config"
+	"czloapi/common/logger"
 	"strings"
 
-	"one-api/common/image"
-	"one-api/types"
+	"czloapi/common/image"
+	"czloapi/types"
 
 	"github.com/pkoukk/tiktoken-go"
 	"github.com/spf13/viper"

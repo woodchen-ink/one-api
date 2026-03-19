@@ -1,6 +1,6 @@
 package tencent
 
-import "one-api/types"
+import "czloapi/types"
 
 type TencentError struct {
 	Code    int    `json:"code"`

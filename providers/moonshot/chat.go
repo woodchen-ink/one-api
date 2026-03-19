@@ -2,11 +2,11 @@ package moonshot
 
 import (
 	"net/http"
-	"one-api/common"
-	"one-api/common/config"
-	"one-api/common/requester"
-	"one-api/providers/openai"
-	"one-api/types"
+	"czloapi/common"
+	"czloapi/common/config"
+	"czloapi/common/requester"
+	"czloapi/providers/openai"
+	"czloapi/types"
 )
 
 func (p *MoonshotProvider) CreateChatCompletion(request *types.ChatCompletionRequest) (openaiResponse *types.ChatCompletionResponse, errWithCode *types.OpenAIErrorWithStatusCode) {

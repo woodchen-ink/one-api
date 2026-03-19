@@ -2,7 +2,7 @@ package model
 
 import (
 	"encoding/json"
-	"one-api/common/config"
+	"czloapi/common/config"
 
 	"github.com/shopspring/decimal"
 	"gorm.io/datatypes"
@@ -81,8 +81,9 @@ type Price struct {
 	Output      float64 `json:"output" gorm:"default:0" binding:"gte=0"`
 	Locked      bool    `json:"locked" gorm:"default:false"` // 如果模型为locked 则覆盖模式不会更新locked的模型价格
 
-	ExtraRatios *datatypes.JSONType[map[string]float64] `json:"extra_ratios,omitempty" gorm:"type:json"`
-	ModelInfo   *ModelInfoResponse                      `json:"model_info,omitempty" gorm:"-"`
+	ExtraRatios  *datatypes.JSONType[map[string]float64] `json:"extra_ratios,omitempty" gorm:"type:json"`
+	BillingRules *datatypes.JSONType[[]BillingRule]      `json:"billing_rules,omitempty" gorm:"type:json"`
+	ModelInfo    *ModelInfoResponse                      `json:"model_info,omitempty" gorm:"-"`
 }
 
 func GetAllPrices() ([]*Price, error) {
@@ -141,8 +142,7 @@ func (price *Price) GetOutput() float64 {
 }
 
 func (price *Price) GetExtraPrice(key string) float64 {
-	if price.ExtraRatios != nil {
-		extraRatios := price.ExtraRatios.Data()
+	if extraRatios := price.GetExplicitExtraRatios(); len(extraRatios) > 0 {
 		if extraPrice, ok := extraRatios[key]; ok {
 			return extraPrice
 		}
@@ -163,6 +163,14 @@ func (price *Price) GetExtraPrice(key string) float64 {
 		InexactFloat64()
 }
 
+func (price *Price) GetExplicitExtraRatios() map[string]float64 {
+	if price.ExtraRatios == nil {
+		return nil
+	}
+
+	return price.ExtraRatios.Data()
+}
+
 func (price *Price) FetchInputCurrencyPrice(rate float64) string {
 	r := decimal.NewFromFloat(price.GetInput()).Mul(decimal.NewFromFloat(rate))
 	return r.String()
@@ -176,12 +184,13 @@ func (price *Price) FetchOutputCurrencyPrice(rate float64) string {
 func UpdatePrices(tx *gorm.DB, models []string, prices *Price) error {
 	err := tx.Model(Price{}).Where("model IN (?)", models).Select("*").Omit("model").Updates(
 		Price{
-			Type:        prices.Type,
-			ChannelType: prices.ChannelType,
-			Input:       prices.Input,
-			Output:      prices.Output,
-			Locked:      prices.Locked,
-			ExtraRatios: prices.ExtraRatios,
+			Type:         prices.Type,
+			ChannelType:  prices.ChannelType,
+			Input:        prices.Input,
+			Output:       prices.Output,
+			Locked:       prices.Locked,
+			ExtraRatios:  prices.ExtraRatios,
+			BillingRules: prices.BillingRules,
 		}).Error
 
 	return err

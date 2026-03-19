@@ -3,10 +3,10 @@ package relay
 import (
 	"encoding/json"
 	"fmt"
-	"one-api/common/search"
-	providersBase "one-api/providers/base"
-	"one-api/relay/relay_util"
-	"one-api/types"
+	"czloapi/common/search"
+	providersBase "czloapi/providers/base"
+	"czloapi/relay/relay_util"
+	"czloapi/types"
 	"time"
 
 	"github.com/gin-gonic/gin"

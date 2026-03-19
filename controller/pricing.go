@@ -4,8 +4,8 @@ import (
 	"errors"
 	"net/http"
 	"net/url"
-	"one-api/common"
-	"one-api/model"
+	"czloapi/common"
+	"czloapi/model"
 
 	"github.com/spf13/viper"
 

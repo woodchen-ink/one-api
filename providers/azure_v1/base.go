@@ -1,10 +1,10 @@
 package azure_v1
 
 import (
-	"one-api/common/requester"
-	"one-api/model"
-	"one-api/providers/base"
-	"one-api/providers/openai"
+	"czloapi/common/requester"
+	"czloapi/model"
+	"czloapi/providers/base"
+	"czloapi/providers/openai"
 )
 
 type AzureV1ProviderFactory struct{}

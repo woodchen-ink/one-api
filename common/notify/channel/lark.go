@@ -8,8 +8,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"one-api/common/requester"
-	"one-api/types"
+	"czloapi/common/requester"
+	"czloapi/types"
 	"strconv"
 	"time"
 )

@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
-	"one-api/common"
-	"one-api/common/requester"
-	"one-api/types"
+	"czloapi/common"
+	"czloapi/common/requester"
+	"czloapi/types"
 	"strings"
 )
 

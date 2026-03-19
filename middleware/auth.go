@@ -3,9 +3,9 @@ package middleware
 import (
 	"fmt"
 	"net/http"
-	"one-api/common/config"
-	"one-api/common/utils"
-	"one-api/model"
+	"czloapi/common/config"
+	"czloapi/common/utils"
+	"czloapi/model"
 	"strings"
 
 	"github.com/gin-contrib/sessions"

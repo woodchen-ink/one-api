@@ -3,11 +3,11 @@ package category
 import (
 	"encoding/json"
 	"net/http"
-	"one-api/common"
-	"one-api/common/requester"
-	"one-api/providers/base"
-	"one-api/providers/claude"
-	"one-api/types"
+	"czloapi/common"
+	"czloapi/common/requester"
+	"czloapi/providers/base"
+	"czloapi/providers/claude"
+	"czloapi/types"
 )
 
 const AnthropicVersion = "bedrock-2023-05-31"

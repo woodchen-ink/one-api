@@ -3,9 +3,9 @@ package relay
 import (
 	"errors"
 	"net/http"
-	"one-api/common"
-	providersBase "one-api/providers/base"
-	"one-api/types"
+	"czloapi/common"
+	providersBase "czloapi/providers/base"
+	"czloapi/types"
 
 	"github.com/gin-gonic/gin"
 )

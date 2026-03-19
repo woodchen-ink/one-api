@@ -1,7 +1,7 @@
 package test
 
 import (
-	"one-api/types"
+	"czloapi/types"
 	"testing"
 
 	"github.com/stretchr/testify/assert"

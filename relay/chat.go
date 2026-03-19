@@ -6,13 +6,14 @@ import (
 	"fmt"
 	"math"
 	"net/http"
-	"one-api/common"
-	"one-api/common/config"
-	"one-api/common/requester"
-	"one-api/common/utils"
-	providersBase "one-api/providers/base"
-	"one-api/safty"
-	"one-api/types"
+	"czloapi/common"
+	"czloapi/common/config"
+	"czloapi/common/requester"
+	"czloapi/common/utils"
+	"czloapi/model"
+	providersBase "czloapi/providers/base"
+	"czloapi/safty"
+	"czloapi/types"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -69,6 +70,15 @@ func (r *relayChat) getRequest() interface{} {
 
 func (r *relayChat) IsStream() bool {
 	return r.chatRequest.Stream
+}
+
+func (r *relayChat) getBillingContext(promptTokens int) model.BillingContext {
+	maxOutputTokens := r.chatRequest.MaxTokens
+	if r.chatRequest.MaxCompletionTokens > 0 && maxOutputTokens == 0 {
+		maxOutputTokens = r.chatRequest.MaxCompletionTokens
+	}
+
+	return model.NewBillingContext(promptTokens, promptTokens+maxOutputTokens)
 }
 
 func (r *relayChat) getPromptTokens() (int, error) {

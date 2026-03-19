@@ -1,7 +1,7 @@
 package limit
 
 import (
-	"one-api/common/config"
+	"czloapi/common/config"
 	"time"
 )
 

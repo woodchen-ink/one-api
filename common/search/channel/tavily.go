@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"one-api/common/requester"
-	"one-api/common/search/search_type"
-	"one-api/types"
+	"czloapi/common/requester"
+	"czloapi/common/search/search_type"
+	"czloapi/types"
 )
 
 const uri = "https://api.tavily.com/search"

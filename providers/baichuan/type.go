@@ -1,6 +1,6 @@
 package baichuan
 
-import "one-api/providers/openai"
+import "czloapi/providers/openai"
 
 type BaichuanMessage struct {
 	Role    string `json:"role"`

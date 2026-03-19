@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"one-api/model"
-	"one-api/payment/types"
+	"czloapi/model"
+	"czloapi/payment/types"
 
 	"github.com/gin-gonic/gin"
 	"github.com/smartwalle/alipay/v3"

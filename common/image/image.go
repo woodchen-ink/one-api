@@ -10,7 +10,7 @@ import (
 	_ "image/jpeg"
 	_ "image/png"
 	"net/http"
-	"one-api/common/config"
+	"czloapi/common/config"
 	"strings"
 	"sync"
 

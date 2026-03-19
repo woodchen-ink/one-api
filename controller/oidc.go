@@ -7,11 +7,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"net/http"
-	"one-api/common/config"
-	"one-api/common/logger"
-	"one-api/common/oidc"
-	"one-api/common/utils"
-	"one-api/model"
+	"czloapi/common/config"
+	"czloapi/common/logger"
+	"czloapi/common/oidc"
+	"czloapi/common/utils"
+	"czloapi/model"
 )
 
 func OIDCEndpoint(c *gin.Context) {

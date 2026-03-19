@@ -3,8 +3,8 @@ package telegram
 import (
 	"fmt"
 	"net/url"
-	"one-api/common/config"
-	"one-api/model"
+	"czloapi/common/config"
+	"czloapi/model"
 	"strings"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"

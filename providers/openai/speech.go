@@ -2,9 +2,9 @@ package openai
 
 import (
 	"net/http"
-	"one-api/common/config"
-	"one-api/common/requester"
-	"one-api/types"
+	"czloapi/common/config"
+	"czloapi/common/requester"
+	"czloapi/types"
 )
 
 func (p *OpenAIProvider) CreateSpeech(request *types.SpeechAudioRequest) (*http.Response, *types.OpenAIErrorWithStatusCode) {

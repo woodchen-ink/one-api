@@ -1,6 +1,6 @@
 package siliconflow
 
-import "one-api/types"
+import "czloapi/types"
 
 type ImageGenerations struct {
 	Prompt            string  `json:"prompt"`

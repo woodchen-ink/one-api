@@ -1,7 +1,7 @@
 package common
 
 import (
-	"one-api/common/logger"
+	"czloapi/common/logger"
 	"strings"
 	"sync"
 

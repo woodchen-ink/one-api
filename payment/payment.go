@@ -1,12 +1,12 @@
 package payment
 
 import (
-	"one-api/model"
-	"one-api/payment/gateway/alipay"
-	"one-api/payment/gateway/epay"
-	"one-api/payment/gateway/stripe"
-	"one-api/payment/gateway/wxpay"
-	"one-api/payment/types"
+	"czloapi/model"
+	"czloapi/payment/gateway/alipay"
+	"czloapi/payment/gateway/epay"
+	"czloapi/payment/gateway/stripe"
+	"czloapi/payment/gateway/wxpay"
+	"czloapi/payment/types"
 
 	"github.com/gin-gonic/gin"
 )

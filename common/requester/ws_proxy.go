@@ -6,8 +6,8 @@ import (
 
 	"github.com/gorilla/websocket"
 
-	"one-api/common/logger"
-	"one-api/types"
+	"czloapi/common/logger"
+	"czloapi/types"
 )
 
 type WSProxy struct {

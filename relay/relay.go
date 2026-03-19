@@ -2,11 +2,11 @@ package relay
 
 import (
 	"net/http"
-	"one-api/common"
-	"one-api/common/config"
-	"one-api/model"
-	"one-api/providers/azure"
-	"one-api/providers/openai"
+	"czloapi/common"
+	"czloapi/common/config"
+	"czloapi/model"
+	"czloapi/providers/azure"
+	"czloapi/providers/openai"
 	"strings"
 	"time"
 

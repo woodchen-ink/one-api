@@ -2,9 +2,9 @@ package controller
 
 import (
 	"net/http"
-	"one-api/model"
-	"one-api/providers"
-	providersBase "one-api/providers/base"
+	"czloapi/model"
+	"czloapi/providers"
+	providersBase "czloapi/providers/base"
 	"strings"
 
 	"github.com/gin-gonic/gin"

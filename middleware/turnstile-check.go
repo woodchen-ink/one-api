@@ -6,9 +6,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"net/url"
-	"one-api/common"
-	"one-api/common/config"
-	"one-api/common/logger"
+	"czloapi/common"
+	"czloapi/common/config"
+	"czloapi/common/logger"
 )
 
 type turnstileCheckResponse struct {

@@ -5,6 +5,7 @@ import LockIcon from '@mui/icons-material/Lock';
 import { Icon } from '@iconify/react';
 import { useTranslation } from 'react-i18next';
 import { ValueFormatter } from 'utils/common';
+import { hasBillingRules, summarizeBillingRule } from './billingRules';
 
 const PricesTableRow = ({ item, onEdit, onDelete, ownedby, unit = 'M' }) => {
   const { t } = useTranslation();
@@ -82,6 +83,7 @@ const PricesTableRow = ({ item, onEdit, onDelete, ownedby, unit = 'M' }) => {
 
   // 判断是否有extra_ratios
   const hasExtraRatios = item.extra_ratios && Object.keys(item.extra_ratios).length > 0;
+  const hasRuleConfig = hasBillingRules(item.billing_rules);
 
   // 为extra_ratios中的key获取更易读的名称
   const getReadableRatioName = (key) => {
@@ -271,56 +273,77 @@ const PricesTableRow = ({ item, onEdit, onDelete, ownedby, unit = 'M' }) => {
 
       {/* 扩展价格 */}
       <TableCell width="25%" sx={{ pl: 2 }}>
-        {hasExtraRatios ? (
-          <Box
-            sx={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: '4px 6px'
-            }}
-          >
-            {Object.entries(item.extra_ratios || {}).map(([key, value]) => (
-              <Chip
-                key={key}
-                size="small"
-                sx={{
-                  height: 20,
-                  fontSize: '0.68rem',
-                  borderRadius: '3px',
-                  bgcolor: alpha(theme.palette.background.paper, 0.5),
-                  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`
-                }}
-                label={
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: theme.palette.text.secondary,
-                        fontSize: '0.68rem'
-                      }}
-                    >
-                      {getReadableRatioName(key)}:
-                    </Typography>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        fontWeight: 600,
-                        color: theme.palette.primary.main,
-                        fontSize: '0.68rem'
-                      }}
-                    >
-                      {formatExtraPrice(value)}
-                    </Typography>
-                  </Box>
-                }
-              />
-            ))}
-          </Box>
-        ) : (
-          <Typography variant="caption" color="text.secondary" sx={{ fontStyle: 'italic' }}>
-            {t('modelpricePage.noExtraRatios')}
-          </Typography>
-        )}
+        <Stack spacing={1}>
+          {hasExtraRatios ? (
+            <Box
+              sx={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '4px 6px'
+              }}
+            >
+              {Object.entries(item.extra_ratios || {}).map(([key, value]) => (
+                <Chip
+                  key={key}
+                  size="small"
+                  sx={{
+                    height: 20,
+                    fontSize: '0.68rem',
+                    borderRadius: '3px',
+                    bgcolor: alpha(theme.palette.background.paper, 0.5),
+                    border: `1px solid ${alpha(theme.palette.divider, 0.08)}`
+                  }}
+                  label={
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: theme.palette.text.secondary,
+                          fontSize: '0.68rem'
+                        }}
+                      >
+                        {getReadableRatioName(key)}:
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          fontWeight: 600,
+                          color: theme.palette.primary.main,
+                          fontSize: '0.68rem'
+                        }}
+                      >
+                        {formatExtraPrice(value)}
+                      </Typography>
+                    </Box>
+                  }
+                />
+              ))}
+            </Box>
+          ) : (
+            <Typography variant="caption" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+              {t('modelpricePage.noExtraRatios')}
+            </Typography>
+          )}
+
+          {hasRuleConfig && (
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '4px 6px' }}>
+              {item.billing_rules.map((rule, index) => (
+                <Chip
+                  key={`${rule.name || 'rule'}-${index}`}
+                  size="small"
+                  sx={{
+                    height: 20,
+                    fontSize: '0.68rem',
+                    borderRadius: '3px',
+                    bgcolor: alpha(theme.palette.info.main, 0.08)
+                  }}
+                  label={rule.name || summarizeBillingRule(rule) || `Rule ${index + 1}`}
+                  title={summarizeBillingRule(rule)}
+                />
+              ))}
+            </Box>
+          )}
+        </Stack>
       </TableCell>
 
       {/* 操作按钮 */}

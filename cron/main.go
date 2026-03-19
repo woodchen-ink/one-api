@@ -1,10 +1,10 @@
 package cron
 
 import (
-	"one-api/common/config"
-	"one-api/common/logger"
-	"one-api/common/scheduler"
-	"one-api/model"
+	"czloapi/common/config"
+	"czloapi/common/logger"
+	"czloapi/common/scheduler"
+	"czloapi/model"
 	"time"
 
 	"github.com/spf13/viper"

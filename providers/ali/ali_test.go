@@ -2,9 +2,9 @@ package ali_test
 
 import (
 	"net/http"
-	"one-api/common/config"
-	"one-api/common/test"
-	"one-api/model"
+	"czloapi/common/config"
+	"czloapi/common/test"
+	"czloapi/model"
 )
 
 func setupAliTestServer() (baseUrl string, server *test.ServerTest, teardown func()) {

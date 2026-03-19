@@ -1,9 +1,9 @@
 package model
 
 import (
-	"one-api/common"
-	"one-api/common/config"
-	"one-api/common/logger"
+	"czloapi/common"
+	"czloapi/common/config"
+	"czloapi/common/logger"
 	"strings"
 	"time"
 )

@@ -1,6 +1,6 @@
 package types
 
-import "one-api/model"
+import "czloapi/model"
 
 // 支付网关的通用配置
 type PayConfig struct {

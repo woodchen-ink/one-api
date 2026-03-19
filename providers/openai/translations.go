@@ -3,9 +3,9 @@ package openai
 import (
 	"io"
 	"net/http"
-	"one-api/common"
-	"one-api/common/config"
-	"one-api/types"
+	"czloapi/common"
+	"czloapi/common/config"
+	"czloapi/types"
 )
 
 func (p *OpenAIProvider) CreateTranslation(request *types.AudioRequest) (*types.AudioResponseWrapper, *types.OpenAIErrorWithStatusCode) {

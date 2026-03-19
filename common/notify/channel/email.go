@@ -3,8 +3,8 @@ package channel
 import (
 	"context"
 	"errors"
-	"one-api/common/config"
-	"one-api/common/stmp"
+	"czloapi/common/config"
+	"czloapi/common/stmp"
 
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/html"

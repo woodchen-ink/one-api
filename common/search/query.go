@@ -2,7 +2,7 @@ package search
 
 import (
 	"errors"
-	"one-api/common/search/search_type"
+	"czloapi/common/search/search_type"
 )
 
 func (s *Search) query(query string) (*search_type.SearchResponses, error) {

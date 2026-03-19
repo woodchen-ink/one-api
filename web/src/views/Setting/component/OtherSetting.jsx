@@ -132,7 +132,7 @@ const OtherSetting = () => {
 
       // 如果版本前缀是v开头的
       if (import.meta.env.VITE_APP_VERSION.startsWith('v')) {
-        const res = await API.get('https://api.github.com/repos/MartialBE/one-api/releases/latest');
+        const res = await API.get('https://api.github.com/repos/MartialBE/czloapi/releases/latest');
         const { tag_name, body } = res.data;
         if (tag_name === import.meta.env.VITE_APP_VERSION) {
           showSuccess(`已是最新版本：${tag_name}`);
@@ -144,7 +144,7 @@ const OtherSetting = () => {
           setShowUpdateModal(true);
         }
       } else {
-        const res = await API.get('https://api.github.com/repos/MartialBE/one-api/commits/main');
+        const res = await API.get('https://api.github.com/repos/MartialBE/czloapi/commits/main');
         const { sha, commit } = res.data;
         const newVersion = 'dev-' + sha.substr(0, 7);
         if (newVersion === import.meta.env.VITE_APP_VERSION) {

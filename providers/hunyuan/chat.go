@@ -3,10 +3,10 @@ package hunyuan
 import (
 	"encoding/json"
 	"net/http"
-	"one-api/common"
-	"one-api/common/config"
-	"one-api/common/requester"
-	"one-api/types"
+	"czloapi/common"
+	"czloapi/common/config"
+	"czloapi/common/requester"
+	"czloapi/types"
 	"strings"
 )
 

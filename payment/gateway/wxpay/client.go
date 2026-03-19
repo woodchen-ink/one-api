@@ -6,8 +6,8 @@ import (
 	"github.com/wechatpay-apiv3/wechatpay-go/core"
 	"github.com/wechatpay-apiv3/wechatpay-go/services/payments/native"
 	"net/http"
-	sysconfig "one-api/common/config"
-	"one-api/payment/types"
+	sysconfig "czloapi/common/config"
+	"czloapi/payment/types"
 	"strconv"
 )
 

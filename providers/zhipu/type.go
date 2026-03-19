@@ -1,7 +1,7 @@
 package zhipu
 
 import (
-	"one-api/types"
+	"czloapi/types"
 	"time"
 )
 

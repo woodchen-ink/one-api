@@ -6,9 +6,9 @@ import (
 	"github.com/ThinkInAIXYZ/go-mcp/server"
 	"github.com/ThinkInAIXYZ/go-mcp/transport"
 	"github.com/gin-gonic/gin"
-	"one-api/common/config"
-	"one-api/common/logger"
-	"one-api/mcp/tools"
+	"czloapi/common/config"
+	"czloapi/common/logger"
+	"czloapi/mcp/tools"
 )
 
 type Server struct {

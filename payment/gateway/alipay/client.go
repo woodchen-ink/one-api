@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	sysconfig "one-api/common/config"
-	"one-api/payment/types"
+	sysconfig "czloapi/common/config"
+	"czloapi/payment/types"
 	"strconv"
 
 	"github.com/smartwalle/alipay/v3"

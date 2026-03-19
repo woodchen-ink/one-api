@@ -2,7 +2,7 @@ package model
 
 import (
 	"errors"
-	"one-api/common/utils"
+	"czloapi/common/utils"
 )
 
 type TelegramMenu struct {

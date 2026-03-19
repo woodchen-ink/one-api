@@ -36,6 +36,8 @@ import { useTranslation } from 'react-i18next';
 import ToggleButtonGroup from 'ui-component/ToggleButton';
 import Decimal from 'decimal.js';
 import { ExtraRatiosSelector } from './ExtraRatiosSelector';
+import BillingRulesEditor from './BillingRulesEditor';
+import { prepareBillingRules } from './billingRules';
 
 const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
 const checkedIcon = <CheckBoxIcon fontSize="small" />;
@@ -90,9 +92,7 @@ const getValidationSchema = (t) =>
     output: Yup.number().when('type', {
       is: 'tokens',
       then: (schema) =>
-        schema
-          .required('输出价格不能为空')
-          .test('isPositive', '输出价格必须大于等于 0', (value) => value !== '' && value >= 0),
+        schema.required('输出价格不能为空').test('isPositive', '输出价格必须大于等于 0', (value) => value !== '' && value >= 0),
       otherwise: (schema) =>
         schema
           .notRequired()
@@ -111,7 +111,8 @@ const multipleOriginInputs = {
   output: 0,
   locked: false,
   models: [],
-  extra_ratios: {}
+  extra_ratios: {},
+  billing_rules: []
 };
 
 // 单一模式初始值
@@ -122,7 +123,8 @@ const singleOriginInputs = {
   input: 0,
   output: 0,
   locked: false,
-  extra_ratios: {}
+  extra_ratios: {},
+  billing_rules: []
 };
 
 const EditModal = ({
@@ -209,13 +211,21 @@ const EditModal = ({
   const submit = async (values, { setErrors, setStatus, setSubmitting }) => {
     setSubmitting(true);
 
-    // Ensure extra_ratios values are numbers
-    if (values.extra_ratios) {
-      const processedRatios = {};
-      Object.keys(values.extra_ratios).forEach((key) => {
-        processedRatios[key] = calculatePrice(values.extra_ratios[key]);
-      });
-      values.extra_ratios = processedRatios;
+    try {
+      if (values.extra_ratios) {
+        const processedRatios = {};
+        Object.keys(values.extra_ratios).forEach((key) => {
+          processedRatios[key] = calculatePrice(values.extra_ratios[key]);
+        });
+        values.extra_ratios = processedRatios;
+      }
+
+      values.billing_rules = prepareBillingRules(values.billing_rules || [], calculatePrice);
+    } catch (error) {
+      setStatus({ success: false });
+      setErrors({ submit: error.message });
+      setSubmitting(false);
+      return;
     }
 
     // 单一模式处理
@@ -262,7 +272,8 @@ const EditModal = ({
           input: calculatedInput,
           output: calculatedOutput,
           locked: values.locked,
-          extra_ratios: values.extra_ratios
+          extra_ratios: values.extra_ratios,
+          billing_rules: values.billing_rules
         }
       });
       const { success, message } = res.data;
@@ -325,7 +336,8 @@ const EditModal = ({
       if (price) {
         setInputs({
           ...price,
-          extra_ratios: price.extra_ratios || {}
+          extra_ratios: price.extra_ratios || {},
+          billing_rules: price.billing_rules || []
         });
       } else {
         setInputs(singleOriginInputs);
@@ -335,13 +347,26 @@ const EditModal = ({
       // 多选模式初始化
       if (pricesItem) {
         setSelectModel(pricesItem.models.concat(noPriceModel));
-        setInputs(pricesItem);
+        setInputs({
+          ...pricesItem,
+          extra_ratios: pricesItem.extra_ratios || {},
+          billing_rules: pricesItem.billing_rules || []
+        });
       } else {
         setSelectModel(noPriceModel);
         setInputs(multipleOriginInputs);
       }
     }
   }, [singleMode, price, pricesItem, noPriceModel]);
+
+  const handleChangeBillingRules = (newBillingRules) => {
+    if (!singleMode) return;
+
+    setInputs((prev) => ({
+      ...prev,
+      billing_rules: newBillingRules
+    }));
+  };
 
   useEffect(() => {
     if (open) {
@@ -583,6 +608,36 @@ const EditModal = ({
     );
   };
 
+  const renderBillingRulesEditor = (formProps) => {
+    const { setFieldValue, values = {} } = formProps || {};
+
+    if (singleMode) {
+      return (
+        <Paper variant="outlined" sx={{ p: 2, mt: 2 }}>
+          <BillingRulesEditor
+            value={inputs.billing_rules || []}
+            onChange={handleChangeBillingRules}
+            priceStartAdornment={priceStartAdornment}
+            unit={localUnit}
+          />
+        </Paper>
+      );
+    }
+
+    return (
+      <FormControl fullWidth sx={{ ...theme.typography.otherInput }}>
+        <BillingRulesEditor
+          value={values.billing_rules || []}
+          onChange={(newBillingRules) => {
+            setFieldValue('billing_rules', newBillingRules);
+          }}
+          priceStartAdornment={priceStartAdornment}
+          unit={localUnit}
+        />
+      </FormControl>
+    );
+  };
+
   // 渲染模型选择器 (多模式特有)
   const renderModelSelector = (formProps) => {
     if (!formProps) return null;
@@ -700,6 +755,7 @@ const EditModal = ({
             <Alert severity="warning">{t('pricing_edit.lockedTip')}</Alert>
 
             {renderExtraRatioSelector()}
+            {renderBillingRulesEditor()}
 
             {errors.general && (
               <Typography color="error" variant="body2">
@@ -725,6 +781,7 @@ const EditModal = ({
                 {renderLockedToggle(formProps)}
                 <Alert severity="warning">{t('pricing_edit.lockedTip')}</Alert>
                 {renderExtraRatioSelector(formProps)}
+                {renderBillingRulesEditor(formProps)}
                 {renderActions(formProps)}
               </form>
             )}

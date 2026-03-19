@@ -27,7 +27,7 @@ task clean             # Clean build artifacts
 task fmt               # Format Go code (gomod + gofmt + golint)
 
 # Using Make (alternative)
-make one-api           # Build complete application
+make czloapi           # Build complete application
 make web               # Build web frontend only
 make clean             # Clean build artifacts
 

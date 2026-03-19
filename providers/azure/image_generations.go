@@ -3,10 +3,10 @@ package azure
 import (
 	"errors"
 	"net/http"
-	"one-api/common"
-	"one-api/common/config"
-	"one-api/providers/openai"
-	"one-api/types"
+	"czloapi/common"
+	"czloapi/common/config"
+	"czloapi/providers/openai"
+	"czloapi/types"
 	"time"
 )
 

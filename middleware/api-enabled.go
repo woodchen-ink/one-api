@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"net/http"
-	"one-api/common/config"
+	"czloapi/common/config"
 
 	"github.com/gin-gonic/gin"
 )

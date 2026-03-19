@@ -2,9 +2,9 @@ package controller
 
 import (
 	"net/http"
-	"one-api/common"
-	"one-api/common/utils"
-	"one-api/model"
+	"czloapi/common"
+	"czloapi/common/utils"
+	"czloapi/model"
 	"strconv"
 
 	"github.com/gin-gonic/gin"

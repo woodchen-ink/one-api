@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"net/http"
-	"one-api/common/requester"
+	"czloapi/common/requester"
 )
 
 var imgurUploadURL = "https://api.imgur.com/3/image"

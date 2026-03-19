@@ -3,13 +3,13 @@ package model
 import (
 	"errors"
 	"fmt"
-	"one-api/common"
-	"one-api/common/config"
-	"one-api/common/database"
-	"one-api/common/logger"
-	"one-api/common/redis"
-	"one-api/common/stmp"
-	"one-api/common/utils"
+	"czloapi/common"
+	"czloapi/common/config"
+	"czloapi/common/database"
+	"czloapi/common/logger"
+	"czloapi/common/redis"
+	"czloapi/common/stmp"
+	"czloapi/common/utils"
 
 	"gorm.io/gorm"
 )

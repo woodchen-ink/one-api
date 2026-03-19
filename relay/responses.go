@@ -4,12 +4,13 @@ import (
 	"errors"
 	"io"
 	"net/http"
-	"one-api/common"
-	"one-api/common/logger"
-	"one-api/common/requester"
-	providersBase "one-api/providers/base"
-	"one-api/relay/relay_util"
-	"one-api/types"
+	"czloapi/common"
+	"czloapi/common/logger"
+	"czloapi/common/requester"
+	"czloapi/model"
+	providersBase "czloapi/providers/base"
+	"czloapi/relay/relay_util"
+	"czloapi/types"
 	"time"
 
 	"github.com/bytedance/gopkg/util/gopool"
@@ -44,6 +45,10 @@ func (r *relayResponses) getRequest() interface{} {
 
 func (r *relayResponses) IsStream() bool {
 	return r.responsesRequest.Stream
+}
+
+func (r *relayResponses) getBillingContext(promptTokens int) model.BillingContext {
+	return model.NewBillingContext(promptTokens, promptTokens+r.responsesRequest.MaxOutputTokens)
 }
 
 func (r *relayResponses) getPromptTokens() (int, error) {

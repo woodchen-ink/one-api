@@ -3,12 +3,12 @@ package openrouter
 import (
 	"encoding/json"
 	"net/http"
-	"one-api/common"
-	"one-api/common/config"
-	"one-api/common/image"
-	"one-api/common/requester"
-	"one-api/providers/openai"
-	"one-api/types"
+	"czloapi/common"
+	"czloapi/common/config"
+	"czloapi/common/image"
+	"czloapi/common/requester"
+	"czloapi/providers/openai"
+	"czloapi/types"
 	"strings"
 )
 

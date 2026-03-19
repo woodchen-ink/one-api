@@ -3,9 +3,9 @@ package controller
 import (
 	"io"
 	"net/http"
-	"one-api/common"
-	"one-api/common/requester"
-	"one-api/controller/check_channel"
+	"czloapi/common"
+	"czloapi/common/requester"
+	"czloapi/controller/check_channel"
 	"time"
 
 	"github.com/gin-gonic/gin"

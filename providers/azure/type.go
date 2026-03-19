@@ -1,6 +1,6 @@
 package azure
 
-import "one-api/types"
+import "czloapi/types"
 
 type ImageAzureResponse struct {
 	ID      string              `json:"id,omitempty"`

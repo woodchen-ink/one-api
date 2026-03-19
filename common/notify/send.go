@@ -3,7 +3,7 @@ package notify
 import (
 	"context"
 	"fmt"
-	"one-api/common/logger"
+	"czloapi/common/logger"
 )
 
 func (n *Notify) Send(ctx context.Context, title, message string) {

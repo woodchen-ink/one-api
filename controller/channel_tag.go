@@ -3,9 +3,9 @@ package controller
 import (
 	"errors"
 	"net/http"
-	"one-api/common"
-	"one-api/common/config"
-	"one-api/model"
+	"czloapi/common"
+	"czloapi/common/config"
+	"czloapi/model"
 
 	"github.com/gin-gonic/gin"
 )

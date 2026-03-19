@@ -1,8 +1,8 @@
 package model
 
 import (
-	"one-api/common/logger"
-	"one-api/common/utils"
+	"czloapi/common/logger"
+	"czloapi/common/utils"
 )
 
 type ModelInfo struct {

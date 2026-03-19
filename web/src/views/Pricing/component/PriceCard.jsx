@@ -5,6 +5,7 @@ import LockIcon from '@mui/icons-material/Lock';
 import { Icon } from '@iconify/react';
 import { useTranslation } from 'react-i18next';
 import { ValueFormatter } from 'utils/common';
+import { hasBillingRules, summarizeBillingRule } from './billingRules';
 
 const PriceCard = ({ price, onEdit, onDelete, ownedby, unit = 'M' }) => {
   const theme = useTheme();
@@ -22,6 +23,7 @@ const PriceCard = ({ price, onEdit, onDelete, ownedby, unit = 'M' }) => {
 
   // 判断是否有extra_ratios
   const hasExtraRatios = price.extra_ratios && Object.keys(price.extra_ratios).length > 0;
+  const hasRuleConfig = hasBillingRules(price.billing_rules);
 
   // 为extra_ratios中的key获取更易读的名称
   const getReadableRatioName = (key) => {
@@ -270,43 +272,65 @@ const PriceCard = ({ price, onEdit, onDelete, ownedby, unit = 'M' }) => {
           cursor: 'default'
         }}
       >
-        {hasExtraRatios ? (
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))',
-              gap: '2px 8px'
-            }}
-          >
-            {Object.entries(price.extra_ratios).map(([key, value]) => (
-              <Box
-                key={key}
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 0.5,
-                  p: '2px 4px',
-                  borderRadius: '2px',
-                  transition: 'background-color 0.2s',
-                  '&:hover': {
-                    bgcolor: alpha(theme.palette.background.default, 0.6)
-                  }
-                }}
-              >
-                <Typography variant="caption" color="text.secondary" noWrap title={getReadableRatioName(key)} sx={{ fontSize: '0.7rem' }}>
-                  {getReadableRatioName(key)}:
-                </Typography>
-                <Typography variant="caption" fontWeight={500}>
-                  {formatExtraPrice(value)}
-                </Typography>
-              </Box>
-            ))}
-          </Box>
-        ) : (
-          <Typography variant="caption" color="text.secondary" sx={{ fontStyle: 'italic' }}>
-            {t('modelpricePage.noExtraRatios')}
-          </Typography>
-        )}
+        <Stack spacing={1}>
+          {hasExtraRatios ? (
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))',
+                gap: '2px 8px'
+              }}
+            >
+              {Object.entries(price.extra_ratios).map(([key, value]) => (
+                <Box
+                  key={key}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 0.5,
+                    p: '2px 4px',
+                    borderRadius: '2px',
+                    transition: 'background-color 0.2s',
+                    '&:hover': {
+                      bgcolor: alpha(theme.palette.background.default, 0.6)
+                    }
+                  }}
+                >
+                  <Typography variant="caption" color="text.secondary" noWrap title={getReadableRatioName(key)} sx={{ fontSize: '0.7rem' }}>
+                    {getReadableRatioName(key)}:
+                  </Typography>
+                  <Typography variant="caption" fontWeight={500}>
+                    {formatExtraPrice(value)}
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
+          ) : (
+            <Typography variant="caption" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+              {t('modelpricePage.noExtraRatios')}
+            </Typography>
+          )}
+
+          {hasRuleConfig && (
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+              {price.billing_rules.map((rule, index) => (
+                <Chip
+                  key={`${rule.name || 'rule'}-${index}`}
+                  size="small"
+                  label={`${rule.name || `Rule ${index + 1}`}: ${summarizeBillingRule(rule) || rule.strategy}`}
+                  sx={{
+                    maxWidth: 260,
+                    '& .MuiChip-label': {
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap'
+                    }
+                  }}
+                />
+              ))}
+            </Box>
+          )}
+        </Stack>
       </TableCell>
 
       {/* 操作按钮 */}

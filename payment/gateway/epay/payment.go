@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"one-api/model"
-	"one-api/payment/types"
+	"czloapi/model"
+	"czloapi/payment/types"
 	"strconv"
 
 	"github.com/gin-gonic/gin"

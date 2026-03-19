@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"one-api/model"
-	"one-api/payment/types"
+	"czloapi/model"
+	"czloapi/payment/types"
 
 	"github.com/gin-gonic/gin"
 	"github.com/wechatpay-apiv3/wechatpay-go/core"

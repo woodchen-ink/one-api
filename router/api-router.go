@@ -1,9 +1,9 @@
 package router
 
 import (
-	"one-api/controller"
-	"one-api/middleware"
-	"one-api/relay"
+	"czloapi/controller"
+	"czloapi/middleware"
+	"czloapi/relay"
 
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"

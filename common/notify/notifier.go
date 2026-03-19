@@ -2,8 +2,8 @@ package notify
 
 import (
 	"context"
-	"one-api/common/logger"
-	"one-api/common/notify/channel"
+	"czloapi/common/logger"
+	"czloapi/common/notify/channel"
 
 	"github.com/spf13/viper"
 )

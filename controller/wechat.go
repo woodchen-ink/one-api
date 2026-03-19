@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"one-api/common/config"
-	"one-api/model"
+	"czloapi/common/config"
+	"czloapi/model"
 	"strconv"
 	"time"
 

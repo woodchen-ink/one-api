@@ -3,8 +3,8 @@ package cache
 import (
 	"context"
 	"errors"
-	"one-api/common/config"
-	"one-api/common/redis"
+	"czloapi/common/config"
+	"czloapi/common/redis"
 	"time"
 
 	"github.com/coocood/freecache"

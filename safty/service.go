@@ -3,9 +3,9 @@ package safty
 import (
 	"errors"
 	"fmt"
-	"one-api/common/config"
-	"one-api/common/logger"
-	"one-api/safty/types"
+	"czloapi/common/config"
+	"czloapi/common/logger"
+	"czloapi/safty/types"
 )
 
 // RegisterTool 注册一个新的安全检查器

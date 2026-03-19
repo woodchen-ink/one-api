@@ -100,7 +100,8 @@ export default function Multiple({ prices, reloadData, ownedby, noPriceModels })
     const grouped = prices.reduce((acc, item, index) => {
       // 需要保证 extra_ratios 和 locked 字段也相同才能合并
       const extraRatiosStr = item.extra_ratios ? JSON.stringify(item.extra_ratios) : '';
-      const key = `${item.type}-${item.channel_type}-${item.input}-${item.output}-${extraRatiosStr}-${item.locked}`;
+      const billingRulesStr = item.billing_rules ? JSON.stringify(item.billing_rules) : '';
+      const key = `${item.type}-${item.channel_type}-${item.input}-${item.output}-${extraRatiosStr}-${billingRulesStr}-${item.locked}`;
 
       if (!acc[key]) {
         acc[key] = {

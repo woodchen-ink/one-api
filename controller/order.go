@@ -7,13 +7,13 @@ import (
 	"strconv"
 	"sync"
 
-	"one-api/common"
-	"one-api/common/config"
-	"one-api/common/logger"
-	"one-api/common/utils"
-	"one-api/model"
-	"one-api/payment"
-	"one-api/payment/types"
+	"czloapi/common"
+	"czloapi/common/config"
+	"czloapi/common/logger"
+	"czloapi/common/utils"
+	"czloapi/model"
+	"czloapi/payment"
+	"czloapi/payment/types"
 
 	"github.com/gin-gonic/gin"
 )

@@ -7,9 +7,9 @@ import (
 	"net"
 	"net/http"
 	"net/url"
-	"one-api/common/config"
-	"one-api/common/logger"
-	"one-api/model"
+	"czloapi/common/config"
+	"czloapi/common/logger"
+	"czloapi/model"
 	"strings"
 	"time"
 

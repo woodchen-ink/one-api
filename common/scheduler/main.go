@@ -2,7 +2,7 @@ package scheduler
 
 import (
 	"fmt"
-	"one-api/common/logger"
+	"czloapi/common/logger"
 	"sync"
 
 	"github.com/go-co-op/gocron/v2"

@@ -5,8 +5,8 @@ import (
 	"bytes"
 	"fmt"
 	"net/http"
-	"one-api/common/logger"
-	"one-api/types"
+	"czloapi/common/logger"
+	"czloapi/types"
 	"runtime/debug"
 	"time"
 

@@ -1,8 +1,8 @@
 package check_channel
 
 import (
-	"one-api/common/config"
-	"one-api/types"
+	"czloapi/common/config"
+	"czloapi/types"
 	"regexp"
 	"strings"
 )

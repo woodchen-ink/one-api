@@ -3,10 +3,10 @@ package model
 import (
 	"context"
 	"fmt"
-	"one-api/common/cache"
-	"one-api/common/config"
-	"one-api/common/logger"
-	"one-api/common/redis"
+	"czloapi/common/cache"
+	"czloapi/common/config"
+	"czloapi/common/logger"
+	"czloapi/common/redis"
 	"strconv"
 	"time"
 )

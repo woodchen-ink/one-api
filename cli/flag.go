@@ -3,8 +3,8 @@ package cli
 import (
 	"flag"
 	"fmt"
-	"one-api/common/config"
-	"one-api/common/utils"
+	"czloapi/common/config"
+	"czloapi/common/utils"
 	"os"
 
 	"github.com/spf13/viper"
@@ -59,5 +59,5 @@ func InitCli() {
 func help() {
 	fmt.Println("CZLOapi " + config.Version + " - All in CZLOapi service for OpenAI API.")
 	fmt.Println("Copyright (C) 2024 CZLOapi All rights reserved.")
-	fmt.Println("Usage: one-api [--port <port>] [--log-dir <log directory>] [--config <config.yaml path>] [--version] [--help]")
+	fmt.Println("Usage: czloapi [--port <port>] [--log-dir <log directory>] [--config <config.yaml path>] [--version] [--help]")
 }

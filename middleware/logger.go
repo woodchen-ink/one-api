@@ -1,9 +1,9 @@
 package middleware
 
 import (
-	"one-api/common"
-	"one-api/common/logger"
-	"one-api/metrics"
+	"czloapi/common"
+	"czloapi/common/logger"
+	"czloapi/metrics"
 	"strings"
 	"time"
 

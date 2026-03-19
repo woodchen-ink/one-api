@@ -3,8 +3,8 @@ package channel
 import (
 	"net/http"
 	"net/url"
-	"one-api/common/requester"
-	"one-api/common/search/search_type"
+	"czloapi/common/requester"
+	"czloapi/common/search/search_type"
 	"strings"
 )
 

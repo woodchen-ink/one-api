@@ -1,4 +1,4 @@
-module one-api
+module czloapi
 
 // +heroku goVersion go1.18
 go 1.25

@@ -2,7 +2,7 @@ package common
 
 import (
 	"encoding/json"
-	"one-api/common/logger"
+	"czloapi/common/logger"
 )
 
 var RechargeDiscount = map[string]float64{}

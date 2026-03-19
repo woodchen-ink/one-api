@@ -1,6 +1,6 @@
 package openai
 
-import "one-api/types"
+import "czloapi/types"
 
 type OpenAIProviderChatResponse struct {
 	types.ChatCompletionResponse

@@ -2,7 +2,7 @@ package test
 
 import (
 	"encoding/json"
-	"one-api/types"
+	"czloapi/types"
 	"strings"
 )
 

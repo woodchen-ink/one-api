@@ -8,9 +8,9 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"one-api/common"
-	"one-api/common/requester"
-	"one-api/types"
+	"czloapi/common"
+	"czloapi/common/requester"
+	"czloapi/types"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream"

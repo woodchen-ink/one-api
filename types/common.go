@@ -3,7 +3,7 @@ package types
 import (
 	"encoding/json"
 	"fmt"
-	"one-api/common/config"
+	"czloapi/common/config"
 	"strings"
 )
 

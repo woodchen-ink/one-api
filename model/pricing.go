@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"one-api/common/config"
-	"one-api/common/logger"
-	"one-api/common/utils"
+	"czloapi/common/config"
+	"czloapi/common/logger"
+	"czloapi/common/utils"
 	"sort"
 	"strings"
 	"sync"
@@ -141,6 +141,10 @@ func (p *Pricing) GetPrice(modelName string) *Price {
 	}
 }
 
+func (p *Pricing) GetBillingResolution(modelName string, ctx BillingContext) *BillingResolution {
+	return p.GetPrice(modelName).ResolveBilling(ctx)
+}
+
 func (p *Pricing) GetAllPrices() map[string]*Price {
 	return p.Prices
 }
@@ -172,6 +176,9 @@ func (p *Pricing) updateRawPrice(modelName string, price *Price) error {
 
 // UpdatePrice updates the price of a model
 func (p *Pricing) UpdatePrice(modelName string, price *Price) error {
+	if err := price.ValidateBillingRules(); err != nil {
+		return err
+	}
 
 	if err := p.updateRawPrice(modelName, price); err != nil {
 		return err
@@ -192,6 +199,10 @@ func (p *Pricing) addRawPrice(price *Price) error {
 
 // AddPrice adds a new price to the Pricing instance
 func (p *Pricing) AddPrice(price *Price) error {
+	if err := price.ValidateBillingRules(); err != nil {
+		return err
+	}
+
 	if err := p.addRawPrice(price); err != nil {
 		return err
 	}
@@ -469,6 +480,10 @@ func (p *Pricing) BatchDeletePrices(models []string) error {
 }
 
 func (p *Pricing) BatchSetPrices(batchPrices *BatchPrices, originalModels []string) error {
+	if err := batchPrices.Price.ValidateBillingRules(); err != nil {
+		return err
+	}
+
 	// 查找需要删除的model
 	var deletePrices []string
 	var addPrices []*Price

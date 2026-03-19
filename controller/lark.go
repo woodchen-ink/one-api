@@ -6,9 +6,9 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"one-api/common/config"
-	"one-api/common/logger"
-	"one-api/model"
+	"czloapi/common/config"
+	"czloapi/common/logger"
+	"czloapi/model"
 	"strconv"
 	"time"
 

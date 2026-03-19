@@ -2,9 +2,9 @@ package azureSpeech
 
 import (
 	"fmt"
-	"one-api/common/requester"
-	"one-api/model"
-	"one-api/providers/base"
+	"czloapi/common/requester"
+	"czloapi/model"
+	"czloapi/providers/base"
 	"strings"
 )
 

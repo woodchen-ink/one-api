@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"one-api/providers/openai"
+	"czloapi/providers/openai"
 )
 
 const (

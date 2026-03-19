@@ -2,13 +2,13 @@ package relay
 
 import (
 	"encoding/json"
-	"one-api/model"
-	"one-api/relay/relay_util"
-	"one-api/types"
+	"czloapi/model"
+	"czloapi/relay/relay_util"
+	"czloapi/types"
 	"strings"
 	"time"
 
-	providersBase "one-api/providers/base"
+	providersBase "czloapi/providers/base"
 
 	"github.com/gin-gonic/gin"
 )
@@ -28,6 +28,7 @@ type relayBase struct {
 type RelayBaseInterface interface {
 	send() (err *types.OpenAIErrorWithStatusCode, done bool)
 	getPromptTokens() (int, error)
+	getBillingContext(promptTokens int) model.BillingContext
 	setRequest() error
 	getRequest() any
 	setProvider(modelName string) error
@@ -50,6 +51,10 @@ func (r *relayBase) getRequest() interface{} {
 
 func (r *relayBase) IsStream() bool {
 	return false
+}
+
+func (r *relayBase) getBillingContext(promptTokens int) model.BillingContext {
+	return model.NewBillingContext(promptTokens, promptTokens)
 }
 
 func (r *relayBase) setProvider(modelName string) error {

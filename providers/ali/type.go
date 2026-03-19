@@ -1,7 +1,7 @@
 package ali
 
 import (
-	"one-api/types"
+	"czloapi/types"
 )
 
 type AliError struct {

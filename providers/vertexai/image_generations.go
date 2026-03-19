@@ -2,8 +2,8 @@ package vertexai
 
 import (
 	"net/http"
-	"one-api/common"
-	"one-api/types"
+	"czloapi/common"
+	"czloapi/types"
 	"time"
 )
 

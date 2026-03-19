@@ -3,12 +3,12 @@ package mistral
 import (
 	"encoding/json"
 	"net/http"
-	"one-api/common/requester"
-	"one-api/model"
-	"one-api/types"
+	"czloapi/common/requester"
+	"czloapi/model"
+	"czloapi/types"
 
-	"one-api/providers/base"
-	"one-api/providers/openai"
+	"czloapi/providers/base"
+	"czloapi/providers/openai"
 )
 
 type MistralProviderFactory struct{}

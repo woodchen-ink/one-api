@@ -3,8 +3,8 @@ package requester
 import (
 	"errors"
 	"net/http"
-	"one-api/common"
-	"one-api/types"
+	"czloapi/common"
+	"czloapi/types"
 
 	"github.com/gorilla/websocket"
 )

@@ -1,9 +1,9 @@
 package search
 
 import (
-	"one-api/common/logger"
-	"one-api/common/search/channel"
-	"one-api/common/search/search_type"
+	"czloapi/common/logger"
+	"czloapi/common/search/channel"
+	"czloapi/common/search/search_type"
 
 	"github.com/spf13/viper"
 )

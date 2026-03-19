@@ -2,10 +2,10 @@ package baichuan
 
 import (
 	"net/http"
-	"one-api/common/config"
-	"one-api/common/requester"
-	"one-api/providers/openai"
-	"one-api/types"
+	"czloapi/common/config"
+	"czloapi/common/requester"
+	"czloapi/providers/openai"
+	"czloapi/types"
 	"strings"
 )
 

@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"one-api/common/requester"
-	"one-api/types"
+	"czloapi/common/requester"
+	"czloapi/types"
 	"strings"
 )
 

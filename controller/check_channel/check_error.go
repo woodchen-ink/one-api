@@ -2,7 +2,7 @@ package check_channel
 
 import (
 	"fmt"
-	"one-api/types"
+	"czloapi/types"
 	"strings"
 )
 
@@ -53,7 +53,7 @@ func (c *CheckErrorProcess) Check(req *types.ChatCompletionRequest, resp *types.
 	checkResults = append(checkResults, &CheckResult{
 		Name:   "错误",
 		Status: CheckStatusSuccess,
-		Remark: fmt.Sprintf("错误中存在 %d 个 request id(此指标表示经过多少个类oneapi程序)", requestIDCount),
+		Remark: fmt.Sprintf("错误中存在 %d 个 request id(此指标表示经过多少个类czloapi程序)", requestIDCount),
 	})
 	return checkResults
 }

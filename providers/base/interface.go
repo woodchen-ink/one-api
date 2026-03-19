@@ -2,9 +2,9 @@ package base
 
 import (
 	"net/http"
-	"one-api/common/requester"
-	"one-api/model"
-	"one-api/types"
+	"czloapi/common/requester"
+	"czloapi/model"
+	"czloapi/types"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"

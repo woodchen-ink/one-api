@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"github.com/ThinkInAIXYZ/go-mcp/protocol"
-	"one-api/common/logger"
-	"one-api/model"
-	"one-api/relay"
+	"czloapi/common/logger"
+	"czloapi/model"
+	"czloapi/relay"
 )
 
 const NAME = "available_model"

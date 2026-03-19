@@ -1,16 +1,16 @@
-# File path: /etc/systemd/system/one-api.service
+# File path: /etc/systemd/system/czloapi.service
 # sudo systemctl daemon-reload
-# sudo systemctl start one-api
-# sudo systemctl enable one-api
-# sudo systemctl status one-api
+# sudo systemctl start czloapi
+# sudo systemctl enable czloapi
+# sudo systemctl status czloapi
 [Unit]
 Description=CZLOapi Service
 After=network.target
 
 [Service]
 User=ubuntu  # 注意修改用户名
-WorkingDirectory=/path/to/one-api  # 注意修改路径
-ExecStart=/path/to/one-api/one-api --port 3000 --log-dir /path/to/one-api/logs  # 注意修改路径和端口号
+WorkingDirectory=/path/to/czloapi  # 注意修改路径
+ExecStart=/path/to/czloapi/czloapi --port 3000 --log-dir /path/to/czloapi/logs  # 注意修改路径和端口号
 Restart=always
 RestartSec=5
 

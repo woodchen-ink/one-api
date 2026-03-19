@@ -8,7 +8,7 @@ vars:
   ROOT_DIR: $(pwd)
   BUILD_DIR: $(pwd)/_output
   BIN_DIR: $(pwd)/_output/one-hub
-  VERSION_PKG: one-api/common/config
+  VERSION_PKG: czloapi/common/config
   BUILD_VERSION: $(git describe --tags || echo "dev")
   BUILD_DATE: $(date +%Y%m%d)
   GIT_BRANCH: $(git branch -r --contains | head -1 | sed -E -e "s%(HEAD ->|origin|upstream)/?%%g" | xargs)

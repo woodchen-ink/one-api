@@ -6,11 +6,11 @@
 原作者仓库是我fork的仓库, 他的镜像:
 
 ``` shell
-docker.io/martialbe/one-api
+docker.io/martialbe/czloapi
 
 or
 
-ghcr.io/martialbe/one-api
+ghcr.io/martialbe/czloapi
 
 ```
 
@@ -92,7 +92,7 @@ ghcr.io/martialbe/one-api
 ## 感谢
 
 - 本程序使用了以下开源项目
-  - [one-api](https://github.com/songquanpeng/one-api)为本项目的基础
+  - [czloapi](https://github.com/songquanpeng/czloapi)为本项目的基础
   - [Berry Free React Admin Template](https://github.com/codedthemes/berry-free-react-admin-template)为本项目的前端界面
   - [minimal-ui-kit](https://github.com/minimal-ui-kit/material-kit-react),使用了其中的部分样式
   - [new api](https://github.com/Calcium-Ion/new-api)
@@ -109,6 +109,6 @@ ghcr.io/martialbe/one-api
 <a href="https://next.ossinsight.io/widgets/official/analyze-repo-stars-history?repo_id=689214770" target="_blank" style="display: block" align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://next.ossinsight.io/widgets/official/analyze-repo-stars-history/thumbnail.png?repo_id=689214770&image_size=auto&color_scheme=dark" width="721" height="auto">
-    <img alt="Star History of MartialBE/one-api" src="https://next.ossinsight.io/widgets/official/analyze-repo-stars-history/thumbnail.png?repo_id=689214770&image_size=auto&color_scheme=light" width="721" height="auto">
+    <img alt="Star History of MartialBE/czloapi" src="https://next.ossinsight.io/widgets/official/analyze-repo-stars-history/thumbnail.png?repo_id=689214770&image_size=auto&color_scheme=light" width="721" height="auto">
   </picture>
 </a>

@@ -5,15 +5,15 @@ import (
 	"fmt"
 	"testing"
 
-	"one-api/common/notify/channel"
-	"one-api/common/requester"
+	"czloapi/common/notify/channel"
+	"czloapi/common/requester"
 
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 )
 
 func InitConfig() {
-	viper.AddConfigPath("/one-api")
+	viper.AddConfigPath("/czloapi")
 	viper.SetConfigName("config")
 	viper.ReadInConfig()
 	requester.InitHttpClient()

@@ -2,11 +2,11 @@ package relay
 
 import (
 	"net/http"
-	"one-api/common"
-	"one-api/common/config"
-	providersBase "one-api/providers/base"
-	"one-api/safty"
-	"one-api/types"
+	"czloapi/common"
+	"czloapi/common/config"
+	providersBase "czloapi/providers/base"
+	"czloapi/safty"
+	"czloapi/types"
 	"strings"
 
 	"github.com/gin-gonic/gin"

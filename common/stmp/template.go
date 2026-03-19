@@ -1,7 +1,7 @@
 package stmp
 
 import (
-	"one-api/common/config"
+	"czloapi/common/config"
 )
 
 func getLogo() string {

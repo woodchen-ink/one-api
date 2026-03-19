@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"one-api/common/requester"
-	"one-api/model"
-	"one-api/providers/base"
-	"one-api/types"
+	"czloapi/common/requester"
+	"czloapi/model"
+	"czloapi/providers/base"
+	"czloapi/types"
 )
 
 type OllamaProviderFactory struct{}

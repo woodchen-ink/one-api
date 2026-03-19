@@ -1,6 +1,6 @@
 package palm
 
-import "one-api/types"
+import "czloapi/types"
 
 type PaLMChatMessage struct {
 	Author  string `json:"author"`

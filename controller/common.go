@@ -3,11 +3,11 @@ package controller
 import (
 	"fmt"
 	"net/http"
-	"one-api/common"
-	"one-api/common/config"
-	"one-api/common/notify"
-	"one-api/model"
-	"one-api/types"
+	"czloapi/common"
+	"czloapi/common/config"
+	"czloapi/common/notify"
+	"czloapi/model"
+	"czloapi/types"
 
 	"github.com/gin-gonic/gin"
 )

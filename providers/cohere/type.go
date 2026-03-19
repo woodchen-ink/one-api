@@ -1,7 +1,7 @@
 package cohere
 
 import (
-	"one-api/types"
+	"czloapi/types"
 )
 
 type V2ChatRequest struct {

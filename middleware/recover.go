@@ -3,8 +3,8 @@ package middleware
 import (
 	"fmt"
 	"net/http"
-	"one-api/common/logger"
-	"one-api/metrics"
+	"czloapi/common/logger"
+	"czloapi/metrics"
 	"runtime/debug"
 
 	"github.com/gin-gonic/gin"

@@ -2,9 +2,9 @@ package safty
 
 import (
 	"fmt"
-	"one-api/common/logger"
-	"one-api/safty/providers/keyword"
-	"one-api/safty/types"
+	"czloapi/common/logger"
+	"czloapi/safty/providers/keyword"
+	"czloapi/safty/types"
 )
 
 // SaftyTool 定义了内容安全检查器的接口

@@ -1,6 +1,6 @@
 package openrouter
 
-import "one-api/types"
+import "czloapi/types"
 
 type ChatCompletionRequest struct {
 	types.ChatCompletionRequest

@@ -3,11 +3,11 @@ package minimax
 import (
 	"encoding/json"
 	"net/http"
-	"one-api/common/requester"
-	"one-api/model"
-	"one-api/providers/base"
-	"one-api/providers/openai"
-	"one-api/types"
+	"czloapi/common/requester"
+	"czloapi/model"
+	"czloapi/providers/base"
+	"czloapi/providers/openai"
+	"czloapi/types"
 )
 
 type MiniMaxProviderFactory struct{}

@@ -2,11 +2,11 @@ package openrouter
 
 import (
 	"net/http"
-	"one-api/common/requester"
-	"one-api/model"
-	"one-api/providers/base"
-	"one-api/providers/openai"
-	"one-api/types"
+	"czloapi/common/requester"
+	"czloapi/model"
+	"czloapi/providers/base"
+	"czloapi/providers/openai"
+	"czloapi/types"
 )
 
 // 定义供应商工厂

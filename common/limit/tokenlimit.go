@@ -25,9 +25,9 @@ import (
 	_ "embed"
 	"errors"
 	"fmt"
-	"one-api/common/config"
-	"one-api/common/logger"
-	"one-api/common/redis"
+	"czloapi/common/config"
+	"czloapi/common/logger"
+	"czloapi/common/redis"
 	"strconv"
 	"time"
 )

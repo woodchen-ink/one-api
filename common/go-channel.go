@@ -2,7 +2,7 @@ package common
 
 import (
 	"fmt"
-	"one-api/common/logger"
+	"czloapi/common/logger"
 	"runtime/debug"
 )
 

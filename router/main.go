@@ -4,8 +4,8 @@ import (
 	"embed"
 	"fmt"
 	"net/http"
-	"one-api/common/config"
-	"one-api/common/logger"
+	"czloapi/common/config"
+	"czloapi/common/logger"
 	"strings"
 
 	"github.com/gin-gonic/gin"

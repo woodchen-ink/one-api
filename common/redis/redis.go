@@ -2,8 +2,8 @@ package redis
 
 import (
 	"context"
-	"one-api/common/config"
-	"one-api/common/logger"
+	"czloapi/common/config"
+	"czloapi/common/logger"
 	"time"
 
 	"github.com/redis/go-redis/v9"

@@ -3,10 +3,10 @@ package relay
 import (
 	"strings"
 
-	"one-api/common/config"
-	"one-api/providers/claude"
-	"one-api/providers/gemini"
-	"one-api/types"
+	"czloapi/common/config"
+	"czloapi/providers/claude"
+	"czloapi/providers/gemini"
+	"czloapi/types"
 
 	"github.com/gin-gonic/gin"
 )

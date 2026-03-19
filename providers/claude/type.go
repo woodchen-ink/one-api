@@ -2,7 +2,7 @@ package claude
 
 import (
 	"encoding/json"
-	"one-api/types"
+	"czloapi/types"
 )
 
 const (

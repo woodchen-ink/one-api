@@ -1,10 +1,10 @@
 package lingyi
 
 import (
-	"one-api/common/requester"
-	"one-api/model"
-	"one-api/providers/base"
-	"one-api/providers/openai"
+	"czloapi/common/requester"
+	"czloapi/model"
+	"czloapi/providers/base"
+	"czloapi/providers/openai"
 )
 
 // 定义供应商工厂

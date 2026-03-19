@@ -4,14 +4,22 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"one-api/common/config"
-	"one-api/model"
-	"one-api/types"
+	"czloapi/common/config"
+	"czloapi/model"
+	"czloapi/types"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/datatypes"
 )
+
+func intPtr(value int) *int {
+	return &value
+}
+
+func floatPtr(value float64) *float64 {
+	return &value
+}
 
 func TestQuotaGetLogMetaMergesReasoningMetadata(t *testing.T) {
 	gin.SetMode(gin.TestMode)
@@ -73,4 +81,68 @@ func TestQuotaGetTotalQuotaUsesDirectUSDPerMillion(t *testing.T) {
 	}
 
 	assert.Equal(t, 1300000, quota.GetTotalQuotaByUsage(usage))
+}
+
+func TestQuotaGetLogMetaIncludesBillingRulesAndBreakdown(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	recorder := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(recorder)
+	c.Set("group_ratio", 1.0)
+
+	billingRules := datatypes.NewJSONType([]model.BillingRule{
+		{
+			Name:     "long-context",
+			Priority: 100,
+			Strategy: model.BillingRuleStrategyOverride,
+			Match: model.BillingRuleMatch{
+				PromptTokensGT: intPtr(200000),
+			},
+			Input:  floatPtr(5),
+			Output: floatPtr(15),
+		},
+	})
+
+	model.PricingInstance = &model.Pricing{Prices: map[string]*model.Price{
+		"test-model": {
+			Model:        "test-model",
+			Type:         model.TokensPriceType,
+			ChannelType:  1,
+			Input:        2.5,
+			Output:       10,
+			BillingRules: &billingRules,
+		},
+	}}
+
+	quota := NewQuota(c, "test-model", 250000, model.NewBillingContext(250000, 350000))
+	usage := &types.Usage{
+		PromptTokens:     250000,
+		CompletionTokens: 100000,
+		TotalTokens:      350000,
+	}
+
+	meta := quota.GetLogMeta(usage)
+
+	assert.Equal(t, 2.5, meta["original_input_price"])
+	assert.Equal(t, 10.0, meta["original_output_price"])
+	assert.Equal(t, 5.0, meta["input_price"])
+	assert.Equal(t, 15.0, meta["output_price"])
+
+	billingContext, ok := meta["billing_context"].(model.BillingContext)
+	if assert.True(t, ok) {
+		assert.Equal(t, 250000, billingContext.PromptTokens)
+		assert.Equal(t, 350000, billingContext.RequestTokens)
+	}
+
+	rules, ok := meta["billing_rules"].([]model.BillingRuleLog)
+	if assert.True(t, ok) && assert.Len(t, rules, 1) {
+		assert.Equal(t, "long-context", rules[0].Name)
+	}
+
+	breakdown, ok := meta["billing_breakdown"].([]BillingBreakdownItem)
+	if assert.True(t, ok) && assert.Len(t, breakdown, 2) {
+		assert.Equal(t, "input", breakdown[0].Metric)
+		assert.Equal(t, 250000, breakdown[0].Quantity)
+		assert.Equal(t, "output", breakdown[1].Metric)
+		assert.Equal(t, 100000, breakdown[1].Quantity)
+	}
 }

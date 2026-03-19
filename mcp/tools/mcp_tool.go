@@ -3,10 +3,10 @@ package tools
 import (
 	"context"
 	"github.com/ThinkInAIXYZ/go-mcp/protocol"
-	"one-api/mcp/tools/available_model"
-	"one-api/mcp/tools/calculator"
-	"one-api/mcp/tools/current_time"
-	"one-api/mcp/tools/dashboard"
+	"czloapi/mcp/tools/available_model"
+	"czloapi/mcp/tools/calculator"
+	"czloapi/mcp/tools/current_time"
+	"czloapi/mcp/tools/dashboard"
 )
 
 type McpTool interface {

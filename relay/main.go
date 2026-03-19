@@ -6,14 +6,14 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"one-api/common"
-	"one-api/common/config"
-	"one-api/common/logger"
-	"one-api/common/utils"
-	"one-api/metrics"
-	"one-api/model"
-	"one-api/relay/relay_util"
-	"one-api/types"
+	"czloapi/common"
+	"czloapi/common/config"
+	"czloapi/common/logger"
+	"czloapi/common/utils"
+	"czloapi/metrics"
+	"czloapi/model"
+	"czloapi/relay/relay_util"
+	"czloapi/types"
 	"strings"
 	"time"
 
@@ -116,7 +116,8 @@ func RelayHandler(relay RelayBaseInterface) (err *types.OpenAIErrorWithStatusCod
 
 	relay.getProvider().SetUsage(usage)
 
-	quota := relay_util.NewQuota(relay.getContext(), relay.getModelName(), promptTokens)
+	billingContext := relay.getBillingContext(promptTokens)
+	quota := relay_util.NewQuota(relay.getContext(), relay.getModelName(), promptTokens, billingContext)
 	if err = quota.PreQuotaConsumption(); err != nil {
 		done = true
 		return

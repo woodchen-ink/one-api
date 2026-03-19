@@ -2,8 +2,8 @@ package minimax
 
 import (
 	"encoding/json"
-	"one-api/common/requester"
-	"one-api/types"
+	"czloapi/common/requester"
+	"czloapi/types"
 )
 
 func (p *MiniMaxProvider) CreateChatCompletion(request *types.ChatCompletionRequest) (*types.ChatCompletionResponse, *types.OpenAIErrorWithStatusCode) {

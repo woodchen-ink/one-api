@@ -9,8 +9,8 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"one-api/common/requester"
-	"one-api/types"
+	"czloapi/common/requester"
+	"czloapi/types"
 	"time"
 )
 

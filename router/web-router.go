@@ -6,8 +6,8 @@ import (
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"one-api/controller"
-	"one-api/middleware"
+	"czloapi/controller"
+	"czloapi/middleware"
 	"strings"
 )
 

@@ -2,9 +2,9 @@ package cohere
 
 import (
 	"net/http"
-	"one-api/common"
-	"one-api/common/config"
-	"one-api/types"
+	"czloapi/common"
+	"czloapi/common/config"
+	"czloapi/types"
 )
 
 func (p *CohereProvider) CreateRerank(request *types.RerankRequest) (*types.RerankResponse, *types.OpenAIErrorWithStatusCode) {

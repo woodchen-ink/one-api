@@ -2,9 +2,9 @@ package ali
 
 import (
 	"net/http"
-	"one-api/common"
-	"one-api/common/config"
-	"one-api/types"
+	"czloapi/common"
+	"czloapi/common/config"
+	"czloapi/types"
 )
 
 func (p *AliProvider) CreateEmbeddings(request *types.EmbeddingRequest) (*types.EmbeddingResponse, *types.OpenAIErrorWithStatusCode) {

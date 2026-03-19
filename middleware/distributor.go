@@ -3,7 +3,7 @@ package middleware
 import (
 	"fmt"
 	"net/http"
-	"one-api/model"
+	"czloapi/model"
 
 	"github.com/gin-gonic/gin"
 )

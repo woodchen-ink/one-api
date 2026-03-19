@@ -4,10 +4,10 @@ import (
 	"encoding/base64"
 	"io"
 	"net/http"
-	"one-api/common"
-	"one-api/common/storage"
-	"one-api/common/utils"
-	"one-api/types"
+	"czloapi/common"
+	"czloapi/common/storage"
+	"czloapi/common/utils"
+	"czloapi/types"
 	"time"
 )
 

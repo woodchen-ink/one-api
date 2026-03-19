@@ -1,8 +1,8 @@
 package claude
 
 import (
-	"one-api/common"
-	"one-api/types"
+	"czloapi/common"
+	"czloapi/types"
 	"strconv"
 	"strings"
 )

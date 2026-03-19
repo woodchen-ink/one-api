@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/ThinkInAIXYZ/go-mcp/protocol"
-	"one-api/common/logger"
-	"one-api/model"
+	"czloapi/common/logger"
+	"czloapi/model"
 	"time"
 )
 

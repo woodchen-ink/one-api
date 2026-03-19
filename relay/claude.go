@@ -3,12 +3,13 @@ package relay
 import (
 	"encoding/json"
 	"net/http"
-	"one-api/common"
-	"one-api/common/config"
-	"one-api/common/requester"
-	"one-api/providers/claude"
-	"one-api/safty"
-	"one-api/types"
+	"czloapi/common"
+	"czloapi/common/config"
+	"czloapi/common/requester"
+	"czloapi/model"
+	"czloapi/providers/claude"
+	"czloapi/safty"
+	"czloapi/types"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -49,6 +50,15 @@ func (r *relayClaudeOnly) getRequest() interface{} {
 
 func (r *relayClaudeOnly) IsStream() bool {
 	return r.claudeRequest.Stream
+}
+
+func (r *relayClaudeOnly) getBillingContext(promptTokens int) model.BillingContext {
+	requestTokens := promptTokens + r.claudeRequest.MaxTokens
+	if r.claudeRequest.Thinking != nil && r.claudeRequest.Thinking.BudgetTokens > 0 {
+		requestTokens += r.claudeRequest.Thinking.BudgetTokens
+	}
+
+	return model.NewBillingContext(promptTokens, requestTokens)
 }
 
 func (r *relayClaudeOnly) getPromptTokens() (int, error) {

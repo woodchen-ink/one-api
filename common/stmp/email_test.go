@@ -2,18 +2,18 @@ package stmp_test
 
 import (
 	"fmt"
-	"one-api/common/config"
+	"czloapi/common/config"
 	"testing"
 
-	"one-api/common"
-	"one-api/common/stmp"
+	"czloapi/common"
+	"czloapi/common/stmp"
 
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 )
 
 func InitConfig() {
-	viper.AddConfigPath("/one-api")
+	viper.AddConfigPath("/czloapi")
 	viper.SetConfigName("test")
 	viper.ReadInConfig()
 }

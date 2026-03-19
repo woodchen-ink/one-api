@@ -1,7 +1,7 @@
 package storage
 
 import (
-	"one-api/common/storage/drives"
+	"czloapi/common/storage/drives"
 
 	"github.com/spf13/viper"
 )

@@ -3,9 +3,9 @@ package controller
 import (
 	"log"
 	"net/http"
-	"one-api/common"
-	"one-api/model"
-	paymentService "one-api/payment"
+	"czloapi/common"
+	"czloapi/model"
+	paymentService "czloapi/payment"
 	"strconv"
 
 	"github.com/gin-gonic/gin"

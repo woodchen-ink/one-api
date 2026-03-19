@@ -225,5 +225,5 @@ export const ExtraRatiosSelector = ({ value = {}, onChange }) => {
 ExtraRatiosSelector.propTypes = {
   value: PropTypes.object,
   onChange: PropTypes.func.isRequired,
-  handleStartAdornment: PropTypes.func.isRequired
+  handleStartAdornment: PropTypes.func
 };

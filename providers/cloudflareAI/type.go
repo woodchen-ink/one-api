@@ -1,6 +1,6 @@
 package cloudflareAI
 
-import "one-api/types"
+import "czloapi/types"
 
 type CloudflareAIError struct {
 	Error []struct {

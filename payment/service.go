@@ -3,10 +3,10 @@ package payment
 import (
 	"errors"
 	"fmt"
-	"one-api/common/config"
-	"one-api/common/logger"
-	"one-api/model"
-	"one-api/payment/types"
+	"czloapi/common/config"
+	"czloapi/common/logger"
+	"czloapi/model"
+	"czloapi/payment/types"
 	"strings"
 
 	"github.com/gin-gonic/gin"

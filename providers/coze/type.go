@@ -1,6 +1,6 @@
 package coze
 
-import "one-api/types"
+import "czloapi/types"
 
 type CozeStatus struct {
 	Code int    `json:"code"`

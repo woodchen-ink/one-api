@@ -2,11 +2,11 @@ package groq
 
 import (
 	"net/http"
-	"one-api/common/config"
-	"one-api/common/requester"
-	"one-api/common/utils"
-	"one-api/providers/openai"
-	"one-api/types"
+	"czloapi/common/config"
+	"czloapi/common/requester"
+	"czloapi/common/utils"
+	"czloapi/providers/openai"
+	"czloapi/types"
 )
 
 func (p *GroqProvider) CreateChatCompletion(request *types.ChatCompletionRequest) (openaiResponse *types.ChatCompletionResponse, errWithCode *types.OpenAIErrorWithStatusCode) {

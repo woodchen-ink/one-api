@@ -1,7 +1,7 @@
 package relay_util
 
 import (
-	"one-api/types"
+	"czloapi/types"
 	"strings"
 )
 

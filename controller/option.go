@@ -3,10 +3,10 @@ package controller
 import (
 	"encoding/json"
 	"net/http"
-	"one-api/common/config"
-	"one-api/common/utils"
-	"one-api/model"
-	"one-api/safty"
+	"czloapi/common/config"
+	"czloapi/common/utils"
+	"czloapi/model"
+	"czloapi/safty"
 	"strings"
 
 	"github.com/gin-gonic/gin"

@@ -3,11 +3,11 @@ package relay
 import (
 	"fmt"
 	"net/http"
-	"one-api/common"
-	"one-api/common/config"
-	"one-api/common/logger"
-	providersBase "one-api/providers/base"
-	"one-api/types"
+	"czloapi/common"
+	"czloapi/common/config"
+	"czloapi/common/logger"
+	providersBase "czloapi/providers/base"
+	"czloapi/types"
 
 	"github.com/gin-gonic/gin"
 )

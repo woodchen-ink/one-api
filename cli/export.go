@@ -2,8 +2,8 @@ package cli
 
 import (
 	"encoding/json"
-	"one-api/common/logger"
-	"one-api/model"
+	"czloapi/common/logger"
+	"czloapi/model"
 	"os"
 	"sort"
 )

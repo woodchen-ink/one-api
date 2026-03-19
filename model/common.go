@@ -2,8 +2,8 @@ package model
 
 import (
 	"fmt"
-	"one-api/common"
-	"one-api/common/config"
+	"czloapi/common"
+	"czloapi/common/config"
 	"strings"
 
 	"gorm.io/gorm"

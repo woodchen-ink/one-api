@@ -8,9 +8,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"one-api/common"
-	"one-api/common/utils"
-	"one-api/types"
+	"czloapi/common"
+	"czloapi/common/utils"
+	"czloapi/types"
 	"strconv"
 	"strings"
 

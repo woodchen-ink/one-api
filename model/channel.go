@@ -3,9 +3,9 @@ package model
 import (
 	"crypto/md5"
 	"encoding/hex"
-	"one-api/common/config"
-	"one-api/common/logger"
-	"one-api/common/utils"
+	"czloapi/common/config"
+	"czloapi/common/logger"
+	"czloapi/common/utils"
 	"slices"
 	"strings"
 

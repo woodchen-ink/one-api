@@ -4,12 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"one-api/common"
-	"one-api/common/config"
-	"one-api/common/requester"
-	"one-api/providers/gemini"
-	"one-api/safty"
-	"one-api/types"
+	"czloapi/common"
+	"czloapi/common/config"
+	"czloapi/common/requester"
+	"czloapi/model"
+	"czloapi/providers/gemini"
+	"czloapi/safty"
+	"czloapi/types"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -69,6 +70,15 @@ func (r *relayGeminiOnly) getRequest() interface{} {
 
 func (r *relayGeminiOnly) IsStream() bool {
 	return r.geminiRequest.Stream
+}
+
+func (r *relayGeminiOnly) getBillingContext(promptTokens int) model.BillingContext {
+	requestTokens := promptTokens + r.geminiRequest.GenerationConfig.MaxOutputTokens
+	if thinkingConfig := r.geminiRequest.GenerationConfig.ThinkingConfig; thinkingConfig != nil && thinkingConfig.ThinkingBudget != nil {
+		requestTokens += *thinkingConfig.ThinkingBudget
+	}
+
+	return model.NewBillingContext(promptTokens, requestTokens)
 }
 
 func (r *relayGeminiOnly) getPromptTokens() (int, error) {

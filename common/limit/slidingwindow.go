@@ -4,8 +4,8 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
-	"one-api/common/config"
-	"one-api/common/redis"
+	"czloapi/common/config"
+	"czloapi/common/redis"
 	"time"
 )
 

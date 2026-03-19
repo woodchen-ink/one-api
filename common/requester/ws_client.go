@@ -5,8 +5,8 @@ import (
 	"net"
 	"net/http"
 	"net/url"
-	"one-api/common/logger"
-	"one-api/common/utils"
+	"czloapi/common/logger"
+	"czloapi/common/utils"
 	"time"
 
 	"github.com/gorilla/websocket"

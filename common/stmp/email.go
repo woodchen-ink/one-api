@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"one-api/common"
-	"one-api/common/config"
-	"one-api/common/utils"
+	"czloapi/common"
+	"czloapi/common/config"
+	"czloapi/common/utils"
 	"strings"
 
 	"github.com/wneessen/go-mail"

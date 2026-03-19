@@ -3,7 +3,7 @@ package common
 import (
 	"fmt"
 	"math"
-	"one-api/common/config"
+	"czloapi/common/config"
 )
 
 func LogQuota(quota int) string {
