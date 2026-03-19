@@ -25,7 +25,8 @@ export default function Order({
   apiPath = '/api/payment/order',
   storageKey = 'paymentOrder',
   showUserId = true,
-  showGatewayId = true
+  showGatewayId = true,
+  showGatewayType = true
 }) {
   const { t } = useTranslation();
 
@@ -112,7 +113,7 @@ export default function Order({
       [
         { id: 'created_at', label: t('orderlogPage.tableHeaders.created_at'), disableSort: false },
         { id: 'gateway_name', label: t('orderlogPage.tableHeaders.gateway_name'), disableSort: true },
-        { id: 'gateway_type', label: t('orderlogPage.tableHeaders.gateway_type'), disableSort: true },
+        showGatewayType ? { id: 'gateway_type', label: t('orderlogPage.tableHeaders.gateway_type'), disableSort: true } : null,
         showGatewayId ? { id: 'gateway_id', label: t('orderlogPage.tableHeaders.gateway_id'), disableSort: false } : null,
         showUserId ? { id: 'user_id', label: t('orderlogPage.tableHeaders.user_id'), disableSort: false } : null,
         { id: 'trade_no', label: t('orderlogPage.tableHeaders.trade_no'), disableSort: true },
@@ -121,10 +122,9 @@ export default function Order({
         { id: 'fee', label: t('orderlogPage.tableHeaders.fee'), disableSort: true },
         { id: 'discount', label: t('orderlogPage.tableHeaders.discount'), disableSort: true },
         { id: 'order_amount', label: t('orderlogPage.tableHeaders.order_amount'), disableSort: true },
-        { id: 'quota', label: t('orderlogPage.tableHeaders.quota'), disableSort: true },
         { id: 'status', label: t('orderlogPage.tableHeaders.status'), disableSort: false }
       ].filter(Boolean),
-    [showGatewayId, showUserId, t]
+    [showGatewayId, showGatewayType, showUserId, t]
   );
 
   // 处理刷新
@@ -178,7 +178,13 @@ export default function Order({
               <KeywordTableHead order={order} orderBy={orderBy} onRequestSort={handleSort} headLabel={headLabel} />
               <TableBody>
                 {orderList.map((row, index) => (
-                  <LogTableRow item={row} key={`${row.id}_${index}`} showGatewayId={showGatewayId} showUserId={showUserId} />
+                  <LogTableRow
+                    item={row}
+                    key={`${row.id}_${index}`}
+                    showGatewayId={showGatewayId}
+                    showGatewayType={showGatewayType}
+                    showUserId={showUserId}
+                  />
                 ))}
               </TableBody>
             </Table>
@@ -204,5 +210,6 @@ Order.propTypes = {
   apiPath: PropTypes.string,
   storageKey: PropTypes.string,
   showUserId: PropTypes.bool,
-  showGatewayId: PropTypes.bool
+  showGatewayId: PropTypes.bool,
+  showGatewayType: PropTypes.bool
 };

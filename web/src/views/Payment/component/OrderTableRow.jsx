@@ -45,7 +45,7 @@ function CopyableCell({ value, tooltip, emptyText }) {
   }
 
   return (
-    <Stack direction="row" spacing={0.5} alignItems="center" sx={{ minWidth: 0 }}>
+    <Stack direction="row" spacing={0.5} alignItems="center" justifyContent="center" sx={{ minWidth: 0, width: '100%' }}>
       <Typography variant="body2" sx={{ fontFamily: 'monospace', wordBreak: 'break-all' }}>
         {value}
       </Typography>
@@ -64,7 +64,7 @@ CopyableCell.propTypes = {
   emptyText: PropTypes.string
 };
 
-export default function OrderTableRow({ item, showGatewayId, showUserId }) {
+export default function OrderTableRow({ item, showGatewayId, showGatewayType, showUserId }) {
   const { t } = useTranslation();
 
   return (
@@ -72,13 +72,13 @@ export default function OrderTableRow({ item, showGatewayId, showUserId }) {
       <TableRow tabIndex={item.id}>
         <TableCell style={{ minWidth: '180px' }}>{timestamp2string(item.created_at)}</TableCell>
         <TableCell style={{ minWidth: '140px' }}>{item.gateway_name || '-'}</TableCell>
-        <TableCell>{paymentTypeLabel(item.gateway_type, t)}</TableCell>
+        {showGatewayType && <TableCell>{paymentTypeLabel(item.gateway_type, t)}</TableCell>}
         {showGatewayId && <TableCell>{item.gateway_id}</TableCell>}
         {showUserId && <TableCell>{item.user_id}</TableCell>}
-        <TableCell>
+        <TableCell align="center">
           <CopyableCell value={item.trade_no} tooltip={t('orderlogPage.tradeNoLabel')} emptyText="-" />
         </TableCell>
-        <TableCell>
+        <TableCell align="center">
           <CopyableCell value={item.gateway_no} tooltip={t('orderlogPage.gatewayNoLabel')} emptyText={t('orderlogPage.emptyGatewayNo')} />
         </TableCell>
         <TableCell>${item.amount}</TableCell>
@@ -89,7 +89,6 @@ export default function OrderTableRow({ item, showGatewayId, showUserId }) {
         <TableCell>
           {item.order_amount} {item.order_currency}
         </TableCell>
-        <TableCell>{item.quota}</TableCell>
         <TableCell>{statusLabel(item.status, t)}</TableCell>
       </TableRow>
     </>
@@ -99,5 +98,6 @@ export default function OrderTableRow({ item, showGatewayId, showUserId }) {
 OrderTableRow.propTypes = {
   item: PropTypes.object,
   showGatewayId: PropTypes.bool,
+  showGatewayType: PropTypes.bool,
   showUserId: PropTypes.bool
 };
