@@ -3,8 +3,6 @@ import { useMemo, memo } from 'react';
 import { ArrowForward } from '@mui/icons-material';
 import { Icon } from '@iconify/react';
 
-import Badge from '@mui/material/Badge';
-
 import { Box, TableRow, TableCell, Stack, Tooltip, Typography } from '@mui/material';
 
 import { timestamp2string, renderQuota } from 'utils/common';
@@ -175,23 +173,32 @@ function viewModelName(model_name, isStream) {
 
   if (isStream) {
     return (
-      <Badge
-        badgeContent="Stream"
-        color="primary"
-        sx={{
-          '& .MuiBadge-badge': {
-            fontSize: '0.55rem',
-            height: '16px',
-            minWidth: '16px',
-            padding: '0 4px',
-            top: '-3px'
-          }
-        }}
-      >
-        <Label color="primary" variant="outlined" copyText={model_name}>
-          {model_name}
-        </Label>
-      </Badge>
+      <Tooltip title="Stream" placement="top" arrow>
+        <Box sx={{ position: 'relative', display: 'inline-flex' }}>
+          <Label color="primary" variant="outlined" copyText={model_name}>
+            {model_name}
+          </Label>
+          <Box
+            sx={{
+              position: 'absolute',
+              top: -4,
+              right: -6,
+              width: 14,
+              height: 14,
+              borderRadius: '50%',
+              border: '2px solid',
+              borderColor: 'primary.main',
+              color: 'primary.main',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              bgcolor: 'primary.contrastText'
+            }}
+          >
+            <Icon icon="ph:waves-bold" width={12} />
+          </Box>
+        </Box>
+      </Tooltip>
     );
   }
 
