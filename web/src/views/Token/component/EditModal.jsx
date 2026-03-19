@@ -16,7 +16,7 @@ import {
   FormControl,
   InputLabel,
   OutlinedInput,
-  // InputAdornment,
+  InputAdornment,
   Switch,
   FormControlLabel,
   FormHelperText,
