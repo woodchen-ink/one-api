@@ -48,6 +48,10 @@ export const ExtraRatiosSelector = ({ value = {}, onChange }) => {
     return config ? config.name : key;
   };
 
+  const getRatioConfigByKey = (key) => {
+    return extraRatiosConfig.find((item) => item.key === key);
+  };
+
   // 获取图标
   const getIcon = (isPrompt) => {
     return isPrompt ? 'material-symbols:input-rounded' : 'material-symbols:output-rounded';
@@ -81,6 +85,10 @@ export const ExtraRatiosSelector = ({ value = {}, onChange }) => {
         扩展价格
       </Typography>
 
+      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1.5 }}>
+        `缓存价格` 多用于 OpenAI / Gemini 这类统一缓存计费；`缓存写入 / 缓存读取` 主要用于 Claude Prompt Caching。
+      </Typography>
+
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ mb: 2 }}>
         <FormControl fullWidth>
           <InputLabel>选择扩展价格项</InputLabel>
@@ -99,9 +107,17 @@ export const ExtraRatiosSelector = ({ value = {}, onChange }) => {
             ) : (
               availableRatios.map((option) => (
                 <MenuItem key={option.key} value={option.key}>
-                  <Stack direction="row" alignItems="center" spacing={1}>
-                    <Icon icon={getIcon(option.isPrompt)} color={getIconColor(option.isPrompt)} width={16} />
-                    <Typography variant="body2">{option.name}</Typography>
+                  <Stack spacing={0.25} sx={{ py: 0.25 }}>
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                      <Icon icon={getIcon(option.isPrompt)} color={getIconColor(option.isPrompt)} width={16} />
+                      <Typography variant="body2">{option.name}</Typography>
+                    </Stack>
+                    <Typography variant="caption" color="text.secondary" sx={{ pl: 3 }}>
+                      适用渠道：{option.channels}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ pl: 3 }}>
+                      {option.description}
+                    </Typography>
                   </Stack>
                 </MenuItem>
               ))
@@ -196,6 +212,16 @@ export const ExtraRatiosSelector = ({ value = {}, onChange }) => {
                   </IconButton>
                 </Tooltip>
               </Stack>
+              {getRatioConfigByKey(config.key) && (
+                <Box sx={{ mt: 1, pl: 4 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                    适用渠道：{getRatioConfigByKey(config.key).channels}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                    {getRatioConfigByKey(config.key).description}
+                  </Typography>
+                </Box>
+              )}
             </Box>
           ))}
         </Stack>
