@@ -17,7 +17,7 @@ func (p *ReplicateProvider) CreateImageGenerations(request *types.ImageRequest) 
 	// 获取请求地址
 	fullRequestURL := p.GetFullRequestURL(url, request.Model)
 	if fullRequestURL == "" {
-		return nil, common.ErrorWrapper(nil, "invalid_recraft_config", http.StatusInternalServerError)
+		return nil, common.ErrorWrapper(nil, "invalid_replicate_config", http.StatusInternalServerError)
 	}
 
 	// 获取请求头

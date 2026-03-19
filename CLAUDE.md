@@ -95,7 +95,7 @@ The provider system implements a plugin-based architecture in `providers/`:
 - Claude and Gemini native routes support root-path aliases for client compatibility.
   - Claude can be called via `/v1/messages`.
   - Gemini can be called via `/v1beta/models/:model` and `/v1/models/:model`.
-- The default homepage highlights supported providers and their native route patterns for quick onboarding.
+- The default homepage highlights the currently enabled native routes for quick onboarding.
 - Support for streaming responses and WebSocket connections
 
 #### Frontend React Structure

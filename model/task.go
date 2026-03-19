@@ -7,11 +7,6 @@ import (
 	"gorm.io/gorm"
 )
 
-const (
-	TaskPlatformSuno  = "suno"
-	TaskPlatformKling = "kling"
-)
-
 type TaskStatus string
 
 const (

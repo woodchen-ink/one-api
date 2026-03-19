@@ -292,7 +292,6 @@ const (
 	ChannelTypeCoze            = 38
 	ChannelTypeOllama          = 39
 	ChannelTypeHunyuan         = 40
-	ChannelTypeSuno            = 41
 	ChannelTypeVertexAI        = 42
 	ChannelTypeLLAMA           = 43
 	ChannelTypeIdeogram        = 44
@@ -301,9 +300,7 @@ const (
 	ChannelTypeJina            = 47
 	ChannelTypeRerank          = 48
 	ChannelTypeGithub          = 49
-	ChannelTypeRecraft         = 51
 	ChannelTypeReplicate       = 52
-	ChannelTypeKling           = 53
 	ChannelTypeAzureDatabricks = 54
 	ChannelTypeAzureV1         = 55
 	ChannelTypeXAI             = 56
@@ -322,10 +319,8 @@ const (
 	RelayModeAudioSpeech
 	RelayModeAudioTranscription
 	RelayModeAudioTranslation
-	RelayModeSuno
 	RelayModeRerank
 	RelayModeChatRealtime
-	RelayModeKling
 	RelayModeResponses
 )
 

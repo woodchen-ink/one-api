@@ -1,15 +1,15 @@
+import PropTypes from 'prop-types';
 import React, { useState } from 'react';
 import { useTheme } from '@mui/material/styles';
-import { Avatar, Box, ButtonBase, Menu, MenuItem, Typography } from '@mui/material';
-import i18nList from 'i18n/i18nList';
-import useI18n from 'hooks/useI18n';
-import Flags from 'country-flag-icons/react/3x2';
+import { Box, ButtonBase, Menu, MenuItem, Typography } from '@mui/material';
 import { Icon } from '@iconify/react';
 
-export default function I18nButton() {
+import i18nList, { getLanguageOption, normalizeLanguage } from 'i18n/i18nList';
+import useI18n from 'hooks/useI18n';
+
+export default function I18nButton({ sx }) {
   const theme = useTheme();
   const i18n = useI18n();
-
   const [anchorEl, setAnchorEl] = useState(null);
 
   const handleMenuOpen = (event) => {
@@ -21,19 +21,12 @@ export default function I18nButton() {
   };
 
   const handleLanguageChange = (lng) => {
-    i18n.changeLanguage(lng);
+    i18n.changeLanguage(normalizeLanguage(lng));
     handleMenuClose();
   };
 
-  // 获取当前语言的国家代码
-  const getCurrentCountryCode = () => {
-    const currentLang = i18n.language || 'zh_CN';
-    const langItem = i18nList.find((item) => item.lng === currentLang) || i18nList[0];
-    return langItem.countryCode;
-  };
-
-  // 动态获取当前语言的国旗组件
-  const CurrentFlag = Flags[getCurrentCountryCode()];
+  const currentLanguage = getLanguageOption(i18n.language);
+  const currentLanguageKey = currentLanguage.lng;
 
   return (
     <Box
@@ -42,47 +35,63 @@ export default function I18nButton() {
         mr: 3,
         [theme.breakpoints.down('md')]: {
           mr: 2
-        }
+        },
+        ...sx
       }}
     >
-      <ButtonBase sx={{ borderRadius: '12px' }} onClick={handleMenuOpen}>
-        <Avatar
-          variant="rounded"
+      <ButtonBase sx={{ borderRadius: '999px' }} onClick={handleMenuOpen}>
+        <Box
           sx={{
-            ...theme.typography.commonAvatar,
-            ...theme.typography.mediumAvatar,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            px: 1.25,
+            py: 0.75,
+            borderRadius: '999px',
+            border: `1px solid ${theme.palette.divider}`,
+            backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.04)' : theme.palette.background.paper,
             transition: 'all .2s ease-in-out',
-            borderColor: 'transparent',
-            borderRadius: '50%',
-            backgroundColor: 'transparent',
-            boxShadow: 'none',
-            overflow: 'hidden',
-            '&[aria-controls="menu-list-grow"],&:hover': {
-              boxShadow: '0 0 10px rgba(0,0,0,0.2)',
-              backgroundColor: 'transparent',
-              borderRadius: '50%'
+            '&:hover': {
+              backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : theme.palette.action.hover,
+              boxShadow: theme.palette.mode === 'dark' ? '0 6px 18px rgba(0, 0, 0, 0.24)' : '0 6px 18px rgba(15, 23, 42, 0.08)'
             }
           }}
-          color="inherit"
         >
-          {CurrentFlag ? (
-            <Box
+          <Icon icon="solar:global-linear" width="1.1rem" color={theme.palette.text.secondary} />
+          <Typography
+            variant="body2"
+            sx={{
+              fontWeight: 600,
+              color: theme.palette.text.primary,
+              lineHeight: 1
+            }}
+          >
+            {currentLanguage.name}
+          </Typography>
+          <Box
+            sx={{
+              minWidth: 30,
+              px: 0.75,
+              py: 0.25,
+              borderRadius: '999px',
+              backgroundColor: theme.palette.mode === 'dark' ? 'rgba(144, 202, 249, 0.14)' : 'rgba(25, 118, 210, 0.1)'
+            }}
+          >
+            <Typography
+              variant="caption"
               sx={{
-                width: '1.8rem',
-                height: '1.4rem',
-                overflow: 'hidden',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                position: 'relative'
+                display: 'block',
+                fontWeight: 700,
+                textAlign: 'center',
+                color: theme.palette.primary.main,
+                lineHeight: 1.2
               }}
             >
-              <CurrentFlag style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-            </Box>
-          ) : (
-            <Icon icon="solar:global-bold-duotone" width="1.6rem" color={theme.palette.secondary.main} />
-          )}
-        </Avatar>
+              {currentLanguage.shortName}
+            </Typography>
+          </Box>
+          <Icon icon="solar:alt-arrow-down-linear" width="0.95rem" color={theme.palette.text.secondary} />
+        </Box>
       </ButtonBase>
       <Menu
         anchorEl={anchorEl}
@@ -98,15 +107,16 @@ export default function I18nButton() {
         }}
         sx={{
           '& .MuiPaper-root': {
-            borderRadius: '8px',
+            borderRadius: '12px',
             boxShadow: theme.palette.mode === 'dark' ? '0 4px 20px 0 rgba(0,0,0,0.3)' : '0 2px 10px 0 rgba(0,0,0,0.12)',
             border: `1px solid ${theme.palette.divider}`,
-            minWidth: '140px'
+            minWidth: '180px'
           }
         }}
       >
         {i18nList.map((item) => {
-          const FlagComponent = Flags[item.countryCode];
+          const selected = item.lng === currentLanguageKey;
+
           return (
             <MenuItem
               key={item.lng}
@@ -114,27 +124,54 @@ export default function I18nButton() {
               sx={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: 1
+                gap: 1.25,
+                py: 1,
+                px: 1.25
               }}
             >
-              {FlagComponent ? (
-                <Box
+              <Box
+                sx={{
+                  minWidth: 36,
+                  px: 1,
+                  py: 0.5,
+                  borderRadius: '8px',
+                  backgroundColor: selected
+                    ? theme.palette.mode === 'dark'
+                      ? 'rgba(144, 202, 249, 0.16)'
+                      : 'rgba(25, 118, 210, 0.12)'
+                    : theme.palette.mode === 'dark'
+                      ? 'rgba(255, 255, 255, 0.05)'
+                      : 'rgba(15, 23, 42, 0.05)'
+                }}
+              >
+                <Typography
+                  variant="caption"
                   sx={{
-                    width: '1.45rem',
-                    height: '1.125rem',
-                    overflow: 'hidden',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    position: 'relative'
+                    display: 'block',
+                    textAlign: 'center',
+                    fontWeight: 700,
+                    color: selected ? theme.palette.primary.main : theme.palette.text.secondary,
+                    lineHeight: 1.2
                   }}
                 >
-                  <FlagComponent style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                </Box>
-              ) : (
-                <Icon icon="solar:global-bold-duotone" width="1.2rem" color={theme.palette.text.secondary} />
-              )}
-              <Typography variant="body1">{item.name}</Typography>
+                  {item.shortName}
+                </Typography>
+              </Box>
+              <Box sx={{ flex: 1 }}>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: selected ? 600 : 500,
+                    color: theme.palette.text.primary
+                  }}
+                >
+                  {item.name}
+                </Typography>
+                <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
+                  {item.lng.replace('_', '-')}
+                </Typography>
+              </Box>
+              {selected && <Icon icon="solar:check-circle-bold" width="1rem" color={theme.palette.primary.main} />}
             </MenuItem>
           );
         })}
@@ -142,3 +179,7 @@ export default function I18nButton() {
     </Box>
   );
 }
+
+I18nButton.propTypes = {
+  sx: PropTypes.object
+};

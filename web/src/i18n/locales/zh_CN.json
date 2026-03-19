@@ -1484,8 +1484,6 @@
   "请输入你部署的Ollama地址，例如：http://127.0.0.1:11434，如果你使用了cloudflare Zero Trust，可以在下方插件填入授权信息": "请输入你部署的Ollama地址，例如：http://127.0.0.1:11434，如果你使用了cloudflare Zero Trust，可以在下方插件填入授权信息",
   "请随意填写": "请随意填写",
   "按照如下格式输入：SecretId|SecretKey": "按照如下格式输入：SecretId|SecretKey",
-  "密钥填写Suno-API的密钥，如果没有设置密钥，可以随便填": "密钥填写Suno-API的密钥，如果没有设置密钥，可以随便填",
-  "地址填写Suno-API部署的地址": "地址填写Suno-API部署的地址",
   "请参考wiki中的文档获取key. https://github.com/MartialBE/one-hub/wiki/VertexAI": "请参考wiki中的文档获取key. https://github.com/MartialBE/one-hub/wiki/VertexAI",
   "知识库": "知识库",
   "请前往开放平台的知识库上传文档，然后使用知识库功能进行检索。": "请前往开放平台的知识库上传文档，然后使用知识库功能进行检索。",
@@ -1529,12 +1527,6 @@
     "progress": "进度",
     "status": "任务状态(点击查看结果)",
     "fail": "失败原因"
-  },
-  "suno": {
-    "music": "音频",
-    "video": "视频",
-    "lyrics": "歌词",
-    "response": "响应体"
   },
   "预计费选项": "预计费选项",
   "这里选择预计费选项，用于预估费用，如果你觉得计算图片占用太多资源，可以选择关闭图片计费。但是请注意：有些渠道在stream下是不会返回tokens的，这会导致输入tokens计算错误。": "这里选择预计费选项，用于预估费用，如果你觉得计算图片占用太多资源，可以选择关闭图片计费。但是请注意：有些渠道在stream下是不会返回tokens的，这会导致输入tokens计算错误。",

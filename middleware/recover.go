@@ -87,41 +87,9 @@ func RelayMJPanicRecover() gin.HandlerFunc {
 	}
 }
 
-func RelaySunoPanicRecover() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		defer func() {
-			if err := recover(); err != nil {
-				errorResponse := gin.H{
-					"code":    "czloapi_panic",
-					"message": fmt.Sprintf("Panic detected, error: %v.", err),
-				}
-				handlePanic(c, err, errorResponse)
-				metrics.RecordPanic("suno")
-			}
-		}()
-		c.Next()
-	}
-}
-
 func handlePanic(c *gin.Context, err interface{}, errorResponse gin.H) {
 	logger.SysError(fmt.Sprintf("panic detected: %v", err))
 	logger.SysError(fmt.Sprintf("stacktrace from panic: %s", string(debug.Stack())))
 	c.JSON(http.StatusInternalServerError, errorResponse)
 	c.Abort()
-}
-
-func RelayKlingPanicRecover() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		defer func() {
-			if err := recover(); err != nil {
-				errorResponse := gin.H{
-					"code":    "one_hub_panic",
-					"message": fmt.Sprintf("Panic detected, error: %v. Please submit a issue here: https://github.com/MartialBE/one-hub", err),
-				}
-				handlePanic(c, err, errorResponse)
-				metrics.RecordPanic("Kling")
-			}
-		}()
-		c.Next()
-	}
 }

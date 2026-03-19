@@ -424,18 +424,6 @@ const typeConfig = {
     },
     modelGroup: 'Hunyuan'
   },
-  41: {
-    input: {
-      models: ['suno_lyrics', 'chirp-v3-0', 'chirp-v3-5']
-    },
-    prompt: {
-      key: '密钥填写Suno-API的密钥，如果没有设置密钥，可以随便填',
-      base_url: '地址填写Suno-API部署的地址',
-      test_model: '',
-      model_mapping: ''
-    },
-    modelGroup: 'Suno'
-  },
   42: {
     input: {
       models: ['claude-3-opus-20240229', 'claude-3-sonnet-20240229', 'claude-3-haiku-20240307']
@@ -483,43 +471,6 @@ const typeConfig = {
       base_url: 'https://models.inference.ai.azure.com'
     },
     modelGroup: 'Github'
-  },
-  51: {
-    input: {
-      models: [
-        'recraftv3',
-        'recraft20b',
-        'recraft_vectorize',
-        'recraft_removeBackground',
-        'recraft_clarityUpscale',
-        'recraft_generativeUpscale',
-        'recraft_styles'
-      ]
-    }
-  },
-  53: {
-    input: {
-      models: [
-        'kling-video_kling-v1_std_5',
-        'kling-video_kling-v1_std_10',
-        'kling-video_kling-v1_pro_5',
-        'kling-video_kling-v1_pro_10',
-
-        'kling-video_kling-v1-5_std_5',
-        'kling-video_kling-v1-5_std_10',
-        'kling-video_kling-v1-5_pro_5',
-        'kling-video_kling-v1-5_pro_10',
-
-        'kling-video_kling-v1-10_std_5',
-        'kling-video_kling-v1-10_std_10',
-        'kling-video_kling-v1-10_pro_5',
-        'kling-video_kling-v1-10_pro_10'
-      ]
-    },
-    prompt: {
-      key: '官方密钥格式： accessKey|secretKey'
-    },
-    modelGroup: 'Kling'
   },
   54: {
     inputLabel: {

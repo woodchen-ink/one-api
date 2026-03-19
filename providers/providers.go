@@ -30,11 +30,9 @@ import (
 	"one-api/providers/openai"
 	"one-api/providers/openrouter"
 	"one-api/providers/palm"
-	"one-api/providers/recraftAI"
 	"one-api/providers/replicate"
 	"one-api/providers/siliconflow"
 	"one-api/providers/stabilityAI"
-	"one-api/providers/suno"
 	"one-api/providers/tencent"
 	"one-api/providers/vertexai"
 	"one-api/providers/xAI"
@@ -80,12 +78,10 @@ func init() {
 		config.ChannelTypeMoonshot:        moonshot.MoonshotProviderFactory{},
 		config.ChannelTypeLingyi:          lingyi.LingyiProviderFactory{},
 		config.ChannelTypeHunyuan:         hunyuan.HunyuanProviderFactory{},
-		config.ChannelTypeSuno:            suno.SunoProviderFactory{},
 		config.ChannelTypeVertexAI:        vertexai.VertexAIProviderFactory{},
 		config.ChannelTypeSiliconflow:     siliconflow.SiliconflowProviderFactory{},
 		config.ChannelTypeJina:            jina.JinaProviderFactory{},
 		config.ChannelTypeGithub:          github.GithubProviderFactory{},
-		config.ChannelTypeRecraft:         recraftAI.RecraftProviderFactory{},
 		config.ChannelTypeReplicate:       replicate.ReplicateProviderFactory{},
 		config.ChannelTypeOpenRouter:      openrouter.OpenRouterProviderFactory{},
 		config.ChannelTypeAzureDatabricks: azuredatabricks.AzureDatabricksProviderFactory{},

@@ -188,12 +188,6 @@ export const CHANNEL_OPTIONS = {
     color: 'default',
     url: 'https://cloud.tencent.com/product/hunyuan'
   },
-  41: {
-    key: 41,
-    text: 'Suno',
-    value: 41,
-    color: 'default'
-  },
   42: {
     key: 42,
     text: 'VertexAI',
@@ -229,26 +223,12 @@ export const CHANNEL_OPTIONS = {
     color: 'default',
     url: 'https://github.com/marketplace/models'
   },
-  51: {
-    key: 51,
-    text: 'RecraftAI',
-    value: 51,
-    color: 'orange',
-    url: ''
-  },
   52: {
     key: 52,
     text: 'Replicate',
     value: 52,
     color: 'default',
     url: ''
-  },
-  53: {
-    key: 53,
-    text: 'Kling',
-    value: 53,
-    color: 'warning',
-    url: 'https://api.kling.ai'
   },
   54: {
     key: 54,

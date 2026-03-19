@@ -5,6 +5,7 @@ import { SET_SITE_INFO, SET_MODEL_OWNEDBY } from 'store/actions';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import i18n from 'i18next';
+import { normalizeLanguage } from 'i18n/i18nList';
 
 export const LoadStatusContext = createContext();
 
@@ -24,7 +25,8 @@ const StatusProvider = ({ children }) => {
           delete data.chat_link;
         }
         // 设置系统默认语言
-        const storedLanguage = localStorage.getItem('appLanguage') || data.language || 'zh_CN';
+        const storedLanguage = normalizeLanguage(localStorage.getItem('appLanguage') || data.language || 'zh_CN');
+        localStorage.setItem('appLanguage', storedLanguage);
         localStorage.setItem('default_language', storedLanguage);
         i18n.changeLanguage(storedLanguage);
         localStorage.setItem('siteInfo', JSON.stringify(data));

@@ -112,11 +112,25 @@ func UpdateTaskBulk() {
 
 func UpdateTaskByPlatform(ctx context.Context,
 	platform string, taskChannelM map[int][]string, taskM map[string]*model.Task) {
-	taskAdaptor, err := GetTaskAdaptorByPlatform(platform)
-	if err != nil {
-		logger.LogError(ctx, fmt.Sprintf("GetTaskAdaptorByPlatform error: %v", err))
+	taskIDs := make([]int64, 0, len(taskM))
+	for _, task := range taskM {
+		taskIDs = append(taskIDs, task.ID)
+	}
+
+	if len(taskIDs) == 0 {
+		logger.LogError(ctx, fmt.Sprintf("unsupported task platform without task ids: %s", platform))
 		return
 	}
 
-	taskAdaptor.UpdateTaskStatus(ctx, taskChannelM, taskM)
+	err := model.TaskBulkUpdateByID(taskIDs, map[string]any{
+		"status":      model.TaskStatusFailure,
+		"progress":    100,
+		"fail_reason": fmt.Sprintf("unsupported task platform: %s", platform),
+	})
+	if err != nil {
+		logger.LogError(ctx, fmt.Sprintf("disable unsupported task platform failed: %v", err))
+		return
+	}
+
+	logger.LogInfo(ctx, fmt.Sprintf("marked unsupported task platform as failed: %s", platform))
 }

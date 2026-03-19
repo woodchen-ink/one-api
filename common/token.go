@@ -446,26 +446,18 @@ func calculateToken(model string, size string, n int, quality, style string) (in
 	imageCostRatio := 1.0
 	hasValidSize := false
 
-	switch model {
-	case "recraft20b", "recraftv3":
-		if style == "vector_illustration" {
-			imageCostRatio = 2
-		}
+	imageCostRatio, hasValidSize = DalleSizeRatios[model][size]
 
-	default:
-		imageCostRatio, hasValidSize = DalleSizeRatios[model][size]
-
-		if hasValidSize {
-			if quality == "hd" && model == "dall-e-3" {
-				if size == "1024x1024" {
-					imageCostRatio *= 2
-				} else {
-					imageCostRatio *= 1.5
-				}
+	if hasValidSize {
+		if quality == "hd" && model == "dall-e-3" {
+			if size == "1024x1024" {
+				imageCostRatio *= 2
+			} else {
+				imageCostRatio *= 1.5
 			}
-		} else {
-			imageCostRatio = 1
 		}
+	} else {
+		imageCostRatio = 1
 	}
 
 	return int(imageCostRatio*1000) * n, nil

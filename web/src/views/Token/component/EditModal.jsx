@@ -360,7 +360,7 @@ const EditModal = ({ open, tokenId, onCancel, onOk, userGroupOptions, adminMode 
                   type="text" // 支持输入小数
                   value={values.remain_quota}
                   name="remain_quota"
-                  // endAdornment={<InputAdornment position="end">{renderQuotaWithPrompt(values.remain_quota)}</InputAdornment>}
+                  startAdornment={<InputAdornment position="start">$</InputAdornment>}
                   onBlur={handleBlur}
                   onChange={handleChange}
                   aria-describedby="helper-text-channel-remain_quota-label"

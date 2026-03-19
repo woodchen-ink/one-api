@@ -3,9 +3,6 @@ package router
 import (
 	"one-api/middleware"
 	"one-api/relay"
-	"one-api/relay/task"
-	"one-api/relay/task/kling"
-	"one-api/relay/task/suno"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,11 +11,8 @@ func SetRelayRouter(router *gin.Engine) {
 	router.Use(middleware.CORS())
 	// https://platform.openai.com/docs/api-reference/introduction
 	setOpenAIRouter(router)
-	setSunoRouter(router)
 	setClaudeRouter(router)
 	setGeminiRouter(router)
-	setRecraftRouter(router)
-	setKlingRouter(router)
 }
 
 func setOpenAIRouter(router *gin.Engine) {
@@ -63,16 +57,6 @@ func setOpenAIRouter(router *gin.Engine) {
 	}
 }
 
-func setSunoRouter(router *gin.Engine) {
-	relaySunoRouter := router.Group("/suno")
-	relaySunoRouter.Use(middleware.RelaySunoPanicRecover(), middleware.OpenaiAuth(), middleware.Distribute(), middleware.DynamicRedisRateLimiter())
-	{
-		relaySunoRouter.POST("/submit/:action", task.RelayTaskSubmit)
-		relaySunoRouter.POST("/fetch", suno.GetFetch)
-		relaySunoRouter.GET("/fetch/:id", suno.GetFetchByID)
-	}
-}
-
 func setClaudeRouter(router *gin.Engine) {
 	rootClaudeRouter := router.Group("/v1")
 	rootClaudeRouter.Use(middleware.APIEnabled("claude"), middleware.RelayCluadePanicRecover(), middleware.ClaudeAuth(), middleware.Distribute(), middleware.DynamicRedisRateLimiter())
@@ -103,30 +87,5 @@ func setGeminiRouter(router *gin.Engine) {
 	{
 		relayGeminiRouter.POST("/:version/models/:model", relay.Relay)
 		relayGeminiRouter.GET("/:version/models", relay.ListGeminiModelsByToken)
-	}
-}
-
-func setRecraftRouter(router *gin.Engine) {
-	relayRecraftRouter := router.Group("/recraftAI/v1")
-	relayRecraftRouter.Use(middleware.RelayPanicRecover(), middleware.OpenaiAuth(), middleware.Distribute(), middleware.DynamicRedisRateLimiter())
-	{
-		relayRecraftRouter.POST("/images/generations", relay.Relay)
-		relayRecraftRouter.POST("/images/vectorize", relay.RelayRecraftAI)
-		relayRecraftRouter.POST("/images/removeBackground", relay.RelayRecraftAI)
-		relayRecraftRouter.POST("/images/clarityUpscale", relay.RelayRecraftAI)
-		relayRecraftRouter.POST("/images/generativeUpscale", relay.RelayRecraftAI)
-		relayRecraftRouter.POST("/styles", relay.RelayRecraftAI)
-	}
-}
-
-func setKlingRouter(router *gin.Engine) {
-	relayKlingRouter := router.Group("/kling")
-	relayKlingRouter.Use(middleware.RelayKlingPanicRecover(), middleware.OpenaiAuth(), middleware.Distribute())
-	relayKlingRouter.GET("/v1/videos/text2video/:id", kling.GetFetchByID)
-	relayKlingRouter.GET("/v1/videos/image2video/:id", kling.GetFetchByID)
-
-	relayKlingRouter.Use(middleware.DynamicRedisRateLimiter())
-	{
-		relayKlingRouter.POST("/v1/:class/:action", task.RelayTaskSubmit)
 	}
 }

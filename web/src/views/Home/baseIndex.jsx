@@ -132,21 +132,6 @@ const BaseIndex = () => {
       provider: 'Gemini Native',
       vendor: 'Google Gemini',
       routes: ['/v1beta/models/{model}:generateContent', '/v1beta/models/{model}:streamGenerateContent']
-    },
-    {
-      provider: 'Recraft',
-      vendor: 'Recraft AI',
-      routes: ['/recraftAI/v1/images/generations']
-    },
-    {
-      provider: 'Suno',
-      vendor: 'Suno',
-      routes: ['/suno/submit/{action}']
-    },
-    {
-      provider: 'Kling',
-      vendor: 'Kling',
-      routes: ['/kling/v1/{class}/{action}']
     }
   ];
 
