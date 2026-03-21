@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Box,
   Typography,
@@ -28,7 +28,6 @@ import ExtensionIcon from '@mui/icons-material/Extension';
 import CodeIcon from '@mui/icons-material/Code';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import HubOutlinedIcon from '@mui/icons-material/HubOutlined';
-import MemoryOutlinedIcon from '@mui/icons-material/MemoryOutlined';
 import PolylineOutlinedIcon from '@mui/icons-material/PolylineOutlined';
 import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
 
@@ -170,310 +169,284 @@ const FooterLink = ({ icon, title, link }) => {
   );
 };
 
-const NativeRoutePanel = ({ nativeRoutes }) => {
-  const theme = useTheme();
+const buildTerminalLines = (nativeRoutes) => {
   const totalRoutes = nativeRoutes.reduce((sum, item) => sum + item.routes.length, 0);
+  const lines = [
+    { text: '$ czloapi list-routes --native', color: '#E8E8E8', speed: 'fast' },
+    { text: '', speed: 'instant' },
+    { text: '[SCANNING] Detecting native route providers...', color: '#5E7E80', speed: 'medium' },
+    { text: '', speed: 'instant' }
+  ];
+
+  nativeRoutes.forEach((item) => {
+    lines.push({ text: `═══ ${item.provider} ═══`, color: '#7B90BF', speed: 'fast' });
+    lines.push({ text: `  VENDOR   ${item.vendor}`, color: '#95A0AE', speed: 'medium' });
+    lines.push({
+      text: `  ROUTES   ${item.routes.length} endpoint${item.routes.length > 1 ? 's' : ''} detected`,
+      color: '#95A0AE',
+      speed: 'medium'
+    });
+    item.routes.forEach((route, i) => {
+      const isLast = i === item.routes.length - 1;
+      const prefix = isLast ? '  └─ ' : '  ├─ ';
+      lines.push({ text: `${prefix}${route}`, color: '#E8E8E8', speed: 'type' });
+    });
+    lines.push({ text: '', speed: 'instant' });
+  });
+
+  lines.push({
+    text: `✓ ${nativeRoutes.length} providers | ${totalRoutes} native routes | Ready`,
+    color: '#5E7E80',
+    speed: 'medium'
+  });
+
+  return lines;
+};
+
+const NativeRoutePanel = ({ nativeRoutes }) => {
+  const terminalLines = useRef(buildTerminalLines(nativeRoutes));
+  const [visibleLines, setVisibleLines] = useState([]);
+  const [currentTyping, setCurrentTyping] = useState('');
+  const [isComplete, setIsComplete] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
+  const containerRef = useRef(null);
+  const scrollRef = useRef(null);
+  const animationRef = useRef(null);
+
+  // IntersectionObserver to start animation when visible
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasStarted) {
+          setHasStarted(true);
+        }
+      },
+      { threshold: 0.3 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasStarted]);
+
+  // Auto-scroll to bottom
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [visibleLines, currentTyping]);
+
+  // Typing animation
+  useEffect(() => {
+    if (!hasStarted) return;
+
+    const lines = terminalLines.current;
+    let lineIndex = 0;
+    let charIndex = 0;
+    let cancelled = false;
+
+    const getDelay = (speed) => {
+      switch (speed) {
+        case 'instant':
+          return 0;
+        case 'fast':
+          return 20;
+        case 'medium':
+          return 12;
+        case 'type':
+          return 35;
+        default:
+          return 25;
+      }
+    };
+
+    const getLineDelay = (speed) => {
+      switch (speed) {
+        case 'instant':
+          return 40;
+        case 'fast':
+          return 80;
+        default:
+          return 120;
+      }
+    };
+
+    const tick = () => {
+      if (cancelled) return;
+      if (lineIndex >= lines.length) {
+        setCurrentTyping('');
+        setIsComplete(true);
+        return;
+      }
+
+      const line = lines[lineIndex];
+      const text = line.text;
+
+      if (line.speed === 'instant' || charIndex >= text.length) {
+        // Line complete - commit it
+        setVisibleLines((prev) => [...prev, line]);
+        setCurrentTyping('');
+        lineIndex++;
+        charIndex = 0;
+        animationRef.current = setTimeout(tick, getLineDelay(line.speed));
+      } else {
+        // Type next character
+        charIndex++;
+        setCurrentTyping(text.substring(0, charIndex));
+        animationRef.current = setTimeout(tick, getDelay(line.speed));
+      }
+    };
+
+    animationRef.current = setTimeout(tick, 400);
+
+    return () => {
+      cancelled = true;
+      if (animationRef.current) clearTimeout(animationRef.current);
+    };
+  }, [hasStarted]);
+
+  const currentLineColor = useCallback(() => {
+    const lines = terminalLines.current;
+    const idx = visibleLines.length;
+    if (idx < lines.length) return lines[idx].color || '#E8E8E8';
+    return '#E8E8E8';
+  }, [visibleLines]);
 
   return (
     <Box
+      ref={containerRef}
       sx={{
-        position: 'relative',
-        overflow: 'hidden',
-        borderRadius: '22px',
-        border: `1px solid ${alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.34 : 0.16)}`,
-        background:
-          theme.palette.mode === 'dark'
-            ? `linear-gradient(145deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(theme.palette.background.default, 0.92)} 100%)`
-            : `linear-gradient(145deg, ${alpha(theme.palette.background.paper, 0.98)} 0%, ${alpha(theme.palette.primary.light, 0.1)} 100%)`,
-        boxShadow:
-          theme.palette.mode === 'dark'
-            ? '0 18px 38px rgba(0, 0, 0, 0.24)'
-            : `0 18px 38px ${alpha(theme.palette.primary.main, 0.1)}`,
-        backdropFilter: 'blur(16px)',
-        p: { xs: 2, md: 2.2 },
         maxWidth: { lg: 520 },
+        width: '100%',
         ml: { lg: 'auto' },
-        isolation: 'isolate',
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          inset: 'auto -15% -35% auto',
-          width: { xs: 150, md: 190 },
-          height: { xs: 150, md: 190 },
-          borderRadius: '50%',
-          background: `radial-gradient(circle, ${alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.24 : 0.16)} 0%, transparent 72%)`,
-          animation: 'heroOrb 10s ease-in-out infinite'
-        },
-        '&::after': {
-          content: '""',
-          position: 'absolute',
-          inset: 0,
-          backgroundImage: `linear-gradient(${alpha(theme.palette.common.white, 0)} 0%, ${alpha(theme.palette.common.white, theme.palette.mode === 'dark' ? 0.04 : 0.24)} 50%, ${alpha(theme.palette.common.white, 0)} 100%)`,
-          transform: 'translateY(-120%)',
-          animation: 'panelScan 8s linear infinite',
-          pointerEvents: 'none'
-        },
-        '@keyframes heroOrb': {
-          '0%, 100%': {
-            transform: 'translate3d(0, 0, 0) scale(1)'
-          },
-          '50%': {
-            transform: 'translate3d(-18px, -12px, 0) scale(1.08)'
-          }
-        },
-        '@keyframes panelScan': {
-          '0%': {
-            transform: 'translateY(-120%)'
-          },
-          '100%': {
-            transform: 'translateY(120%)'
-          }
-        },
-        '@keyframes signalFloat': {
-          '0%, 100%': {
-            transform: 'translate3d(0, 0, 0)'
-          },
-          '50%': {
-            transform: 'translate3d(0, -6px, 0)'
-          }
+        borderRadius: '8px',
+        overflow: 'hidden',
+        border: '1px solid #2a2d3a',
+        boxShadow: '0 16px 48px rgba(0, 0, 0, 0.28)',
+        '@keyframes blink': {
+          '0%, 100%': { opacity: 1 },
+          '50%': { opacity: 0 }
         }
       }}
     >
+      {/* Terminal title bar */}
       <Box
         sx={{
-          position: 'absolute',
-          inset: 0,
-          opacity: theme.palette.mode === 'dark' ? 0.2 : 0.08,
-          backgroundImage: `
-            linear-gradient(${alpha(theme.palette.primary.main, 0.45)} 1px, transparent 1px),
-            linear-gradient(90deg, ${alpha(theme.palette.primary.main, 0.45)} 1px, transparent 1px)
-          `,
-          backgroundSize: '26px 26px',
-          maskImage: 'radial-gradient(circle at center, black 45%, transparent 90%)',
-          pointerEvents: 'none'
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+          px: 1.5,
+          py: 1,
+          backgroundColor: '#1e2030',
+          borderBottom: '1px solid #2a2d3a'
         }}
-      />
+      >
+        <Box sx={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: '#ff5f57' }} />
+        <Box sx={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: '#febc2e' }} />
+        <Box sx={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: '#28c840' }} />
+        <Typography
+          sx={{
+            ml: 1.5,
+            fontFamily: '"Roboto Mono", "SFMono-Regular", Consolas, monospace',
+            fontSize: '0.7rem',
+            color: '#6b7394',
+            userSelect: 'none'
+          }}
+        >
+          czloapi ~ native-routes
+        </Typography>
+      </Box>
 
-      <Stack spacing={1.6} sx={{ position: 'relative', zIndex: 1 }}>
-        <Stack direction="row" justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'center' }} spacing={2}>
-          <Box>
-            <Chip
-              icon={<HubOutlinedIcon sx={{ fontSize: '1rem !important' }} />}
-              label="Native Route Matrix"
-              size="small"
-              sx={{
-                mb: 1.25,
-                color: 'primary.main',
-                borderColor: alpha(theme.palette.primary.main, 0.24),
-                backgroundColor: alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.16 : 0.08),
-                '& .MuiChip-icon': {
-                  color: 'primary.main'
-                }
-              }}
-              variant="outlined"
-            />
-            <Typography
-              sx={{
-                fontWeight: 600,
-                fontSize: { xs: '1.2rem', md: '1.45rem' },
-                mb: 0.35,
-                letterSpacing: '-0.03em',
-                color: 'text.primary'
-              }}
-            >
-              支持的原生厂家与路径
-            </Typography>
-            <Typography
-              sx={{
-                color: 'text.secondary',
-                fontSize: '0.88rem',
-                lineHeight: 1.6,
-                maxWidth: '420px'
-              }}
-            >
-              直接复用本站域名访问 OpenAI Compatible、Claude 与 Gemini 的原生路径，降低迁移成本，同时保留原生 SDK
-              与请求习惯。
-            </Typography>
-          </Box>
-
-          <Box
+      {/* Terminal body */}
+      <Box
+        ref={scrollRef}
+        sx={{
+          backgroundColor: '#141622',
+          p: { xs: 1.5, md: 2 },
+          minHeight: { xs: 280, md: 360 },
+          maxHeight: { xs: 340, md: 420 },
+          overflowY: 'auto',
+          '&::-webkit-scrollbar': { width: 4 },
+          '&::-webkit-scrollbar-track': { backgroundColor: 'transparent' },
+          '&::-webkit-scrollbar-thumb': { backgroundColor: '#2a2d3a', borderRadius: 2 }
+        }}
+      >
+        {visibleLines.map((line, i) => (
+          <Typography
+            key={i}
+            component="div"
             sx={{
-              display: { xs: 'none', md: 'flex' },
-              alignItems: 'center',
-              justifyContent: 'center',
-              minWidth: 58,
-              height: 58,
-              borderRadius: '18px',
-              border: `1px solid ${alpha(theme.palette.primary.main, 0.18)}`,
-              backgroundColor: alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.14 : 0.08),
-              boxShadow: `inset 0 0 0 1px ${alpha(theme.palette.common.white, theme.palette.mode === 'dark' ? 0.04 : 0.4)}`,
-              animation: 'signalFloat 5s ease-in-out infinite'
+              fontFamily: '"Roboto Mono", "SFMono-Regular", Consolas, monospace',
+              fontSize: { xs: '0.72rem', md: '0.78rem' },
+              lineHeight: 1.7,
+              color: line.color || '#E8E8E8',
+              whiteSpace: 'pre',
+              minHeight: '1.7em'
             }}
           >
-            <MemoryOutlinedIcon color="primary" sx={{ fontSize: '1.45rem' }} />
-          </Box>
-        </Stack>
+            {line.text}
+          </Typography>
+        ))}
 
-        <Grid container spacing={1}>
-          {[
-            { label: '原生厂商', value: `${nativeRoutes.length}`, icon: <MemoryOutlinedIcon fontSize="small" /> },
-            { label: '可用路径', value: `${totalRoutes}`, icon: <PolylineOutlinedIcon fontSize="small" /> },
-            { label: '接入方式', value: '原生兼容', icon: <AutoAwesomeOutlinedIcon fontSize="small" /> }
-          ].map((item) => (
-            <Grid item xs={12} sm={4} key={item.label}>
-              <Box
-                sx={{
-                  p: { xs: 0.95, md: 1.05 },
-                  borderRadius: '14px',
-                  border: `1px solid ${alpha(theme.palette.divider, 0.8)}`,
-                  backgroundColor: alpha(theme.palette.background.default, theme.palette.mode === 'dark' ? 0.54 : 0.56)
-                }}
-              >
-                <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mb: 0.5, color: 'primary.main' }}>
-                  {item.icon}
-                  <Typography variant="caption" sx={{ color: 'text.secondary', letterSpacing: '0.08em' }}>
-                    {item.label}
-                  </Typography>
-                </Stack>
-                <Typography
-                  sx={{
-                    fontWeight: 700,
-                    fontSize: { xs: '0.88rem', md: '0.98rem' },
-                    color: 'text.primary'
-                  }}
-                >
-                  {item.value}
-                </Typography>
-              </Box>
-            </Grid>
-          ))}
-        </Grid>
-
-        <Stack spacing={0.9}>
-          {nativeRoutes.map((item, index) => (
+        {/* Current typing line */}
+        {currentTyping && (
+          <Typography
+            component="div"
+            sx={{
+              fontFamily: '"Roboto Mono", "SFMono-Regular", Consolas, monospace',
+              fontSize: { xs: '0.72rem', md: '0.78rem' },
+              lineHeight: 1.7,
+              color: currentLineColor(),
+              whiteSpace: 'pre',
+              minHeight: '1.7em'
+            }}
+          >
+            {currentTyping}
             <Box
-              key={item.provider}
+              component="span"
               sx={{
-                position: 'relative',
-                p: { xs: 1.15, md: 1.3 },
-                borderRadius: '16px',
-                border: `1px solid ${alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.2 : 0.12)}`,
-                background:
-                  theme.palette.mode === 'dark'
-                    ? `linear-gradient(135deg, ${alpha(theme.palette.background.default, 0.82)} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`
-                    : `linear-gradient(135deg, ${alpha(theme.palette.background.default, 0.92)} 0%, ${alpha(theme.palette.primary.light, 0.1)} 100%)`,
-                transition: 'transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.35s ease, box-shadow 0.35s ease',
-                '&:hover': {
-                  transform: 'translateY(-2px)',
-                  borderColor: alpha(theme.palette.primary.main, 0.26),
-                  boxShadow:
-                    theme.palette.mode === 'dark'
-                      ? '0 12px 24px rgba(0, 0, 0, 0.18)'
-                      : `0 12px 24px ${alpha(theme.palette.primary.main, 0.08)}`
-                }
+                display: 'inline-block',
+                width: '0.5em',
+                height: '1em',
+                backgroundColor: currentLineColor(),
+                ml: '1px',
+                verticalAlign: 'text-bottom',
+                animation: 'blink 0.8s step-end infinite'
               }}
-            >
-              <Stack direction="row" justifyContent="space-between" spacing={1.25} sx={{ mb: 0.85 }}>
-                <Box>
-                  <Typography
-                    variant="overline"
-                    sx={{
-                      display: 'block',
-                      color: 'primary.main',
-                      letterSpacing: '0.1em',
-                      lineHeight: 1.35,
-                      fontSize: '0.65rem'
-                    }}
-                  >
-                    {item.vendor}
-                  </Typography>
-                  <Typography
-                    sx={{
-                      fontWeight: 600,
-                      color: 'text.primary',
-                      fontSize: { xs: '0.94rem', md: '1rem' },
-                      lineHeight: 1.3
-                    }}
-                  >
-                    {item.provider}
-                  </Typography>
-                </Box>
+            />
+          </Typography>
+        )}
 
-                <Box
-                  sx={{
-                    minWidth: 32,
-                    height: 32,
-                    borderRadius: '10px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    border: `1px solid ${alpha(theme.palette.primary.main, 0.18)}`,
-                    color: 'primary.main',
-                    fontWeight: 700,
-                    fontSize: '0.76rem',
-                    backgroundColor: alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.18 : 0.08)
-                  }}
-                >
-                  0{index + 1}
-                </Box>
-              </Stack>
-
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  gap: 0.75
-                }}
-              >
-                {item.routes.map((route, routeIndex) => (
-                  <Box
-                    key={route}
-                    sx={{
-                      px: 0.9,
-                      py: 0.7,
-                      borderRadius: '12px',
-                      border: `1px solid ${alpha(theme.palette.divider, 0.8)}`,
-                      backgroundColor: alpha(theme.palette.background.paper, theme.palette.mode === 'dark' ? 0.3 : 0.78),
-                      minWidth: 0,
-                      flex: item.routes.length === 1 ? '1 1 100%' : { xs: '1 1 100%', sm: '1 1 calc(50% - 6px)' }
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        px: 0.55,
-                        py: 0.15,
-                        mb: 0.45,
-                        borderRadius: '999px',
-                        backgroundColor: alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.16 : 0.08),
-                        color: 'text.secondary',
-                        fontSize: '0.63rem',
-                        letterSpacing: '0.08em'
-                      }}
-                    >
-                      ROUTE {routeIndex + 1}
-                    </Box>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        fontFamily: '"Roboto Mono", "SFMono-Regular", Consolas, monospace',
-                        fontSize: '0.74rem',
-                        lineHeight: 1.45,
-                        color: 'text.primary',
-                        wordBreak: 'break-all'
-                      }}
-                    >
-                      {route}
-                    </Typography>
-                  </Box>
-                ))}
-              </Box>
-            </Box>
-          ))}
-        </Stack>
-      </Stack>
+        {/* Final blinking cursor */}
+        {isComplete && (
+          <Typography
+            component="div"
+            sx={{
+              fontFamily: '"Roboto Mono", "SFMono-Regular", Consolas, monospace',
+              fontSize: { xs: '0.72rem', md: '0.78rem' },
+              lineHeight: 1.7,
+              color: '#6b7394',
+              whiteSpace: 'pre',
+              minHeight: '1.7em',
+              mt: 0.5
+            }}
+          >
+            {'$ '}
+            <Box
+              component="span"
+              sx={{
+                display: 'inline-block',
+                width: '0.5em',
+                height: '1em',
+                backgroundColor: '#6b7394',
+                ml: '1px',
+                verticalAlign: 'text-bottom',
+                animation: 'blink 1s step-end infinite'
+              }}
+            />
+          </Typography>
+        )}
+      </Box>
     </Box>
   );
 };
@@ -486,7 +459,20 @@ const BaseIndex = () => {
     {
       provider: 'OpenAI Compatible',
       vendor: 'OpenAI / OpenAI-compatible',
-      routes: ['/v1/chat/completions', '/v1/responses', '/v1/embeddings']
+      routes: [
+        '/v1/chat/completions',
+        '/v1/completions',
+        '/v1/responses',
+        '/v1/embeddings',
+        '/v1/images/generations',
+        '/v1/images/edits',
+        '/v1/audio/speech',
+        '/v1/audio/transcriptions',
+        '/v1/audio/translations',
+        '/v1/moderations',
+        '/v1/rerank',
+        '/v1/realtime'
+      ]
     },
     {
       provider: 'Claude Native',
@@ -589,7 +575,7 @@ const BaseIndex = () => {
       {/* 头部区域 */}
       <Box
         sx={{
-          minHeight: '86vh',
+          minHeight: { xs: 'calc(100vh - 56px)', sm: 'calc(100vh - 64px)' },
           display: 'flex',
           alignItems: 'center',
           position: 'relative',
