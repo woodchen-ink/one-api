@@ -38,6 +38,7 @@ import ModelCard from './component/ModelCard';
 import ModelDetailModal from './component/ModelDetailModal';
 import { MODALITY_OPTIONS } from 'constants/Modality';
 import Label from 'ui-component/Label';
+import { Helmet } from 'react-helmet-async';
 import { extraRatiosConfig } from '../Pricing/component/config';
 
 // ----------------------------------------------------------------------
@@ -378,7 +379,12 @@ export default function ModelPrice() {
   };
 
   return (
-    <Stack spacing={3} sx={{ padding: theme.spacing(3) }}>
+    <>
+      <Helmet>
+        <title>模型价格 - CZLOapi</title>
+        <meta name="description" content="CZLOapi 各 AI 模型定价一览，支持 OpenAI、Claude、Gemini 等主流模型，按 token 计费，价格透明。" />
+      </Helmet>
+      <Stack spacing={3} sx={{ padding: theme.spacing(3) }}>
       <Card
         elevation={0}
         sx={{
@@ -1174,5 +1180,6 @@ export default function ModelPrice() {
         unit={unit}
       />
     </Stack>
+    </>
   );
 }

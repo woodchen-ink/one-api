@@ -18,7 +18,9 @@ const About = Loadable(lazy(() => import('views/About')));
 const NotFoundView = Loadable(lazy(() => import('views/Error')));
 const Jump = Loadable(lazy(() => import('views/Jump')));
 const ModelPrice = Loadable(lazy(() => import('views/ModelPrice')));
-const Docs = Loadable(lazy(() => import('views/Docs')));
+const DocsLayout = Loadable(lazy(() => import('views/Docs/DocsLayout')));
+const DocsIndex = Loadable(lazy(() => import('views/Docs/DocsIndex')));
+const DocPage = Loadable(lazy(() => import('views/Docs/DocPage')));
 
 const WithMargins = ({ children }) => (
   <Box
@@ -96,7 +98,11 @@ const OtherRoutes = {
     },
     {
       path: '/docs',
-      element: <Docs />
+      element: <DocsLayout />,
+      children: [
+        { path: '', element: <DocsIndex /> },
+        { path: ':slug', element: <DocPage /> }
+      ]
     }
   ]
 };

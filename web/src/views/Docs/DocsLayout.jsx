@@ -1,21 +1,19 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Box, Typography, Drawer, IconButton, useTheme, useMediaQuery } from '@mui/material';
+import { useState, useEffect } from 'react';
+import { Outlet, useParams } from 'react-router-dom';
+import { Box, Drawer, IconButton, useTheme, useMediaQuery } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
-import ContentViewer from 'ui-component/ContentViewer';
+import { SIDEBAR_WIDTH, apiSections } from './components/apiData';
+import { guides } from './components/QuickStartSection';
+import DocsSidebar from './components/DocsSidebar';
 import { API } from 'utils/api';
 import { showError } from 'utils/common';
 
-import { SIDEBAR_WIDTH, apiSections } from './components/apiData';
-import DocsSidebar from './components/DocsSidebar';
-import ApiSection from './components/ApiSection';
-import QuickStartSection, { guides } from './components/QuickStartSection';
-
-const Docs = () => {
+const DocsLayout = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [tutorials, setTutorials] = useState([]);
-  const [activeId, setActiveId] = useState(apiSections[0]?.id || '');
+  const { slug } = useParams();
 
   useEffect(() => {
     const fetchTutorials = async () => {
@@ -34,23 +32,8 @@ const Docs = () => {
     fetchTutorials();
   }, []);
 
-  const handleNavClick = useCallback(
-    (id) => {
-      setActiveId(id);
-      const el = document.getElementById(id);
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth' });
-      }
-      if (isMobile) {
-        setDrawerOpen(false);
-      }
-    },
-    [isMobile]
-  );
-
   return (
     <Box sx={{ display: 'flex', minHeight: 'calc(100vh - 64px)' }}>
-      {/* Mobile menu button */}
       {isMobile && (
         <IconButton
           onClick={() => setDrawerOpen(true)}
@@ -71,7 +54,6 @@ const Docs = () => {
         </IconButton>
       )}
 
-      {/* Sidebar - desktop */}
       {!isMobile && (
         <Box
           sx={{
@@ -85,46 +67,39 @@ const Docs = () => {
             zIndex: 100
           }}
         >
-          <DocsSidebar apiSections={apiSections} tutorials={tutorials} guides={guides} activeId={activeId} onNavClick={handleNavClick} />
+          <DocsSidebar
+            apiSections={apiSections}
+            tutorials={tutorials}
+            guides={guides}
+            activeSlug={slug || ''}
+            onMobileClose={() => setDrawerOpen(false)}
+          />
         </Box>
       )}
 
-      {/* Sidebar - mobile drawer */}
       <Drawer anchor="left" open={drawerOpen} onClose={() => setDrawerOpen(false)} PaperProps={{ sx: { width: SIDEBAR_WIDTH } }}>
-        <DocsSidebar apiSections={apiSections} tutorials={tutorials} activeId={activeId} onNavClick={handleNavClick} />
+        <DocsSidebar
+          apiSections={apiSections}
+          tutorials={tutorials}
+          guides={guides}
+          activeSlug={slug || ''}
+          onMobileClose={() => setDrawerOpen(false)}
+        />
       </Drawer>
 
-      {/* Main content */}
       <Box
         sx={{
           flex: 1,
           display: 'flex',
           justifyContent: 'center',
-          ml: { md: `${SIDEBAR_WIDTH}px` }
+          ml: { md: `${SIDEBAR_WIDTH}px` },
+          minHeight: 'calc(100vh - 64px)'
         }}
       >
-        <Box sx={{ width: '100%', maxWidth: 860, p: { xs: 2, md: 5 } }}>
-          {/* API Sections */}
-          {apiSections.map((section) => (
-            <ApiSection key={section.id} section={section} />
-          ))}
-
-          {/* Quick Start Guides */}
-          <QuickStartSection />
-
-          {/* Tutorial Sections */}
-          {tutorials.map((tutorial) => (
-            <Box key={tutorial.id} id={`tutorial-${tutorial.id}`} sx={{ mb: 6, scrollMarginTop: '80px' }}>
-              <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: 'text.primary' }}>
-                {tutorial.title}
-              </Typography>
-              <ContentViewer content={tutorial.content} />
-            </Box>
-          ))}
-        </Box>
+        <Outlet context={{ tutorials }} />
       </Box>
     </Box>
   );
 };
 
-export default Docs;
+export default DocsLayout;
