@@ -46,7 +46,7 @@ import Label from 'ui-component/Label';
 
 import ResponseTimeLabel from './ResponseTimeLabel';
 
-import { styled, alpha } from '@mui/material/styles';
+import { styled, alpha, useTheme } from '@mui/material/styles';
 import { Icon } from '@iconify/react';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
@@ -106,8 +106,19 @@ function statusInfo(t, status) {
 import { grey } from '@mui/material/colors';
 import GroupLabel from './GroupLabel';
 
+// 根据渠道类型生成低饱和冷色调背景色
+function getTypeBackground(type, isDark) {
+  // 使用黄金角分散色相，确保相邻类型颜色差异明显
+  const hue = (type * 137.508) % 360;
+  if (isDark) {
+    return `hsla(${hue}, 15%, 18%, 0.35)`;
+  }
+  return `hsla(${hue}, 25%, 92%, 0.6)`;
+}
+
 export default function ChannelTableRow({ item, manageChannel, onRefresh, groupOptions, modelOptions, prices }) {
   const { t } = useTranslation();
+  const theme = useTheme();
   const popover = usePopover();
   const confirmDelete = useBoolean();
   const check = useBoolean();
@@ -325,7 +336,7 @@ export default function ChannelTableRow({ item, manageChannel, onRefresh, groupO
 
   return (
     <>
-      <TableRow tabIndex={item.id}>
+      <TableRow tabIndex={item.id} sx={{ backgroundColor: getTypeBackground(item.type, theme.palette.mode === 'dark') }}>
         <TableCell sx={{ minWidth: 50, textAlign: 'center' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
             <IconButton aria-label="expand row" size="small" onClick={() => setOpenRow(!openRow)}>
