@@ -139,6 +139,11 @@ func GetChannelsList(params *SearchChannelsParams) (*DataResult[Channel], error)
 		db = db.Where("tag = '' OR id IN (?)", tagDB)
 	}
 
+	// 渠道默认排序：先按类型，同类型按优先级降序
+	if params.Order == "" {
+		params.Order = "type,-priority"
+	}
+
 	return PaginateAndOrder(db, &params.PaginationParams, &channels, allowedChannelOrderFields)
 }
 

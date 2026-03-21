@@ -43,6 +43,10 @@ export async function fetchChannelData(page, rowsPerPage, keyword, order, orderB
   try {
     if (orderBy) {
       orderBy = order === 'desc' ? '-' + orderBy : orderBy;
+      // 按类型排序时，同类型内按优先级降序
+      if (orderBy === 'type' || orderBy === '-type') {
+        orderBy += ',-priority';
+      }
     }
     const res = await API.get(`/api/channel/`, {
       params: {
@@ -240,8 +244,8 @@ export default function ChannelList() {
   // 处理刷新
   const handleRefresh = async (reset) => {
     if (reset) {
-      setOrderBy('id');
-      setOrder('desc');
+      setOrderBy('type');
+      setOrder('asc');
       setToolBarValue(originalKeyword);
       setSearchKeyword(originalKeyword);
     }
