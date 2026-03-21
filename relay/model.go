@@ -260,15 +260,8 @@ func getAvailableModels(groupName string) map[string]*AvailableModelResponse {
 
 func AvailablePricingModel(c *gin.Context) {
 	publicModels := model.ChannelGroup.GetModelsGroups()
-	allGroups := model.GlobalUserGroupRatio.GetAllSorted()
-	groupSymbols := make([]string, 0, len(allGroups))
-
-	for _, group := range allGroups {
-		if !model.IsPricingVisibleUserGroup(group.Symbol) {
-			continue
-		}
-		groupSymbols = append(groupSymbols, group.Symbol)
-	}
+	userGroup := c.GetString("group")
+	groupSymbols := model.GetPricingVisibleGroupSymbols(userGroup)
 
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,

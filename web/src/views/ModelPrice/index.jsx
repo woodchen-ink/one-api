@@ -73,6 +73,15 @@ export default function ModelPrice() {
 
   const pageSizeOptions = [20, 30, 60, 100];
 
+  const sortedGroupEntries = useMemo(() => {
+    return Object.entries(userGroupMap).sort(([, a], [, b]) => {
+      if (a.ratio !== b.ratio) {
+        return a.ratio - b.ratio;
+      }
+      return a.id - b.id;
+    });
+  }, [userGroupMap]);
+
   // 获取可用模型
   const fetchAvailableModels = useCallback(async () => {
     try {
@@ -115,13 +124,13 @@ export default function ModelPrice() {
       const { success, message, data } = res.data;
       if (success) {
         setUserGroupMap(data);
-        const sortedGroupEntries = Object.entries(data).sort(([, a], [, b]) => {
+        const sortedEntries = Object.entries(data).sort(([, a], [, b]) => {
           if (a.ratio !== b.ratio) {
             return a.ratio - b.ratio;
           }
           return a.id - b.id;
         });
-        const currentGroupKey = user?.group && data[user.group] ? user.group : sortedGroupEntries[0]?.[0];
+        const currentGroupKey = user?.group && data[user.group] ? user.group : sortedEntries[0]?.[0];
         setSelectedGroup(currentGroupKey || '');
       } else {
         showError(message);
@@ -136,6 +145,19 @@ export default function ModelPrice() {
     fetchModelInfo();
     fetchUserGroupMap();
   }, [fetchAvailableModels, fetchModelInfo, fetchUserGroupMap]);
+
+  useEffect(() => {
+    if (!user?.group || !userGroupMap[user.group]) {
+      return;
+    }
+
+    setSelectedGroup((prev) => {
+      if (!prev || !userGroupMap[prev]) {
+        return user.group;
+      }
+      return prev;
+    });
+  }, [user?.group, userGroupMap]);
 
   // 提取所有唯一标签
   const allTags = [
@@ -231,7 +253,7 @@ export default function ModelPrice() {
           : { input: t('modelpricePage.noneGroup'), output: t('modelpricePage.noneGroup') };
 
         // 计算所有用户组的价格F
-        const allGroupPrices = Object.entries(userGroupMap).map(([key, grp]) => {
+        const allGroupPrices = sortedGroupEntries.map(([key, grp]) => {
           const hasGroupAccess = model.groups.includes(key);
           return {
             groupName: grp.name,
@@ -286,6 +308,7 @@ export default function ModelPrice() {
     selectedModality,
     selectedTag,
     userGroupMap,
+    sortedGroupEntries,
     ownedby,
     t,
     unit
@@ -854,7 +877,7 @@ export default function ModelPrice() {
               border: `1px solid ${theme.palette.mode === 'dark' ? alpha('#fff', 0.08) : alpha('#000', 0.05)}`
             }}
           >
-            {Object.entries(userGroupMap).map(([key, group]) => {
+            {sortedGroupEntries.map(([key, group]) => {
               const isSelected = selectedGroup === key;
 
               return (

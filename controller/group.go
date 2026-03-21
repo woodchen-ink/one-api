@@ -47,15 +47,8 @@ func GetUserGroupRatio(c *gin.Context) {
 }
 
 func GetPricingUserGroupRatio(c *gin.Context) {
-	groupRatio := model.GlobalUserGroupRatio.GetAll()
-	userGroup := make(map[string]*model.UserGroup)
-
-	for k, v := range groupRatio {
-		if !model.IsPricingVisibleUserGroup(k) {
-			continue
-		}
-		userGroup[k] = v
-	}
+	userSymbol := c.GetString("group")
+	userGroup := model.GetPricingVisibleUserGroupMap(userSymbol)
 
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,

@@ -24,6 +24,34 @@ func IsPricingVisibleUserGroup(symbol string) bool {
 	return !strings.EqualFold(strings.TrimSpace(symbol), AdminUserGroupSymbol)
 }
 
+func GetPricingVisibleUserGroupMap(userSymbol string) map[string]*UserGroup {
+	groupRatio := GlobalUserGroupRatio.GetAll()
+	userGroup := make(map[string]*UserGroup, len(groupRatio))
+
+	for k, v := range groupRatio {
+		if !IsPricingVisibleUserGroup(k) && k != userSymbol {
+			continue
+		}
+		userGroup[k] = v
+	}
+
+	return userGroup
+}
+
+func GetPricingVisibleGroupSymbols(userSymbol string) []string {
+	allGroups := GlobalUserGroupRatio.GetAllSorted()
+	groupSymbols := make([]string, 0, len(allGroups))
+
+	for _, group := range allGroups {
+		if !IsPricingVisibleUserGroup(group.Symbol) && group.Symbol != userSymbol {
+			continue
+		}
+		groupSymbols = append(groupSymbols, group.Symbol)
+	}
+
+	return groupSymbols
+}
+
 type UserGroup struct {
 	Id        int     `json:"id"`
 	Symbol    string  `json:"symbol" gorm:"type:varchar(50);uniqueIndex"`
