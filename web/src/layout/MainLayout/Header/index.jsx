@@ -1,11 +1,11 @@
 import PropTypes from 'prop-types';
 import { Icon } from '@iconify/react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
 // material-ui
 import { useTheme } from '@mui/material/styles';
-import { Box, IconButton, Stack, useMediaQuery } from '@mui/material';
+import { Box, Button, IconButton, Stack, useMediaQuery } from '@mui/material';
 
 // project imports
 import LogoSection from '../LogoSection';
@@ -77,6 +77,55 @@ const Header = ({ handleLeftDrawerToggle, toggleProfileDrawer }) => {
       <Box sx={{ flexGrow: 1 }} />
 
       <Stack direction="row" spacing={1} alignItems="center">
+        {matchUpMd && (
+          <>
+            <Button
+              component={Link}
+              variant="text"
+              to="/"
+              sx={{
+                fontSize: '0.8rem',
+                fontWeight: 500,
+                textTransform: 'none',
+                color: theme.palette.text.secondary,
+                minWidth: 'auto',
+                px: 1.5
+              }}
+            >
+              首页
+            </Button>
+            <Button
+              component={Link}
+              variant="text"
+              to="/price"
+              sx={{
+                fontSize: '0.8rem',
+                fontWeight: 500,
+                textTransform: 'none',
+                color: theme.palette.text.secondary,
+                minWidth: 'auto',
+                px: 1.5
+              }}
+            >
+              价格
+            </Button>
+            <Button
+              component={Link}
+              variant="text"
+              to="/docs"
+              sx={{
+                fontSize: '0.8rem',
+                fontWeight: 500,
+                textTransform: 'none',
+                color: theme.palette.text.secondary,
+                minWidth: 'auto',
+                px: 1.5
+              }}
+            >
+              文档
+            </Button>
+          </>
+        )}
         <NoticeButton />
           <I18nButton />
         {isConsoleRoute && <Profile toggleProfileDrawer={toggleProfileDrawer} />}

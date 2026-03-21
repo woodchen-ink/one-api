@@ -221,6 +221,16 @@ func SetApiRouter(router *gin.Engine) {
 			redemptionRoute.PUT("/", controller.UpdateRedemption)
 			redemptionRoute.DELETE("/:id", controller.DeleteRedemption)
 		}
+		apiRouter.GET("/tutorial/list", controller.GetPublicTutorialList)
+		tutorialRoute := apiRouter.Group("/tutorial")
+		tutorialRoute.Use(middleware.AdminAuth())
+		{
+			tutorialRoute.GET("/", controller.GetTutorialsList)
+			tutorialRoute.GET("/:id", controller.GetTutorial)
+			tutorialRoute.POST("/", controller.AddTutorial)
+			tutorialRoute.PUT("/", controller.UpdateTutorial)
+			tutorialRoute.DELETE("/:id", controller.DeleteTutorial)
+		}
 		logRoute := apiRouter.Group("/log")
 		logRoute.GET("/", middleware.AdminAuth(), controller.GetLogsList)
 		logRoute.DELETE("/", middleware.AdminAuth(), controller.DeleteHistoryLogs)

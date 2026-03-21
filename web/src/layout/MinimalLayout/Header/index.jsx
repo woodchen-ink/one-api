@@ -100,10 +100,10 @@ const Header = () => {
             >
               {t('menu.home')}
             </Button>
-            <Button 
-              component={Link} 
-              variant="text" 
-              to="/price" 
+            <Button
+              component={Link}
+              variant="text"
+              to="/price"
               color={pathname === '/price' ? 'primary' : 'inherit'}
               sx={{
                 fontSize: '0.875rem',
@@ -113,6 +113,20 @@ const Header = () => {
               }}
             >
               {t('price')}
+            </Button>
+            <Button
+              component={Link}
+              variant="text"
+              to="/docs"
+              color={pathname === '/docs' ? 'primary' : 'inherit'}
+              sx={{
+                fontSize: '0.875rem',
+                fontWeight: 500,
+                textTransform: 'none',
+                color: pathname === '/docs' ? theme.palette.primary.main : theme.palette.text.primary
+              }}
+            >
+              文档
             </Button>
             {/* <Button
               component={Link}
@@ -285,6 +299,23 @@ const Header = () => {
                             }}
                           >
                             {t('price')}
+                          </Typography>
+                        }
+                      />
+                    </ListItemButton>
+
+                    <ListItemButton component={Link} to="/docs" selected={pathname === '/docs'}>
+                      <ListItemText
+                        primary={
+                          <Typography
+                            variant="body1"
+                            sx={{
+                              fontWeight: pathname === '/docs' ? 500 : 400,
+                              textAlign: 'center',
+                              color: pathname === '/docs' ? theme.palette.primary.main : theme.palette.text.primary
+                            }}
+                          >
+                            文档
                           </Typography>
                         }
                       />

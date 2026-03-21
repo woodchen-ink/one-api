@@ -25,6 +25,7 @@ const ModelInfo = Loadable(lazy(() => import('views/ModelInfo')));
 const ModelMapping = Loadable(lazy(() => import('views/ModelMapping')));
 const Invoice = Loadable(lazy(() => import('views/Invoice')));
 const InvoiceDetail = Loadable(lazy(() => import('views/Invoice/detail')));
+const Tutorial = Loadable(lazy(() => import('views/Tutorial')));
 // dashboard routing
 const Dashboard = Loadable(lazy(() => import('views/Dashboard')));
 
@@ -131,6 +132,10 @@ const MainRoutes = {
     {
       path: 'system_info',
       element: <SystemInfo />
+    },
+    {
+      path: 'tutorial',
+      element: <Tutorial />
     }
   ]
 };

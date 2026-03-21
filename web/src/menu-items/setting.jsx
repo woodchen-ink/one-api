@@ -13,7 +13,8 @@ const icons = {
   IconCoins: () => <Icon width={20} icon="solar:hand-money-bold-duotone" />,
   IconUsers: () => <Icon width={20} icon="solar:users-group-rounded-bold-duotone" />,
   IconModel: () => <Icon width={20} icon="mingcute:ai-fill" />,
-  IconInfo: () => <Icon width={20} icon="solar:info-circle-bold-duotone" />
+  IconInfo: () => <Icon width={20} icon="solar:info-circle-bold-duotone" />,
+  IconTutorial: () => <Icon width={20} icon="solar:document-text-bold-duotone" />
 };
 
 const Setting = {
@@ -88,6 +89,15 @@ const Setting = {
           type: 'item',
           url: '/panel/model_mapping',
           icon: icons.IconModel,
+          breadcrumbs: false,
+          isAdmin: true
+        },
+        {
+          id: 'tutorial',
+          title: '教程管理',
+          type: 'item',
+          url: '/panel/tutorial',
+          icon: icons.IconTutorial,
           breadcrumbs: false,
           isAdmin: true
         }

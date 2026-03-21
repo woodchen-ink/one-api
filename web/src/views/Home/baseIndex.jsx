@@ -1,143 +1,15 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import {
-  Box,
-  Typography,
-  Container,
-  Stack,
-  Grid,
-  Card,
-  CardContent,
-  Button,
-  Link,
-  useTheme,
-  Avatar,
-  Chip
-} from '@mui/material';
+import { Box, Typography, Container, Stack, Grid, Button, Link, useTheme, Chip } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useTranslation } from 'react-i18next';
 import { Link as RouterLink } from 'react-router-dom';
-import SearchIcon from '@mui/icons-material/Search';
-import PsychologyIcon from '@mui/icons-material/Psychology';
-import ChatIcon from '@mui/icons-material/Chat';
-import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
-import InfoIcon from '@mui/icons-material/Info';
 import GavelIcon from '@mui/icons-material/Gavel';
 import SecurityIcon from '@mui/icons-material/Security';
 import PrivacyTipIcon from '@mui/icons-material/PrivacyTip';
-import ExtensionIcon from '@mui/icons-material/Extension';
-import CodeIcon from '@mui/icons-material/Code';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import HubOutlinedIcon from '@mui/icons-material/HubOutlined';
 import PolylineOutlinedIcon from '@mui/icons-material/PolylineOutlined';
 import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
-
-const FeatureCard = ({ icon, title, description, link, index }) => {
-  const theme = useTheme();
-  return (
-    <Card
-      component="a"
-      href={link}
-      target="_blank"
-      sx={{
-        height: '100%',
-        textDecoration: 'none',
-        overflow: 'hidden',
-        position: 'relative',
-        border: '1px solid transparent',
-        borderRadius: '24px',
-        background:
-          theme.palette.mode === 'dark'
-            ? `linear-gradient(160deg, ${alpha(theme.palette.background.paper, 0.96)} 0%, ${alpha(theme.palette.background.default, 0.88)} 100%)`
-            : `linear-gradient(160deg, ${alpha(theme.palette.background.paper, 0.98)} 0%, ${alpha(theme.palette.primary.light, 0.08)} 100%)`,
-        boxShadow:
-          theme.palette.mode === 'dark'
-            ? '0 18px 40px rgba(0,0,0,0.18)'
-            : '0 18px 40px rgba(16,19,26,0.06)',
-        transition: 'all 0.35s cubic-bezier(0.22, 1, 0.36, 1)',
-        '&:hover': {
-          transform: 'translateY(-6px)',
-          boxShadow:
-            theme.palette.mode === 'dark'
-              ? '0 24px 48px rgba(0,0,0,0.26)'
-              : `0 24px 48px ${alpha(theme.palette.primary.main, 0.1)}`,
-          '& .feature-icon': {
-            transform: 'scale(1.08) translateY(-2px)'
-          },
-          '& .feature-arrow': {
-            transform: 'translateX(2px)'
-          }
-        }
-      }}
-    >
-      <CardContent
-        sx={{
-          p: 4,
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'flex-start',
-          textAlign: 'left',
-          position: 'relative',
-          zIndex: 1
-        }}
-      >
-        <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ width: '100%', mb: 3 }}>
-          <Avatar
-            className="feature-icon"
-            sx={{
-              width: 64,
-              height: 64,
-              backgroundColor: alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.24 : 0.1),
-              color: 'primary.main',
-              border: `1px solid ${alpha(theme.palette.primary.main, 0.18)}`,
-              transition: 'transform 0.35s cubic-bezier(0.22, 1, 0.36, 1)'
-            }}
-          >
-            {icon}
-          </Avatar>
-          <Typography
-            variant="overline"
-            sx={{
-              color: 'text.secondary',
-              letterSpacing: '0.14em'
-            }}
-          >
-            FEATURE 0{index + 1}
-          </Typography>
-        </Stack>
-        <Typography
-          variant="h6"
-          sx={{
-            mb: 1.5,
-            fontWeight: 600,
-            fontSize: '1.12rem',
-            color: 'text.primary'
-          }}
-        >
-          {title}
-        </Typography>
-        <Typography
-          variant="body2"
-          sx={{
-            flexGrow: 1,
-            color: 'text.secondary',
-            lineHeight: 1.75,
-            fontSize: '0.93rem',
-            mb: 3
-          }}
-        >
-          {description}
-        </Typography>
-        <Stack direction="row" spacing={0.75} alignItems="center" sx={{ color: 'primary.main', mt: 'auto' }}>
-          <Typography variant="caption" sx={{ letterSpacing: '0.12em', fontWeight: 600 }}>
-            LEARN MORE
-          </Typography>
-          <ArrowForwardIcon className="feature-arrow" sx={{ fontSize: '1rem', transition: 'transform 0.3s ease' }} />
-        </Stack>
-      </CardContent>
-    </Card>
-  );
-};
 
 const FooterLink = ({ icon, title, link }) => {
   const theme = useTheme();
@@ -486,60 +358,11 @@ const BaseIndex = () => {
     }
   ];
 
-  const features = [
-    {
-      icon: <SearchIcon fontSize="large" />,
-      title: '开启联网搜索',
-      description: '获取最新信息和数据，让AI回答更加准确和全面，实时获取互联网上的最新信息。',
-      link: 'https://docs.czl.net/czloapi/features/open-web-search'
-    },
-    {
-      icon: <PsychologyIcon fontSize="large" />,
-      title: '使用思考模式',
-      description: '让AI模型通过分步思考提高回答质量，对复杂问题进行逻辑推理和分析，提供更加深入的见解。',
-      link: 'https://docs.czl.net/czloapi/features/thinking-mode'
-    },
-    {
-      icon: <ChatIcon fontSize="large" />,
-      title: '部署到飞书机器人',
-      description: '将CZLOapi的强大能力无缝集成到飞书平台，提升团队协作与知识管理效率。',
-      link: 'https://docs.czl.net/czloapi/practice/feishugpt'
-    },
-    {
-      icon: <LibraryBooksIcon fontSize="large" />,
-      title: '接入到思源笔记',
-      description: '将AI能力与思源笔记结合，增强您的知识管理和笔记系统，提升工作效率。',
-      link: 'https://docs.czl.net/czloapi/practice/siyuan'
-    },
-    {
-      icon: <ExtensionIcon fontSize="large" />,
-      title: 'Cline AI编程',
-      description: '了解如何接入VSCode Cline，AI自动编程插件，提升您的开发效率。',
-      link: 'https://www.sunai.net/t/429'
-    },
-    {
-      icon: <CodeIcon fontSize="large" />,
-      title: 'Claude Code AI编程',
-      description: '使用Claude Code进行AI辅助编程，支持代码生成、调试和优化，大大提升开发效率和代码质量。',
-      link: 'https://www.sunai.net/t/topic/939'
-    }
-  ];
-
   const footerLinks = [
-    {
-      icon: <InfoIcon />,
-      title: '关于我们',
-      link: 'https://docs.czl.net/czloapi/about/%E5%85%B3%E4%BA%8E%E6%88%91%E4%BB%AC'
-    },
     {
       icon: <GavelIcon />,
       title: '服务条款',
       link: 'https://www.czl.net/tos'
-    },
-    {
-      icon: <SecurityIcon />,
-      title: '免责声明',
-      link: 'https://docs.czl.net/czloapi/about/%E5%85%8D%E8%B4%A3%E5%A3%B0%E6%98%8E'
     },
     {
       icon: <PrivacyTipIcon />,
@@ -663,7 +486,7 @@ const BaseIndex = () => {
                     lineHeight: 1.75
                   }}
                 >
-                  {t('description')} 
+                  {t('description')}
                 </Typography>
 
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
@@ -695,9 +518,9 @@ const BaseIndex = () => {
                   >
                     开始使用
                   </Button>
-                  {/* <Button
+                  <Button
                     component={Link}
-                    href="https://docs.czl.net/czloapi/"
+                    href="/docs"
                     target="_blank"
                     variant="outlined"
                     size="large"
@@ -718,7 +541,7 @@ const BaseIndex = () => {
                     }}
                   >
                     查看文档
-                  </Button> */}
+                  </Button>
                 </Stack>
 
                 <Grid container spacing={1.5} sx={{ pt: 0.5 }}>
@@ -762,62 +585,6 @@ const BaseIndex = () => {
             <Grid item xs={12} lg={5} sx={{ display: 'flex' }}>
               <NativeRoutePanel nativeRoutes={nativeRoutes} />
             </Grid>
-          </Grid>
-        </Container>
-      </Box>
-
-      <Box
-        sx={{
-          position: 'relative',
-          py: 10,
-          px: 2,
-          backgroundColor: theme.palette.mode === 'dark' ? alpha(theme.palette.background.paper, 0.4) : '#FBFBFC',
-          borderTop: `1px solid ${theme.palette.divider}`,
-          borderBottom: `1px solid ${theme.palette.divider}`
-        }}
-      >
-        <Container maxWidth="lg">
-          <Stack alignItems="center" spacing={2} sx={{ mb: 8, textAlign: 'center' }}>
-            <Chip
-              label="Capability Modules"
-              variant="outlined"
-              sx={{
-                color: 'primary.main',
-                borderColor: alpha(theme.palette.primary.main, 0.24),
-                backgroundColor: alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.14 : 0.06)
-              }}
-            />
-          <Typography
-            variant="h2"
-            align="center"
-            sx={{
-              fontWeight: 300,
-              fontSize: { xs: '2rem', md: '2.5rem' },
-              color: 'text.primary'
-            }}
-          >
-            强大特性
-          </Typography>
-          <Typography
-            variant="h6"
-            align="center"
-            sx={{
-              fontWeight: 400,
-              color: 'text.secondary',
-              maxWidth: '760px',
-              mx: 'auto',
-              lineHeight: 1.7
-            }}
-          >
-            探索 CZLOapi 为您带来的无限可能
-          </Typography>
-          </Stack>
-          <Grid container spacing={4}>
-            {features.map((feature, index) => (
-              <Grid item xs={12} sm={6} lg={4} key={index}>
-                <FeatureCard {...feature} index={index} />
-              </Grid>
-            ))}
           </Grid>
         </Container>
       </Box>
@@ -897,10 +664,7 @@ const BaseIndex = () => {
                         ? `linear-gradient(160deg, ${alpha(theme.palette.background.paper, 0.92)} 0%, ${alpha(theme.palette.background.default, 0.88)} 100%)`
                         : `linear-gradient(160deg, ${alpha(theme.palette.background.paper, 0.98)} 0%, ${alpha(theme.palette.primary.light, 0.07)} 100%)`,
                     border: `1px solid ${alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.18 : 0.1)}`,
-                    boxShadow:
-                      theme.palette.mode === 'dark'
-                        ? '0 18px 40px rgba(0,0,0,0.16)'
-                        : '0 18px 40px rgba(16,19,26,0.05)',
+                    boxShadow: theme.palette.mode === 'dark' ? '0 18px 40px rgba(0,0,0,0.16)' : '0 18px 40px rgba(16,19,26,0.05)',
                     transition: 'all 0.35s cubic-bezier(0.22, 1, 0.36, 1)',
                     '&::before': {
                       content: '""',
@@ -990,10 +754,7 @@ const BaseIndex = () => {
                 theme.palette.mode === 'dark'
                   ? `linear-gradient(150deg, ${alpha(theme.palette.background.paper, 0.76)} 0%, ${alpha(theme.palette.background.default, 0.92)} 100%)`
                   : `linear-gradient(150deg, ${alpha(theme.palette.background.paper, 0.92)} 0%, ${alpha(theme.palette.primary.light, 0.06)} 100%)`,
-              boxShadow:
-                theme.palette.mode === 'dark'
-                  ? '0 18px 40px rgba(0,0,0,0.12)'
-                  : '0 18px 40px rgba(16,19,26,0.04)'
+              boxShadow: theme.palette.mode === 'dark' ? '0 18px 40px rgba(0,0,0,0.12)' : '0 18px 40px rgba(16,19,26,0.04)'
             }}
           >
             <Stack spacing={2.5} alignItems="center">
