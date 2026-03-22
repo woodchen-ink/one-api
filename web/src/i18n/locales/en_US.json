@@ -652,9 +652,15 @@
       "stripe": "Stripe",
       "wxpay": "WeChat Pay"
     },
+    "orderTypeMap": {
+      "balance_topup": "Balance Top-up",
+      "subscription_purchase": "Plan Purchase",
+      "admin_assign_subscription": "Admin Assignment"
+    },
     "tableHeaders": {
       "amount": "Recharge Amount",
       "created_at": "Time",
+      "order_type": "Order Type",
       "discount": "Discount Amount",
       "fee": "Fee",
       "gateway_name": "Gateway Name",

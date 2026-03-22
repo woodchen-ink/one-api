@@ -16,6 +16,7 @@ import (
 	paymentTypes "czloapi/payment/types"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 // ---- 用户端 API ----
@@ -262,24 +263,53 @@ func AdminAssignSubscription(c *gin.Context) {
 	}
 
 	expireTime := model.CalculateExpireTime(plan.DurationType, plan.DurationCount)
+	tradeNo := utils.GenerateTradeNo()
+	now := time.Now().Unix()
 
-	sub := &model.UserSubscription{
-		UserId:      req.UserId,
-		PlanId:      plan.ID,
-		PlanName:    plan.Name,
-		GroupSymbol: plan.GroupSymbol,
-		QuotaAmount: plan.QuotaAmount,
-		UsedAmount:  0,
-		TradeNo:     "", // 管理员分配无订单号
-		StartTime:   time.Now().Unix(),
-		ExpireTime:  expireTime,
-		Status:      model.SubscriptionStatusActive,
-	}
+	err = model.DB.Transaction(func(tx *gorm.DB) error {
+		order := &model.Order{
+			UserId:             req.UserId,
+			GatewayId:          0,
+			TradeNo:            tradeNo,
+			GatewayNo:          "",
+			Amount:             0,
+			OrderAmount:        0,
+			OrderCurrency:      model.CurrencyTypeUSD,
+			Quota:              0,
+			Fee:                0,
+			Discount:           0,
+			SubscriptionPlanId: plan.ID,
+			Status:             model.OrderStatusSuccess,
+			CreatedAt:          int(now),
+		}
+		if err := tx.Create(order).Error; err != nil {
+			return err
+		}
 
-	if err := sub.Insert(); err != nil {
+		sub := &model.UserSubscription{
+			UserId:      req.UserId,
+			PlanId:      plan.ID,
+			PlanName:    plan.Name,
+			GroupSymbol: plan.GroupSymbol,
+			QuotaAmount: plan.QuotaAmount,
+			UsedAmount:  0,
+			TradeNo:     tradeNo,
+			StartTime:   now,
+			ExpireTime:  expireTime,
+			Status:      model.SubscriptionStatusActive,
+			CreatedAt:   int(now),
+		}
+		if err := tx.Create(sub).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
+	if err != nil {
 		common.APIRespondWithError(c, http.StatusOK, err)
 		return
 	}
+	model.ClearUserSubscriptionCache(req.UserId)
 
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,

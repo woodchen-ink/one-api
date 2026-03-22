@@ -33,6 +33,17 @@ function paymentTypeLabel(type, t) {
   return t(`orderlogPage.paymentTypeMap.${type}`, type);
 }
 
+function orderTypeLabel(item, t) {
+  if (item.subscription_plan_id > 0) {
+    if (!item.gateway_id) {
+      return t('orderlogPage.orderTypeMap.admin_assign_subscription');
+    }
+    return t('orderlogPage.orderTypeMap.subscription_purchase');
+  }
+
+  return t('orderlogPage.orderTypeMap.balance_topup');
+}
+
 export { StatusType };
 
 function CopyableCell({ value, tooltip, emptyText }) {
@@ -71,6 +82,7 @@ export default function OrderTableRow({ item, showGatewayId, showGatewayType, sh
     <>
       <TableRow tabIndex={item.id}>
         <TableCell style={{ minWidth: '180px' }}>{timestamp2string(item.created_at)}</TableCell>
+        <TableCell>{orderTypeLabel(item, t)}</TableCell>
         <TableCell style={{ minWidth: '140px' }}>{item.gateway_name || '-'}</TableCell>
         {showGatewayType && <TableCell>{paymentTypeLabel(item.gateway_type, t)}</TableCell>}
         {showGatewayId && <TableCell>{item.gateway_id}</TableCell>}

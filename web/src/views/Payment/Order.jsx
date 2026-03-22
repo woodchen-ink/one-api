@@ -80,38 +80,42 @@ export default function Order({
     setToolBarValue({ ...toolBarValue, [event.target.name]: event.target.value });
   };
 
-  const fetchData = useCallback(async (page, rowsPerPage, keyword, order, orderBy) => {
-    setSearching(true);
-    keyword = trims(keyword);
-    try {
-      if (orderBy) {
-        orderBy = order === 'desc' ? '-' + orderBy : orderBy;
-      }
-      const res = await API.get(apiPath, {
-        params: {
-          page: page + 1,
-          size: rowsPerPage,
-          order: orderBy,
-          ...keyword
+  const fetchData = useCallback(
+    async (page, rowsPerPage, keyword, order, orderBy) => {
+      setSearching(true);
+      keyword = trims(keyword);
+      try {
+        if (orderBy) {
+          orderBy = order === 'desc' ? '-' + orderBy : orderBy;
         }
-      });
-      const { success, message, data } = res.data;
-      if (success) {
-        setListCount(data.total_count);
-        setOrderList(data.data);
-      } else {
-        showError(message);
+        const res = await API.get(apiPath, {
+          params: {
+            page: page + 1,
+            size: rowsPerPage,
+            order: orderBy,
+            ...keyword
+          }
+        });
+        const { success, message, data } = res.data;
+        if (success) {
+          setListCount(data.total_count);
+          setOrderList(data.data);
+        } else {
+          showError(message);
+        }
+      } catch (error) {
+        console.error(error);
       }
-    } catch (error) {
-      console.error(error);
-    }
-    setSearching(false);
-  }, [apiPath]);
+      setSearching(false);
+    },
+    [apiPath]
+  );
 
   const headLabel = useMemo(
     () =>
       [
         { id: 'created_at', label: t('orderlogPage.tableHeaders.created_at'), disableSort: false },
+        { id: 'order_type', label: t('orderlogPage.tableHeaders.order_type'), disableSort: true },
         { id: 'gateway_name', label: t('orderlogPage.tableHeaders.gateway_name'), disableSort: true },
         showGatewayType ? { id: 'gateway_type', label: t('orderlogPage.tableHeaders.gateway_type'), disableSort: true } : null,
         showGatewayId ? { id: 'gateway_id', label: t('orderlogPage.tableHeaders.gateway_id'), disableSort: false } : null,
