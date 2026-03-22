@@ -18,30 +18,31 @@ import (
 )
 
 type Quota struct {
-	modelName         string
-	promptTokens      int
-	price             model.Price
-	billingContext    model.BillingContext
-	billingResolution *model.BillingResolution
-	groupName         string
-	isBackupGroup     bool
-	backupGroupName   string
-	groupRatio        float64
-	inputPrice        float64
-	outputPrice       float64
-	preConsumedQuota  int
-	cacheQuota        int
-	userId            int
-	channelId         int
-	tokenId           int
-	unlimitedQuota    bool
-	HandelStatus      bool
+	modelName          string
+	promptTokens       int
+	price              model.Price
+	billingContext     model.BillingContext
+	billingResolution  *model.BillingResolution
+	groupName          string
+	isBackupGroup      bool
+	backupGroupName    string
+	groupRatio         float64
+	inputPrice         float64
+	outputPrice        float64
+	preConsumedQuota   int
+	cacheQuota         int
+	userId             int
+	channelId          int
+	tokenId            int
+	unlimitedQuota     bool
+	HandelStatus       bool
+	usingSubscription  bool
 
-	startTime         time.Time
-	firstResponseTime time.Time
-	extraBillingData  map[string]ExtraBillingData
-	requestPath       string
-	reasoningMetadata *types.LogReasoningMetadata
+	startTime          time.Time
+	firstResponseTime  time.Time
+	extraBillingData   map[string]ExtraBillingData
+	requestPath        string
+	reasoningMetadata  *types.LogReasoningMetadata
 }
 
 func NewQuota(c *gin.Context, modelName string, promptTokens int, billingContexts ...model.BillingContext) *Quota {
@@ -94,6 +95,22 @@ func (q *Quota) PreQuotaConsumption() *types.OpenAIErrorWithStatusCode {
 		return nil
 	}
 
+	// 优先尝试从订阅配额扣减
+	subscriptionUsed, err := model.TryConsumeSubscriptionQuota(q.userId, q.groupName, q.preConsumedQuota)
+	if err == nil && subscriptionUsed {
+		q.usingSubscription = true
+
+		if q.preConsumedQuota > 0 {
+			err := model.PreConsumeTokenQuota(q.tokenId, q.preConsumedQuota)
+			if err != nil {
+				return common.ErrorWrapper(err, "pre_consume_token_quota_failed", http.StatusForbidden)
+			}
+			q.HandelStatus = true
+		}
+		return nil
+	}
+
+	// 回退到用户余额
 	userQuota, err := model.CacheGetUserQuota(q.userId)
 	if err != nil {
 		return common.ErrorWrapper(err, "get_user_quota_failed", http.StatusInternalServerError)
@@ -166,13 +183,25 @@ func (q *Quota) completedQuotaConsumption(usage *types.Usage, tokenName string, 
 
 	if quota > 0 {
 		quotaDelta := quota - q.preConsumedQuota
-		err := model.PostConsumeTokenQuotaWithInfo(q.tokenId, q.userId, q.unlimitedQuota, quotaDelta)
-		if err != nil {
-			return errors.New("error consuming token remain quota: " + err.Error())
-		}
-		err = model.CacheUpdateUserQuota(q.userId)
-		if err != nil {
-			return errors.New("error consuming token remain quota: " + err.Error())
+
+		if q.usingSubscription {
+			// 订阅配额模式：调整订阅配额
+			model.AdjustSubscriptionQuota(q.userId, q.groupName, quotaDelta)
+			// token quota 仍需调整
+			err := model.PostConsumeTokenQuotaWithInfo(q.tokenId, q.userId, q.unlimitedQuota, quotaDelta)
+			if err != nil {
+				return errors.New("error consuming token remain quota: " + err.Error())
+			}
+		} else {
+			// 原有逻辑：调整用户余额
+			err := model.PostConsumeTokenQuotaWithInfo(q.tokenId, q.userId, q.unlimitedQuota, quotaDelta)
+			if err != nil {
+				return errors.New("error consuming token remain quota: " + err.Error())
+			}
+			err = model.CacheUpdateUserQuota(q.userId)
+			if err != nil {
+				return errors.New("error consuming token remain quota: " + err.Error())
+			}
 		}
 		model.UpdateChannelUsedQuota(q.channelId, quota)
 	}
@@ -200,6 +229,10 @@ func (q *Quota) completedQuotaConsumption(usage *types.Usage, tokenName string, 
 func (q *Quota) Undo(c *gin.Context) {
 	if q.HandelStatus {
 		go func(ctx context.Context) {
+			if q.usingSubscription {
+				// 退还订阅配额
+				model.AdjustSubscriptionQuota(q.userId, q.groupName, -q.preConsumedQuota)
+			}
 			err := model.PostConsumeTokenQuotaWithInfo(q.tokenId, q.userId, q.unlimitedQuota, -q.preConsumedQuota)
 			if err != nil {
 				logger.LogError(ctx, "error return pre-consumed quota: "+err.Error())

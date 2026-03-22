@@ -90,6 +90,11 @@ func SetApiRouter(router *gin.Engine) {
 				selfRoute.GET("/order", controller.GetUserOrderList)
 				selfRoute.POST("/order", controller.CreateOrder)
 				selfRoute.GET("/order/status", controller.CheckOrderStatus)
+				selfRoute.GET("/subscription_plan", controller.GetAvailableSubscriptionPlans)
+				selfRoute.POST("/subscription/purchase", controller.PurchaseSubscription)
+				selfRoute.POST("/subscription/renew", controller.RenewSubscription)
+				selfRoute.GET("/subscription", controller.GetMySubscriptions)
+				selfRoute.GET("/subscription/groups", controller.GetMySubscriptionGroups)
 			}
 
 			adminRoute := userRoute.Group("/")
@@ -162,6 +167,28 @@ func SetApiRouter(router *gin.Engine) {
 			userGroup.DELETE("/:id", controller.DeleteUserGroup)
 
 		}
+
+		subscriptionPlanRoute := apiRouter.Group("/subscription_plan")
+		subscriptionPlanRoute.Use(middleware.AdminAuth())
+		{
+			subscriptionPlanRoute.GET("/", controller.GetSubscriptionPlanList)
+			subscriptionPlanRoute.GET("/:id", controller.GetSubscriptionPlan)
+			subscriptionPlanRoute.POST("/", controller.CreateSubscriptionPlan)
+			subscriptionPlanRoute.PUT("/", controller.UpdateSubscriptionPlan)
+			subscriptionPlanRoute.DELETE("/:id", controller.DeleteSubscriptionPlan)
+			subscriptionPlanRoute.PUT("/enable/:id", controller.EnableSubscriptionPlan)
+		}
+
+		userSubscriptionRoute := apiRouter.Group("/user_subscription")
+		userSubscriptionRoute.Use(middleware.AdminAuth())
+		{
+			userSubscriptionRoute.GET("/admin/", controller.AdminGetSubscriptionList)
+			userSubscriptionRoute.POST("/admin/assign", controller.AdminAssignSubscription)
+			userSubscriptionRoute.PUT("/admin/adjust/:id", controller.AdminAdjustSubscription)
+			userSubscriptionRoute.PUT("/admin/reset/:id", controller.AdminResetSubscription)
+			userSubscriptionRoute.PUT("/admin/revoke/:id", controller.AdminRevokeSubscription)
+		}
+
 		channelRoute := apiRouter.Group("/channel")
 		channelRoute.Use(middleware.AdminAuth())
 		{

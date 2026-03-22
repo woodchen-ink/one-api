@@ -26,6 +26,9 @@ const ModelMapping = Loadable(lazy(() => import('views/ModelMapping')));
 const Invoice = Loadable(lazy(() => import('views/Invoice')));
 const InvoiceDetail = Loadable(lazy(() => import('views/Invoice/detail')));
 const Tutorial = Loadable(lazy(() => import('views/Tutorial')));
+const SubscriptionPlan = Loadable(lazy(() => import('views/SubscriptionPlan')));
+const UserSubscription = Loadable(lazy(() => import('views/UserSubscription')));
+const MySubscription = Loadable(lazy(() => import('views/MySubscription')));
 // dashboard routing
 const Dashboard = Loadable(lazy(() => import('views/Dashboard')));
 
@@ -136,6 +139,18 @@ const MainRoutes = {
     {
       path: 'tutorial',
       element: <Tutorial />
+    },
+    {
+      path: 'subscription_plan',
+      element: <SubscriptionPlan />
+    },
+    {
+      path: 'user_subscription',
+      element: <UserSubscription />
+    },
+    {
+      path: 'my_subscription',
+      element: <MySubscription />
     }
   ]
 };

@@ -407,6 +407,10 @@ func validateTokenGroupForUser(tokenGroup string, userId int) error {
 	}
 
 	if !groupRatio.Public && userGroup != tokenGroup {
+		// 检查是否有该分组的活跃订阅
+		if model.HasActiveSubscription(userId, tokenGroup) {
+			return nil
+		}
 		return errors.New("目标用户无权使用指定的分组")
 	}
 
@@ -425,6 +429,10 @@ func validateTokenGroup(tokenGroup string, userId int) error {
 	}
 
 	if !groupRatio.Public && userGroup != tokenGroup {
+		// 检查是否有该分组的活跃订阅
+		if model.HasActiveSubscription(userId, tokenGroup) {
+			return nil
+		}
 		return errors.New("当前用户组无权使用指定的分组")
 	}
 

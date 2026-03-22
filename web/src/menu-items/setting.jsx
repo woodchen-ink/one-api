@@ -14,7 +14,10 @@ const icons = {
   IconUsers: () => <Icon width={20} icon="solar:users-group-rounded-bold-duotone" />,
   IconModel: () => <Icon width={20} icon="mingcute:ai-fill" />,
   IconInfo: () => <Icon width={20} icon="solar:info-circle-bold-duotone" />,
-  IconTutorial: () => <Icon width={20} icon="solar:document-text-bold-duotone" />
+  IconTutorial: () => <Icon width={20} icon="solar:document-text-bold-duotone" />,
+  IconSubscription: () => <Icon width={20} icon="solar:card-recive-bold-duotone" />,
+  IconSubscriptionOrder: () => <Icon width={20} icon="solar:clipboard-list-bold-duotone" />,
+  IconMySubscription: () => <Icon width={20} icon="solar:card-bold-duotone" />
 };
 
 const Setting = {
@@ -100,6 +103,24 @@ const Setting = {
           icon: icons.IconTutorial,
           breadcrumbs: false,
           isAdmin: true
+        },
+        {
+          id: 'subscription_plan',
+          title: '套餐管理',
+          type: 'item',
+          url: '/panel/subscription_plan',
+          icon: icons.IconSubscription,
+          breadcrumbs: false,
+          isAdmin: true
+        },
+        {
+          id: 'user_subscription',
+          title: '订阅管理',
+          type: 'item',
+          url: '/panel/user_subscription',
+          icon: icons.IconSubscriptionOrder,
+          breadcrumbs: false,
+          isAdmin: true
         }
       ]
     },
@@ -137,6 +158,15 @@ const Setting = {
       type: 'item',
       url: '/panel/token',
       icon: icons.IconKey,
+      breadcrumbs: false
+    },
+
+    {
+      id: 'my_subscription',
+      title: '我的订阅',
+      type: 'item',
+      url: '/panel/my_subscription',
+      icon: icons.IconMySubscription,
       breadcrumbs: false
     },
 

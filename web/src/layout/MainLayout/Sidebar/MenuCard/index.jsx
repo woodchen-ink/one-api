@@ -3,12 +3,13 @@ import { useSelector } from 'react-redux';
 
 // material-ui
 import { styled, useTheme, alpha } from '@mui/material/styles';
-import { Avatar, Card, CardContent, Box, Typography, Chip, LinearProgress, Stack, Button } from '@mui/material';
+import { Avatar, Card, CardContent, Box, Typography, Chip, LinearProgress, Stack, Button, Divider } from '@mui/material';
 import User1 from 'assets/images/users/user-round.svg';
 import { useNavigate } from 'react-router-dom';
 import { IconHeadset } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { Icon } from '@iconify/react';
+import { API } from 'utils/api';
 
 const CardStyle = styled(Card)(({ theme }) => ({
   background: theme.palette.mode === 'dark' ? alpha(theme.palette.background.paper, 0.9) : alpha(theme.palette.background.paper, 0.94),
@@ -68,6 +69,7 @@ const MenuCard = () => {
   const { t } = useTranslation();
   const [balance, setBalance] = useState(0);
   const [usedQuota, setUsedQuota] = useState(0);
+  const [subscriptions, setSubscriptions] = useState([]);
 
   const quotaPerUnit = localStorage.getItem('quota_per_unit') || 500000;
 
@@ -82,6 +84,22 @@ const MenuCard = () => {
       setUsedQuota(((user.used_quota || 0) / quotaPerUnit).toFixed(2));
     }
   }, [user, quotaPerUnit]);
+
+  useEffect(() => {
+    const fetchSubscriptions = async () => {
+      try {
+        const res = await API.get('/api/user/subscription');
+        const { success, data } = res.data;
+        if (success && data) {
+          const active = data.filter((s) => s.status === 'active');
+          setSubscriptions(active);
+        }
+      } catch (error) {
+        // silently fail - sidebar should not block on this
+      }
+    };
+    fetchSubscriptions();
+  }, []);
 
   const getProgressColor = () => {
     if (progressValue < 60) return theme.palette.success.main;
@@ -227,6 +245,65 @@ const MenuCard = () => {
             </Stack>
           </Box>
         </Box>
+
+        {subscriptions.length > 0 && (
+          <Box sx={{ mt: 1.5 }}>
+            <Divider sx={{ mb: 1 }} />
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ fontSize: '0.68rem', display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.75, fontWeight: 600 }}
+            >
+              <Icon icon="solar:ticket-sale-linear" width={12} />
+              {t('subscription.activeSubscriptions')}
+            </Typography>
+            <Stack spacing={0.75}>
+              {subscriptions.map((sub) => {
+                const usedVal = (sub.used_amount / quotaPerUnit).toFixed(2);
+                const totalVal = (sub.quota_amount / quotaPerUnit).toFixed(2);
+                const subPercent = sub.quota_amount > 0 ? Math.min((sub.used_amount / sub.quota_amount) * 100, 100) : 0;
+                const now = Date.now();
+                const daysLeft = Math.max(0, Math.ceil((sub.expire_time * 1000 - now) / (1000 * 60 * 60 * 24)));
+                const subProgressColor =
+                  subPercent < 60 ? theme.palette.success.main : subPercent < 85 ? theme.palette.warning.main : theme.palette.error.main;
+
+                return (
+                  <Box
+                    key={sub.id}
+                    sx={{
+                      p: 0.75,
+                      borderRadius: 1,
+                      border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
+                      backgroundColor: alpha(theme.palette.background.default, 0.4)
+                    }}
+                  >
+                    <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 0.25 }}>
+                      <InfoChip label={sub.group_symbol || sub.plan_name} size="small" variant="outlined" color="primary" />
+                      <Typography variant="caption" sx={{ fontSize: '0.6rem', color: 'text.secondary' }}>
+                        {daysLeft > 0 ? t('subscription.daysLeft', { days: daysLeft }) : t('subscription.statusExpired')}
+                      </Typography>
+                    </Stack>
+                    <Typography variant="caption" sx={{ fontSize: '0.62rem', color: 'text.secondary', display: 'block', mb: 0.25 }}>
+                      ${usedVal} / ${totalVal}
+                    </Typography>
+                    <ProgressBarWrapper sx={{ height: 3 }}>
+                      <LinearProgress
+                        variant="determinate"
+                        value={subPercent}
+                        sx={{
+                          '& .MuiLinearProgress-bar': {
+                            backgroundColor: subProgressColor
+                          }
+                        }}
+                      />
+                    </ProgressBarWrapper>
+                  </Box>
+                );
+              })}
+            </Stack>
+          </Box>
+        )}
+
         <Button
           variant="contained"
           startIcon={<IconHeadset />}

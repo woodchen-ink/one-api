@@ -126,6 +126,15 @@ The provider system implements a plugin-based architecture in `providers/`:
 - Real-time usage analytics and billing integration
 - Payment processing with multiple gateways
 - Users can review their own recharge orders, including trade numbers and gateway order numbers, from the web console
+- Subscription plans: Admin-defined quota packages bound to user groups
+  - `model/subscription_plan.go` - Plan definitions (name, group, price, quota, duration)
+  - `model/user_subscription.go` - User subscription instances and quota consumption
+  - Subscription quota is independent of user balance, measured in USD
+  - Multiple subscriptions can stack; earliest-expiring consumed first
+  - Cron job in `cron/main.go` expires subscriptions every minute
+  - Payment flow reuses existing gateways via `Order.SubscriptionPlanId` field
+  - `relay/relay_util/quota.go` checks subscription quota before user balance
+  - Token group validation in `controller/token.go` allows subscribed groups
 - Telegram bot integration for user interactions
 - Prometheus metrics collection and monitoring
 - WebSocket support for real-time features

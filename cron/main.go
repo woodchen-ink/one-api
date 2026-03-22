@@ -5,6 +5,7 @@ import (
 	"czloapi/common/logger"
 	"czloapi/common/scheduler"
 	"czloapi/model"
+	"fmt"
 	"time"
 
 	"github.com/spf13/viper"
@@ -89,6 +90,26 @@ func InitCron() {
 		}
 	}
 
+	if err != nil {
+		logger.SysError("Cron job error: " + err.Error())
+		return
+	}
+
+	// 每分钟检查过期订阅
+	err = scheduler.Manager.AddJob(
+		"expire_subscriptions",
+		gocron.DurationJob(1*time.Minute),
+		gocron.NewTask(func() {
+			count, err := model.ExpireSubscriptions()
+			if err != nil {
+				logger.SysError("Expire subscriptions error: " + err.Error())
+				return
+			}
+			if count > 0 {
+				logger.SysLog(fmt.Sprintf("Expired %d subscriptions", count))
+			}
+		}),
+	)
 	if err != nil {
 		logger.SysError("Cron job error: " + err.Error())
 		return

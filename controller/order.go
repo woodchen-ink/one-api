@@ -161,6 +161,15 @@ func PaymentCallback(c *gin.Context) {
 		return
 	}
 
+	// 套餐购买订单：创建订阅
+	if order.SubscriptionPlanId > 0 {
+		CreateSubscriptionFromOrder(order)
+		model.RecordQuotaLog(order.UserId, model.LogTypeTopup, 0, common.GetClientIP(c),
+			fmt.Sprintf("购买套餐成功，套餐ID: %d，支付金额：%.2f %s", order.SubscriptionPlanId, order.OrderAmount, order.OrderCurrency))
+		return
+	}
+
+	// 普通充值订单：增加余额
 	err = model.IncreaseUserQuota(order.UserId, order.Quota)
 	if err != nil {
 		logger.SysError(fmt.Sprintf("gateway callback failed to increase user quota, trade_no: %s,", payNotify.TradeNo))

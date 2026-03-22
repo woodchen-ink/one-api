@@ -39,6 +39,18 @@ func GetUserGroupRatio(c *gin.Context) {
 		}
 	}
 
+	// 添加用户已订阅的分组
+	if userId > 0 {
+		subGroups, _ := model.GetActiveSubscriptionGroups(userId)
+		for _, symbol := range subGroups {
+			if _, exists := UserGroup[symbol]; !exists {
+				if g := model.GlobalUserGroupRatio.GetBySymbol(symbol); g != nil {
+					UserGroup[symbol] = g
+				}
+			}
+		}
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "",
