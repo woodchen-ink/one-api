@@ -2,42 +2,32 @@ import PropTypes from 'prop-types';
 import { useState } from 'react';
 
 import {
-  Popover,
+  Stack,
   TableRow,
-  MenuItem,
   TableCell,
-  IconButton,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
-  Button
+  Button,
+  IconButton,
+  Tooltip
 } from '@mui/material';
 
 import TableSwitch from 'ui-component/Switch';
 import { Icon } from '@iconify/react';
 
 export default function SubscriptionPlanTableRow({ item, managePlan, handleOpenModal, setModalPlanId, durationTypeLabel }) {
-  const [open, setOpen] = useState(null);
   const [openDelete, setOpenDelete] = useState(false);
   const [statusSwitch, setStatusSwitch] = useState(item.enable);
 
   const handleDeleteOpen = () => {
-    handleCloseMenu();
     setOpenDelete(true);
   };
 
   const handleDeleteClose = () => {
     setOpenDelete(false);
-  };
-
-  const handleOpenMenu = (event) => {
-    setOpen(event.currentTarget);
-  };
-
-  const handleCloseMenu = () => {
-    setOpen(null);
   };
 
   const handleStatus = async () => {
@@ -49,7 +39,6 @@ export default function SubscriptionPlanTableRow({ item, managePlan, handleOpenM
   };
 
   const handleDelete = async () => {
-    handleCloseMenu();
     await managePlan(item.id, 'delete');
   };
 
@@ -69,37 +58,27 @@ export default function SubscriptionPlanTableRow({ item, managePlan, handleOpenM
           <TableSwitch id={`switch-${item.id}`} checked={statusSwitch} onChange={handleStatus} />
         </TableCell>
         <TableCell>
-          <IconButton onClick={handleOpenMenu} sx={{ color: 'rgb(99, 115, 129)' }}>
-            <Icon icon="solar:menu-dots-circle-bold-duotone" />
-          </IconButton>
+          <Stack direction="row" spacing={1} justifyContent="flex-end" flexWrap="wrap" useFlexGap>
+            <Tooltip title="编辑">
+              <IconButton
+                size="small"
+                color="primary"
+                onClick={() => {
+                  handleOpenModal();
+                  setModalPlanId(item.id);
+                }}
+              >
+                <Icon icon="solar:pen-bold-duotone" width={18} />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="删除">
+              <IconButton size="small" color="error" onClick={handleDeleteOpen}>
+                <Icon icon="solar:trash-bin-trash-bold-duotone" width={18} />
+              </IconButton>
+            </Tooltip>
+          </Stack>
         </TableCell>
       </TableRow>
-
-      <Popover
-        open={!!open}
-        anchorEl={open}
-        onClose={handleCloseMenu}
-        anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-        PaperProps={{
-          sx: { minWidth: 140 }
-        }}
-      >
-        <MenuItem
-          onClick={() => {
-            handleCloseMenu();
-            handleOpenModal();
-            setModalPlanId(item.id);
-          }}
-        >
-          <Icon icon="solar:pen-bold-duotone" style={{ marginRight: '16px' }} />
-          编辑
-        </MenuItem>
-        <MenuItem onClick={handleDeleteOpen} sx={{ color: 'error.main' }}>
-          <Icon icon="solar:trash-bin-trash-bold-duotone" style={{ marginRight: '16px' }} />
-          删除
-        </MenuItem>
-      </Popover>
 
       <Dialog open={openDelete} onClose={handleDeleteClose}>
         <DialogTitle>删除确认</DialogTitle>

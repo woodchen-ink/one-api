@@ -17,15 +17,15 @@ import {
   Container,
   TableRow,
   TableCell,
-  IconButton,
-  Popover,
   MenuItem,
   Box,
   Typography,
   FormControl,
   InputLabel,
   Select,
-  OutlinedInput
+  OutlinedInput,
+  IconButton,
+  Tooltip
 } from '@mui/material';
 import KeywordTableHead from 'ui-component/TableHead';
 import Label from 'ui-component/Label';
@@ -68,10 +68,6 @@ export default function UserSubscription() {
   const [filterUserId, setFilterUserId] = useState('');
   const [filterGroupSymbol, setFilterGroupSymbol] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
-
-  // Per-row menu
-  const [menuAnchor, setMenuAnchor] = useState(null);
-  const [menuRowId, setMenuRowId] = useState(null);
 
   const handleSort = (event, id) => {
     const isAsc = orderBy === id && order === 'asc';
@@ -200,16 +196,6 @@ export default function UserSubscription() {
     }
   };
 
-  const handleOpenMenu = (event, rowId) => {
-    setMenuAnchor(event.currentTarget);
-    setMenuRowId(rowId);
-  };
-
-  const handleCloseMenu = () => {
-    setMenuAnchor(null);
-    setMenuRowId(null);
-  };
-
   const getUsagePercent = (used, total) => {
     if (!total || total === 0) return 0;
     return Math.min((used / total) * 100, 100);
@@ -267,13 +253,7 @@ export default function UserSubscription() {
           </FormControl>
           <FormControl sx={{ minWidth: 120 }}>
             <InputLabel htmlFor="filter-status">状态</InputLabel>
-            <Select
-              id="filter-status"
-              label="状态"
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              size="small"
-            >
+            <Select id="filter-status" label="状态" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} size="small">
               <MenuItem value="">全部</MenuItem>
               <MenuItem value="active">生效中</MenuItem>
               <MenuItem value="expired">已过期</MenuItem>
@@ -335,9 +315,23 @@ export default function UserSubscription() {
                         </Label>
                       </TableCell>
                       <TableCell>
-                        <IconButton onClick={(e) => handleOpenMenu(e, row.id)} sx={{ color: 'rgb(99, 115, 129)' }}>
-                          <Icon icon="solar:menu-dots-circle-bold-duotone" />
-                        </IconButton>
+                        <Stack direction="row" spacing={1} justifyContent="flex-end" flexWrap="wrap" useFlexGap>
+                          <Tooltip title="调整到期">
+                            <IconButton size="small" color="primary" onClick={() => handleOpenAdjust(row.id)}>
+                              <Icon icon="solar:calendar-bold-duotone" width={18} />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="重置配额">
+                            <IconButton size="small" color="primary" onClick={() => handleResetQuota(row.id)}>
+                              <Icon icon="solar:restart-bold-duotone" width={18} />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="撤销">
+                            <IconButton size="small" color="error" onClick={() => handleRevoke(row.id)}>
+                              <Icon icon="solar:close-circle-bold-duotone" width={18} />
+                            </IconButton>
+                          </Tooltip>
+                        </Stack>
                       </TableCell>
                     </TableRow>
                   );
@@ -358,46 +352,6 @@ export default function UserSubscription() {
           showLastButton
         />
       </Card>
-
-      <Popover
-        open={!!menuAnchor}
-        anchorEl={menuAnchor}
-        onClose={handleCloseMenu}
-        anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-        PaperProps={{
-          sx: { minWidth: 160 }
-        }}
-      >
-        <MenuItem
-          onClick={() => {
-            handleCloseMenu();
-            handleOpenAdjust(menuRowId);
-          }}
-        >
-          <Icon icon="solar:calendar-bold-duotone" style={{ marginRight: '16px' }} />
-          调整到期
-        </MenuItem>
-        <MenuItem
-          onClick={() => {
-            handleCloseMenu();
-            handleResetQuota(menuRowId);
-          }}
-        >
-          <Icon icon="solar:restart-bold-duotone" style={{ marginRight: '16px' }} />
-          重置配额
-        </MenuItem>
-        <MenuItem
-          onClick={() => {
-            handleCloseMenu();
-            handleRevoke(menuRowId);
-          }}
-          sx={{ color: 'error.main' }}
-        >
-          <Icon icon="solar:close-circle-bold-duotone" style={{ marginRight: '16px' }} />
-          撤销
-        </MenuItem>
-      </Popover>
 
       <AdjustModal open={openAdjust} onCancel={handleCloseAdjust} onOk={handleOkAdjust} subscriptionId={adjustSubId} />
       <AssignModal open={openAssign} onCancel={handleCloseAssign} onOk={handleOkAssign} />
