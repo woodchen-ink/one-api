@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, useCallback } from 'react';
 import { showError, showSuccess, trims, copy, useIsAdmin } from 'utils/common';
 
 import Table from '@mui/material/Table';
@@ -35,10 +35,13 @@ import { PAGE_SIZE_OPTIONS, getPageSize, savePageSize } from 'constants';
 import { useTranslation } from 'react-i18next';
 import { UserContext } from 'contexts/UserContext';
 import { useTheme } from '@mui/material/styles';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 export default function Token() {
   const { t } = useTranslation();
   const theme = useTheme();
+  const location = useLocation();
+  const navigate = useNavigate();
   const grey500 = theme.palette.grey[500];
   const [page, setPage] = useState(0);
   const [order, setOrder] = useState('desc');
@@ -54,6 +57,8 @@ export default function Token() {
 
   const [openModal, setOpenModal] = useState(false);
   const [editTokenId, setEditTokenId] = useState(0);
+  const [presetGroup, setPresetGroup] = useState('');
+  const [presetPlanName, setPresetPlanName] = useState('');
   const siteInfo = useSelector((state) => state.siteInfo);
   const { userGroup } = useSelector((state) => state.account);
   const userIsAdmin = useIsAdmin();
@@ -89,50 +94,53 @@ export default function Token() {
     setSearchKeyword(formData.get('keyword'));
   };
 
-  const fetchData = async (page, rowsPerPage, keyword, order, orderBy) => {
-    setSearching(true);
-    keyword = trims(keyword);
-    try {
-      if (orderBy) {
-        orderBy = order === 'desc' ? '-' + orderBy : orderBy;
-      }
+  const fetchData = useCallback(
+    async (page, rowsPerPage, keyword, order, orderBy) => {
+      setSearching(true);
+      keyword = trims(keyword);
+      try {
+        if (orderBy) {
+          orderBy = order === 'desc' ? '-' + orderBy : orderBy;
+        }
 
-      let res;
-      // 如果启用了管理员搜索模式且有搜索条件
-      if (adminSearchEnabled && (adminSearchUserId || adminSearchTokenId)) {
-        res = await API.get(`/api/token/admin/search`, {
-          params: {
-            page: page + 1,
-            size: rowsPerPage,
-            keyword: keyword,
-            order: orderBy,
-            user_id: adminSearchUserId ? parseInt(adminSearchUserId, 10) : undefined,
-            token_id: adminSearchTokenId ? parseInt(adminSearchTokenId, 10) : undefined
-          }
-        });
-      } else {
-        res = await API.get(`/api/token/`, {
-          params: {
-            page: page + 1,
-            size: rowsPerPage,
-            keyword: keyword,
-            order: orderBy
-          }
-        });
-      }
+        let res;
+        // 如果启用了管理员搜索模式且有搜索条件
+        if (adminSearchEnabled && (adminSearchUserId || adminSearchTokenId)) {
+          res = await API.get(`/api/token/admin/search`, {
+            params: {
+              page: page + 1,
+              size: rowsPerPage,
+              keyword: keyword,
+              order: orderBy,
+              user_id: adminSearchUserId ? parseInt(adminSearchUserId, 10) : undefined,
+              token_id: adminSearchTokenId ? parseInt(adminSearchTokenId, 10) : undefined
+            }
+          });
+        } else {
+          res = await API.get(`/api/token/`, {
+            params: {
+              page: page + 1,
+              size: rowsPerPage,
+              keyword: keyword,
+              order: orderBy
+            }
+          });
+        }
 
-      const { success, message, data } = res.data;
-      if (success) {
-        setListCount(data.total_count);
-        setTokens(data.data);
-      } else {
-        showError(message);
+        const { success, message, data } = res.data;
+        if (success) {
+          setListCount(data.total_count);
+          setTokens(data.data);
+        } else {
+          showError(message);
+        }
+      } catch (error) {
+        console.error(error);
       }
-    } catch (error) {
-      console.error(error);
-    }
-    setSearching(false);
-  };
+      setSearching(false);
+    },
+    [adminSearchEnabled, adminSearchTokenId, adminSearchUserId]
+  );
 
   // 处理刷新
   const handleRefresh = async () => {
@@ -143,7 +151,7 @@ export default function Token() {
 
   useEffect(() => {
     fetchData(page, rowsPerPage, searchKeyword, order, orderBy);
-  }, [page, rowsPerPage, searchKeyword, order, orderBy, refreshFlag, adminSearchEnabled, adminSearchUserId, adminSearchTokenId]);
+  }, [page, rowsPerPage, searchKeyword, order, orderBy, refreshFlag, fetchData]);
 
   useEffect(() => {
     loadUserGroup();
@@ -156,6 +164,16 @@ export default function Token() {
     });
     setUserGroupOptions(options);
   }, [userGroup]);
+
+  useEffect(() => {
+    if (location.state?.openCreateToken) {
+      setEditTokenId(0);
+      setPresetGroup(location.state.presetGroup || '');
+      setPresetPlanName(location.state.presetPlanName || '');
+      setOpenModal(true);
+      navigate(location.pathname, { replace: true });
+    }
+  }, [location.pathname, location.state, navigate]);
 
   const manageToken = async (id, action, value) => {
     const url = '/api/token/';
@@ -189,14 +207,18 @@ export default function Token() {
     }
   };
 
-  const handleOpenModal = (tokenId) => {
+  const handleOpenModal = (tokenId, options = {}) => {
     setEditTokenId(tokenId);
+    setPresetGroup(options.presetGroup || '');
+    setPresetPlanName(options.presetPlanName || '');
     setOpenModal(true);
   };
 
   const handleCloseModal = () => {
     setOpenModal(false);
     setEditTokenId(0);
+    setPresetGroup('');
+    setPresetPlanName('');
   };
 
   const handleOkModal = (status) => {
@@ -425,6 +447,8 @@ export default function Token() {
         onCancel={handleCloseModal}
         onOk={handleOkModal}
         tokenId={editTokenId}
+        presetGroup={presetGroup}
+        presetPlanName={presetPlanName}
         userGroupOptions={userGroupOptions}
         adminMode={adminSearchEnabled && (adminSearchUserId || adminSearchTokenId)}
       />

@@ -24,6 +24,7 @@ import { API } from 'utils/api';
 import { showError } from 'utils/common';
 import { QRCode } from 'react-qrcode-logo';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
 const ProgressBarWrapper = styled(Box)(({ theme }) => ({
   position: 'relative',
@@ -300,6 +301,7 @@ RenewPayDialog.propTypes = {
 const MySubscription = () => {
   const theme = useTheme();
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [subscriptions, setSubscriptions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [renewDialogOpen, setRenewDialogOpen] = useState(false);
@@ -359,6 +361,16 @@ const MySubscription = () => {
     setRenewSubscriptionId(null);
     setRenewPlanId(null);
     fetchSubscriptions();
+  };
+
+  const handleCreateToken = (groupSymbol, planName) => {
+    navigate('/panel/token', {
+      state: {
+        openCreateToken: true,
+        presetGroup: groupSymbol,
+        presetPlanName: planName
+      }
+    });
   };
 
   if (loading) {
@@ -442,7 +454,13 @@ const MySubscription = () => {
                     </Typography>
                   </Box>
 
-                  <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
+                  <Stack
+                    direction={{ xs: 'column', sm: 'row' }}
+                    justifyContent="space-between"
+                    alignItems={{ xs: 'flex-start', sm: 'center' }}
+                    spacing={{ xs: 0.75, sm: 1.5 }}
+                    sx={{ mb: 2 }}
+                  >
                     <Stack direction="row" alignItems="center" spacing={0.5}>
                       <Icon icon="solar:calendar-linear" width={14} color={theme.palette.text.secondary} />
                       <Typography variant="caption" color="text.secondary">
@@ -453,28 +471,49 @@ const MySubscription = () => {
                           : t('subscription.statusExpired')}
                       </Typography>
                     </Stack>
-                  </Stack>
-
-                  <Stack spacing={0.5} sx={{ mb: 2 }}>
                     <Typography variant="caption" color="text.secondary">
-                      {t('subscription.startDate')}: {new Date(sub.start_time * 1000).toLocaleDateString()}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {t('subscription.expireDate')}: {new Date(sub.expire_time * 1000).toLocaleDateString()}
+                      {t('subscription.startDate')}: {new Date(sub.start_time * 1000).toLocaleDateString()} | {t('subscription.expireDate')}
+                      : {new Date(sub.expire_time * 1000).toLocaleDateString()}
                     </Typography>
                   </Stack>
 
                   {isActive && (
-                    <Button
-                      variant="outlined"
-                      fullWidth
-                      size="small"
-                      onClick={() => handleRenew(sub.id, sub.plan_id)}
-                      startIcon={<Icon icon="solar:refresh-circle-linear" width={18} />}
-                      sx={{ borderRadius: '6px' }}
-                    >
-                      {t('subscription.renew')}
-                    </Button>
+                    <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={() => handleCreateToken(sub.group_symbol, sub.plan_name)}
+                        startIcon={<Icon icon="solar:key-minimalistic-square-3-linear" width={18} />}
+                        sx={{
+                          flex: 1,
+                          minHeight: 34,
+                          borderRadius: '6px',
+                          px: 1.25,
+                          '& .MuiButton-startIcon': {
+                            mr: 0.5
+                          }
+                        }}
+                      >
+                        {t('subscription.createPlanToken')}
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => handleRenew(sub.id, sub.plan_id)}
+                        startIcon={<Icon icon="solar:refresh-circle-linear" width={18} />}
+                        sx={{
+                          flex: 1,
+                          minHeight: 34,
+                          borderRadius: '6px',
+                          px: 1.25,
+                          '& .MuiButton-startIcon': {
+                            mr: 0.5
+                          }
+                        }}
+                      >
+                        {t('subscription.renew')}
+                      </Button>
+                    </Stack>
                   )}
                 </CardContent>
               </SubscriptionCard>

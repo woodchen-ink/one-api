@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import * as Yup from 'yup';
 import { Formik } from 'formik'; // 1. 导入 useFormikContext
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import dayjs from 'dayjs';
 import ModelLimitSelector from './ModelLimitSelector';
 import {
@@ -21,6 +21,7 @@ import {
   FormHelperText,
   Select,
   MenuItem,
+  Stack,
   Typography,
   Grid,
   TextField
@@ -106,11 +107,12 @@ const originInputs = {
   }
 };
 
-const EditModal = ({ open, tokenId, onCancel, onOk, userGroupOptions, adminMode = false }) => {
+const EditModal = ({ open, tokenId, onCancel, onOk, userGroupOptions, adminMode = false, presetGroup = '', presetPlanName = '' }) => {
   const { t } = useTranslation();
   const [inputs, setInputs] = useState(originInputs);
   const [modelOptions, setModelOptions] = useState([]);
   const [ownedByIcons, setOwnedByIcons] = useState({});
+  const [activeSubscriptionGroups, setActiveSubscriptionGroups] = useState([]);
   const fetchOwnedByIcons = async () => {
     try {
       const res = await API.get('/api/model_ownedby/');
@@ -259,13 +261,47 @@ const EditModal = ({ open, tokenId, onCancel, onOk, userGroupOptions, adminMode 
   }, [open]);
 
   useEffect(() => {
+    if (!open || adminMode) {
+      setActiveSubscriptionGroups([]);
+      return;
+    }
+
+    const fetchSubscriptionGroups = async () => {
+      try {
+        const res = await API.get('/api/user/subscription/groups');
+        const { success, data } = res.data;
+        if (success) {
+          setActiveSubscriptionGroups(data || []);
+        }
+      } catch (error) {
+        setActiveSubscriptionGroups([]);
+      }
+    };
+
+    fetchSubscriptionGroups();
+  }, [open, adminMode]);
+
+  useEffect(() => {
     if (tokenId) {
       loadToken().then();
     } else {
-      setInputs(originInputs);
+      setInputs({
+        ...originInputs,
+        group: presetGroup || ''
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tokenId, adminMode]);
+  }, [tokenId, adminMode, presetGroup]);
+
+  const sortedUserGroupOptions = useMemo(() => {
+    const activeSet = new Set(activeSubscriptionGroups);
+    return [...userGroupOptions].sort((a, b) => {
+      const aActive = activeSet.has(a.value);
+      const bActive = activeSet.has(b.value);
+      if (aActive === bActive) return 0;
+      return aActive ? -1 : 1;
+    });
+  }, [activeSubscriptionGroups, userGroupOptions]);
 
   const sectionSx = {
     border: '1px solid',
@@ -304,6 +340,15 @@ const EditModal = ({ open, tokenId, onCancel, onOk, userGroupOptions, adminMode 
         <Formik initialValues={inputs} enableReinitialize validationSchema={validationSchema} onSubmit={submit}>
           {({ errors, handleBlur, handleChange, handleSubmit, touched, values, setFieldError, setFieldValue, isSubmitting }) => (
             <Box component="form" noValidate onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {!values.is_edit && presetGroup && (
+                <Alert severity="success" sx={{ mb: -0.5 }}>
+                  {t('token_index.subscriptionPresetGroupTip', {
+                    group: presetGroup,
+                    plan: presetPlanName || presetGroup
+                  })}
+                </Alert>
+              )}
+
               {/* 管理员模式下显示用户转移字段 */}
               {adminMode && values.is_edit && (
                 <>
@@ -522,6 +567,35 @@ const EditModal = ({ open, tokenId, onCancel, onOk, userGroupOptions, adminMode 
                   </Typography>
                 </Box>
 
+                {!adminMode && activeSubscriptionGroups.length > 0 && (
+                  <Stack spacing={1.25} sx={{ mb: 1.5 }}>
+                    <Alert severity={activeSubscriptionGroups.includes(values.group) ? 'success' : 'warning'}>
+                      {activeSubscriptionGroups.includes(values.group)
+                        ? t('token_index.subscriptionGroupMatched', { group: values.group })
+                        : t('token_index.subscriptionGroupHint')}
+                    </Alert>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+                      {activeSubscriptionGroups.map((group) => (
+                        <Typography
+                          key={group}
+                          component="span"
+                          sx={{
+                            px: 1,
+                            py: 0.4,
+                            borderRadius: '999px',
+                            fontSize: '0.75rem',
+                            fontWeight: 600,
+                            color: (theme) => theme.palette.primary.main,
+                            bgcolor: (theme) => (theme.palette.mode === 'dark' ? 'rgba(144, 202, 249, 0.12)' : 'rgba(25, 118, 210, 0.08)')
+                          }}
+                        >
+                          {group}
+                        </Typography>
+                      ))}
+                    </Box>
+                  </Stack>
+                )}
+
                 <Grid container spacing={1.5}>
                   <Grid item xs={12} md={6}>
                     <FormControl fullWidth>
@@ -544,9 +618,28 @@ const EditModal = ({ open, tokenId, onCancel, onOk, userGroupOptions, adminMode 
                         variant={'outlined'}
                       >
                         <MenuItem value="-1">跟随用户分组</MenuItem>
-                        {userGroupOptions.map((option) => (
+                        {sortedUserGroupOptions.map((option) => (
                           <MenuItem key={option.value} value={option.value}>
-                            {option.label}
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: 1 }}>
+                              <Typography variant="body2">{option.label}</Typography>
+                              {activeSubscriptionGroups.includes(option.value) && (
+                                <Typography
+                                  component="span"
+                                  sx={{
+                                    px: 0.75,
+                                    py: 0.2,
+                                    borderRadius: '999px',
+                                    fontSize: '0.68rem',
+                                    fontWeight: 700,
+                                    color: (theme) => theme.palette.primary.main,
+                                    bgcolor: (theme) =>
+                                      theme.palette.mode === 'dark' ? 'rgba(144, 202, 249, 0.12)' : 'rgba(25, 118, 210, 0.08)'
+                                  }}
+                                >
+                                  {t('token_index.subscriptionGroupBadge')}
+                                </Typography>
+                              )}
+                            </Box>
                           </MenuItem>
                         ))}
                       </Select>
@@ -736,5 +829,7 @@ EditModal.propTypes = {
   onCancel: PropTypes.func,
   onOk: PropTypes.func,
   userGroupOptions: PropTypes.array,
-  adminMode: PropTypes.bool
+  adminMode: PropTypes.bool,
+  presetGroup: PropTypes.string,
+  presetPlanName: PropTypes.string
 };
