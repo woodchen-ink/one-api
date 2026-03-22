@@ -62,7 +62,11 @@ const MainRoutes = {
     },
     {
       path: 'log',
-      element: <Log />
+      element: <Log key="user-log" adminMode={false} />
+    },
+    {
+      path: 'admin_log',
+      element: <Log key="admin-log" adminMode />
     },
     {
       path: 'redemption',

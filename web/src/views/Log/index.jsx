@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import { useState, useEffect, useCallback } from 'react';
 import { showError, trims } from 'utils/common';
 
@@ -25,8 +26,9 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 import { useSelector } from 'react-redux';
 import { useLogType } from './type/LogType';
+import { Navigate } from 'react-router-dom';
 
-export default function Log() {
+export default function Log({ adminMode = false }) {
   const { t } = useTranslation();
   const LogType = useLogType();
   const originalKeyword = {
@@ -56,12 +58,13 @@ export default function Log() {
 
   const [logs, setLogs] = useState([]);
   const userIsAdmin = useIsAdmin();
+  const canViewAdminLogs = adminMode && userIsAdmin;
 
   // 添加列显示设置相关状态
   const [columnVisibility, setColumnVisibility] = useState({
     created_at: true,
-    channel_id: true,
-    user_id: true,
+    channel_id: canViewAdminLogs,
+    user_id: canViewAdminLogs,
     group: true,
     token_name: true,
     type: true,
@@ -71,9 +74,38 @@ export default function Log() {
     duration: true,
     tokens: true,
     quota: true,
-    source_ip: true
+    source_ip: canViewAdminLogs
   });
   const [columnMenuAnchor, setColumnMenuAnchor] = useState(null);
+
+  useEffect(() => {
+    const nextKeyword = {
+      ...originalKeyword,
+      source_ip: ''
+    };
+
+    setToolBarValue(nextKeyword);
+    setSearchKeyword(nextKeyword);
+    setPage(0);
+    setOrder('desc');
+    setOrderBy('created_at');
+    setColumnVisibility({
+      created_at: true,
+      channel_id: canViewAdminLogs,
+      user_id: canViewAdminLogs,
+      group: true,
+      token_name: true,
+      type: true,
+      model_name: true,
+      reasoning: true,
+      request_path: true,
+      duration: true,
+      tokens: true,
+      quota: true,
+      source_ip: canViewAdminLogs
+    });
+    setColumnMenuAnchor(null);
+  }, [canViewAdminLogs]);
 
   // 处理列显示菜单打开和关闭
   const handleColumnMenuOpen = (event) => {
@@ -148,10 +180,11 @@ export default function Log() {
         if (orderBy) {
           orderBy = order === 'desc' ? '-' + orderBy : orderBy;
         }
-        const url = userIsAdmin ? '/api/log/' : '/api/log/self/';
-        if (!userIsAdmin) {
+        const url = canViewAdminLogs ? '/api/log/' : '/api/log/self/';
+        if (!canViewAdminLogs) {
           delete keyword.username;
           delete keyword.channel_id;
+          delete keyword.source_ip;
         }
 
         const res = await API.get(url, {
@@ -174,7 +207,7 @@ export default function Log() {
       }
       setSearching(false);
     },
-    [userIsAdmin]
+    [canViewAdminLogs]
   );
 
   // 处理刷新
@@ -189,6 +222,10 @@ export default function Log() {
   useEffect(() => {
     fetchData(page, rowsPerPage, searchKeyword, order, orderBy);
   }, [page, rowsPerPage, searchKeyword, order, orderBy, fetchData, refreshFlag]);
+
+  if (adminMode && !userIsAdmin) {
+    return <Navigate to="/panel/log" replace />;
+  }
 
   return (
     <>
@@ -213,7 +250,7 @@ export default function Log() {
           </Tabs>
         </Box>
         <Box component="form" noValidate>
-          <TableToolBar filterName={toolBarValue} handleFilterName={handleToolBarValue} userIsAdmin={userIsAdmin} />
+          <TableToolBar filterName={toolBarValue} handleFilterName={handleToolBarValue} userIsAdmin={canViewAdminLogs} />
         </Box>
         <Toolbar
           sx={{
@@ -297,10 +334,10 @@ export default function Log() {
                 { id: 'duration', label: t('logPage.durationLabel') },
                 { id: 'tokens', label: t('logPage.tokensLabel') },
                 { id: 'quota', label: t('logPage.quotaLabel') },
-                { id: 'source_ip', label: t('logPage.sourceIp') }
+                { id: 'source_ip', label: t('logPage.sourceIp'), adminOnly: true }
               ].map(
                 (column) =>
-                  (!column.adminOnly || userIsAdmin) && (
+                  (!column.adminOnly || canViewAdminLogs) && (
                     <MenuItem key={column.id} onClick={() => handleColumnVisibilityChange(column.id)} dense>
                       <Checkbox checked={columnVisibility[column.id] || false} size="small" />
                       <ListItemText primary={column.label} />
@@ -329,13 +366,13 @@ export default function Log() {
                     id: 'channel_id',
                     label: t('logPage.channelLabel'),
                     disableSort: false,
-                    hide: !columnVisibility.channel_id || !userIsAdmin
+                    hide: !columnVisibility.channel_id || !canViewAdminLogs
                   },
                   {
                     id: 'user_id',
                     label: t('logPage.userLabel'),
                     disableSort: false,
-                    hide: !columnVisibility.user_id || !userIsAdmin
+                    hide: !columnVisibility.user_id || !canViewAdminLogs
                   },
                   {
                     id: 'group',
@@ -395,7 +432,7 @@ export default function Log() {
                     id: 'source_ip',
                     label: t('logPage.sourceIp'),
                     disableSort: true,
-                    hide: !columnVisibility.source_ip
+                    hide: !columnVisibility.source_ip || !canViewAdminLogs
                   }
                 ]}
               />
@@ -404,7 +441,7 @@ export default function Log() {
                   <LogTableRow
                     item={row}
                     key={`${row.id}_${index}`}
-                    userIsAdmin={userIsAdmin}
+                    userIsAdmin={canViewAdminLogs}
                     userGroup={userGroup}
                     columnVisibility={columnVisibility}
                   />
@@ -428,3 +465,7 @@ export default function Log() {
     </>
   );
 }
+
+Log.propTypes = {
+  adminMode: PropTypes.bool
+};

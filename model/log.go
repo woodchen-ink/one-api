@@ -2,10 +2,10 @@ package model
 
 import (
 	"context"
-	"fmt"
 	"czloapi/common/config"
 	"czloapi/common/logger"
 	"czloapi/common/utils"
+	"fmt"
 
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
@@ -192,7 +192,7 @@ func GetLogsList(params *LogsListParams) (*DataResult[Log], error) {
 func GetUserLogsList(userId int, params *LogsListParams) (*DataResult[Log], error) {
 	var logs []*Log
 
-	tx := DB.Where("user_id = ?", userId).Omit("id")
+	tx := DB.Where("user_id = ?", userId).Omit("id", "source_ip")
 
 	if params.LogType != LogTypeUnknown {
 		tx = tx.Where("type = ?", params.LogType)

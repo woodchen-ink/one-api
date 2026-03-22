@@ -12,11 +12,21 @@ const usage = {
   children: [
     {
       id: 'log',
-      title: '日志',
+      title: '我的日志',
       type: 'item',
       url: '/panel/log',
       icon: icons.IconArticle,
-      breadcrumbs: false
+      breadcrumbs: false,
+      isAdmin: false
+    },
+    {
+      id: 'admin_log',
+      title: '管理员日志',
+      type: 'item',
+      url: '/panel/admin_log',
+      icon: icons.IconArticle,
+      breadcrumbs: false,
+      isAdmin: true
     },
     {
       id: 'invoice',
