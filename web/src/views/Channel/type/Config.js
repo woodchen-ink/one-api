@@ -11,7 +11,7 @@ const defaultConfig = {
     model_headers: [],
     custom_parameter: '',
     models: [],
-    groups: ['default'],
+    groups: ['Lite'],
     plugin: {},
     tag: '',
     only_chat: false,
