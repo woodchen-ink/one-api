@@ -22,17 +22,15 @@ import {
 
 import { showSuccess, showError, trims } from 'utils/common';
 import { API } from 'utils/api';
-import { useTranslation } from 'react-i18next';
 
 const validationSchema = Yup.object().shape({
   is_edit: Yup.boolean(),
-  name: Yup.string().required('name is required'),
-  group_symbol: Yup.string().required('group_symbol is required'),
-  price: Yup.number().required('price is required').min(0),
-  quota_amount: Yup.number().required('quota_amount is required').min(0),
+  name: Yup.string().required('套餐名称不能为空'),
+  group_symbol: Yup.string().required('绑定分组不能为空'),
+  price: Yup.number().required('价格不能为空').min(0, '价格不能为负数'),
+  quota_amount: Yup.number().required('配额不能为空').min(0, '配额不能为负数'),
   duration_type: Yup.string().oneOf(['day', 'week', 'month']).required(),
-  duration_count: Yup.number().min(1).required(),
-  sort: Yup.number()
+  duration_count: Yup.number().min(1, '数量至少为1').required()
 });
 
 const originInputs = {
@@ -54,7 +52,6 @@ const originInputs = {
 const EditModal = ({ open, planId, onCancel, onOk }) => {
   const theme = useTheme();
   const [inputs, setInputs] = useState(originInputs);
-  const { t } = useTranslation();
 
   const submit = async (values, { setErrors, setStatus, setSubmitting }) => {
     setSubmitting(true);
@@ -62,19 +59,13 @@ const EditModal = ({ open, planId, onCancel, onOk }) => {
     let res;
     values = trims(values);
     try {
-      // Convert features string to array
       const submitValues = {
         ...values,
         price: parseFloat(values.price),
         quota_amount: parseFloat(values.quota_amount),
         duration_count: parseInt(values.duration_count, 10),
-        sort: parseInt(values.sort, 10),
-        features: values.features
-          ? values.features
-              .split('\n')
-              .map((f) => f.trim())
-              .filter((f) => f)
-          : []
+        sort: parseInt(values.sort, 10)
+        // features 保持 string 类型，直接提交
       };
 
       if (values.is_edit) {
@@ -84,7 +75,7 @@ const EditModal = ({ open, planId, onCancel, onOk }) => {
       }
       const { success, message } = res.data;
       if (success) {
-        showSuccess(t('userPage.saveSuccess'));
+        showSuccess('保存成功');
         setSubmitting(false);
         setStatus({ success: true });
         onOk(true);
@@ -103,10 +94,6 @@ const EditModal = ({ open, planId, onCancel, onOk }) => {
       const { success, message, data } = res.data;
       if (success) {
         data.is_edit = true;
-        // Convert features array to string for editing
-        if (Array.isArray(data.features)) {
-          data.features = data.features.join('\n');
-        }
         setInputs(data);
       } else {
         showError(message);
@@ -128,7 +115,7 @@ const EditModal = ({ open, planId, onCancel, onOk }) => {
   return (
     <Dialog open={open} onClose={onCancel} fullWidth maxWidth={'md'}>
       <DialogTitle sx={{ margin: '0px', fontWeight: 700, lineHeight: '1.55556', padding: '24px', fontSize: '1.125rem' }}>
-        {planId ? t('common.edit') : t('common.create')}
+        {planId ? '编辑套餐' : '新建套餐'}
       </DialogTitle>
       <Divider />
       <DialogContent>
@@ -136,129 +123,120 @@ const EditModal = ({ open, planId, onCancel, onOk }) => {
           {({ errors, handleBlur, handleChange, setFieldValue, handleSubmit, touched, values, isSubmitting }) => (
             <form noValidate onSubmit={handleSubmit}>
               <FormControl fullWidth error={Boolean(touched.name && errors.name)} sx={{ ...theme.typography.otherInput }}>
-                <InputLabel htmlFor="plan-name-label">{t('subscriptionPlan.name')}</InputLabel>
+                <InputLabel htmlFor="plan-name-label">套餐名称</InputLabel>
                 <OutlinedInput
                   id="plan-name-label"
-                  label={t('subscriptionPlan.name')}
+                  label="套餐名称"
                   type="text"
                   value={values.name}
                   name="name"
                   onBlur={handleBlur}
                   onChange={handleChange}
-                  aria-describedby="helper-text-plan-name-label"
                 />
                 {touched.name && errors.name && (
-                  <FormHelperText error id="helper-text-plan-name-label">
-                    {t(errors.name)}
-                  </FormHelperText>
+                  <FormHelperText error>{errors.name}</FormHelperText>
                 )}
               </FormControl>
 
               <FormControl fullWidth error={Boolean(touched.group_symbol && errors.group_symbol)} sx={{ ...theme.typography.otherInput }}>
-                <InputLabel htmlFor="plan-group-symbol-label">{t('subscriptionPlan.groupSymbol')}</InputLabel>
+                <InputLabel htmlFor="plan-group-symbol-label">绑定分组</InputLabel>
                 <OutlinedInput
                   id="plan-group-symbol-label"
-                  label={t('subscriptionPlan.groupSymbol')}
+                  label="绑定分组"
                   type="text"
                   value={values.group_symbol}
                   name="group_symbol"
                   onBlur={handleBlur}
                   onChange={handleChange}
-                  aria-describedby="helper-text-plan-group-symbol-label"
                 />
                 {touched.group_symbol && errors.group_symbol ? (
-                  <FormHelperText error id="helper-text-plan-group-symbol-label">
-                    {t(errors.group_symbol)}
-                  </FormHelperText>
+                  <FormHelperText error>{errors.group_symbol}</FormHelperText>
                 ) : (
-                  <FormHelperText id="helper-text-plan-group-symbol-label">{t('subscriptionPlan.groupSymbolTip')}</FormHelperText>
+                  <FormHelperText>用户分组的标识（symbol）</FormHelperText>
                 )}
               </FormControl>
 
               <FormControl fullWidth sx={{ ...theme.typography.otherInput }}>
-                <InputLabel htmlFor="plan-description-label">{t('subscriptionPlan.description')}</InputLabel>
+                <InputLabel htmlFor="plan-description-label">描述</InputLabel>
                 <OutlinedInput
                   id="plan-description-label"
-                  label={t('subscriptionPlan.description')}
+                  label="描述"
                   type="text"
                   value={values.description}
                   name="description"
                   multiline
-                  rows={3}
+                  rows={2}
                   onBlur={handleBlur}
                   onChange={handleChange}
-                  aria-describedby="helper-text-plan-description-label"
                 />
+                <FormHelperText>可选，套餐描述信息</FormHelperText>
               </FormControl>
 
               <FormControl fullWidth sx={{ ...theme.typography.otherInput }}>
-                <InputLabel htmlFor="plan-features-label">{t('subscriptionPlan.features')}</InputLabel>
+                <InputLabel htmlFor="plan-features-label">特性描述</InputLabel>
                 <OutlinedInput
                   id="plan-features-label"
-                  label={t('subscriptionPlan.features')}
+                  label="特性描述"
                   type="text"
                   value={values.features}
                   name="features"
                   multiline
-                  rows={4}
+                  rows={3}
                   onBlur={handleBlur}
                   onChange={handleChange}
-                  aria-describedby="helper-text-plan-features-label"
                 />
-                <FormHelperText id="helper-text-plan-features-label">{t('subscriptionPlan.featuresTip')}</FormHelperText>
+                <FormHelperText>可选，每行一个特性描述，用于前端展示</FormHelperText>
               </FormControl>
 
               <FormControl fullWidth error={Boolean(touched.price && errors.price)} sx={{ ...theme.typography.otherInput }}>
-                <InputLabel htmlFor="plan-price-label">{t('subscriptionPlan.price')}</InputLabel>
+                <InputLabel htmlFor="plan-price-label">价格 ($)</InputLabel>
                 <OutlinedInput
                   id="plan-price-label"
-                  label={t('subscriptionPlan.price')}
+                  label="价格 ($)"
                   type="number"
                   value={values.price}
                   name="price"
                   onBlur={handleBlur}
                   onChange={handleChange}
-                  aria-describedby="helper-text-plan-price-label"
                 />
-                {touched.price && errors.price && (
-                  <FormHelperText error id="helper-text-plan-price-label">
-                    {t(errors.price)}
-                  </FormHelperText>
+                {touched.price && errors.price ? (
+                  <FormHelperText error>{errors.price}</FormHelperText>
+                ) : (
+                  <FormHelperText>套餐售价，单位美元，实际支付按支付渠道币种转换</FormHelperText>
                 )}
               </FormControl>
 
               <FormControl fullWidth error={Boolean(touched.quota_amount && errors.quota_amount)} sx={{ ...theme.typography.otherInput }}>
-                <InputLabel htmlFor="plan-quota-amount-label">{t('subscriptionPlan.quotaAmount')}</InputLabel>
+                <InputLabel htmlFor="plan-quota-amount-label">配额额度 ($)</InputLabel>
                 <OutlinedInput
                   id="plan-quota-amount-label"
-                  label={t('subscriptionPlan.quotaAmount')}
+                  label="配额额度 ($)"
                   type="number"
                   value={values.quota_amount}
                   name="quota_amount"
                   onBlur={handleBlur}
                   onChange={handleChange}
-                  aria-describedby="helper-text-plan-quota-amount-label"
                 />
-                {touched.quota_amount && errors.quota_amount && (
-                  <FormHelperText error id="helper-text-plan-quota-amount-label">
-                    {t(errors.quota_amount)}
-                  </FormHelperText>
+                {touched.quota_amount && errors.quota_amount ? (
+                  <FormHelperText error>{errors.quota_amount}</FormHelperText>
+                ) : (
+                  <FormHelperText>套餐包含的配额，单位美元，按 API 调用实际消耗扣减</FormHelperText>
                 )}
               </FormControl>
 
               <FormControl fullWidth sx={{ ...theme.typography.otherInput }}>
-                <InputLabel htmlFor="plan-duration-type-label">{t('subscriptionPlan.durationType')}</InputLabel>
+                <InputLabel htmlFor="plan-duration-type-label">有效期类型</InputLabel>
                 <Select
                   id="plan-duration-type-label"
-                  label={t('subscriptionPlan.durationType')}
+                  label="有效期类型"
                   value={values.duration_type}
                   name="duration_type"
                   onChange={handleChange}
                   onBlur={handleBlur}
                 >
-                  <MenuItem value="day">{t('subscriptionPlan.durationDay')}</MenuItem>
-                  <MenuItem value="week">{t('subscriptionPlan.durationWeek')}</MenuItem>
-                  <MenuItem value="month">{t('subscriptionPlan.durationMonth')}</MenuItem>
+                  <MenuItem value="day">日</MenuItem>
+                  <MenuItem value="week">周</MenuItem>
+                  <MenuItem value="month">月</MenuItem>
                 </Select>
               </FormControl>
 
@@ -267,49 +245,60 @@ const EditModal = ({ open, planId, onCancel, onOk }) => {
                 error={Boolean(touched.duration_count && errors.duration_count)}
                 sx={{ ...theme.typography.otherInput }}
               >
-                <InputLabel htmlFor="plan-duration-count-label">{t('subscriptionPlan.durationCount')}</InputLabel>
+                <InputLabel htmlFor="plan-duration-count-label">有效期数量</InputLabel>
                 <OutlinedInput
                   id="plan-duration-count-label"
-                  label={t('subscriptionPlan.durationCount')}
+                  label="有效期数量"
                   type="number"
                   value={values.duration_count}
                   name="duration_count"
                   onBlur={handleBlur}
                   onChange={handleChange}
-                  aria-describedby="helper-text-plan-duration-count-label"
                 />
                 {touched.duration_count && errors.duration_count && (
-                  <FormHelperText error id="helper-text-plan-duration-count-label">
-                    {t(errors.duration_count)}
-                  </FormHelperText>
+                  <FormHelperText error>{errors.duration_count}</FormHelperText>
                 )}
               </FormControl>
 
               <FormControl fullWidth sx={{ ...theme.typography.otherInput }}>
-                <InputLabel htmlFor="plan-sort-label">{t('subscriptionPlan.sort')}</InputLabel>
+                <InputLabel htmlFor="plan-sort-label">排序</InputLabel>
                 <OutlinedInput
                   id="plan-sort-label"
-                  label={t('subscriptionPlan.sort')}
+                  label="排序"
                   type="number"
                   value={values.sort}
                   name="sort"
                   onBlur={handleBlur}
                   onChange={handleChange}
-                  aria-describedby="helper-text-plan-sort-label"
                 />
+                <FormHelperText>越大越靠前</FormHelperText>
               </FormControl>
 
               <FormControl fullWidth sx={{ ...theme.typography.otherInput }}>
-                <InputLabel htmlFor="plan-payment-product-label">{t('subscriptionPlan.paymentProduct')}</InputLabel>
+                <InputLabel htmlFor="plan-payment-product-label">支付商品名</InputLabel>
                 <OutlinedInput
                   id="plan-payment-product-label"
-                  label={t('subscriptionPlan.paymentProduct')}
+                  label="支付商品名"
                   type="text"
                   value={values.payment_product}
                   name="payment_product"
                   onBlur={handleBlur}
                   onChange={handleChange}
-                  aria-describedby="helper-text-plan-payment-product-label"
+                />
+                <FormHelperText>可选，映射到支付渠道的商品名称</FormHelperText>
+              </FormControl>
+
+              <FormControl fullWidth>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={values.enable === true || values.enable === undefined}
+                      onClick={() => {
+                        setFieldValue('enable', !(values.enable === true || values.enable === undefined));
+                      }}
+                    />
+                  }
+                  label="启用"
                 />
               </FormControl>
 
@@ -317,34 +306,20 @@ const EditModal = ({ open, planId, onCancel, onOk }) => {
                 <FormControlLabel
                   control={
                     <Switch
-                      checked={values.enable}
+                      checked={values.allow_renewal === true || values.allow_renewal === undefined}
                       onClick={() => {
-                        setFieldValue('enable', !values.enable);
+                        setFieldValue('allow_renewal', !(values.allow_renewal === true || values.allow_renewal === undefined));
                       }}
                     />
                   }
-                  label={t('subscriptionPlan.enable')}
-                />
-              </FormControl>
-
-              <FormControl fullWidth>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={values.allow_renewal}
-                      onClick={() => {
-                        setFieldValue('allow_renewal', !values.allow_renewal);
-                      }}
-                    />
-                  }
-                  label={t('subscriptionPlan.allowRenewal')}
+                  label="允许续订"
                 />
               </FormControl>
 
               <DialogActions>
-                <Button onClick={onCancel}>{t('userPage.cancel')}</Button>
+                <Button onClick={onCancel}>取消</Button>
                 <Button disableElevation disabled={isSubmitting} type="submit" variant="contained" color="primary">
-                  {t('userPage.submit')}
+                  提交
                 </Button>
               </DialogActions>
             </form>

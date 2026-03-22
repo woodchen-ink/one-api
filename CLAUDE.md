@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Important
+
+- 前端 管理员界面直接使用中文, 不需要i18n, 用户界面使用i18n.
+
 ## Build and Development Commands
 
 ### Frontend (React/Vite)

@@ -35,7 +35,6 @@ import AdjustModal from './component/AdjustModal';
 import AssignModal from './component/AssignModal';
 import { Icon } from '@iconify/react';
 
-import { useTranslation } from 'react-i18next';
 // ----------------------------------------------------------------------
 
 const statusMap = {
@@ -44,8 +43,13 @@ const statusMap = {
   revoked: 'error'
 };
 
+const statusLabel = {
+  active: '生效中',
+  expired: '已过期',
+  revoked: '已撤销'
+};
+
 export default function UserSubscription() {
-  const { t } = useTranslation();
   const [page, setPage] = useState(0);
   const [order, setOrder] = useState('desc');
   const [orderBy, setOrderBy] = useState('id');
@@ -133,11 +137,12 @@ export default function UserSubscription() {
   }, [page, rowsPerPage, order, orderBy, refreshFlag]);
 
   const handleRevoke = async (id) => {
+    if (!confirm('确定要撤销该订阅吗？')) return;
     try {
       const res = await API.put(`/api/user_subscription/admin/revoke/${id}`);
       const { success, message } = res.data;
       if (success) {
-        showSuccess(t('userPage.operationSuccess'));
+        showSuccess('操作成功');
         await handleRefresh();
       } else {
         showError(message);
@@ -148,11 +153,12 @@ export default function UserSubscription() {
   };
 
   const handleResetQuota = async (id) => {
+    if (!confirm('确定要重置该订阅的已用配额吗？')) return;
     try {
       const res = await API.put(`/api/user_subscription/admin/reset/${id}`);
       const { success, message } = res.data;
       if (success) {
-        showSuccess(t('userPage.operationSuccess'));
+        showSuccess('操作成功');
         await handleRefresh();
       } else {
         showError(message);
@@ -224,7 +230,7 @@ export default function UserSubscription() {
           <Container maxWidth="xl">
             <ButtonGroup variant="outlined" aria-label="outlined small primary button group">
               <Button onClick={handleRefresh} startIcon={<Icon icon="solar:refresh-bold-duotone" width={18} />}>
-                {t('userPage.refresh')}
+                刷新
               </Button>
               <Button
                 variant="outlined"
@@ -232,7 +238,7 @@ export default function UserSubscription() {
                 startIcon={<Icon icon="solar:add-circle-line-duotone" />}
                 onClick={handleOpenAssign}
               >
-                {t('userSubscription.assign')}
+                分配订阅
               </Button>
             </ButtonGroup>
           </Container>
@@ -240,42 +246,42 @@ export default function UserSubscription() {
 
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 2, sm: 2, md: 3 }} padding={'16px'} paddingBottom={'0px'}>
           <FormControl sx={{ minWidth: 120 }}>
-            <InputLabel htmlFor="filter-user-id">{t('userSubscription.userId')}</InputLabel>
+            <InputLabel htmlFor="filter-user-id">用户ID</InputLabel>
             <OutlinedInput
               id="filter-user-id"
-              label={t('userSubscription.userId')}
+              label="用户ID"
               value={filterUserId}
               onChange={(e) => setFilterUserId(e.target.value)}
               size="small"
             />
           </FormControl>
           <FormControl sx={{ minWidth: 120 }}>
-            <InputLabel htmlFor="filter-group-symbol">{t('userSubscription.groupSymbol')}</InputLabel>
+            <InputLabel htmlFor="filter-group-symbol">分组</InputLabel>
             <OutlinedInput
               id="filter-group-symbol"
-              label={t('userSubscription.groupSymbol')}
+              label="分组"
               value={filterGroupSymbol}
               onChange={(e) => setFilterGroupSymbol(e.target.value)}
               size="small"
             />
           </FormControl>
           <FormControl sx={{ minWidth: 120 }}>
-            <InputLabel htmlFor="filter-status">{t('userSubscription.status')}</InputLabel>
+            <InputLabel htmlFor="filter-status">状态</InputLabel>
             <Select
               id="filter-status"
-              label={t('userSubscription.status')}
+              label="状态"
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
               size="small"
             >
-              <MenuItem value="">{t('userSubscription.all')}</MenuItem>
-              <MenuItem value="active">{t('userSubscription.statusActive')}</MenuItem>
-              <MenuItem value="expired">{t('userSubscription.statusExpired')}</MenuItem>
-              <MenuItem value="revoked">{t('userSubscription.statusRevoked')}</MenuItem>
+              <MenuItem value="">全部</MenuItem>
+              <MenuItem value="active">生效中</MenuItem>
+              <MenuItem value="expired">已过期</MenuItem>
+              <MenuItem value="revoked">已撤销</MenuItem>
             </Select>
           </FormControl>
           <Button variant="outlined" onClick={handleSearch} startIcon={<Icon icon="solar:magnifer-bold-duotone" width={18} />}>
-            {t('userSubscription.search')}
+            搜索
           </Button>
         </Stack>
 
@@ -288,14 +294,14 @@ export default function UserSubscription() {
                 orderBy={orderBy}
                 onRequestSort={handleSort}
                 headLabel={[
-                  { id: 'id', label: t('userSubscription.id'), disableSort: false },
-                  { id: 'username', label: t('userSubscription.username'), disableSort: true },
-                  { id: 'plan_name', label: t('userSubscription.planName'), disableSort: true },
-                  { id: 'group_symbol', label: t('userSubscription.groupSymbol'), disableSort: false },
-                  { id: 'usage', label: t('userSubscription.usage'), disableSort: true, minWidth: 180 },
-                  { id: 'expire_time', label: t('userSubscription.expireTime'), disableSort: false },
-                  { id: 'status', label: t('userSubscription.status'), disableSort: false },
-                  { id: 'action', label: t('userPage.action'), disableSort: true }
+                  { id: 'id', label: 'ID', disableSort: false },
+                  { id: 'username', label: '用户', disableSort: true },
+                  { id: 'plan_name', label: '套餐名称', disableSort: true },
+                  { id: 'group_symbol', label: '分组', disableSort: false },
+                  { id: 'usage', label: '使用量', disableSort: true, minWidth: 180 },
+                  { id: 'expire_time', label: '到期时间', disableSort: false },
+                  { id: 'status', label: '状态', disableSort: false },
+                  { id: 'action', label: '操作', disableSort: true }
                 ]}
               />
               <TableBody>
@@ -304,7 +310,7 @@ export default function UserSubscription() {
                   return (
                     <TableRow key={row.id} tabIndex={row.id}>
                       <TableCell>{row.id}</TableCell>
-                      <TableCell>{row.username}</TableCell>
+                      <TableCell>{row.display_name || row.username}</TableCell>
                       <TableCell>{row.plan_name}</TableCell>
                       <TableCell>{row.group_symbol}</TableCell>
                       <TableCell>
@@ -318,14 +324,14 @@ export default function UserSubscription() {
                             />
                           </Box>
                           <Typography variant="caption" sx={{ minWidth: 80, textAlign: 'right' }}>
-                            ${row.used_amount || 0} / ${row.quota_amount || 0}
+                            ${(row.used_amount || 0).toFixed(2)} / ${(row.quota_amount || 0).toFixed(2)}
                           </Typography>
                         </Box>
                       </TableCell>
                       <TableCell>{row.expire_time ? timestamp2string(row.expire_time) : '-'}</TableCell>
                       <TableCell>
                         <Label color={statusMap[row.status] || 'default'} variant="soft">
-                          {t(`userSubscription.status${row.status ? row.status.charAt(0).toUpperCase() + row.status.slice(1) : 'Unknown'}`)}
+                          {statusLabel[row.status] || row.status}
                         </Label>
                       </TableCell>
                       <TableCell>
@@ -370,7 +376,7 @@ export default function UserSubscription() {
           }}
         >
           <Icon icon="solar:calendar-bold-duotone" style={{ marginRight: '16px' }} />
-          {t('userSubscription.adjust')}
+          调整到期
         </MenuItem>
         <MenuItem
           onClick={() => {
@@ -379,7 +385,7 @@ export default function UserSubscription() {
           }}
         >
           <Icon icon="solar:restart-bold-duotone" style={{ marginRight: '16px' }} />
-          {t('userSubscription.resetQuota')}
+          重置配额
         </MenuItem>
         <MenuItem
           onClick={() => {
@@ -389,7 +395,7 @@ export default function UserSubscription() {
           sx={{ color: 'error.main' }}
         >
           <Icon icon="solar:close-circle-bold-duotone" style={{ marginRight: '16px' }} />
-          {t('userSubscription.revoke')}
+          撤销
         </MenuItem>
       </Popover>
 

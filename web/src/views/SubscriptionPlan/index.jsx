@@ -18,10 +18,21 @@ import { PAGE_SIZE_OPTIONS, getPageSize, savePageSize } from 'constants';
 import EditModal from './component/EditModal';
 import { Icon } from '@iconify/react';
 
-import { useTranslation } from 'react-i18next';
 // ----------------------------------------------------------------------
+const durationTypeLabel = (type) => {
+  switch (type) {
+    case 'day':
+      return '日';
+    case 'week':
+      return '周';
+    case 'month':
+      return '月';
+    default:
+      return type;
+  }
+};
+
 export default function SubscriptionPlan() {
-  const { t } = useTranslation();
   const [page, setPage] = useState(0);
   const [order, setOrder] = useState('desc');
   const [orderBy, setOrderBy] = useState('id');
@@ -106,7 +117,7 @@ export default function SubscriptionPlan() {
 
       const { success, message } = res.data;
       if (success) {
-        showSuccess(t('userPage.operationSuccess'));
+        showSuccess('操作成功');
         await handleRefresh();
       } else {
         showError(message);
@@ -135,19 +146,6 @@ export default function SubscriptionPlan() {
     }
   };
 
-  const durationTypeLabel = (type) => {
-    switch (type) {
-      case 'day':
-        return t('subscriptionPlan.durationDay');
-      case 'week':
-        return t('subscriptionPlan.durationWeek');
-      case 'month':
-        return t('subscriptionPlan.durationMonth');
-      default:
-        return type;
-    }
-  };
-
   return (
     <>
       <Card>
@@ -163,7 +161,7 @@ export default function SubscriptionPlan() {
           <Container maxWidth="xl">
             <ButtonGroup variant="outlined" aria-label="outlined small primary button group">
               <Button onClick={handleRefresh} startIcon={<Icon icon="solar:refresh-bold-duotone" width={18} />}>
-                {t('userPage.refresh')}
+                刷新
               </Button>
               <Button
                 variant="outlined"
@@ -171,7 +169,7 @@ export default function SubscriptionPlan() {
                 startIcon={<Icon icon="solar:add-circle-line-duotone" />}
                 onClick={() => handleOpenModal(0)}
               >
-                {t('subscriptionPlan.create')}
+                新建套餐
               </Button>
             </ButtonGroup>
           </Container>
@@ -185,15 +183,15 @@ export default function SubscriptionPlan() {
                 orderBy={orderBy}
                 onRequestSort={handleSort}
                 headLabel={[
-                  { id: 'id', label: t('subscriptionPlan.id'), disableSort: false },
-                  { id: 'name', label: t('subscriptionPlan.name'), disableSort: false },
-                  { id: 'group_symbol', label: t('subscriptionPlan.groupSymbol'), disableSort: false },
-                  { id: 'price', label: t('subscriptionPlan.price') + '($)', disableSort: false },
-                  { id: 'quota_amount', label: t('subscriptionPlan.quotaAmount') + '($)', disableSort: false },
-                  { id: 'duration', label: t('subscriptionPlan.duration'), disableSort: true },
-                  { id: 'sort', label: t('subscriptionPlan.sort'), disableSort: false },
-                  { id: 'enable', label: t('subscriptionPlan.enable'), disableSort: false },
-                  { id: 'action', label: t('userPage.action'), disableSort: true }
+                  { id: 'id', label: 'ID', disableSort: false },
+                  { id: 'name', label: '套餐名称', disableSort: false },
+                  { id: 'group_symbol', label: '绑定分组', disableSort: false },
+                  { id: 'price', label: '价格($)', disableSort: false },
+                  { id: 'quota_amount', label: '配额($)', disableSort: false },
+                  { id: 'duration', label: '有效期', disableSort: true },
+                  { id: 'sort', label: '排序', disableSort: false },
+                  { id: 'enable', label: '启用', disableSort: false },
+                  { id: 'action', label: '操作', disableSort: true }
                 ]}
               />
               <TableBody>

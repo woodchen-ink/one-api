@@ -3,6 +3,10 @@
 LLM API aggregation gateway. Go (Gin) backend + React (Vite/MUI) frontend.
 Forked from songquanpeng/czloapi. Multi-provider proxy for OpenAI, Claude, Gemini, etc.
 
+## Important
+
+- 前端 管理员界面直接使用中文, 不需要i18n, 用户界面使用i18n.
+
 ## Build / Run / Test Commands
 
 ### Backend (Go)

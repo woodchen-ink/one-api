@@ -17,7 +17,6 @@ import {
 
 import { showSuccess, showError } from 'utils/common';
 import { API } from 'utils/api';
-import { useTranslation } from 'react-i18next';
 
 const validationSchema = Yup.object().shape({
   adjust_days: Yup.number().integer(),
@@ -31,7 +30,6 @@ const originInputs = {
 
 const AdjustModal = ({ open, subscriptionId, onCancel, onOk }) => {
   const theme = useTheme();
-  const { t } = useTranslation();
 
   const submit = async (values, { setErrors, setStatus, setSubmitting }) => {
     setSubmitting(true);
@@ -41,14 +39,13 @@ const AdjustModal = ({ open, subscriptionId, onCancel, onOk }) => {
         submitValues.adjust_days = parseInt(values.adjust_days, 10);
       }
       if (values.expire_time) {
-        // Convert datetime-local value to unix timestamp
         submitValues.expire_time = Math.floor(new Date(values.expire_time).getTime() / 1000);
       }
 
       const res = await API.put(`/api/user_subscription/admin/adjust/${subscriptionId}`, submitValues);
       const { success, message } = res.data;
       if (success) {
-        showSuccess(t('userPage.saveSuccess'));
+        showSuccess('保存成功');
         setSubmitting(false);
         setStatus({ success: true });
         onOk(true);
@@ -64,7 +61,7 @@ const AdjustModal = ({ open, subscriptionId, onCancel, onOk }) => {
   return (
     <Dialog open={open} onClose={onCancel} fullWidth maxWidth={'sm'}>
       <DialogTitle sx={{ margin: '0px', fontWeight: 700, lineHeight: '1.55556', padding: '24px', fontSize: '1.125rem' }}>
-        {t('userSubscription.adjust')}
+        调整到期时间
       </DialogTitle>
       <Divider />
       <DialogContent>
@@ -76,48 +73,44 @@ const AdjustModal = ({ open, subscriptionId, onCancel, onOk }) => {
                 error={Boolean(touched.adjust_days && errors.adjust_days)}
                 sx={{ ...theme.typography.otherInput }}
               >
-                <InputLabel htmlFor="adjust-days-label">{t('userSubscription.adjustDays')}</InputLabel>
+                <InputLabel htmlFor="adjust-days-label">调整天数</InputLabel>
                 <OutlinedInput
                   id="adjust-days-label"
-                  label={t('userSubscription.adjustDays')}
+                  label="调整天数"
                   type="number"
                   value={values.adjust_days}
                   name="adjust_days"
                   onBlur={handleBlur}
                   onChange={handleChange}
-                  aria-describedby="helper-text-adjust-days-label"
                 />
                 {touched.adjust_days && errors.adjust_days ? (
-                  <FormHelperText error id="helper-text-adjust-days-label">
-                    {t(errors.adjust_days)}
-                  </FormHelperText>
+                  <FormHelperText error>{errors.adjust_days}</FormHelperText>
                 ) : (
-                  <FormHelperText id="helper-text-adjust-days-label">{t('userSubscription.adjustDaysTip')}</FormHelperText>
+                  <FormHelperText>正数延长，负数缩短</FormHelperText>
                 )}
               </FormControl>
 
               <FormControl fullWidth sx={{ ...theme.typography.otherInput }}>
                 <InputLabel htmlFor="adjust-expire-time-label" shrink>
-                  {t('userSubscription.expireTime')}
+                  设置到期时间
                 </InputLabel>
                 <OutlinedInput
                   id="adjust-expire-time-label"
-                  label={t('userSubscription.expireTime')}
+                  label="设置到期时间"
                   type="datetime-local"
                   value={values.expire_time}
                   name="expire_time"
                   onBlur={handleBlur}
                   onChange={handleChange}
                   notched
-                  aria-describedby="helper-text-adjust-expire-time-label"
                 />
-                <FormHelperText id="helper-text-adjust-expire-time-label">{t('userSubscription.expireTimeTip')}</FormHelperText>
+                <FormHelperText>直接设置到期时间，优先于天数调整</FormHelperText>
               </FormControl>
 
               <DialogActions>
-                <Button onClick={onCancel}>{t('userPage.cancel')}</Button>
+                <Button onClick={onCancel}>取消</Button>
                 <Button disableElevation disabled={isSubmitting} type="submit" variant="contained" color="primary">
-                  {t('userPage.submit')}
+                  提交
                 </Button>
               </DialogActions>
             </form>

@@ -16,11 +16,9 @@ import {
 } from '@mui/material';
 
 import TableSwitch from 'ui-component/Switch';
-import { useTranslation } from 'react-i18next';
 import { Icon } from '@iconify/react';
 
 export default function SubscriptionPlanTableRow({ item, managePlan, handleOpenModal, setModalPlanId, durationTypeLabel }) {
-  const { t } = useTranslation();
   const [open, setOpen] = useState(null);
   const [openDelete, setOpenDelete] = useState(false);
   const [statusSwitch, setStatusSwitch] = useState(item.enable);
@@ -95,23 +93,23 @@ export default function SubscriptionPlanTableRow({ item, managePlan, handleOpenM
           }}
         >
           <Icon icon="solar:pen-bold-duotone" style={{ marginRight: '16px' }} />
-          {t('common.edit')}
+          编辑
         </MenuItem>
         <MenuItem onClick={handleDeleteOpen} sx={{ color: 'error.main' }}>
           <Icon icon="solar:trash-bin-trash-bold-duotone" style={{ marginRight: '16px' }} />
-          {t('common.delete')}
+          删除
         </MenuItem>
       </Popover>
 
       <Dialog open={openDelete} onClose={handleDeleteClose}>
-        <DialogTitle>{t('common.delete')}</DialogTitle>
+        <DialogTitle>删除确认</DialogTitle>
         <DialogContent>
-          <DialogContentText>{t('common.deleteConfirm', { title: item.name })}</DialogContentText>
+          <DialogContentText>确定要删除套餐「{item.name}」吗？</DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleDeleteClose}>{t('common.close')}</Button>
+          <Button onClick={handleDeleteClose}>取消</Button>
           <Button onClick={handleDelete} sx={{ color: 'error.main' }} autoFocus>
-            {t('common.delete')}
+            删除
           </Button>
         </DialogActions>
       </Dialog>
