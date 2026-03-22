@@ -162,15 +162,6 @@ const Setting = {
     },
 
     {
-      id: 'my_subscription',
-      title: '我的订阅',
-      type: 'item',
-      url: '/panel/my_subscription',
-      icon: icons.IconMySubscription,
-      breadcrumbs: false
-    },
-
-    {
       id: 'profile',
       title: '个人设置',
       type: 'item',
