@@ -30,14 +30,7 @@ type PurchaseSubscriptionResponse struct {
 	*paymentTypes.PayRequest
 }
 
-// PurchaseSubscription 用户购买套餐
-func PurchaseSubscription(c *gin.Context) {
-	var req PurchaseSubscriptionRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		common.APIRespondWithError(c, http.StatusOK, errors.New("invalid request"))
-		return
-	}
-
+func purchaseSubscription(c *gin.Context, req PurchaseSubscriptionRequest) {
 	userId := c.GetInt("id")
 	user, err := model.GetUserById(userId, false)
 	if err != nil {
@@ -115,16 +108,62 @@ func PurchaseSubscription(c *gin.Context) {
 	})
 }
 
-// RenewSubscription 用户续订
-func RenewSubscription(c *gin.Context) {
+// PurchaseSubscription 用户购买套餐
+func PurchaseSubscription(c *gin.Context) {
 	var req PurchaseSubscriptionRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		common.APIRespondWithError(c, http.StatusOK, errors.New("invalid request"))
 		return
 	}
 
+	purchaseSubscription(c, req)
+}
+
+// RenewSubscription 用户续订
+func RenewSubscription(c *gin.Context) {
+	type RenewSubscriptionRequest struct {
+		PlanId         int    `json:"plan_id"`
+		SubscriptionId int    `json:"subscription_id"`
+		UUID           string `json:"uuid" binding:"required"`
+	}
+
+	var req RenewSubscriptionRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		common.APIRespondWithError(c, http.StatusOK, errors.New("invalid request"))
+		return
+	}
+
+	userId := c.GetInt("id")
+	planId := req.PlanId
+
+	if req.SubscriptionId != 0 {
+		sub, err := model.GetUserSubscriptionById(req.SubscriptionId)
+		if err != nil {
+			common.APIRespondWithError(c, http.StatusOK, errors.New("订阅不存在"))
+			return
+		}
+		if sub.UserId != userId {
+			common.APIRespondWithError(c, http.StatusOK, errors.New("无权操作该订阅"))
+			return
+		}
+		if planId == 0 {
+			planId = sub.PlanId
+		}
+		if planId == 0 {
+			plan, err := model.GetSubscriptionPlanByNameAndGroup(sub.PlanName, sub.GroupSymbol)
+			if err == nil && plan != nil {
+				planId = plan.ID
+			}
+		}
+	}
+
+	if planId == 0 {
+		common.APIRespondWithError(c, http.StatusOK, errors.New("invalid request"))
+		return
+	}
+
 	// 获取套餐并检查是否允许续订
-	plan, err := model.GetSubscriptionPlanById(req.PlanId)
+	plan, err := model.GetSubscriptionPlanById(planId)
 	if err != nil || plan.Enable == nil || !*plan.Enable {
 		common.APIRespondWithError(c, http.StatusOK, errors.New("套餐不存在或已下架"))
 		return
@@ -136,7 +175,10 @@ func RenewSubscription(c *gin.Context) {
 	}
 
 	// 续订走购买相同流程
-	PurchaseSubscription(c)
+	purchaseSubscription(c, PurchaseSubscriptionRequest{
+		PlanId: planId,
+		UUID:   req.UUID,
+	})
 }
 
 // GetMySubscriptions 获取我的订阅列表

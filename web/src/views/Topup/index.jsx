@@ -1,11 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Tab, Typography, Stack, Card, CardContent, Button, Chip, Divider, CircularProgress } from '@mui/material';
-import { TabContext, TabList, TabPanel } from '@mui/lab';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  Box,
+  Button,
+  ButtonBase,
+  Card,
+  CardContent,
+  Chip,
+  CircularProgress,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  Divider,
+  IconButton,
+  Stack,
+  Typography
+} from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import Grid from '@mui/material/Unstable_Grid2';
-import { useTheme, styled } from '@mui/material/styles';
+import { alpha, styled, useTheme } from '@mui/material/styles';
 import { Icon } from '@iconify/react';
+import PropTypes from 'prop-types';
+import { QRCode } from 'react-qrcode-logo';
+import { useSelector } from 'react-redux';
+import successSvg from 'assets/images/success.svg';
+import RedemptionCard from './component/RedemptionCard';
 import TopupCard from './component/TopupCard';
-import PayDialog from './component/PayDialog';
 import { useTranslation } from 'react-i18next';
 import { API } from 'utils/api';
 import { showError } from 'utils/common';
@@ -24,6 +43,13 @@ const PlanCard = styled(Card)(({ theme }) => ({
   }
 }));
 
+const PageShell = styled(Box)(({ theme }) => ({
+  width: '100%',
+  maxWidth: 1240,
+  margin: '0 auto',
+  paddingBottom: theme.spacing(4)
+}));
+
 const durationLabel = (type, count) => {
   const labels = { day: '天', week: '周', month: '个月' };
   return `${count} ${labels[type] || type}`;
@@ -38,8 +64,6 @@ const SubscriptionPlans = () => {
   const [selectedPayment, setSelectedPayment] = useState(null);
   const [purchasePlan, setPurchasePlan] = useState(null);
   const [payDialogOpen, setPayDialogOpen] = useState(false);
-  const [payTradeNo, setPayTradeNo] = useState(null);
-  const [payData, setPayData] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -101,10 +125,10 @@ const SubscriptionPlans = () => {
     <Box>
       {payments.length > 1 && (
         <Box sx={{ mb: 3 }}>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1, textAlign: 'center' }}>
             {t('subscription.selectPaymentMethod')}
           </Typography>
-          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap justifyContent="center">
             {payments.map((item, index) => (
               <Button
                 key={index}
@@ -130,7 +154,7 @@ const SubscriptionPlans = () => {
         </Box>
       )}
 
-      <Grid container spacing={2.5}>
+      <Grid container spacing={2.5} justifyContent="center">
         {plans.map((plan) => {
           const features = parseFeatures(plan.features);
           return (
@@ -217,15 +241,6 @@ const SubscriptionPlans = () => {
     </Box>
   );
 };
-
-// 套餐购买专用 PayDialog — 调用 /api/user/subscription/purchase
-import PropTypes from 'prop-types';
-import CloseIcon from '@mui/icons-material/Close';
-import { Dialog, DialogContent, DialogTitle, IconButton } from '@mui/material';
-import { QRCode } from 'react-qrcode-logo';
-import successSvg from 'assets/images/success.svg';
-import { useSelector } from 'react-redux';
-import { useCallback } from 'react';
 
 const SubscriptionPayDialog = ({ open, onClose, planId, uuid }) => {
   const theme = useTheme();
@@ -377,38 +392,132 @@ SubscriptionPayDialog.propTypes = {
 // 主页面：Tab 切换
 const Topup = () => {
   const { t } = useTranslation();
+  const theme = useTheme();
   const [tabValue, setTabValue] = useState('topup');
   const [hasPlans, setHasPlans] = useState(false);
 
   useEffect(() => {
-    API.get('/api/user/subscription_plan').then((res) => {
-      if (res.data.success && res.data.data && res.data.data.length > 0) {
-        setHasPlans(true);
-      }
-    });
+    API.get('/api/user/subscription_plan')
+      .then((res) => {
+        if (res.data.success && res.data.data && res.data.data.length > 0) {
+          setHasPlans(true);
+        }
+      })
+      .catch(() => {
+        // handled
+      });
   }, []);
 
+  const tabOptions = useMemo(() => {
+    const options = [
+      {
+        value: 'topup',
+        icon: 'solar:wallet-money-linear',
+        label: t('topupPage.balanceTab'),
+        description: t('topupPage.balanceModeDescription')
+      },
+      {
+        value: 'redeem',
+        icon: 'solar:ticket-sale-linear',
+        label: t('topupPage.redemptionTab'),
+        description: t('topupPage.redemptionModeDescription')
+      }
+    ];
+
+    if (hasPlans) {
+      options.push({
+        value: 'plans',
+        icon: 'solar:layers-minimalistic-linear',
+        label: t('topupPage.planTab'),
+        description: t('topupPage.planModeDescription')
+      });
+    }
+
+    return options;
+  }, [hasPlans, t]);
+
+  const switcherSurface =
+    theme.palette.mode === 'dark' ? alpha(theme.palette.background.paper, 0.72) : alpha(theme.palette.common.white, 0.88);
+
   return (
-    <TabContext value={tabValue}>
-      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
-        <TabList onChange={(e, v) => setTabValue(v)}>
-          <Tab label={t('topup')} value="topup" />
-          {hasPlans && <Tab label={t('subscription.plans')} value="plans" />}
-        </TabList>
+    <PageShell>
+      <Box
+        role="tablist"
+        aria-label={t('topupPage.modeSwitcher')}
+        sx={{
+          width: '100%',
+          maxWidth: hasPlans ? 540 : 420,
+          p: 0.5,
+          mx: 'auto',
+          mb: { xs: 2, md: 2.5 },
+          borderRadius: '999px',
+          border: `1px solid ${theme.palette.divider}`,
+          backgroundColor: switcherSurface,
+          backdropFilter: 'blur(12px)'
+        }}
+      >
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: `repeat(${tabOptions.length}, minmax(0, 1fr))`,
+            gap: 0.5
+          }}
+        >
+          {tabOptions.map((option) => {
+            const selected = tabValue === option.value;
+
+            return (
+              <ButtonBase
+                key={option.value}
+                role="tab"
+                aria-selected={selected}
+                onClick={() => setTabValue(option.value)}
+                sx={{
+                  width: '100%',
+                  minHeight: 44,
+                  px: { xs: 1.5, sm: 2 },
+                  borderRadius: '999px',
+                  color: selected ? theme.palette.primary.main : theme.palette.text.secondary,
+                  backgroundColor: selected
+                    ? theme.palette.mode === 'dark'
+                      ? alpha(theme.palette.primary.main, 0.16)
+                      : alpha(theme.palette.primary.main, 0.1)
+                    : 'transparent',
+                  border: `1px solid ${selected ? alpha(theme.palette.primary.main, 0.26) : 'transparent'}`,
+                  transition: 'all 0.2s ease',
+                  '&:hover': {
+                    backgroundColor: selected
+                      ? undefined
+                      : theme.palette.mode === 'dark'
+                        ? alpha(theme.palette.common.white, 0.04)
+                        : alpha(theme.palette.common.black, 0.03)
+                  }
+                }}
+              >
+                <Stack direction="row" spacing={1} alignItems="center" justifyContent="center">
+                  <Icon icon={option.icon} width={18} />
+                  <Typography variant="subtitle2" fontWeight={selected ? 700 : 600}>
+                    {option.label}
+                  </Typography>
+                </Stack>
+              </ButtonBase>
+            );
+          })}
+        </Box>
       </Box>
-      <TabPanel value="topup" sx={{ p: 0 }}>
-        <Grid container spacing={2} justifyContent="center">
-          <Grid xs={12} md={6} lg={6}>
-            <TopupCard />
-          </Grid>
-        </Grid>
-      </TabPanel>
-      {hasPlans && (
-        <TabPanel value="plans" sx={{ p: 0 }}>
-          <SubscriptionPlans />
-        </TabPanel>
-      )}
-    </TabContext>
+
+      <Box
+        sx={{
+          width: '100%',
+          maxWidth: tabValue === 'plans' ? 1180 : 760,
+          mx: 'auto'
+        }}
+      >
+        {tabValue === 'topup' && <TopupCard />}
+        {tabValue === 'redeem' && <RedemptionCard />}
+        {hasPlans && tabValue === 'plans' && <SubscriptionPlans />}
+      </Box>
+    </PageShell>
   );
 };
 

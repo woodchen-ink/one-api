@@ -1,43 +1,24 @@
-import {
-  Typography,
-  Stack,
-  OutlinedInput,
-  InputAdornment,
-  Button,
-  InputLabel,
-  FormControl,
-  useMediaQuery,
-  TextField,
-  Box,
-  Grid,
-  Divider,
-  Badge
-} from '@mui/material';
-import { IconBuildingBank } from '@tabler/icons-react';
-import { useTheme } from '@mui/material/styles';
+import { Badge, Button, Box, Grid, Stack, TextField, Typography } from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
+import { Icon } from '@iconify/react';
 import SubCard from 'ui-component/cards/SubCard';
-import UserCard from 'ui-component/cards/UserCard';
-import AnimateButton from 'ui-component/extended/AnimateButton';
 import { useSelector } from 'react-redux';
 import PayDialog from './PayDialog';
 
 import { API } from 'utils/api';
 import React, { useEffect, useState, useMemo } from 'react';
-import { showError, showInfo, showSuccess, renderQuota, trims } from 'utils/common';
+import { showError, renderQuota } from 'utils/common';
 import { useTranslation } from 'react-i18next';
 
 const TopupCard = () => {
   const { t } = useTranslation(); // Translation hook
   const theme = useTheme();
-  const [redemptionCode, setRedemptionCode] = useState('');
   const [userQuota, setUserQuota] = useState(0);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [payment, setPayment] = useState([]);
   const [selectedPayment, setSelectedPayment] = useState(null);
   const [amount, setAmount] = useState(0);
   const [open, setOpen] = useState(false);
   const [disabledPay, setDisabledPay] = useState(false);
-  const matchDownSM = useMediaQuery(theme.breakpoints.down('md'));
   const siteInfo = useSelector((state) => state.siteInfo);
   const RechargeDiscount = useMemo(() => {
     if (siteInfo.RechargeDiscount === '') {
@@ -49,36 +30,6 @@ const TopupCard = () => {
       return {};
     }
   }, [siteInfo.RechargeDiscount]);
-  const topUp = async () => {
-    if (redemptionCode === '') {
-      showInfo(t('topupCard.inputPlaceholder'));
-      return;
-    }
-    setIsSubmitting(true);
-    try {
-      const res = await API.post('/api/user/topup', {
-        key: trims(redemptionCode)
-      });
-      const { success, message, data, upgradedToVIP } = res.data;
-      if (success) {
-        if (upgradedToVIP) {  // 如果用户成功升级为 VIP
-          showSuccess('充值成功，升级为 VIP 会员！');
-        } else {
-          showSuccess('充值成功，谢谢。');
-        }
-        setUserQuota((quota) => {
-          return quota + data;
-        });
-        setRedemptionCode('');
-      } else {
-        showError(message);
-      }
-    } catch (err) {
-      showError('失败,请右下角联系客服');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   const handlePay = () => {
     if (!selectedPayment) {
@@ -104,7 +55,6 @@ const TopupCard = () => {
 
     setDisabledPay(true);
     setOpen(true);
-    
   };
 
   const onClosePayDialog = () => {
@@ -127,7 +77,6 @@ const TopupCard = () => {
       return;
     }
   };
-
 
   const getUserQuota = async () => {
     try {
@@ -162,28 +111,34 @@ const TopupCard = () => {
     handleDiscountTotal(amount);
   };
 
+  const getAppliedDiscount = (targetAmount) => {
+    if (!targetAmount) return 1;
+
+    let appliedDiscount = 1;
+    Object.entries(RechargeDiscount).forEach(([threshold, discount]) => {
+      if (targetAmount >= Number(threshold) && discount < appliedDiscount) {
+        appliedDiscount = discount;
+      }
+    });
+
+    return appliedDiscount;
+  };
+
   const calculateFee = () => {
     if (!selectedPayment) return 0;
 
     if (selectedPayment.fixed_fee > 0) {
       return Number(selectedPayment.fixed_fee); //固定费率不计算折扣
     }
-    const discount = RechargeDiscount[amount] || 1; // 如果没有折扣，则默认为1（即没有折扣）
+    const discount = getAppliedDiscount(amount);
     let newAmount = amount * discount; //折后价格
     return parseFloat(selectedPayment.percent_fee * Number(newAmount)).toFixed(2);
   };
 
   const calculateTotal = () => {
     if (amount === 0) return 0;
-    
-    // 找到适用的最大折扣
-    let appliedDiscount = 1;
-    Object.entries(RechargeDiscount).forEach(([threshold, discount]) => {
-      if (amount >= Number(threshold) && discount < appliedDiscount) {
-        appliedDiscount = discount;
-      }
-    });
-  
+
+    const appliedDiscount = getAppliedDiscount(amount);
     let newAmount = amount * appliedDiscount; // 折后价格
     let total = Number(newAmount) + Number(calculateFee());
     if (selectedPayment && selectedPayment.currency === 'CNY') {
@@ -191,45 +146,56 @@ const TopupCard = () => {
     }
     return total;
   };
-  
+
   const handleDiscountTotal = (amount) => {
     if (amount === 0) return 0;
-    
-    // 找到适用的最大折扣
-    let appliedDiscount = 1;
-    Object.entries(RechargeDiscount).forEach(([threshold, discount]) => {
-      if (amount >= Number(threshold) && discount < appliedDiscount) {
-        appliedDiscount = discount;
-      }
-    });
-  
+
+    getAppliedDiscount(amount);
   };
 
   //交易汇率计算
   const calculateExchangeRate = () => {
     if (selectedPayment && selectedPayment.currency === 'CNY') {
       const actualPayAmount = calculateTotal();
-  
+
       // 如果amount或actualPayAmount无效，则返回0
       if (!amount || !actualPayAmount || isNaN(actualPayAmount / amount)) {
         return `￥0/ $`;
       }
-  
-      // 找到适用的最大折扣
-      let appliedDiscount = 1;
-      Object.entries(RechargeDiscount).forEach(([threshold, discount]) => {
-        if (amount >= Number(threshold) && discount < appliedDiscount) {
-          appliedDiscount = discount;
-        }
-      });
-  
+
+      const appliedDiscount = getAppliedDiscount(amount);
       const discountInfo = appliedDiscount !== 1 ? ` (${appliedDiscount * 100}%)` : '';
       return `￥${(actualPayAmount / amount).toFixed(2)}/ $${discountInfo}`;
     }
     return null;
   };
 
+  const quickAmounts = Object.entries(RechargeDiscount).sort((a, b) => Number(a[0]) - Number(b[0]));
+  const amountValue = Number(amount) || 0;
+  const summaryItems = [
+    {
+      key: 'amount',
+      label: t('topupCard.topupAmount'),
+      value: `$${amountValue}`
+    },
+    {
+      key: 'rate',
+      label: t('topupCard.exchangeRate'),
+      value: calculateExchangeRate() || '--'
+    },
+    {
+      key: 'total',
+      label: t('topupCard.actualAmountToPay'),
+      value: `${calculateTotal()} ${selectedPayment ? (selectedPayment.currency === 'CNY' ? 'CNY' : selectedPayment.currency) : ''}`.trim()
+    }
+  ];
 
+  const panelSx = {
+    borderRadius: 3,
+    border: `1px solid ${alpha(theme.palette.divider, 0.9)}`,
+    backgroundColor: theme.palette.mode === 'dark' ? alpha(theme.palette.background.default, 0.28) : alpha(theme.palette.grey[50], 0.7),
+    p: { xs: 1.5, sm: 2 }
+  };
 
   useEffect(() => {
     getPayment().then();
@@ -237,28 +203,62 @@ const TopupCard = () => {
   }, []);
 
   return (
-    <UserCard>
-      <Stack direction="row" alignItems="center" justifyContent="center" spacing={2} paddingTop={'20px'}>
-        <IconBuildingBank color={theme.palette.primary.main} />
-        <Typography variant="h4">{t('topupCard.currentQuota')}</Typography>
-        <Typography variant="h4">{renderQuota(userQuota)}</Typography>
-      </Stack>
-      <Stack direction="row" alignItems="center" justifyContent="center" spacing={2} paddingTop={'20px'}>
-        <Typography variant="h6">余额达到$5即会自动升级VIP</Typography>
-      </Stack>
+    <Stack spacing={2.5}>
+      <Box
+        sx={{
+          ...panelSx,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 2,
+          px: { xs: 1.5, sm: 2 },
+          py: { xs: 1.25, sm: 1.5 },
+          flexDirection: { xs: 'column', sm: 'row' }
+        }}
+      >
+        <Stack direction="row" spacing={1.25} alignItems="center">
+          <Box
+            sx={{
+              width: 38,
+              height: 38,
+              borderRadius: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: theme.palette.primary.main,
+              backgroundColor: alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.18 : 0.1)
+            }}
+          >
+            <Icon icon="solar:wallet-money-linear" width={20} />
+          </Box>
+          <Box>
+            <Typography variant="body2" color="text.secondary">
+              {t('topupCard.currentQuota')}
+            </Typography>
+            <Typography variant="h4">{renderQuota(userQuota)}</Typography>
+          </Box>
+        </Stack>
+        <Typography variant="body2" color="text.secondary" sx={{ textAlign: { xs: 'center', sm: 'right' } }}>
+          充值达$5会自动升级Pro, 模型更好更快.
+        </Typography>
+      </Box>
 
       {payment.length > 0 && (
         <SubCard
           sx={{
-            marginTop: '40px'
+            borderRadius: 3
           }}
+          contentSX={{ p: { xs: 2, sm: 2.5 } }}
           title={t('topupCard.onlineTopup')}
         >
-          <Stack spacing={2}>
-            <Grid container spacing={2}>
-              {payment.map((item, index) => (
-                <Grid item xs={12} sm={6} md={4} key={index}>
-                  <AnimateButton>
+          <Stack spacing={2.5}>
+            <Box sx={panelSx}>
+              <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1.5, textAlign: 'center' }}>
+                {t('topupCard.selectPaymentMethod')}
+              </Typography>
+              <Grid container spacing={1.5} justifyContent="center">
+                {payment.map((item, index) => (
+                  <Grid item xs={12} sm={payment.length > 1 ? 6 : 12} key={index}>
                     <Button
                       disableElevation
                       fullWidth
@@ -266,120 +266,123 @@ const TopupCard = () => {
                       variant="outlined"
                       onClick={() => handlePaymentSelect(item)}
                       sx={{
-                        ...theme.typography.LoginButton,
-                        border: selectedPayment === item ? `1px solid ${theme.palette.primary.main}` : '1px solid transparent'
+                        minHeight: 54,
+                        borderRadius: 2.5,
+                        justifyContent: 'flex-start',
+                        px: 2,
+                        gap: 1.5,
+                        color: theme.palette.text.primary,
+                        backgroundColor:
+                          selectedPayment === item
+                            ? theme.palette.mode === 'dark'
+                              ? alpha(theme.palette.primary.main, 0.12)
+                              : alpha(theme.palette.primary.main, 0.06)
+                            : theme.palette.background.paper,
+                        borderColor: selectedPayment === item ? theme.palette.primary.main : theme.palette.divider
                       }}
                     >
-                      <Box sx={{ mr: { xs: 1, sm: 2, width: 20 }, display: 'flex', alignItems: 'center' }}>
-                        <img src={item.icon} alt="payment" width={25} height={25} style={{ marginRight: matchDownSM ? 8 : 16 }} />
+                      <Box
+                        sx={{
+                          width: 32,
+                          height: 32,
+                          borderRadius: 2,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          backgroundColor:
+                            theme.palette.mode === 'dark'
+                              ? alpha(theme.palette.common.white, 0.05)
+                              : alpha(theme.palette.common.black, 0.03),
+                          flexShrink: 0
+                        }}
+                      >
+                        {item.icon && <img src={item.icon} alt="payment" width={22} height={22} />}
                       </Box>
-                      {item.name}
+                      <Typography variant="subtitle2" fontWeight={600}>
+                        {item.name}
+                      </Typography>
                     </Button>
-                  </AnimateButton>
-                </Grid>
-              ))}
-            </Grid>
-            <Grid container spacing={2} alignItems="center">
-              <Grid item xs>
-                <Grid container spacing={2}>
-                  {Object.entries(RechargeDiscount).map(([key, value]) => (
-                    <Grid item key={key}>
-                      <Badge badgeContent={value !== 1 ? `${value * 100}%` : null} color="error">
+                  </Grid>
+                ))}
+              </Grid>
+            </Box>
+
+            <Box sx={panelSx}>
+              <Grid container spacing={2} alignItems="center">
+                <Grid item xs={12} md>
+                  <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1.5 }}>
+                    {t('topupCard.amount')}
+                  </Typography>
+                  <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                    {quickAmounts.map(([key, value]) => (
+                      <Badge key={key} badgeContent={value !== 1 ? `${value * 100}%` : null} color="error">
                         <Button
                           variant="outlined"
                           onClick={() => handleSetAmount(key)}
                           sx={{
-                            border: amount === Number(key) ? `1px solid ${theme.palette.primary.main}` : '1px solid transparent'
+                            minWidth: 84,
+                            borderRadius: '999px',
+                            borderColor: amount === Number(key) ? theme.palette.primary.main : theme.palette.divider,
+                            backgroundColor:
+                              amount === Number(key)
+                                ? theme.palette.mode === 'dark'
+                                  ? alpha(theme.palette.primary.main, 0.12)
+                                  : alpha(theme.palette.primary.main, 0.06)
+                                : 'transparent'
                           }}
                         >
                           ${key}
                         </Button>
                       </Badge>
-                    </Grid>
-                  ))}
+                    ))}
+                  </Stack>
+                </Grid>
+                <Grid item xs={12} md="auto">
+                  <TextField
+                    label={t('topupCard.amount')}
+                    type="number"
+                    onChange={handleAmountChange}
+                    value={amount}
+                    sx={{ minWidth: { xs: '100%', md: 170 } }}
+                  />
                 </Grid>
               </Grid>
-              <Grid item xs="auto">
-                <TextField
-                  label={t('topupCard.amount')}
-                  type="number"
-                  onChange={handleAmountChange}
-                  value={amount}
-                  sx={{ minWidth: '150px', mr: 2 }} // 设定一个最小宽度，并添加右边距
-                />
-              </Grid>
-            </Grid>
-            <Divider />
-            <Grid container direction="row" justifyContent="flex-end" spacing={2}>
-              <Grid item xs={6} md={9}>
-                <Typography variant="h6" style={{ textAlign: 'right', fontSize: '0.875rem' }}>
-                  {t('topupCard.topupAmount')}:{' '}
-                </Typography>
-              </Grid>
-              <Grid item xs={6} md={3}>
-                ${Number(amount)}
-              </Grid>
-              <Grid item xs={6} md={9}>
-                <Typography variant="h6" style={{ textAlign: 'right', fontSize: '0.875rem' }}>
-                Transaction rates:{' '}
-                </Typography>
-              </Grid>
-              <Grid item xs={6} md={3}>
-                {calculateExchangeRate()}
-              </Grid>
-              <Grid item xs={6} md={9}>
-                <Typography variant="h6" style={{ textAlign: 'right', fontSize: '0.875rem' }}>
-                  {t('topupCard.actualAmountToPay')}:{' '}
-                </Typography>
-              </Grid>
-              <Grid item xs={6} md={3}>
-                {calculateTotal()}{' '}
-                {selectedPayment &&
-                  (selectedPayment.currency === 'CNY'
-                    ? `CNY`
-                    : selectedPayment.currency)}
-              </Grid>
-            </Grid>
+            </Box>
 
-            <Button variant="contained" onClick={handlePay} disabled={disabledPay}>
+            <Box sx={panelSx}>
+              <Grid container spacing={1.5}>
+                {summaryItems.map((item) => (
+                  <Grid item xs={12} sm={4} key={item.key}>
+                    <Box
+                      sx={{
+                        height: '100%',
+                        borderRadius: 2.5,
+                        border: `1px solid ${alpha(theme.palette.divider, 0.9)}`,
+                        backgroundColor: theme.palette.background.paper,
+                        px: 1.5,
+                        py: 1.25
+                      }}
+                    >
+                      <Typography variant="caption" color="text.secondary">
+                        {item.label}
+                      </Typography>
+                      <Typography variant="subtitle1" fontWeight={700} sx={{ mt: 0.5, wordBreak: 'break-word' }}>
+                        {item.value}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                ))}
+              </Grid>
+            </Box>
+
+            <Button variant="contained" size="large" onClick={handlePay} disabled={disabledPay} sx={{ minHeight: 46, borderRadius: 2.5 }}>
               {t('topupCard.topup')}
             </Button>
           </Stack>
           <PayDialog open={open} onClose={onClosePayDialog} amount={amount} uuid={selectedPayment.uuid} />
         </SubCard>
       )}
-
-      {/* 在这里插入“邀请奖励”部分的代码 */}
-
-      <SubCard
-        sx={{
-          marginTop: '40px'
-        }}
-        title={t('topupCard.redemptionCodeTopup')}
-      >
-        <FormControl fullWidth variant="outlined">
-          <InputLabel htmlFor="key">{t('topupCard.inputLabel')}</InputLabel>
-          <OutlinedInput
-            id="key"
-            label={t('topupCard.inputLabel')}
-            type="text"
-            value={redemptionCode}
-            onChange={(e) => setRedemptionCode(e.target.value)}
-            name="key"
-            placeholder={t('topupCard.inputPlaceholder')}
-            endAdornment={
-              <InputAdornment position="end">
-                <Button variant="contained" onClick={topUp} disabled={isSubmitting}>
-                  {isSubmitting ? t('topupCard.exchangeButton.submitting') : t('topupCard.exchangeButton.default')}
-                </Button>
-              </InputAdornment>
-            }
-            aria-describedby="helper-text-channel-quota-label"
-          />
-        </FormControl>
-
-      </SubCard>
-    </UserCard>
+    </Stack>
   );
 };
 

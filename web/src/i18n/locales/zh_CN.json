@@ -471,7 +471,18 @@
     "delTip": "是否删除兑换码"
   },
   "topupPage": {
-    "alertMessage": "充值记录以及邀请记录请在日志中查询。充值记录请在日志中选择类型【充值】查询；邀请记录请在日志中选择【系统】查询"
+    "alertMessage": "充值记录以及邀请记录请在日志中查询。充值记录请在日志中选择类型【充值】查询；邀请记录请在日志中选择【系统】查询",
+    "pageEyebrow": "充值中心",
+    "pageTitle": "充值余额或直接购买套餐",
+    "pageDescription": "余额充值适合按需消费；如果站点开启了套餐，也可以在这里直接购买更稳定的专属配额。",
+    "modeSwitcher": "充值模式切换",
+    "currentMode": "当前",
+    "balanceTab": "余额",
+    "redemptionTab": "兑换码",
+    "planTab": "套餐",
+    "balanceModeDescription": "灵活补充账户余额，自由选择充值金额",
+    "redemptionModeDescription": "输入兑换码，直接把额度充入当前账户",
+    "planModeDescription": "一次购买稳定套餐，更容易发现和比较方案"
   },
   "topupCard": {
     "topup": "充值",
@@ -1603,6 +1614,7 @@
   "subscription": {
     "title": "我的订阅",
     "mySubscriptions": "我的订阅",
+    "activeSubscriptions": "生效中的套餐",
     "noSubscriptions": "暂无订阅",
     "noSubscriptionsHint": "前往充值页面购买套餐",
     "noSubscriptionsTip": "前往充值页面购买套餐",

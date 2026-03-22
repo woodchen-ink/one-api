@@ -1328,7 +1328,18 @@
     "topupsuccess": "Top up successful!"
   },
   "topupPage": {
-    "alertMessage": "Please check the recharge records and invitation records in the logs. For recharge records, select the type [Recharge] in the log; for invitation records, select [System] in the log."
+    "alertMessage": "Please check the recharge records and invitation records in the logs. For recharge records, select the type [Recharge] in the log; for invitation records, select [System] in the log.",
+    "pageEyebrow": "Top-up Center",
+    "pageTitle": "Top up balance or buy a plan directly",
+    "pageDescription": "Balance top-up is ideal for flexible usage. If plans are enabled on this site, you can also purchase a more stable quota package here.",
+    "modeSwitcher": "Top-up mode switcher",
+    "currentMode": "Current",
+    "balanceTab": "Balance",
+    "redemptionTab": "Code",
+    "planTab": "Plans",
+    "balanceModeDescription": "Add balance flexibly and choose any recharge amount",
+    "redemptionModeDescription": "Enter a redemption code to credit quota directly to your account",
+    "planModeDescription": "Buy a stable package at once and compare plans more easily"
   },
   "ui-component": {
     "allModels": "View all models",
@@ -1642,6 +1653,7 @@
   "subscription": {
     "title": "My Subscriptions",
     "mySubscriptions": "My Subscriptions",
+    "activeSubscriptions": "Active Plans",
     "noSubscriptions": "No subscriptions",
     "noSubscriptionsHint": "Go to the topup page to purchase a plan",
     "noSubscriptionsTip": "Go to the topup page to purchase a plan",

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import PropTypes from 'prop-types';
 import {
   Box,
   Card,
@@ -20,7 +21,7 @@ import { useTheme, alpha, styled } from '@mui/material/styles';
 import { Icon } from '@iconify/react';
 import { useTranslation } from 'react-i18next';
 import { API } from 'utils/api';
-import { showError, showSuccess } from 'utils/common';
+import { showError } from 'utils/common';
 import { QRCode } from 'react-qrcode-logo';
 import { useSelector } from 'react-redux';
 
@@ -59,10 +60,23 @@ const StatusChip = ({ status, t }) => {
   };
 
   const config = chipConfig[status] || chipConfig.expired;
-  return <Chip label={config.label} color={config.color} size="small" variant="outlined" sx={{ borderRadius: '4px', fontWeight: 600, fontSize: '0.75rem' }} />;
+  return (
+    <Chip
+      label={config.label}
+      color={config.color}
+      size="small"
+      variant="outlined"
+      sx={{ borderRadius: '4px', fontWeight: 600, fontSize: '0.75rem' }}
+    />
+  );
 };
 
-const RenewPayDialog = ({ open, onClose, planId }) => {
+StatusChip.propTypes = {
+  status: PropTypes.string,
+  t: PropTypes.func.isRequired
+};
+
+const RenewPayDialog = ({ open, onClose, subscriptionId, planId }) => {
   const theme = useTheme();
   const { t } = useTranslation();
   const siteInfo = useSelector((state) => state.siteInfo);
@@ -115,21 +129,24 @@ const RenewPayDialog = ({ open, onClose, planId }) => {
     };
   }, [intervalId]);
 
-  const pollOrderStatus = useCallback((tradeNo) => {
-    const id = setInterval(() => {
-      API.get(`/api/user/order/status?trade_no=${tradeNo}`).then((response) => {
-        if (response.data.success) {
-          clearInterval(id);
-          setMessage(t('subscription.paymentSuccess'));
-          setPayLoading(false);
-          setSuccess(true);
-          setQrCodeUrl(null);
-          setIntervalId(null);
-        }
-      });
-    }, 3000);
-    setIntervalId(id);
-  }, [t]);
+  const pollOrderStatus = useCallback(
+    (tradeNo) => {
+      const id = setInterval(() => {
+        API.get(`/api/user/order/status?trade_no=${tradeNo}`).then((response) => {
+          if (response.data.success) {
+            clearInterval(id);
+            setMessage(t('subscription.paymentSuccess'));
+            setPayLoading(false);
+            setSuccess(true);
+            setQrCodeUrl(null);
+            setIntervalId(null);
+          }
+        });
+      }, 3000);
+      setIntervalId(id);
+    },
+    [t]
+  );
 
   function openPayUrl(method, url, params) {
     const form = document.createElement('form');
@@ -156,6 +173,7 @@ const RenewPayDialog = ({ open, onClose, planId }) => {
     setMessage(t('subscription.initiatingPayment'));
     try {
       const res = await API.post('/api/user/subscription/renew', {
+        subscription_id: subscriptionId,
         plan_id: planId,
         uuid: selectedPayment.uuid
       });
@@ -196,7 +214,7 @@ const RenewPayDialog = ({ open, onClose, planId }) => {
       >
         <CloseIcon />
       </IconButton>
-      <DialogContent>
+      <DialogContent sx={{ pb: 3 }}>
         {loading ? (
           <Stack alignItems="center" py={4}>
             <CircularProgress />
@@ -262,7 +280,7 @@ const RenewPayDialog = ({ open, onClose, planId }) => {
                 </Grid>
               ))}
             </Grid>
-            <Button variant="contained" fullWidth onClick={handleRenew} disabled={!selectedPayment} sx={{ mt: 2 }}>
+            <Button variant="contained" fullWidth onClick={handleRenew} disabled={!selectedPayment} sx={{ mt: 2.5 }}>
               {t('subscription.confirmRenew')}
             </Button>
           </Stack>
@@ -272,6 +290,13 @@ const RenewPayDialog = ({ open, onClose, planId }) => {
   );
 };
 
+RenewPayDialog.propTypes = {
+  open: PropTypes.bool,
+  onClose: PropTypes.func,
+  subscriptionId: PropTypes.number,
+  planId: PropTypes.number
+};
+
 const MySubscription = () => {
   const theme = useTheme();
   const { t } = useTranslation();
@@ -279,8 +304,7 @@ const MySubscription = () => {
   const [loading, setLoading] = useState(true);
   const [renewDialogOpen, setRenewDialogOpen] = useState(false);
   const [renewPlanId, setRenewPlanId] = useState(null);
-
-  const quotaPerUnit = localStorage.getItem('quota_per_unit') || 500000;
+  const [renewSubscriptionId, setRenewSubscriptionId] = useState(null);
 
   const fetchSubscriptions = async () => {
     try {
@@ -321,16 +345,18 @@ const MySubscription = () => {
   };
 
   const formatQuota = (quota) => {
-    return (quota / quotaPerUnit).toFixed(2);
+    return Number(quota || 0).toFixed(2);
   };
 
-  const handleRenew = (planId) => {
+  const handleRenew = (subscriptionId, planId) => {
+    setRenewSubscriptionId(subscriptionId);
     setRenewPlanId(planId);
     setRenewDialogOpen(true);
   };
 
   const handleRenewDialogClose = () => {
     setRenewDialogOpen(false);
+    setRenewSubscriptionId(null);
     setRenewPlanId(null);
     fetchSubscriptions();
   };
@@ -443,7 +469,7 @@ const MySubscription = () => {
                       variant="outlined"
                       fullWidth
                       size="small"
-                      onClick={() => handleRenew(sub.plan_id)}
+                      onClick={() => handleRenew(sub.id, sub.plan_id)}
                       startIcon={<Icon icon="solar:refresh-circle-linear" width={18} />}
                       sx={{ borderRadius: '6px' }}
                     >
@@ -457,7 +483,7 @@ const MySubscription = () => {
         })}
       </Grid>
 
-      <RenewPayDialog open={renewDialogOpen} onClose={handleRenewDialogClose} planId={renewPlanId} />
+      <RenewPayDialog open={renewDialogOpen} onClose={handleRenewDialogClose} subscriptionId={renewSubscriptionId} planId={renewPlanId} />
     </Box>
   );
 };

@@ -259,8 +259,8 @@ const MenuCard = () => {
             </Typography>
             <Stack spacing={0.75}>
               {subscriptions.map((sub) => {
-                const usedVal = (sub.used_amount / quotaPerUnit).toFixed(2);
-                const totalVal = (sub.quota_amount / quotaPerUnit).toFixed(2);
+                const usedVal = Number(sub.used_amount || 0).toFixed(2);
+                const totalVal = Number(sub.quota_amount || 0).toFixed(2);
                 const subPercent = sub.quota_amount > 0 ? Math.min((sub.used_amount / sub.quota_amount) * 100, 100) : 0;
                 const now = Date.now();
                 const daysLeft = Math.max(0, Math.ceil((sub.expire_time * 1000 - now) / (1000 * 60 * 60 * 24)));

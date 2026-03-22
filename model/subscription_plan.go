@@ -70,6 +70,14 @@ func GetSubscriptionPlanById(id int) (*SubscriptionPlan, error) {
 	return &plan, err
 }
 
+func GetSubscriptionPlanByNameAndGroup(name string, groupSymbol string) (*SubscriptionPlan, error) {
+	var plan SubscriptionPlan
+	err := DB.Where("name = ? AND group_symbol = ?", strings.TrimSpace(name), strings.TrimSpace(groupSymbol)).
+		Order("id DESC").
+		First(&plan).Error
+	return &plan, err
+}
+
 func GetAvailableSubscriptionPlans() ([]*SubscriptionPlan, error) {
 	var plans []*SubscriptionPlan
 	err := DB.Where("enable = ?", true).Order("sort DESC, id ASC").Find(&plans).Error
