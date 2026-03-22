@@ -16,9 +16,7 @@ const DocPage = () => {
   // Find the matching content
   const apiSection = apiSections.find((s) => s.id === slug);
   const guide = guides.find((g) => g.id === slug);
-  const tutorial = slug?.startsWith('tutorial-')
-    ? (tutorials || []).find((t) => `tutorial-${t.id}` === slug)
-    : null;
+  const tutorial = slug?.startsWith('tutorial-') ? (tutorials || []).find((t) => `tutorial-${t.id}` === slug) : null;
 
   const contentType = apiSection ? 'api' : guide ? 'guide' : tutorial ? 'tutorial' : null;
 

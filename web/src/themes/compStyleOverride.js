@@ -842,7 +842,8 @@ export default function componentStyleOverrides(theme) {
           }
         },
         standardInfo: {
-          backgroundColor: theme.mode === 'dark' ? varAlpha(theme.colors?.darkSecondaryMain, 0.16) : varAlpha(theme.colors?.secondaryMain, 0.1),
+          backgroundColor:
+            theme.mode === 'dark' ? varAlpha(theme.colors?.darkSecondaryMain, 0.16) : varAlpha(theme.colors?.secondaryMain, 0.1),
           color: theme.mode === 'dark' ? '#E4EAF3' : theme.colors?.primaryDark,
           '& .MuiAlert-icon': {
             color: theme.mode === 'dark' ? theme.colors?.darkSecondaryMain : theme.colors?.secondaryMain
@@ -1218,7 +1219,5 @@ export default function componentStyleOverrides(theme) {
         }
       }
     }
-  }
+  };
 }
-
-

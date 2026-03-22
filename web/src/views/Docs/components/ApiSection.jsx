@@ -16,7 +16,11 @@ const ApiSection = ({ section, withTocIds }) => {
       </Typography>
 
       {/* Endpoints */}
-      <Typography id={withTocIds ? 'toc-endpoint' : undefined} variant="subtitle2" sx={{ mb: 1, color: 'text.secondary', letterSpacing: '0.05em', scrollMarginTop: '80px' }}>
+      <Typography
+        id={withTocIds ? 'toc-endpoint' : undefined}
+        variant="subtitle2"
+        sx={{ mb: 1, color: 'text.secondary', letterSpacing: '0.05em', scrollMarginTop: '80px' }}
+      >
         Endpoint
       </Typography>
       <Box sx={{ mb: 3 }}>
@@ -63,7 +67,11 @@ const ApiSection = ({ section, withTocIds }) => {
       )}
 
       {/* Headers */}
-      <Typography id={withTocIds ? 'toc-headers' : undefined} variant="subtitle2" sx={{ mb: 1, color: 'text.secondary', letterSpacing: '0.05em', scrollMarginTop: '80px' }}>
+      <Typography
+        id={withTocIds ? 'toc-headers' : undefined}
+        variant="subtitle2"
+        sx={{ mb: 1, color: 'text.secondary', letterSpacing: '0.05em', scrollMarginTop: '80px' }}
+      >
         Headers
       </Typography>
       <CodeBlock>{JSON.stringify(section.headers, null, 2)}</CodeBlock>
@@ -76,7 +84,11 @@ const ApiSection = ({ section, withTocIds }) => {
       {/* Parameters */}
       {section.parameters && section.parameters.length > 0 && (
         <>
-          <Typography id={withTocIds ? 'toc-parameters' : undefined} variant="subtitle2" sx={{ mt: 3, mb: 1.5, color: 'text.secondary', letterSpacing: '0.05em', scrollMarginTop: '80px' }}>
+          <Typography
+            id={withTocIds ? 'toc-parameters' : undefined}
+            variant="subtitle2"
+            sx={{ mt: 3, mb: 1.5, color: 'text.secondary', letterSpacing: '0.05em', scrollMarginTop: '80px' }}
+          >
             Parameters
           </Typography>
           <Box
@@ -129,13 +141,21 @@ const ApiSection = ({ section, withTocIds }) => {
       )}
 
       {/* Request Example */}
-      <Typography id={withTocIds ? 'toc-request' : undefined} variant="subtitle2" sx={{ mt: 3, mb: 1, color: 'text.secondary', letterSpacing: '0.05em', scrollMarginTop: '80px' }}>
+      <Typography
+        id={withTocIds ? 'toc-request' : undefined}
+        variant="subtitle2"
+        sx={{ mt: 3, mb: 1, color: 'text.secondary', letterSpacing: '0.05em', scrollMarginTop: '80px' }}
+      >
         Request Body
       </Typography>
       <CodeBlock>{JSON.stringify(section.requestExample, null, 2)}</CodeBlock>
 
       {/* Response Example */}
-      <Typography id={withTocIds ? 'toc-response' : undefined} variant="subtitle2" sx={{ mt: 3, mb: 1, color: 'text.secondary', letterSpacing: '0.05em', scrollMarginTop: '80px' }}>
+      <Typography
+        id={withTocIds ? 'toc-response' : undefined}
+        variant="subtitle2"
+        sx={{ mt: 3, mb: 1, color: 'text.secondary', letterSpacing: '0.05em', scrollMarginTop: '80px' }}
+      >
         Response
       </Typography>
       <CodeBlock>{JSON.stringify(section.responseExample, null, 2)}</CodeBlock>

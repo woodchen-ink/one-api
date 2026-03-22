@@ -40,7 +40,8 @@ const Home = () => {
   // SEO 数据
   const seoData = {
     title: 'CZLOapi - 专业AI API服务平台 | OpenAI、Claude、Gemini等多模型接入',
-    description: '提供OpenAI、Claude、Gemini等主流AI模型的统一API接入服务。支持联网搜索、思考模式、飞书机器人等强大功能，为开发者和企业提供稳定、高效的AI解决方案。',
+    description:
+      '提供OpenAI、Claude、Gemini等主流AI模型的统一API接入服务。支持联网搜索、思考模式、飞书机器人等强大功能，为开发者和企业提供稳定、高效的AI解决方案。',
     keywords: 'AI API, OpenAI, Claude, Gemini, AI接口, 人工智能, 机器学习, 自然语言处理, AI服务, 开发者工具, 联网搜索, 思考模式',
     canonical: 'https://oapi.czl.net',
     ogImage: 'https://oapi.czl.net/logo.svg'
@@ -54,7 +55,7 @@ const Home = () => {
           <meta name="description" content={seoData.description} />
           <meta name="keywords" content={seoData.keywords} />
           <link rel="canonical" href={seoData.canonical} />
-          
+
           {/* Open Graph */}
           <meta property="og:title" content={seoData.title} />
           <meta property="og:description" content={seoData.description} />
@@ -62,13 +63,13 @@ const Home = () => {
           <meta property="og:url" content={seoData.canonical} />
           <meta property="og:type" content="website" />
           <meta property="og:site_name" content="CZLOapi" />
-          
+
           {/* Twitter Card */}
           <meta name="twitter:card" content="summary_large_image" />
           <meta name="twitter:title" content={seoData.title} />
           <meta name="twitter:description" content={seoData.description} />
           <meta name="twitter:image" content={seoData.ogImage} />
-          
+
           {/* 结构化数据 */}
           <script type="application/ld+json">
             {JSON.stringify({
@@ -78,9 +79,7 @@ const Home = () => {
               description: seoData.description,
               url: seoData.canonical,
               logo: 'https://oapi.czl.net/logo.svg',
-              sameAs: [
-                'https://docs.czl.net/czloapi/'
-              ],
+              sameAs: ['https://docs.czl.net/czloapi/'],
               contactPoint: {
                 '@type': 'ContactPoint',
                 contactType: 'customer service',
@@ -108,7 +107,7 @@ const Home = () => {
         <meta name="description" content={seoData.description} />
         <meta name="keywords" content={seoData.keywords} />
         <link rel="canonical" href={seoData.canonical} />
-        
+
         {/* Open Graph */}
         <meta property="og:title" content={seoData.title} />
         <meta property="og:description" content={seoData.description} />
@@ -116,13 +115,13 @@ const Home = () => {
         <meta property="og:url" content={seoData.canonical} />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="CZLOapi" />
-        
+
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={seoData.title} />
         <meta name="twitter:description" content={seoData.description} />
         <meta name="twitter:image" content={seoData.ogImage} />
-        
+
         {/* 结构化数据 */}
         <script type="application/ld+json">
           {JSON.stringify({
@@ -132,9 +131,7 @@ const Home = () => {
             description: seoData.description,
             url: seoData.canonical,
             logo: 'https://oapi.czl.net/logo.svg',
-            sameAs: [
-              'https://docs.czl.net/czloapi/'
-            ],
+            sameAs: ['https://docs.czl.net/czloapi/'],
             contactPoint: {
               '@type': 'ContactPoint',
               contactType: 'customer service',

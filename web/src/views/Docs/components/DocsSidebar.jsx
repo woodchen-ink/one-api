@@ -1,13 +1,4 @@
-import {
-  Box,
-  Typography,
-  List,
-  ListSubheader,
-  ListItemButton,
-  ListItemText,
-  ListItemIcon,
-  useTheme
-} from '@mui/material';
+import { Box, Typography, List, ListSubheader, ListItemButton, ListItemText, ListItemIcon, useTheme } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { Link, useNavigate } from 'react-router-dom';
 import ApiIcon from '@mui/icons-material/Api';
@@ -53,7 +44,8 @@ const DocsSidebar = ({ apiSections, tutorials, guides, activeSlug, onMobileClose
         height: '100%',
         overflowY: 'auto',
         borderRight: `1px solid ${theme.palette.divider}`,
-        backgroundColor: theme.palette.mode === 'dark' ? alpha(theme.palette.background.paper, 0.6) : alpha(theme.palette.background.paper, 0.9),
+        backgroundColor:
+          theme.palette.mode === 'dark' ? alpha(theme.palette.background.paper, 0.6) : alpha(theme.palette.background.paper, 0.9),
         '&::-webkit-scrollbar': { width: 3 },
         '&::-webkit-scrollbar-thumb': { backgroundColor: alpha(theme.palette.divider, 0.5), borderRadius: 2 }
       }}

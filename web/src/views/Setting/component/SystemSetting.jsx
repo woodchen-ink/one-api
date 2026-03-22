@@ -328,7 +328,9 @@ const SystemSetting = () => {
             <Grid xs={12} md={3}>
               <FormControlLabel
                 label={t('setting_index.systemSettings.configureLoginRegister.czlconnectAuth')}
-                control={<Checkbox checked={inputs.CZLConnectAuthEnabled === 'true'} onChange={handleInputChange} name="CZLConnectAuthEnabled" />}
+                control={
+                  <Checkbox checked={inputs.CZLConnectAuthEnabled === 'true'} onChange={handleInputChange} name="CZLConnectAuthEnabled" />
+                }
               />
             </Grid>
             <Grid xs={12} md={3}>

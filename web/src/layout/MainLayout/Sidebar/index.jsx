@@ -15,13 +15,12 @@ import { varAlpha } from 'themes/utils';
 const transitionEasing = 'cubic-bezier(0.4, 0, 0.2, 1)';
 const transitionDuration = '200ms';
 
-
 // ==============================|| SIDEBAR DRAWER ||============================== //
 
 const Sidebar = ({ drawerOpen, drawerToggle, window: windowProp }) => {
   const theme = useTheme();
   const matchUpMd = useMediaQuery(theme.breakpoints.up('md'));
-  
+
   const { t } = useTranslation();
   const isDark = theme.palette.mode === 'dark';
   const isMini = matchUpMd && !drawerOpen;

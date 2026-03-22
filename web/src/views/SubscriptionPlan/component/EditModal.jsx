@@ -133,9 +133,7 @@ const EditModal = ({ open, planId, onCancel, onOk }) => {
                   onBlur={handleBlur}
                   onChange={handleChange}
                 />
-                {touched.name && errors.name && (
-                  <FormHelperText error>{errors.name}</FormHelperText>
-                )}
+                {touched.name && errors.name && <FormHelperText error>{errors.name}</FormHelperText>}
               </FormControl>
 
               <FormControl fullWidth error={Boolean(touched.group_symbol && errors.group_symbol)} sx={{ ...theme.typography.otherInput }}>
@@ -255,9 +253,7 @@ const EditModal = ({ open, planId, onCancel, onOk }) => {
                   onBlur={handleBlur}
                   onChange={handleChange}
                 />
-                {touched.duration_count && errors.duration_count && (
-                  <FormHelperText error>{errors.duration_count}</FormHelperText>
-                )}
+                {touched.duration_count && errors.duration_count && <FormHelperText error>{errors.duration_count}</FormHelperText>}
               </FormControl>
 
               <FormControl fullWidth sx={{ ...theme.typography.otherInput }}>

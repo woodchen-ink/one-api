@@ -80,7 +80,6 @@ export default function Overview() {
       for (let key in orderMap) {
         rechargeData.OderContent += key + ': ' + orderMap[key] + ' ';
       }
-
     }
 
     rechargeData.total = renderQuota(rechargeData.total);

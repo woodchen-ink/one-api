@@ -41,8 +41,7 @@ const About = () => {
           <Box>
             <Container sx={{ paddingTop: '40px' }}>
               <MainCard title={t('about.aboutTitle')}>
-                <Typography variant="body2">
-                </Typography>
+                <Typography variant="body2"></Typography>
               </MainCard>
             </Container>
           </Box>

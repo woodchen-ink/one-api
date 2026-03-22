@@ -193,19 +193,15 @@ const EditModal = ({ open, Oid, onCancel, onOk }) => {
                       {...params}
                       label={t('modelMapping.targetModels', '目标模型')}
                       placeholder={t('modelMapping.targetModelsPlaceholder', '输入或选择目标模型')}
-                      helperText={t(
-                        'modelMapping.targetModelsTip',
-                        '选择要映射的真实模型，请求将在这些模型的渠道间负载均衡'
-                      )}
+                      helperText={t('modelMapping.targetModelsTip', '选择要映射的真实模型，请求将在这些模型的渠道间负载均衡')}
                     />
                   )}
                 />
-                {modelOptions.length > 0 &&
-                  values.target_models.some((m) => !modelOptions.includes(m)) && (
-                    <Alert severity="warning" sx={{ mt: 1 }}>
-                      {t('modelMapping.unavailableWarning', '部分目标模型当前不可用，请检查对应渠道是否已启用')}
-                    </Alert>
-                  )}
+                {modelOptions.length > 0 && values.target_models.some((m) => !modelOptions.includes(m)) && (
+                  <Alert severity="warning" sx={{ mt: 1 }}>
+                    {t('modelMapping.unavailableWarning', '部分目标模型当前不可用，请检查对应渠道是否已启用')}
+                  </Alert>
+                )}
               </FormControl>
 
               <FormControl sx={{ ...theme.typography.otherInput }}>

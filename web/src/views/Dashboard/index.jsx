@@ -68,8 +68,6 @@ const Dashboard = () => {
     userDashboard();
   }, []);
 
-
-
   // Dashboard content
   const dashboardContent = (
     <Grid container spacing={gridSpacing}>
@@ -127,7 +125,6 @@ const Dashboard = () => {
             {/* 用户信息 */}
             <ModelUsagePieChart isLoading={isLoading} data={modelUsageData} /> {/* 新增 */}
           </Grid>
-
         </Grid>
       </Grid>
     </Grid>
@@ -137,7 +134,6 @@ const Dashboard = () => {
     <>
       <Stack direction="row" alignItems="center" justifyContent="space-between" mb={1}>
         <Stack direction="row" alignItems="center" spacing={3}>
-
           {siteInfo.UptimeEnabled && (
             <Stack direction="row" spacing={1}>
               <Button
@@ -330,6 +326,3 @@ function getLineCardOption(lineDataGroup, field) {
 
   return { chartData: chartData, todayValue: todayValue, lastDayValue: lastDayValue };
 }
-
-
-

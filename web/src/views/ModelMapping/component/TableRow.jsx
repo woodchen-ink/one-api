@@ -66,8 +66,8 @@ export default function ModelMappingTableRow({ item, manageMapping, handleOpenMo
             size="small"
           />
         </TableCell>
-        <TableCell>
-          <Stack direction="row" spacing={1} justifyContent="flex-end">
+        <TableCell align="center">
+          <Stack direction="row" spacing={1} justifyContent="center" alignItems="center">
             <Tooltip title={t('common.edit')}>
               <IconButton
                 size="small"

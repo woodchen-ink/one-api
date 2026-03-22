@@ -62,6 +62,18 @@ function getDurationValue(value) {
   return parsed;
 }
 
+function renderIpLink(ip) {
+  if (!ip) {
+    return '';
+  }
+
+  return (
+    <a href={`https://ip.czl.net/${ip}`} target="_blank" rel="noopener noreferrer">
+      {ip}
+    </a>
+  );
+}
+
 function LogTableRow({ item, userIsAdmin, userGroup, columnVisibility }) {
   const { t } = useTranslation();
   const LogType = useLogType();
@@ -132,9 +144,7 @@ function LogTableRow({ item, userIsAdmin, userGroup, columnVisibility }) {
           </TableCell>
         )}
         {columnVisibility.duration && (
-          <TableCell sx={{ p: '10px 8px', whiteSpace: 'nowrap', textAlign: 'center' }}>
-            {viewDuration(item, t)}
-          </TableCell>
+          <TableCell sx={{ p: '10px 8px', whiteSpace: 'nowrap', textAlign: 'center' }}>{viewDuration(item, t)}</TableCell>
         )}
         {columnVisibility.tokens && (
           <TableCell sx={{ p: '10px 8px', whiteSpace: 'nowrap', textAlign: 'center' }}>
@@ -142,7 +152,7 @@ function LogTableRow({ item, userIsAdmin, userGroup, columnVisibility }) {
           </TableCell>
         )}
         {columnVisibility.quota && <TableCell sx={{ p: '10px 8px' }}>{viewQuota(item, t, cacheCost)}</TableCell>}
-        {columnVisibility.source_ip && <TableCell sx={{ p: '10px 8px' }}>{item.source_ip || ''}</TableCell>}
+        {columnVisibility.source_ip && <TableCell sx={{ p: '10px 8px' }}>{renderIpLink(item.source_ip)}</TableCell>}
       </TableRow>
     </>
   );
@@ -699,8 +709,8 @@ function calculateTokens(item) {
     .filter((detail) => ['cached_tokens', 'cached_write_tokens', 'cached_read_tokens'].includes(detail.key))
     .map((detail) => ({
       ...detail,
-        shortLabel: getTokenShortLabel(detail.key)
-      }));
+      shortLabel: getTokenShortLabel(detail.key)
+    }));
   const cacheCost = cacheMetrics.reduce((sum, detail) => sum + (detail.cost || 0), 0);
 
   return {

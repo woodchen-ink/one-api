@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types';
-import React, { useEffect, useState, createElement } from 'react';  // 修改这行
+import React, { useEffect, useState, createElement } from 'react'; // 修改这行
 import { Link } from 'react-router-dom';
-
 
 // material-ui
 import { useTheme } from '@mui/material/styles';

@@ -139,21 +139,21 @@ export default function ModelInfo() {
                 刷新
               </Button>
               <Button
-            variant="outlined"
-            color="primary"
-            startIcon={<Icon icon="solar:upload-bold-duotone" />}
-            onClick={() => setOpenImportModal(true)}
-          >
-            批量导入
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<Icon icon="solar:add-circle-line-duotone" />}
-            onClick={() => handleOpenModal(0)}
-          >
-            新建模型信息
-          </Button>
+                variant="outlined"
+                color="primary"
+                startIcon={<Icon icon="solar:upload-bold-duotone" />}
+                onClick={() => setOpenImportModal(true)}
+              >
+                批量导入
+              </Button>
+              <Button
+                variant="contained"
+                color="primary"
+                startIcon={<Icon icon="solar:add-circle-line-duotone" />}
+                onClick={() => handleOpenModal(0)}
+              >
+                新建模型信息
+              </Button>
             </ButtonGroup>
           </Container>
           <OutlinedInput

@@ -314,8 +314,8 @@ export default function UserSubscription() {
                           {statusLabel[row.status] || row.status}
                         </Label>
                       </TableCell>
-                      <TableCell>
-                        <Stack direction="row" spacing={1} justifyContent="flex-end" flexWrap="wrap" useFlexGap>
+                      <TableCell align="center">
+                        <Stack direction="row" spacing={1} justifyContent="center" alignItems="center" flexWrap="wrap" useFlexGap>
                           <Tooltip title="调整到期">
                             <IconButton size="small" color="primary" onClick={() => handleOpenAdjust(row.id)}>
                               <Icon icon="solar:calendar-bold-duotone" width={18} />

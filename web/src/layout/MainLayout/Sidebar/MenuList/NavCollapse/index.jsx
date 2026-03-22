@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router';
 
 // material-ui
-import { useTheme, alpha } from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles';
 import { Box, ButtonBase, Collapse, Tooltip, Typography } from '@mui/material';
 import { IconChevronDown, IconChevronRight } from '@tabler/icons-react';
 
@@ -21,41 +21,30 @@ const NavCollapse = ({ menu, level, isMini = false }) => {
   const theme = useTheme();
   const customization = useSelector((state) => state.customization);
   const isDark = theme.palette.mode === 'dark';
+  const isAlwaysOpen = menu.alwaysOpen === true && !isMini;
 
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState(null);
 
   const handleClick = () => {
+    if (isAlwaysOpen) {
+      return;
+    }
+
     setOpen(!open);
     setSelected(!selected ? menu.id : null);
   };
 
   const { pathname } = useLocation();
-  const checkOpenForParent = (child, id) => {
-    child.forEach((item) => {
-      if (item.url === pathname) {
-        setOpen(true);
-        setSelected(id);
-      }
-    });
-  };
 
   useEffect(() => {
-    setOpen(false);
-    setSelected(null);
-    if (menu.children) {
-      menu.children.forEach((item) => {
-        if (item.children?.length) {
-          checkOpenForParent(item.children, menu.id);
-        }
-        if (item.url === pathname) {
-          setSelected(menu.id);
-          setOpen(true);
-        }
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname, menu.children]);
+    const hasMatchedChild = (children = []) =>
+      children.some((item) => item.url === pathname || (item.children?.length ? hasMatchedChild(item.children) : false));
+
+    const matched = hasMatchedChild(menu.children);
+    setSelected(matched ? menu.id : null);
+    setOpen(isAlwaysOpen || matched);
+  }, [isAlwaysOpen, menu.children, menu.id, pathname]);
 
   const menus = menu.children?.map((item) => {
     switch (item.type) {
@@ -73,7 +62,7 @@ const NavCollapse = ({ menu, level, isMini = false }) => {
   });
 
   const isRootItem = level === 1;
-  const isOpen = open && !selected;
+  const isOpen = open && !selected && !isAlwaysOpen;
   const isActive = !!selected;
 
   const IconComponent = menu.icon;
@@ -152,7 +141,8 @@ const NavCollapse = ({ menu, level, isMini = false }) => {
   return (
     <>
       <ButtonBase
-        onClick={handleClick}
+        onClick={isAlwaysOpen ? undefined : handleClick}
+        disableRipple={isAlwaysOpen}
         sx={{
           width: '100%',
           borderRadius: `${customization.borderRadius}px`,
@@ -168,7 +158,7 @@ const NavCollapse = ({ menu, level, isMini = false }) => {
             duration: theme.transitions.duration.shortest
           }),
           '&:hover': {
-            backgroundColor: theme.palette.action.hover
+            backgroundColor: isAlwaysOpen ? 'transparent' : theme.palette.action.hover
           },
           ...(isActive && {
             color: isDark ? theme.palette.secondary.light : theme.palette.secondary.dark,
@@ -215,19 +205,21 @@ const NavCollapse = ({ menu, level, isMini = false }) => {
           </Typography>
         </Box>
 
-        <Box
-          component="span"
-          sx={{
-            width: 16,
-            height: 16,
-            flexShrink: 0,
-            ml: 0.75,
-            display: 'inline-flex',
-            color: 'inherit'
-          }}
-        >
-          {open ? <IconChevronDown size={16} stroke={1.5} /> : <IconChevronRight size={16} stroke={1.5} />}
-        </Box>
+        {!isAlwaysOpen && (
+          <Box
+            component="span"
+            sx={{
+              width: 16,
+              height: 16,
+              flexShrink: 0,
+              ml: 0.75,
+              display: 'inline-flex',
+              color: 'inherit'
+            }}
+          >
+            {open ? <IconChevronDown size={16} stroke={1.5} /> : <IconChevronRight size={16} stroke={1.5} />}
+          </Box>
+        )}
       </ButtonBase>
 
       <Collapse

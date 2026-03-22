@@ -70,8 +70,8 @@ export default function UserGroupTableRow({ item, manageUserGroup, handleOpenMod
           {' '}
           <TableSwitch id={`switch-${item.id}`} checked={statusSwitch} onChange={handleStatus} />
         </TableCell>
-        <TableCell>
-          <Stack direction="row" spacing={1} justifyContent="flex-end">
+        <TableCell align="center">
+          <Stack direction="row" spacing={1} justifyContent="center" alignItems="center">
             <Tooltip title={t('common.edit')}>
               <IconButton
                 size="small"

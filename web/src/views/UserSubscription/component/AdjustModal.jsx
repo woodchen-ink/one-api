@@ -68,11 +68,7 @@ const AdjustModal = ({ open, subscriptionId, onCancel, onOk }) => {
         <Formik initialValues={originInputs} enableReinitialize validationSchema={validationSchema} onSubmit={submit}>
           {({ errors, handleBlur, handleChange, handleSubmit, touched, values, isSubmitting }) => (
             <form noValidate onSubmit={handleSubmit}>
-              <FormControl
-                fullWidth
-                error={Boolean(touched.adjust_days && errors.adjust_days)}
-                sx={{ ...theme.typography.otherInput }}
-              >
+              <FormControl fullWidth error={Boolean(touched.adjust_days && errors.adjust_days)} sx={{ ...theme.typography.otherInput }}>
                 <InputLabel htmlFor="adjust-days-label">调整天数</InputLabel>
                 <OutlinedInput
                   id="adjust-days-label"

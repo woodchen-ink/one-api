@@ -405,12 +405,7 @@ const ModelSelectorModal = ({ open, onClose, onConfirm, channelValues, prices })
   };
 
   return (
-    <Dialog
-      open={open}
-      onClose={handleClose}
-      maxWidth="lg"
-      fullWidth
-    >
+    <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth>
       <DialogTitle
         sx={{
           margin: 0,
@@ -531,7 +526,9 @@ const ModelSelectorModal = ({ open, onClose, onConfirm, channelValues, prices })
             )}
 
             {/* Search + Actions */}
-            <Box sx={{ mb: 1.5, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: 'stretch', gap: 1, flexShrink: 0 }}>
+            <Box
+              sx={{ mb: 1.5, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: 'stretch', gap: 1, flexShrink: 0 }}
+            >
               <TextField
                 fullWidth
                 variant="outlined"
@@ -693,12 +690,10 @@ const ModelSelectorModal = ({ open, onClose, onConfirm, channelValues, prices })
                                   transition: 'all 0.2s',
                                   py: 0.5,
                                   '&:hover': {
-                                    bgcolor: (theme) =>
-                                      theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)'
+                                    bgcolor: (theme) => (theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)')
                                   },
                                   ...(isSelected && {
-                                    bgcolor: (theme) =>
-                                      theme.palette.mode === 'dark' ? 'rgba(144,202,249,0.15)' : 'rgba(33,150,243,0.08)'
+                                    bgcolor: (theme) => (theme.palette.mode === 'dark' ? 'rgba(144,202,249,0.15)' : 'rgba(33,150,243,0.08)')
                                   })
                                 }}
                               >
@@ -867,7 +862,6 @@ const ModelSelectorModal = ({ open, onClose, onConfirm, channelValues, prices })
                     label={t('channel_edit.filterMappedModels')}
                     sx={{ my: 0 }}
                   />
-
 
                   <FormControlLabel
                     control={<Switch checked={overwriteMappings} onChange={(e) => setOverwriteMappings(e.target.checked)} />}

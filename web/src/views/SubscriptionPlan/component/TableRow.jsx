@@ -57,8 +57,8 @@ export default function SubscriptionPlanTableRow({ item, managePlan, handleOpenM
         <TableCell>
           <TableSwitch id={`switch-${item.id}`} checked={statusSwitch} onChange={handleStatus} />
         </TableCell>
-        <TableCell>
-          <Stack direction="row" spacing={1} justifyContent="flex-end" flexWrap="wrap" useFlexGap>
+        <TableCell align="center">
+          <Stack direction="row" spacing={1} justifyContent="center" alignItems="center" flexWrap="wrap" useFlexGap>
             <Tooltip title="编辑">
               <IconButton
                 size="small"

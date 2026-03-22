@@ -50,7 +50,10 @@ import CZLConnectIcon from 'assets/images/icons/czlconnect.svg';
 import { useTheme } from '@mui/material/styles';
 
 const validationSchema = Yup.object().shape({
-  username: Yup.string().required('Username is required').min(3, 'Username must be at least 3 characters').max(50, 'Username must be at most 50 characters'),
+  username: Yup.string()
+    .required('Username is required')
+    .min(3, 'Username must be at least 3 characters')
+    .max(50, 'Username must be at most 50 characters'),
   display_name: Yup.string(),
   password: Yup.string().test('password', 'password must be at least 8 characters', (val) => {
     return !val || val.length >= 8;

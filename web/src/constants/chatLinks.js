@@ -1,2 +1,1 @@
-export const CHAT_LINKS = [
-];
+export const CHAT_LINKS = [];

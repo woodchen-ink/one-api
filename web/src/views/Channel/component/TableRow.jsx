@@ -325,7 +325,6 @@ export default function ChannelTableRow({ item, manageChannel, onRefresh, groupO
     }
   };
 
-
   useEffect(() => {
     setStatusSwitch(item.status);
     setPriority(item.priority);
@@ -351,7 +350,7 @@ export default function ChannelTableRow({ item, manageChannel, onRefresh, groupO
             )}
           </Box>
         </TableCell>
-        <TableCell sx={{ minWidth: 100, maxWidth: 220, overflow: 'hidden',textAlign:'center' }}>
+        <TableCell sx={{ minWidth: 100, maxWidth: 220, overflow: 'hidden', textAlign: 'center' }}>
           {item.tag ? (
             <Typography
               variant="subtitle1"
@@ -437,7 +436,6 @@ export default function ChannelTableRow({ item, manageChannel, onRefresh, groupO
             />
           )}
         </TableCell>
-        
 
         <TableCell>
           {!item.tag && (
@@ -459,7 +457,6 @@ export default function ChannelTableRow({ item, manageChannel, onRefresh, groupO
           )}
         </TableCell>
 
-        
         <TableCell colSpan={item.tag ? 2 : 1}>
           <Box sx={{ display: 'flex' }}>
             <TextField

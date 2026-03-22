@@ -48,6 +48,7 @@ const Setting = {
       title: '运营',
       type: 'collapse',
       icon: icons.IconBasket,
+      alwaysOpen: true,
       isAdmin: true,
       children: [
         {
@@ -129,6 +130,7 @@ const Setting = {
       title: '支付设置',
       type: 'collapse',
       icon: icons.IconBrandPaypal,
+      alwaysOpen: true,
       isAdmin: true,
       children: [
         {

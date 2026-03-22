@@ -8,8 +8,10 @@ export const apiSections = [
     group: 'OpenAI Compatible',
     method: 'POST',
     endpoint: '/v1/responses',
-    description: 'OpenAI Responses API，新一代对话接口。支持缓存, 内置工具（联网搜索、代码执行、文件搜索）、多模态输入、思考模式（reasoning）等高级功能。',
-    detail: '相比 Chat Completions，Responses API 原生支持 reasoning（思考/推理模式），模型可以在回答之前进行深度思考，适合复杂问题。同时内置了 web_search、code_interpreter 等工具，无需手动实现函数调用。',
+    description:
+      'OpenAI Responses API，新一代对话接口。支持缓存, 内置工具（联网搜索、代码执行、文件搜索）、多模态输入、思考模式（reasoning）等高级功能。',
+    detail:
+      '相比 Chat Completions，Responses API 原生支持 reasoning（思考/推理模式），模型可以在回答之前进行深度思考，适合复杂问题。同时内置了 web_search、code_interpreter 等工具，无需手动实现函数调用。',
     headers: {
       Authorization: 'Bearer sk-your-api-key',
       'Content-Type': 'application/json'
@@ -285,14 +287,13 @@ export const apiSections = [
     method: 'GET',
     endpoint: '/v1/realtime',
     description: '实时通信接口（WebSocket）。支持实时语音对话、低延迟流式交互。',
-    detail: '通过 WebSocket 协议建立持久连接，支持实时语音输入输出、打断功能。适用于语音助手、实时翻译等需要极低延迟的场景。连接建立后通过 JSON 消息进行双向通信。',
+    detail:
+      '通过 WebSocket 协议建立持久连接，支持实时语音输入输出、打断功能。适用于语音助手、实时翻译等需要极低延迟的场景。连接建立后通过 JSON 消息进行双向通信。',
     headers: {
       Authorization: 'Bearer sk-your-api-key'
     },
     note: '使用 WebSocket 协议连接，URL 格式: wss://oapi.czl.net/v1/realtime?model=gpt-4o-realtime-preview',
-    parameters: [
-      { name: 'model', type: 'string (query)', required: true, desc: '通过 URL 参数指定模型，如 gpt-4o-realtime-preview' }
-    ],
+    parameters: [{ name: 'model', type: 'string (query)', required: true, desc: '通过 URL 参数指定模型，如 gpt-4o-realtime-preview' }],
     requestExample: {
       type: 'session.update',
       session: {
@@ -321,7 +322,8 @@ export const apiSections = [
     method: 'POST',
     endpoint: '/v1/messages',
     description: 'Anthropic Claude 原生消息接口。直接使用 Claude 原生 API 格式调用，保留完整的 Claude 功能特性。',
-    detail: '使用 Anthropic 原生 API 格式，支持 Claude 的所有高级功能：超长上下文、extended thinking（深度思考）、工具调用、视觉理解等。API Key 通过 x-api-key 请求头传递。',
+    detail:
+      '使用 Anthropic 原生 API 格式，支持 Claude 的所有高级功能：超长上下文、extended thinking（深度思考）、工具调用、视觉理解等。API Key 通过 x-api-key 请求头传递。',
     headers: {
       'x-api-key': 'sk-your-api-key',
       'anthropic-version': '2023-06-01',

@@ -105,9 +105,7 @@ const AssignModal = ({ open, onCancel, onOk }) => {
                   onBlur={handleBlur}
                   onChange={handleChange}
                 />
-                {touched.user_id && errors.user_id && (
-                  <FormHelperText error>{errors.user_id}</FormHelperText>
-                )}
+                {touched.user_id && errors.user_id && <FormHelperText error>{errors.user_id}</FormHelperText>}
               </FormControl>
 
               <FormControl fullWidth error={Boolean(touched.plan_id && errors.plan_id)} sx={{ ...theme.typography.otherInput }}>
@@ -133,9 +131,7 @@ const AssignModal = ({ open, onCancel, onOk }) => {
                     </MenuItem>
                   ))}
                 </Select>
-                {touched.plan_id && errors.plan_id && (
-                  <FormHelperText error>{errors.plan_id}</FormHelperText>
-                )}
+                {touched.plan_id && errors.plan_id && <FormHelperText error>{errors.plan_id}</FormHelperText>}
               </FormControl>
 
               <DialogActions>
