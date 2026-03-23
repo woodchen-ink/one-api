@@ -52,6 +52,7 @@
   },
   "menu": {
     "home": "Home",
+    "notice": "Notices",
     "about": "About",
     "status": "Status",
     "login": "Login",

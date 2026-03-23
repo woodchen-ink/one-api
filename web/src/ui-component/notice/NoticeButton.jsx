@@ -1,49 +1,51 @@
-import { Avatar, Box, ButtonBase } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+import PropTypes from 'prop-types';
+import { Avatar, Box, ButtonBase, Tooltip } from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
 
 import { Icon } from '@iconify/react';
+import { Link, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
-import { useNotice } from './NoticeContext';
-
-export function NoticeButton() {
+export function NoticeButton({ sx }) {
   const theme = useTheme();
-  const { openNotice } = useNotice();
+  const location = useLocation();
+  const { t } = useTranslation();
+  const isActive = location.pathname === '/notice';
 
   return (
-    <Box
-      sx={{
-        ml: 2,
-        mr: 3,
-        [theme.breakpoints.down('md')]: {
-          mr: 2
-        }
-      }}
-    >
-      <ButtonBase sx={{ borderRadius: '12px' }}>
-        <Avatar
-          variant="rounded"
-          sx={{
-            ...theme.typography.commonAvatar,
-            ...theme.typography.mediumAvatar,
-            ...theme.typography.menuButton,
-            transition: 'all .2s ease-in-out',
-            borderColor: 'transparent',
-            backgroundColor: 'transparent',
-            boxShadow: 'none',
-            // color: 'inherit',
-            borderRadius: '50%',
-            '&[aria-controls="menu-list-grow"],&:hover': {
-              boxShadow: '0 0 10px rgba(0,0,0,0.2)',
-              backgroundColor: 'transparent',
-              borderRadius: '50%'
-            }
-          }}
-          onClick={openNotice}
-          color="inherit"
-        >
-          <Icon icon="lets-icons:message-duotone" width="1.6rem" color={theme.palette.secondary.main} />
-        </Avatar>
-      </ButtonBase>
+    <Box sx={sx}>
+      <Tooltip title={t('menu.notice', '公告')}>
+        <ButtonBase component={Link} to="/notice" aria-label={t('menu.notice', '公告')} sx={{ borderRadius: '50%' }}>
+          <Avatar
+            variant="rounded"
+            sx={{
+              ...theme.typography.commonAvatar,
+              ...theme.typography.mediumAvatar,
+              ...theme.typography.menuButton,
+              transition: 'all .2s ease-in-out',
+              border: '1px solid',
+              borderColor: isActive ? alpha(theme.palette.primary.main, 0.28) : 'transparent',
+              backgroundColor: isActive ? alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.18 : 0.1) : 'transparent',
+              color: isActive ? theme.palette.primary.main : theme.palette.text.secondary,
+              boxShadow: 'none',
+              borderRadius: '50%',
+              '&:hover': {
+                boxShadow: `0 6px 16px ${alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.18 : 0.12)}`,
+                backgroundColor: alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.24 : 0.14),
+                color: theme.palette.primary.main,
+                borderRadius: '50%'
+              }
+            }}
+            color="inherit"
+          >
+            <Icon icon="solar:bell-bing-bold-duotone" width="1.35rem" />
+          </Avatar>
+        </ButtonBase>
+      </Tooltip>
     </Box>
   );
 }
+
+NoticeButton.propTypes = {
+  sx: PropTypes.object
+};

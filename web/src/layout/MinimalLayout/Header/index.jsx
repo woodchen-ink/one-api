@@ -66,7 +66,7 @@ const Header = () => {
       <Stack spacing={{ xs: 0.5, sm: 1, md: 2 }} direction="row" justifyContent="center" alignItems="center">
         {isMobile ? (
           <>
-            <NoticeButton sx={{ color: theme.palette.text.primary, mr: 1 }} />
+            <NoticeButton sx={{ mr: 0.5 }} />
             {/* <ThemeButton sx={{ color: theme.palette.text.primary, mr: 1 }} /> */}
             <I18nButton sx={{ color: theme.palette.text.primary, mr: 1 }} />
             <IconButton
@@ -128,20 +128,7 @@ const Header = () => {
             >
               文档
             </Button>
-            <Button
-              component={Link}
-              variant="text"
-              to="/notice"
-              color={pathname === '/notice' ? 'primary' : 'inherit'}
-              sx={{
-                fontSize: '0.875rem',
-                fontWeight: 500,
-                textTransform: 'none',
-                color: pathname === '/notice' ? theme.palette.primary.main : theme.palette.text.primary
-              }}
-            >
-              公告
-            </Button>
+            <NoticeButton sx={{ mx: 0.5 }} />
             {/* <Button
               component={Link}
               variant="text"

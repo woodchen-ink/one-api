@@ -200,6 +200,13 @@ const ProfileDrawer = ({ open, onClose }) => {
                 </ListItemIcon>
                 <ListItemText primary={t('profile')} />
               </ListItemButton>
+
+              <ListItemButton onClick={() => handleNavigate('/notice')} sx={{ py: 1.5 }}>
+                <ListItemIcon sx={{ minWidth: 40 }}>
+                  <Icon icon="solar:bell-bing-bold-duotone" width="1.2rem" color={theme.palette.text.secondary} />
+                </ListItemIcon>
+                <ListItemText primary={t('menu.notice', '公告')} />
+              </ListItemButton>
             </List>
           </Box>
         </Box>

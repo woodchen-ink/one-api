@@ -126,7 +126,7 @@ const Header = ({ handleLeftDrawerToggle, toggleProfileDrawer }) => {
             </Button>
           </>
         )}
-        <NoticeButton />
+        <NoticeButton sx={{ ml: 0.5 }} />
         <I18nButton />
         {isConsoleRoute && <Profile toggleProfileDrawer={toggleProfileDrawer} />}
       </Stack>

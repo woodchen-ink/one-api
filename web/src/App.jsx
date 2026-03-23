@@ -17,7 +17,6 @@ import NavigationScroll from 'layout/NavigationScroll';
 // auth
 import UserProvider from 'contexts/UserContext';
 import StatusProvider from 'contexts/StatusContext';
-import { NoticeProvider, NoticeDialogs } from 'ui-component/notice';
 import { SnackbarProvider } from 'notistack';
 import CopySnackbar from 'ui-component/Snackbar';
 
@@ -47,12 +46,9 @@ const App = () => {
             >
               <StatusProvider>
                 <I18nextProvider i18n={i18n}>
-                  <NoticeProvider>
-                    <UserProvider>
-                      <Routes />
-                      <NoticeDialogs />
-                    </UserProvider>
-                  </NoticeProvider>
+                  <UserProvider>
+                    <Routes />
+                  </UserProvider>
                 </I18nextProvider>
               </StatusProvider>
             </SnackbarProvider>
