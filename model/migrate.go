@@ -551,13 +551,21 @@ func dropLegacyLogsChannelForeignKeyOnPostgres() *gormigrate.Migration {
 			if tx.Dialector.Name() != "postgres" {
 				return nil
 			}
-			if !tx.Migrator().HasTable("channels") {
-				return nil
+			if tx.Migrator().HasTable("channels") {
+				// 历史错误关系可能在 channels 表上生成了反向外键 fk_logs_channel。
+				// 正确关系应为 logs.channel_id -> channels.id。
+				if err := tx.Exec(`ALTER TABLE "channels" DROP CONSTRAINT IF EXISTS "fk_logs_channel"`).Error; err != nil {
+					return err
+				}
 			}
 
-			// 历史错误关系可能在 channels 表上生成了反向外键 fk_logs_channel。
-			// 正确关系应为 logs.channel_id -> channels.id。
-			return tx.Exec(`ALTER TABLE "channels" DROP CONSTRAINT IF EXISTS "fk_logs_channel"`).Error
+			// 清理 logs 表上的同名外键，避免历史脏数据导致 AutoMigrate 再次失败。
+			if tx.Migrator().HasTable("logs") {
+				if err := tx.Exec(`ALTER TABLE "logs" DROP CONSTRAINT IF EXISTS "fk_logs_channel"`).Error; err != nil {
+					return err
+				}
+			}
+			return nil
 		},
 		Rollback: func(tx *gorm.DB) error {
 			return nil

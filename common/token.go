@@ -59,6 +59,8 @@ func GetTokenEncoder(model string) *tiktoken.Tiktoken {
 
 	if strings.HasPrefix(model, "gpt-3.5") {
 		tokenEncoder = gpt35TokenEncoder
+	} else if strings.HasPrefix(model, "gpt-5") {
+		tokenEncoder = gpt4oTokenEncoder
 	} else if strings.HasPrefix(model, "gpt-4o") {
 		tokenEncoder = gpt4oTokenEncoder
 	} else if strings.HasPrefix(model, "gpt-4") {
@@ -67,8 +69,14 @@ func GetTokenEncoder(model string) *tiktoken.Tiktoken {
 		var err error
 		tokenEncoder, err = tiktoken.EncodingForModel(model)
 		if err != nil {
-			logger.SysError(fmt.Sprintf("failed to get token encoder for model %s: %s, using encoder for gpt-3.5-turbo", model, err.Error()))
-			tokenEncoder = gpt35TokenEncoder
+			fallbackModel := "gpt-3.5-turbo"
+			fallbackEncoder := gpt35TokenEncoder
+			if strings.HasPrefix(model, "gpt-") || strings.HasPrefix(model, "o1") || strings.HasPrefix(model, "o3") || strings.HasPrefix(model, "o4") || strings.HasPrefix(model, "chatgpt-") {
+				fallbackModel = "gpt-4o"
+				fallbackEncoder = gpt4oTokenEncoder
+			}
+			logger.SysError(fmt.Sprintf("failed to get token encoder for model %s: %s, using encoder for %s", model, err.Error(), fallbackModel))
+			tokenEncoder = fallbackEncoder
 		}
 	}
 
