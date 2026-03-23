@@ -55,13 +55,6 @@ export const CHANNEL_OPTIONS = {
     color: 'default',
     url: 'https://dashscope.console.aliyun.com/overview'
   },
-  18: {
-    key: 18,
-    text: '讯飞星火认知',
-    value: 18,
-    color: 'default',
-    url: 'https://console.xfyun.cn/'
-  },
   16: {
     key: 16,
     text: '智谱 ChatGLM',

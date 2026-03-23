@@ -194,19 +194,6 @@ const typeConfig = {
     },
     modelGroup: 'Ali'
   },
-  18: {
-    inputLabel: {
-      other: '版本号'
-    },
-    input: {
-      models: ['SparkDesk', 'SparkDesk-v1.1', 'SparkDesk-v2.1', 'SparkDesk-v3.1', 'SparkDesk-v3.5']
-    },
-    prompt: {
-      key: '按照如下格式输入：APPID|APISecret|APIKey',
-      other: '请输入版本号，例如：v3.1'
-    },
-    modelGroup: 'Xunfei'
-  },
   19: {
     input: {
       models: ['360GPT_S2_V9', 'embedding-bert-512-v1', 'embedding_s1_v1', 'semantic_similarity_s1_v1'],

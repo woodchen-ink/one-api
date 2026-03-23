@@ -356,14 +356,6 @@ func GetDefaultPrice() []*Price {
 		// ￥0.0007 / 1k tokens
 		"text-embedding-v1": {[]float64{0.05, 0.05}, config.ChannelTypeAli},
 
-		// ￥0.018 / 1k tokens
-		"SparkDesk":      {[]float64{1.2858, 1.2858}, config.ChannelTypeXunfei},
-		"SparkDesk-v1.1": {[]float64{0, 0}, config.ChannelTypeXunfei},
-		"SparkDesk-v2.1": {[]float64{2.1429, 2.1429}, config.ChannelTypeXunfei},
-		"SparkDesk-v3.1": {[]float64{2.1429, 2.1429}, config.ChannelTypeXunfei},
-		"SparkDesk-v3.5": {[]float64{2.1429, 2.1429}, config.ChannelTypeXunfei},
-		"SparkDesk-v4.0": {[]float64{7.1429, 7.1429}, config.ChannelTypeXunfei},
-
 		// ¥0.012 / 1k tokens
 		"360GPT_S2_V9": {[]float64{0.8572, 0.8572}, config.ChannelType360},
 		// ¥0.001 / 1k tokens

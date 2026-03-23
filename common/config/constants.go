@@ -263,7 +263,6 @@ const (
 	ChannelTypeBaidu      = 15
 	ChannelTypeZhipu      = 16
 	ChannelTypeAli        = 17
-	ChannelTypeXunfei     = 18
 	ChannelType360        = 19
 	ChannelTypeOpenRouter = 20
 	// ChannelTypeAIProxyLibrary = 21

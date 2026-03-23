@@ -35,7 +35,6 @@ import (
 	"czloapi/providers/tencent"
 	"czloapi/providers/vertexai"
 	"czloapi/providers/xAI"
-	"czloapi/providers/xunfei"
 	"czloapi/providers/zhipu"
 
 	"github.com/gin-gonic/gin"
@@ -60,7 +59,6 @@ func init() {
 		config.ChannelTypeAnthropic:       claude.ClaudeProviderFactory{},
 		config.ChannelTypePaLM:            palm.PalmProviderFactory{},
 		config.ChannelTypeZhipu:           zhipu.ZhipuProviderFactory{},
-		config.ChannelTypeXunfei:          xunfei.XunfeiProviderFactory{},
 		config.ChannelTypeAzureSpeech:     azurespeech.AzureSpeechProviderFactory{},
 		config.ChannelTypeGemini:          gemini.GeminiProviderFactory{},
 		config.ChannelTypeBaichuan:        baichuan.BaichuanProviderFactory{},
