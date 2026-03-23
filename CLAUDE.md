@@ -5,6 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Important
 
 - 前端 管理员界面直接使用中文, 不需要i18n, 用户界面使用i18n.
+- 当需要实现后端新功能或新组件, 先看看`https://github.com/QuantumNous/new-api`这个项目有没有参考实现.
 
 ## Build and Development Commands
 
@@ -122,6 +123,8 @@ The provider system implements a plugin-based architecture in `providers/`:
 - Database configuration supports connection pooling and multiple drivers
 - Provider-specific configurations stored in respective provider directories
 - Web frontend build artifacts embedded into Go binary using go:embed
+- `gpt-5*` 的 `chat/completions -> responses` 兼容转换独立放在 `types/chat_to_responses.go`
+- 兼容模式下的流式请求优先走上游真实 `/v1/responses` SSE，再在本地转回 chat stream
 
 ### Key Features and Integrations
 - Multi-provider AI API gateway with unified OpenAI-compatible API
