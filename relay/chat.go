@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"math"
 	"net/http"
+	"strings"
+	"time"
+
 	"czloapi/common"
 	"czloapi/common/config"
 	"czloapi/common/requester"
@@ -14,7 +17,6 @@ import (
 	providersBase "czloapi/providers/base"
 	"czloapi/safty"
 	"czloapi/types"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -98,8 +100,21 @@ var need2Response = map[string]bool{
 	"codex-mini-latest":                true,
 }
 
+func shouldUseResponsesCompat(channel *model.Channel, modelName string) bool {
+	if need2Response[modelName] {
+		return true
+	}
+
+	if channel == nil || !channel.CompatibleResponse {
+		return false
+	}
+
+	normalizedModelName := strings.ToLower(strings.TrimSpace(modelName))
+	return strings.HasPrefix(normalizedModelName, "gpt-5")
+}
+
 func (r *relayChat) send() (err *types.OpenAIErrorWithStatusCode, done bool) {
-	if need2Response[r.modelName] {
+	if shouldUseResponsesCompat(r.provider.GetChannel(), r.modelName) {
 		resProvider, ok := r.provider.(providersBase.ResponsesInterface)
 		if ok {
 			return r.compatibleSend(resProvider)
