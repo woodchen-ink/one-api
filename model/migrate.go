@@ -30,6 +30,12 @@ type postgresIndexMetadata struct {
 	Columns           string `gorm:"column:columns"`
 }
 
+type postgresColumnMetadata struct {
+	ColumnDefault string `gorm:"column:column_default"`
+	IsIdentity    string `gorm:"column:is_identity"`
+	DataType      string `gorm:"column:data_type"`
+}
+
 func autoMigrateModels(includeInvoiceMonth bool) []interface{} {
 	models := []interface{}{
 		&Channel{},
@@ -290,6 +296,77 @@ func repairPostgresDuplicateIndexes(tx *gorm.DB, includeInvoiceMonth bool) error
 	return nil
 }
 
+func repairPostgresIDAutoIncrement(tx *gorm.DB, includeInvoiceMonth bool) error {
+	models := autoMigrateModels(includeInvoiceMonth)
+	for _, model := range models {
+		tableName, expectedPrimaryColumns, err := getExpectedPrimaryColumns(tx, model)
+		if err != nil {
+			return err
+		}
+		if !tx.Migrator().HasTable(tableName) {
+			continue
+		}
+
+		// 仅修复约定的单列 id 主键表。
+		if len(expectedPrimaryColumns) != 1 || strings.ToLower(expectedPrimaryColumns[0]) != "id" {
+			continue
+		}
+
+		var column postgresColumnMetadata
+		err = tx.Raw(`
+SELECT
+    COALESCE(column_default, '') AS column_default,
+    COALESCE(is_identity, 'NO') AS is_identity,
+    COALESCE(data_type, '') AS data_type
+FROM information_schema.columns
+WHERE table_schema = current_schema()
+  AND table_name = ?
+  AND column_name = 'id'
+LIMIT 1
+`, tableName).Scan(&column).Error
+		if err != nil {
+			return err
+		}
+		if column.DataType == "" {
+			continue
+		}
+
+		normalizedType := strings.ToLower(strings.TrimSpace(column.DataType))
+		if normalizedType != "integer" && normalizedType != "bigint" && normalizedType != "smallint" {
+			continue
+		}
+
+		if strings.EqualFold(strings.TrimSpace(column.IsIdentity), "YES") || strings.Contains(strings.ToLower(column.ColumnDefault), "nextval(") {
+			continue
+		}
+
+		sequenceName := tableName + "_id_seq"
+		quotedTable := quoteIdentifier(tableName)
+		quotedSequence := quoteIdentifier(sequenceName)
+
+		if err = tx.Exec("CREATE SEQUENCE IF NOT EXISTS " + quotedSequence).Error; err != nil {
+			return err
+		}
+		if err = tx.Exec("ALTER SEQUENCE " + quotedSequence + " OWNED BY " + quotedTable + ".\"id\"").Error; err != nil {
+			return err
+		}
+		if err = tx.Exec(`
+SELECT setval(
+    '` + sequenceName + `',
+    COALESCE((SELECT MAX("id") FROM ` + quotedTable + `), 1),
+    (SELECT MAX("id") IS NOT NULL FROM ` + quotedTable + `)
+)`).Error; err != nil {
+			return err
+		}
+		if err = tx.Exec("ALTER TABLE " + quotedTable + " ALTER COLUMN \"id\" SET DEFAULT nextval('" + sequenceName + "')").Error; err != nil {
+			return err
+		}
+
+		logger.SysLog(fmt.Sprintf("repaired id auto increment on %s (sequence: %s)", tableName, sequenceName))
+	}
+	return nil
+}
+
 func repairPostgresSchemaCompatibility() *gormigrate.Migration {
 	return &gormigrate.Migration{
 		ID: "202603230003",
@@ -301,10 +378,28 @@ func repairPostgresSchemaCompatibility() *gormigrate.Migration {
 			if err := repairPostgresPrimaryConstraints(tx, includeInvoiceMonth); err != nil {
 				return err
 			}
+			if err := repairPostgresIDAutoIncrement(tx, includeInvoiceMonth); err != nil {
+				return err
+			}
 			if err := repairPostgresDuplicateIndexes(tx, includeInvoiceMonth); err != nil {
 				return err
 			}
 			return nil
+		},
+		Rollback: func(tx *gorm.DB) error {
+			return nil
+		},
+	}
+}
+
+func repairPostgresIDAutoIncrementMigration() *gormigrate.Migration {
+	return &gormigrate.Migration{
+		ID: "202603230004",
+		Migrate: func(tx *gorm.DB) error {
+			if tx.Dialector.Name() != "postgres" {
+				return nil
+			}
+			return repairPostgresIDAutoIncrement(tx, config.UserInvoiceMonth)
 		},
 		Rollback: func(tx *gorm.DB) error {
 			return nil
@@ -452,6 +547,7 @@ func migrationBefore(db *gorm.DB) error {
 		changeTokenKeyColumnType(),
 		dropLegacyPricesPrimaryKeyOnPostgres(),
 		repairPostgresSchemaCompatibility(),
+		repairPostgresIDAutoIncrementMigration(),
 	})
 	return m.Migrate()
 }
