@@ -140,3 +140,8 @@ type ResponsesInterface interface {
 	CreateResponses(request *types.OpenAIResponsesRequest) (*types.OpenAIResponsesResponses, *types.OpenAIErrorWithStatusCode)
 	CreateResponsesStream(request *types.OpenAIResponsesRequest) (requester.StreamReaderInterface[string], *types.OpenAIErrorWithStatusCode)
 }
+
+type ResponsesWSInterface interface {
+	ProviderInterface
+	CreateResponsesWS() (*websocket.Conn, requester.MessageHandler, *types.OpenAIErrorWithStatusCode)
+}

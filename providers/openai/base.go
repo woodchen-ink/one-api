@@ -77,6 +77,7 @@ func getOpenAIConfig(baseURL string, channel *model.Channel) base.ProviderConfig
 		ModelList:           "/v1/models",
 		ChatRealtime:        "/v1/realtime",
 		Responses:           "/v1/responses",
+		ResponsesWS:         "/v1/responses",
 	}
 
 	if channel.Type != config.ChannelTypeCustom || channel.Plugin == nil {

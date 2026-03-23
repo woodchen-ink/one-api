@@ -310,6 +310,7 @@ const (
 	RelayModeRerank
 	RelayModeChatRealtime
 	RelayModeResponses
+	RelayModeResponsesWS
 )
 
 type ContextKey string

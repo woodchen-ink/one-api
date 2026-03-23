@@ -40,6 +40,7 @@ func setOpenAIRouter(router *gin.Engine) {
 		relayV1Router.POST("/moderations", relay.Relay)
 		relayV1Router.POST("/rerank", relay.RelayRerank)
 		relayV1Router.GET("/realtime", relay.ChatRealtime)
+		relayV1Router.GET("/responses", relay.ResponsesWS)
 
 		relayV1Router.Use(middleware.SpecifiedChannel())
 		{
