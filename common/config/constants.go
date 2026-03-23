@@ -269,7 +269,7 @@ const (
 	ChannelTypeVertexAI        = 42
 	ChannelTypeLLAMA           = 43
 	ChannelTypeIdeogram        = 44
-	ChannelTypeSiliconflow     = 45
+	ChannelTypeSiliconflow     = 45 // deprecated: reserved for removed Siliconflow provider
 	ChannelTypeFlux            = 46
 	ChannelTypeRerank          = 48
 	ChannelTypeGithub          = 49 // deprecated: reserved for removed GitHub provider

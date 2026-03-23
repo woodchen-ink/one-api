@@ -99,6 +99,7 @@ The provider system implements a plugin-based architecture in `providers/`:
 - OpenRouter provider support has been removed in this fork; keep channel type `20` reserved and blocked unless the backend provider, admin metadata, and compatibility handling are restored together
 - GitHub provider support has been removed in this fork; keep channel type `49` reserved and blocked unless the backend provider, admin metadata, and compatibility handling are restored together
 - Replicate provider support has been removed in this fork; keep channel type `52` unavailable unless the backend provider, admin metadata, and compatibility handling are restored together
+- Siliconflow provider support has been removed in this fork; keep channel type `45` reserved and blocked unless the backend provider, admin metadata, and compatibility handling are restored together
 - Pricing data is stored as direct USD amounts.
   - Token prices use USD per 1M tokens.
   - `extra_ratios` now carries direct USD prices for extra token categories rather than relative multipliers.

@@ -21,7 +21,6 @@ import (
 	"czloapi/providers/moonshot"
 	"czloapi/providers/ollama"
 	"czloapi/providers/openai"
-	"czloapi/providers/siliconflow"
 	"czloapi/providers/tencent"
 	"czloapi/providers/vertexai"
 	"czloapi/providers/xAI"
@@ -59,7 +58,6 @@ func init() {
 		config.ChannelTypeMoonshot:        moonshot.MoonshotProviderFactory{},
 		config.ChannelTypeHunyuan:         hunyuan.HunyuanProviderFactory{},
 		config.ChannelTypeVertexAI:        vertexai.VertexAIProviderFactory{},
-		config.ChannelTypeSiliconflow:     siliconflow.SiliconflowProviderFactory{},
 		config.ChannelTypeAzureDatabricks: azuredatabricks.AzureDatabricksProviderFactory{},
 		config.ChannelTypeAzureV1:         azure_v1.AzureV1ProviderFactory{},
 		config.ChannelTypeXAI:             xAI.XAIProviderFactory{},

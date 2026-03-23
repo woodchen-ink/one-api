@@ -1460,8 +1460,6 @@ function renderBalance(type, balance) {
   switch (type) {
     case 28: // Deepseek
       return <>¥{balance}</>;
-    case 45: // Deepseek
-      return <>¥{balance}</>;
     default:
       return <>${balance.toFixed(2)}</>;
   }
