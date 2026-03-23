@@ -274,7 +274,7 @@ type LogStatisticGroupChannel struct {
 	Channel string `gorm:"column:channel"`
 }
 
-type TokenUsageTodayStatistic struct {
+type TokenUsageStatistic struct {
 	TokenId          int    `json:"token_id" gorm:"column:token_id"`
 	TokenName        string `json:"token_name" gorm:"column:token_name"`
 	RequestCount     int64  `json:"request_count" gorm:"column:request_count"`
@@ -284,7 +284,7 @@ type TokenUsageTodayStatistic struct {
 	LastUsedAt       int64  `json:"last_used_at" gorm:"column:last_used_at"`
 }
 
-func GetUserTokenUsageToday(userId int, startTimestamp int64, endTimestamp int64) (statistics []*TokenUsageTodayStatistic, err error) {
+func GetUserTokenUsageByPeriod(userId int, startTimestamp int64, endTimestamp int64) (statistics []*TokenUsageStatistic, err error) {
 	err = DB.Table("logs AS l").
 		Select(`
 			l.token_id,

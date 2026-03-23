@@ -306,18 +306,25 @@ func GetUserDashboard(c *gin.Context) {
 	})
 }
 
-func GetUserTodayTokenUsage(c *gin.Context) {
+func GetUserTokenUsage(c *gin.Context) {
 	id := c.GetInt("id")
 
 	now := time.Now()
-	startOfDay := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location()).Unix()
+	period := c.DefaultQuery("period", "today")
 	endTimestamp := now.Unix()
+	startTimestamp := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location()).Unix()
+	message := "无法获取今日令牌消耗信息."
 
-	statistics, err := model.GetUserTokenUsageToday(id, startOfDay, endTimestamp)
+	if period == "7d" {
+		startTimestamp = time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location()).AddDate(0, 0, -6).Unix()
+		message = "无法获取近7天令牌消耗信息."
+	}
+
+	statistics, err := model.GetUserTokenUsageByPeriod(id, startTimestamp, endTimestamp)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
-			"message": "无法获取今日令牌消耗信息.",
+			"message": message,
 		})
 		return
 	}

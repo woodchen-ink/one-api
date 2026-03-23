@@ -1,16 +1,90 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import ReactApexChart from 'react-apexcharts';
-import { Grid, Typography, useTheme, Box, Paper, alpha } from '@mui/material';
+import {
+  Grid,
+  Typography,
+  useTheme,
+  Box,
+  Paper,
+  alpha,
+  Tabs,
+  Tab,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow
+} from '@mui/material';
 import MainCard from 'ui-component/cards/MainCard';
 import { gridSpacing } from 'store/constant';
 import { useTranslation } from 'react-i18next';
+import { renderQuota, timestamp2string } from 'utils/common';
 
-const ModelUsagePieChart = ({ isLoading, data }) => {
+const TokenUsageTable = ({ data, isLoading }) => {
+  const { t } = useTranslation();
+  const rows = data.slice(0, 8);
+
+  return (
+    <TableContainer component={Paper} elevation={0} sx={{ boxShadow: 'none', bgcolor: 'transparent', maxHeight: 380 }}>
+      <Table stickyHeader size="small">
+        <TableHead>
+          <TableRow>
+            <TableCell>{t('token_index.name')}</TableCell>
+            <TableCell align="right">{t('dashboard_index.request_count')}</TableCell>
+            <TableCell align="right">{t('dashboard_index.amount')}</TableCell>
+            <TableCell align="right">{t('token_index.accessedTime')}</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {isLoading ? (
+            <TableRow>
+              <TableCell colSpan={4} align="center">
+                <Typography variant="body2">{t('dashboard_index.loading')}</Typography>
+              </TableCell>
+            </TableRow>
+          ) : rows.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={4} align="center">
+                <Typography variant="h4" color="text.secondary">
+                  {t('dashboard_index.no_data')}
+                </Typography>
+              </TableCell>
+            </TableRow>
+          ) : (
+            rows.map((item) => (
+              <TableRow key={item.token_id} hover>
+                <TableCell>
+                  <Typography variant="body2" fontWeight={600}>
+                    {item.token_name || `#${item.token_id}`}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    #{item.token_id}
+                  </Typography>
+                </TableCell>
+                <TableCell align="right">{item.request_count}</TableCell>
+                <TableCell align="right">{renderQuota(item.quota, 6)}</TableCell>
+                <TableCell align="right">{item.last_used_at ? timestamp2string(item.last_used_at) : '-'}</TableCell>
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+};
+
+TokenUsageTable.propTypes = {
+  data: PropTypes.array,
+  isLoading: PropTypes.bool
+};
+
+const ModelUsagePieChart = ({ isLoading, data, todayTokenUsage, weekTokenUsage, tokenUsageLoading }) => {
   const { t } = useTranslation();
   const theme = useTheme();
+  const [tab, setTab] = useState(0);
 
-  // 创建具有渐变色效果的调色板
   const generateColors = () => {
     const baseColors = [
       theme.palette.primary.main,
@@ -19,13 +93,12 @@ const ModelUsagePieChart = ({ isLoading, data }) => {
       theme.palette.warning.main,
       theme.palette.error.main,
       theme.palette.info.main,
-      '#9c27b0', // 紫色
-      '#00bcd4', // 青色
-      '#607d8b', // 蓝灰色
-      '#ff9800' // 橙色
+      '#9c27b0',
+      '#00bcd4',
+      '#607d8b',
+      '#ff9800'
     ];
 
-    // 为每个基础颜色生成亮色和暗色变体
     const allColors = [];
     baseColors.forEach((color) => {
       allColors.push(color);
@@ -161,84 +234,103 @@ const ModelUsagePieChart = ({ isLoading, data }) => {
     series: data.map((item) => item.value)
   };
 
+  const tabConfigs = [
+    { key: 'model', label: t('dashboard_index.model_usage_tab') },
+    { key: 'today', label: t('dashboard_index.today_token_usage_tab') },
+    { key: 'week', label: t('dashboard_index.week_token_usage_tab') }
+  ];
+
   return (
-    <>
-      {isLoading ? (
-        <MainCard>
-          <Box sx={{ pt: 3, px: 2 }}>
-            <Typography>Loading...</Typography>
-          </Box>
-        </MainCard>
-      ) : (
-        <MainCard
-          sx={{
-            borderRadius: `${theme.shape.borderRadius}px`,
-            overflow: 'hidden',
-            boxShadow: theme.palette.mode === 'dark' ? '0 8px 24px rgba(0,0,0,0.2)' : '0 8px 24px rgba(0,0,0,0.05)'
-          }}
-        >
-          <Grid container spacing={gridSpacing}>
-            <Grid item xs={12}>
-              <Typography
-                variant="h3"
+    <MainCard
+      sx={{
+        borderRadius: `${theme.shape.borderRadius}px`,
+        overflow: 'hidden',
+        boxShadow: theme.palette.mode === 'dark' ? '0 8px 24px rgba(0,0,0,0.2)' : '0 8px 24px rgba(0,0,0,0.05)'
+      }}
+    >
+      <Grid container spacing={gridSpacing}>
+        <Grid item xs={12}>
+          <Tabs
+            value={tab}
+            onChange={(_, newValue) => setTab(newValue)}
+            variant="scrollable"
+            scrollButtons="auto"
+            allowScrollButtonsMobile
+            sx={{
+              minHeight: 0,
+              '& .MuiTab-root': {
+                minHeight: 0,
+                px: 1.25,
+                py: 0.5,
+                textTransform: 'none',
+                fontSize: '0.9rem'
+              }
+            }}
+          >
+            {tabConfigs.map((item) => (
+              <Tab key={item.key} label={item.label} />
+            ))}
+          </Tabs>
+        </Grid>
+        <Grid item xs={12}>
+          {tab === 0 ? (
+            isLoading ? (
+              <Box sx={{ pt: 3, px: 2 }}>
+                <Typography>Loading...</Typography>
+              </Box>
+            ) : data.length > 0 ? (
+              <Paper
+                elevation={0}
                 sx={{
-                  mb: 1.5,
-                  fontWeight: 600,
-                  fontSize: '1.15rem',
-                  letterSpacing: '0.015em'
+                  bgcolor: 'transparent',
+                  position: 'relative',
+                  borderRadius: `${theme.shape.borderRadius}px`,
+                  overflow: 'hidden',
+                  p: 1
                 }}
               >
-                {t('dashboard_index.7days_model_usage_pie')}
-              </Typography>
-            </Grid>
-            <Grid item xs={12}>
-              {data.length > 0 ? (
-                <Paper
-                  elevation={0}
+                <ReactApexChart options={chartData.options} series={chartData.series} type="donut" height={380} />
+              </Paper>
+            ) : (
+              <Box
+                sx={{
+                  height: 320,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: `${theme.shape.borderRadius}px`,
+                  bgcolor: alpha(theme.palette.primary.light, 0.05)
+                }}
+              >
+                <Typography
+                  variant="h3"
+                  color={theme.palette.text.secondary}
                   sx={{
-                    bgcolor: 'transparent',
-                    position: 'relative',
-                    borderRadius: `${theme.shape.borderRadius}px`,
-                    overflow: 'hidden',
-                    p: 1
+                    fontWeight: 500,
+                    opacity: 0.7
                   }}
                 >
-                  <ReactApexChart options={chartData.options} series={chartData.series} type="donut" height={380} />
-                </Paper>
-              ) : (
-                <Box
-                  sx={{
-                    height: 320,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: `${theme.shape.borderRadius}px`,
-                    bgcolor: alpha(theme.palette.primary.light, 0.05)
-                  }}
-                >
-                  <Typography
-                    variant="h3"
-                    color={theme.palette.text.secondary}
-                    sx={{
-                      fontWeight: 500,
-                      opacity: 0.7
-                    }}
-                  >
-                    {t('dashboard_index.no_data_available')}
-                  </Typography>
-                </Box>
-              )}
-            </Grid>
-          </Grid>
-        </MainCard>
-      )}
-    </>
+                  {t('dashboard_index.no_data_available')}
+                </Typography>
+              </Box>
+            )
+          ) : tab === 1 ? (
+            <TokenUsageTable data={todayTokenUsage} isLoading={tokenUsageLoading} />
+          ) : (
+            <TokenUsageTable data={weekTokenUsage} isLoading={tokenUsageLoading} />
+          )}
+        </Grid>
+      </Grid>
+    </MainCard>
   );
 };
 
 ModelUsagePieChart.propTypes = {
+  data: PropTypes.array,
   isLoading: PropTypes.bool,
-  data: PropTypes.array
+  todayTokenUsage: PropTypes.array,
+  tokenUsageLoading: PropTypes.bool,
+  weekTokenUsage: PropTypes.array
 };
 
 export default ModelUsagePieChart;

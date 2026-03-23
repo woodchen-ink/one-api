@@ -100,9 +100,8 @@ const StatisticalLineChartCard = ({ isLoading, title, chartData, todayValue, las
   const points = chartData?.series?.[0]?.data || [];
 
   useEffect(() => {
-    const latestPoint = points[points.length - 1] || null;
-    setActivePoint(latestPoint);
-  }, [points]);
+    setActivePoint(null);
+  }, [chartData]);
 
   const customChartData = chartData
     ? {
@@ -142,7 +141,7 @@ const StatisticalLineChartCard = ({ isLoading, title, chartData, todayValue, las
   };
 
   const handleChartMouseLeave = () => {
-    setActivePoint(points[points.length - 1] || null);
+    setActivePoint(null);
   };
 
   // 获取趋势图标
@@ -186,6 +185,23 @@ const StatisticalLineChartCard = ({ isLoading, title, chartData, todayValue, las
     return renderNumber(point.y || 0);
   };
 
+  const formatPointDate = (point) => {
+    if (!point?.x || typeof point.x !== 'string') {
+      return '';
+    }
+
+    const parts = point.x.split('-');
+    if (parts.length !== 3) {
+      return point.x;
+    }
+
+    return `${parts[1]}-${parts[2]}`;
+  };
+
+  const summaryText = activePoint
+    ? `${formatPointDate(activePoint)} · ${formatPointValue(activePoint)}`
+    : `${title} · ${t('dashboard_index.seven_day_trend')}`;
+
   return (
     <>
       {isLoading ? (
@@ -202,17 +218,6 @@ const StatisticalLineChartCard = ({ isLoading, title, chartData, todayValue, las
           >
             <Grid container spacing={1}>
               <Grid item xs={12}>
-                <Typography
-                  variant="caption"
-                  sx={{
-                    display: 'block',
-                    mb: 0.5,
-                    fontSize: '11px',
-                    color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.45)' : 'rgba(0, 0, 0, 0.45)'
-                  }}
-                >
-                  {title} · {t('dashboard_index.seven_day_trend')}
-                </Typography>
                 <Grid container justifyContent="space-between" alignItems="center">
                   <Grid item>
                     <Typography
@@ -228,19 +233,18 @@ const StatisticalLineChartCard = ({ isLoading, title, chartData, todayValue, las
                   </Grid>
                   <Grid item>
                     <Stack direction="row" alignItems="center" spacing={1}>
-                      {activePoint && (
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            color: theme.palette.text.secondary,
-                            fontSize: '12px',
-                            whiteSpace: 'nowrap'
-                          }}
-                        >
-                          {activePoint.x}: {formatPointValue(activePoint)}
-                        </Typography>
-                      )}
-                      {lastDayValue !== undefined && (
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: theme.palette.text.secondary,
+                          fontSize: '12px',
+                          fontWeight: 500,
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        {summaryText}
+                      </Typography>
+                      {!activePoint && lastDayValue !== undefined && (
                         <Box
                           sx={{
                             display: 'flex',
@@ -273,7 +277,7 @@ const StatisticalLineChartCard = ({ isLoading, title, chartData, todayValue, las
             <Box
               sx={{
                 mt: 'auto',
-                height: '58px',
+                height: '45px',
                 width: '100%'
               }}
             >

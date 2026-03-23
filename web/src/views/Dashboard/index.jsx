@@ -3,16 +3,14 @@ import PropTypes from 'prop-types';
 import { Grid, Box, Stack, Button } from '@mui/material';
 import { gridSpacing } from 'store/constant';
 import StatisticalLineChartCard from './component/StatisticalLineChartCard';
-import ApexCharts from 'ui-component/chart/ApexCharts';
 import { getLastSevenDays, generateBarChartOptions, renderChartNumber } from 'utils/chart';
 import { API } from 'utils/api';
 import { showError, calculateQuota } from 'utils/common';
 import ModelUsagePieChart from './component/ModelUsagePieChart';
 import { useTranslation } from 'react-i18next';
-import QuotaLogWeek from './component/QuotaLogWeek';
 import RPM from './component/RPM';
 import StatusPanel from './component/StatusPanel';
-import TodayTokenUsageCard from './component/TodayTokenUsageCard';
+import SevenDayInsightCard from './component/SevenDayInsightCard';
 import { useSelector } from 'react-redux';
 
 // TabPanel component for tab content
@@ -45,6 +43,7 @@ const Dashboard = () => {
 
   const [dashboardData, setDashboardData] = useState(null);
   const [todayTokenUsage, setTodayTokenUsage] = useState([]);
+  const [weekTokenUsage, setWeekTokenUsage] = useState([]);
   const siteInfo = useSelector((state) => state.siteInfo);
 
   const handleTabChange = (newValue) => {
@@ -74,15 +73,31 @@ const Dashboard = () => {
     }
   };
 
-  const fetchTodayTokenUsage = async () => {
+  const fetchTokenUsage = async () => {
     setTokenUsageLoading(true);
     try {
-      const res = await API.get('/api/user/dashboard/token-usage-today');
-      const { success, message, data } = res.data;
-      if (success) {
-        setTodayTokenUsage(data || []);
+      const [todayRes, weekRes] = await Promise.all([
+        API.get('/api/user/dashboard/token-usage', {
+          params: { period: 'today' }
+        }),
+        API.get('/api/user/dashboard/token-usage', {
+          params: { period: '7d' }
+        })
+      ]);
+
+      const { success: todaySuccess, message: todayMessage, data: todayData } = todayRes.data;
+      const { success: weekSuccess, message: weekMessage, data: weekData } = weekRes.data;
+
+      if (todaySuccess) {
+        setTodayTokenUsage(todayData || []);
       } else {
-        showError(message);
+        showError(todayMessage);
+      }
+
+      if (weekSuccess) {
+        setWeekTokenUsage(weekData || []);
+      } else {
+        showError(weekMessage);
       }
     } catch (error) {
       return;
@@ -93,7 +108,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     userDashboard();
-    fetchTodayTokenUsage();
+    fetchTokenUsage();
   }, []);
 
   // Dashboard content
@@ -141,19 +156,17 @@ const Dashboard = () => {
       <Grid item xs={12}>
         <Grid container spacing={gridSpacing}>
           <Grid item lg={8} xs={12}>
-            {/* 7日模型消费统计 */}
-            <ApexCharts isLoading={isLoading} chartDatas={statisticalData} title={t('dashboard_index.week_model_statistics')} />
-            <Box mt={2}>
-              {/* 7日消费统计 */}
-              <QuotaLogWeek data={dashboardData} />
-            </Box>
+            <SevenDayInsightCard isLoading={isLoading} chartDatas={statisticalData} quotaLogData={dashboardData} />
           </Grid>
 
           <Grid item lg={4} xs={12}>
-            <ModelUsagePieChart isLoading={isLoading} data={modelUsageData} />
-            <Box mt={2}>
-              <TodayTokenUsageCard data={todayTokenUsage} isLoading={tokenUsageLoading} />
-            </Box>
+            <ModelUsagePieChart
+              isLoading={isLoading}
+              data={modelUsageData}
+              todayTokenUsage={todayTokenUsage}
+              weekTokenUsage={weekTokenUsage}
+              tokenUsageLoading={tokenUsageLoading}
+            />
           </Grid>
         </Grid>
       </Grid>

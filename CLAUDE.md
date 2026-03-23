@@ -140,7 +140,7 @@ The provider system implements a plugin-based architecture in `providers/`:
 - User management with quotas, groups, and hierarchical permissions
 - Channel load balancing, failover, and health monitoring
 - Real-time usage analytics and billing integration
-- User dashboard includes a per-token "today usage" card based on `logs.token_id` aggregation; keep log list UI unchanged and do not expose raw token keys
+- User dashboard includes a per-token usage panel with tabs for `today` and `7d`, based on `logs.token_id` aggregation; keep log list UI unchanged and do not expose raw token keys
 - Payment processing with multiple gateways
 - Users can review their own recharge orders, including trade numbers and gateway order numbers, from the web console
 - Subscription plans: Admin-defined quota packages bound to user groups
