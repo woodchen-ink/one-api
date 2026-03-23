@@ -254,7 +254,7 @@ const (
 	ChannelTypeAli             = 17
 	ChannelType360             = 19
 	ChannelTypeOpenRouter      = 20 // deprecated: reserved for removed OpenRouter provider
-	ChannelTypeTencent         = 23
+	ChannelTypeTencent         = 23 // deprecated: reserved for removed Tencent provider
 	ChannelTypeAzureSpeech     = 24
 	ChannelTypeGemini          = 25
 	ChannelTypeMiniMax         = 27
@@ -265,7 +265,7 @@ const (
 	ChannelTypeCloudflareAI    = 35
 	ChannelTypeCohere          = 36
 	ChannelTypeOllama          = 39
-	ChannelTypeHunyuan         = 40
+	ChannelTypeHunyuan         = 40 // deprecated: reserved for removed Hunyuan provider
 	ChannelTypeVertexAI        = 42
 	ChannelTypeLLAMA           = 43
 	ChannelTypeIdeogram        = 44

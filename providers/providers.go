@@ -16,12 +16,10 @@ import (
 	"czloapi/providers/deepseek"
 	"czloapi/providers/gemini"
 	"czloapi/providers/groq"
-	"czloapi/providers/hunyuan"
 	"czloapi/providers/minimax"
 	"czloapi/providers/moonshot"
 	"czloapi/providers/ollama"
 	"czloapi/providers/openai"
-	"czloapi/providers/tencent"
 	"czloapi/providers/vertexai"
 	"czloapi/providers/xAI"
 	"czloapi/providers/zhipu"
@@ -43,7 +41,6 @@ func init() {
 		config.ChannelTypeOpenAI:          openai.OpenAIProviderFactory{},
 		config.ChannelTypeAzure:           azure.AzureProviderFactory{},
 		config.ChannelTypeAli:             ali.AliProviderFactory{},
-		config.ChannelTypeTencent:         tencent.TencentProviderFactory{},
 		config.ChannelTypeAnthropic:       claude.ClaudeProviderFactory{},
 		config.ChannelTypeZhipu:           zhipu.ZhipuProviderFactory{},
 		config.ChannelTypeAzureSpeech:     azurespeech.AzureSpeechProviderFactory{},
@@ -56,7 +53,6 @@ func init() {
 		config.ChannelTypeCohere:          cohere.CohereProviderFactory{},
 		config.ChannelTypeOllama:          ollama.OllamaProviderFactory{},
 		config.ChannelTypeMoonshot:        moonshot.MoonshotProviderFactory{},
-		config.ChannelTypeHunyuan:         hunyuan.HunyuanProviderFactory{},
 		config.ChannelTypeVertexAI:        vertexai.VertexAIProviderFactory{},
 		config.ChannelTypeAzureDatabricks: azuredatabricks.AzureDatabricksProviderFactory{},
 		config.ChannelTypeAzureV1:         azure_v1.AzureV1ProviderFactory{},
@@ -66,7 +62,10 @@ func init() {
 
 // 获取供应商
 func GetProvider(channel *model.Channel, c *gin.Context) base.ProviderInterface {
-	if channel.Type == config.ChannelTypeGithub || channel.Type == config.ChannelTypeOpenRouter {
+	if channel.Type == config.ChannelTypeGithub ||
+		channel.Type == config.ChannelTypeOpenRouter ||
+		channel.Type == config.ChannelTypeTencent ||
+		channel.Type == config.ChannelTypeHunyuan {
 		return nil
 	}
 

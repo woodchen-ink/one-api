@@ -169,7 +169,6 @@ func GetDefaultModelOwnedBy() []*ModelOwnedBy {
 		{Id: config.ChannelTypeAnthropic, Name: "Anthropic", Icon: "https://registry.npmmirror.com/@lobehub/icons-static-svg/latest/files/icons/claude-color.svg"},
 		{Id: config.ChannelTypeZhipu, Name: "Zhipu", Icon: "https://registry.npmmirror.com/@lobehub/icons-static-svg/latest/files/icons/zhipu-color.svg"},
 		{Id: config.ChannelTypeAli, Name: "Qwen", Icon: "https://registry.npmmirror.com/@lobehub/icons-static-svg/latest/files/icons/qwen-color.svg"},
-		{Id: config.ChannelTypeTencent, Name: "Tencent", Icon: "https://registry.npmmirror.com/@lobehub/icons-static-svg/latest/files/icons/hunyuan-color.svg"},
 		{Id: config.ChannelTypeGemini, Name: "Google Gemini", Icon: "https://registry.npmmirror.com/@lobehub/icons-static-svg/latest/files/icons/gemini-color.svg"},
 		{Id: config.ChannelTypeMiniMax, Name: "MiniMax", Icon: "https://registry.npmmirror.com/@lobehub/icons-static-svg/latest/files/icons/minimax-color.svg"},
 		{Id: config.ChannelTypeDeepseek, Name: "Deepseek", Icon: "https://registry.npmmirror.com/@lobehub/icons-static-svg/latest/files/icons/deepseek-color.svg"},

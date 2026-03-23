@@ -345,14 +345,6 @@ func GetDefaultPrice() []*Price {
 		"embedding_s1_v1":           {[]float64{0.0715, 0.0715}, config.ChannelType360},
 		"semantic_similarity_s1_v1": {[]float64{0.0715, 0.0715}, config.ChannelType360},
 
-		// ¥0.1 / 1k tokens  // https://cloud.tencent.com/document/product/1729/97731#e0e6be58-60c8-469f-bdeb-6c264ce3b4d0
-		"hunyuan": {[]float64{7.143, 7.143}, config.ChannelTypeTencent},
-		// https://cloud.tencent.com/document/product/1729/97731#e0e6be58-60c8-469f-bdeb-6c264ce3b4d0
-		// ¥0.01 / 1k tokens
-		"ChatStd": {[]float64{0.7143, 0.7143}, config.ChannelTypeTencent},
-		//¥0.1 / 1k tokens
-		"ChatPro": {[]float64{7.143, 7.143}, config.ChannelTypeTencent},
-
 		"abab5.5s-chat": {[]float64{0.3572, 0.3572}, config.ChannelTypeMiniMax},   // ¥0.005 / 1k tokens
 		"abab5.5-chat":  {[]float64{1.0714, 1.0714}, config.ChannelTypeMiniMax},   // ¥0.015 / 1k tokens
 		"abab6-chat":    {[]float64{14.2857, 14.2857}, config.ChannelTypeMiniMax}, // ¥0.2 / 1k tokens
@@ -386,12 +378,6 @@ func GetDefaultPrice() []*Price {
 		"command-r": {[]float64{0.25, 0.75}, config.ChannelTypeCohere},
 		//$3 /1M TOKENS   $15/1M TOKENS
 		"command-r-plus": {[]float64{1.5, 7.5}, config.ChannelTypeCohere},
-
-		// hunyuan
-		"hunyuan-lite":          {[]float64{0, 0}, config.ChannelTypeHunyuan},
-		"hunyuan-standard":      {[]float64{0.3214, 0.3571}, config.ChannelTypeHunyuan},
-		"hunyuan-standard-256k": {[]float64{1.0714, 4.2857}, config.ChannelTypeHunyuan},
-		"hunyuan-pro":           {[]float64{2.1429, 7.1429}, config.ChannelTypeHunyuan},
 	}
 
 	var prices []*Price

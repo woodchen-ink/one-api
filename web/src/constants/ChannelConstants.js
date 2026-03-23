@@ -55,13 +55,6 @@ export const CHANNEL_OPTIONS = {
     color: 'default',
     url: 'https://ai.360.com/open'
   },
-  23: {
-    key: 23,
-    text: '腾讯混元(旧)',
-    value: 23,
-    color: 'default',
-    url: 'https://cloud.tencent.com/product/hunyuan'
-  },
   27: {
     key: 27,
     text: 'MiniMax',
@@ -117,13 +110,6 @@ export const CHANNEL_OPTIONS = {
     value: 39,
     color: 'orange',
     url: 'https://ollama.com'
-  },
-  40: {
-    key: 40,
-    text: '腾讯混元',
-    value: 40,
-    color: 'default',
-    url: 'https://cloud.tencent.com/product/hunyuan'
   },
   42: {
     key: 42,

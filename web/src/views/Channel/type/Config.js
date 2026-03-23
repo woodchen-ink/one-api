@@ -164,16 +164,6 @@ const typeConfig = {
       key: '按照如下格式输入：APIKey-AppId，例如：fastgpt-0sp2gtvfdgyi4k30jwlgwf1i-64f335d84283f05518e9e041'
     }
   },
-  23: {
-    input: {
-      models: ['ChatStd', 'ChatPro'],
-      test_model: 'ChatStd'
-    },
-    prompt: {
-      key: '按照如下格式输入：AppId|SecretId|SecretKey'
-    },
-    modelGroup: 'Tencent'
-  },
   25: {
     inputLabel: {
       other: '版本号',
@@ -308,16 +298,6 @@ const typeConfig = {
         '请输入你部署的Ollama地址或者Ollama Cloud地址，例如：http://127.0.0.1:11434或者https://ollama.com，如果你使用了cloudflare Zero Trust，可以在下方Header配置填入授权信息',
       key: '本地部署可以随便填，Ollama Cloud请填写API KEY，获取地址https://ollama.com/settings/keys'
     }
-  },
-  40: {
-    input: {
-      models: ['hunyuan-lite', 'hunyuan-pro', 'hunyuan-standard-256K', 'hunyuan-standard'],
-      test_model: 'hunyuan-lite'
-    },
-    prompt: {
-      key: '按照如下格式输入：SecretId|SecretKey'
-    },
-    modelGroup: 'Hunyuan'
   },
   42: {
     input: {

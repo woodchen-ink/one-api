@@ -80,7 +80,6 @@ If you find that a new model is missing, please update the newly added model in 
 | [Gemini](https://aistudio.google.com/)                                | ✅                               | -          | -      | -        | -                                                                |
 | [通义千问](https://dashscope.console.aliyun.com/overview)             | ✅                               | ✅         | -      | -        | -                                                                |
 | [智谱](https://open.bigmodel.cn/overview)                             | ✅                               | ✅         | -      | ⚠️ image | -                                                                |
-| [腾讯混元](https://cloud.tencent.com/product/hunyuan)                 | ✅                               | -          | -      | -        | -                                                                |
 | [MiniMax](https://www.minimaxi.com/user-center/basic-information)     | ✅                               | ✅         | -      | -        | -                                                                |
 | [Deepseek](https://platform.deepseek.com/usage)                       | ✅                               | -          | -      | -        | -                                                                |
 | [Moonshot](https://moonshot.ai/)                                      | ✅                               | -          | -      | -        | -                                                                |
