@@ -211,33 +211,14 @@ func (r *relayChat) compatibleSend(resProvider providersBase.ResponsesInterface)
 	debugSummary := buildResponsesCompatDebugSummary(resRequest)
 
 	if r.chatRequest.Stream {
-		var response requester.StreamReaderInterface[string]
-		response, err = resProvider.CreateResponsesStream(resRequest)
+		upstreamRequest := *resRequest
+		upstreamRequest.Stream = false
+		upstreamDebugSummary := buildResponsesCompatDebugSummary(&upstreamRequest)
+
+		var response *types.OpenAIResponsesResponses
+		response, err = resProvider.CreateResponses(&upstreamRequest)
 		if err != nil {
-			logger.LogError(r.c.Request.Context(), fmt.Sprintf("chat->responses stream forward failed, model=%s, status=%d, upstream=%s, debug=%s", r.modelName, err.StatusCode, err.Message, debugSummary))
-			fallbackRequest := *resRequest
-			fallbackRequest.Stream = false
-			var fallbackResponse *types.OpenAIResponsesResponses
-			fallbackResponse, err = resProvider.CreateResponses(&fallbackRequest)
-			if err != nil {
-				logger.LogError(r.c.Request.Context(), fmt.Sprintf("chat->responses non-stream fallback failed, model=%s, status=%d, upstream=%s, debug=%s", r.modelName, err.StatusCode, err.Message, debugSummary))
-				return
-			}
-
-			if r.heartbeat != nil {
-				r.heartbeat.Stop()
-			}
-
-			doneStr := func() string {
-				return r.getUsageResponse()
-			}
-
-			var firstResponseTime time.Time
-			firstResponseTime, err = responseJsonToChatStreamClient(r.c, fallbackResponse.ToChat(), doneStr)
-			r.SetFirstResponseTime(firstResponseTime)
-			if err != nil {
-				done = true
-			}
+			logger.LogError(r.c.Request.Context(), fmt.Sprintf("chat->responses pseudo-stream forward failed, model=%s, status=%d, upstream=%s, original_debug=%s, upstream_debug=%s", r.modelName, err.StatusCode, err.Message, debugSummary, upstreamDebugSummary))
 			return
 		}
 
@@ -250,7 +231,7 @@ func (r *relayChat) compatibleSend(resProvider providersBase.ResponsesInterface)
 		}
 
 		var firstResponseTime time.Time
-		firstResponseTime, err = responseStreamClient(r.c, response, doneStr)
+		firstResponseTime, err = responseJsonToChatStreamClient(r.c, response.ToChat(), doneStr)
 		r.SetFirstResponseTime(firstResponseTime)
 	} else {
 		var response *types.OpenAIResponsesResponses
