@@ -11,6 +11,7 @@ import (
 
 	"czloapi/common"
 	"czloapi/common/config"
+	"czloapi/common/logger"
 	"czloapi/common/requester"
 	"czloapi/common/utils"
 	"czloapi/model"
@@ -208,11 +209,13 @@ func (r *relayChat) getUsageResponse() string {
 func (r *relayChat) compatibleSend(resProvider providersBase.ResponsesInterface) (err *types.OpenAIErrorWithStatusCode, done bool) {
 	resRequest := r.chatRequest.ToResponsesRequest()
 	resRequest.ConvertChat = true
+	debugSummary := buildResponsesCompatDebugSummary(resRequest)
 
 	if r.chatRequest.Stream {
 		var response requester.StreamReaderInterface[string]
 		response, err = resProvider.CreateResponsesStream(resRequest)
 		if err != nil {
+			logger.LogError(r.c.Request.Context(), fmt.Sprintf("chat->responses stream forward failed, model=%s, status=%d, upstream=%s, debug=%s", r.modelName, err.StatusCode, err.Message, debugSummary))
 			return
 		}
 
@@ -231,6 +234,7 @@ func (r *relayChat) compatibleSend(resProvider providersBase.ResponsesInterface)
 		var response *types.OpenAIResponsesResponses
 		response, err = resProvider.CreateResponses(resRequest)
 		if err != nil {
+			logger.LogError(r.c.Request.Context(), fmt.Sprintf("chat->responses forward failed, model=%s, status=%d, upstream=%s, debug=%s", r.modelName, err.StatusCode, err.Message, debugSummary))
 			return
 		}
 
@@ -245,4 +249,83 @@ func (r *relayChat) compatibleSend(resProvider providersBase.ResponsesInterface)
 	}
 
 	return
+}
+
+type responsesCompatDebugItem struct {
+	Index      int      `json:"index"`
+	Type       string   `json:"type,omitempty"`
+	Role       string   `json:"role,omitempty"`
+	Content    string   `json:"content_kind,omitempty"`
+	Types      []string `json:"content_types,omitempty"`
+	ParseError string   `json:"parse_error,omitempty"`
+	Output     string   `json:"output_kind,omitempty"`
+}
+
+type responsesCompatDebugSummary struct {
+	Model      string                     `json:"model"`
+	Stream     bool                       `json:"stream"`
+	InputCount int                        `json:"input_count"`
+	Items      []responsesCompatDebugItem `json:"items,omitempty"`
+	ParseError string                     `json:"parse_error,omitempty"`
+}
+
+func buildResponsesCompatDebugSummary(req *types.OpenAIResponsesRequest) string {
+	summary := responsesCompatDebugSummary{
+		Model:  req.Model,
+		Stream: req.Stream,
+	}
+
+	inputs, err := req.ParseInput()
+	if err != nil {
+		summary.ParseError = err.Error()
+	}
+	summary.InputCount = len(inputs)
+
+	for index, input := range inputs {
+		item := responsesCompatDebugItem{
+			Index: index,
+			Type:  input.Type,
+			Role:  input.Role,
+		}
+
+		switch content := input.Content.(type) {
+		case nil:
+			item.Content = "nil"
+		case string:
+			item.Content = "string"
+		default:
+			item.Content = fmt.Sprintf("%T", content)
+		}
+
+		if input.Type == types.InputTypeMessage {
+			contents, contentErr := input.ParseContent()
+			if contentErr != nil {
+				item.ParseError = contentErr.Error()
+			} else {
+				types := make([]string, 0, len(contents))
+				for _, content := range contents {
+					types = append(types, content.Type)
+				}
+				item.Types = types
+			}
+		}
+
+		if input.Type == types.InputTypeFunctionCallOutput {
+			item.Output = fmt.Sprintf("%T", input.Output)
+		}
+
+		summary.Items = append(summary.Items, item)
+	}
+
+	data, marshalErr := json.Marshal(summary)
+	if marshalErr != nil {
+		return fmt.Sprintf("{\"marshal_error\":%q}", marshalErr.Error())
+	}
+
+	const maxLogLength = 3000
+	if len(data) > maxLogLength {
+		return string(data[:maxLogLength]) + "...(truncated)"
+	}
+
+	return string(data)
 }
