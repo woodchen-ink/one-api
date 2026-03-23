@@ -75,35 +75,6 @@ const Sidebar = ({ drawerOpen, drawerToggle, window: windowProp }) => {
         {!isMini && <MenuCard />}
         <MenuList isMini={isMini} />
       </Box>
-
-      {!isMini && (
-        <Box
-          sx={{
-            flexShrink: 0,
-            py: 1.5,
-            borderTop: `1px dashed ${sidebarBorderColor}`
-          }}
-        >
-          <Stack direction="row" justifyContent="center">
-            <Chip
-              label={import.meta.env.VITE_APP_VERSION || t('menu.unknownVersion')}
-              disabled
-              size="small"
-              sx={{
-                cursor: 'default',
-                backgroundColor: isDark ? varAlpha(theme.palette.background.default, 0.92) : varAlpha(theme.palette.background.paper, 0.96),
-                color: theme.palette.text.secondary,
-                border: `1px solid ${theme.palette.divider}`,
-                fontSize: '0.6875rem',
-                height: '22px',
-                '& .MuiChip-label': {
-                  px: 1
-                }
-              }}
-            />
-          </Stack>
-        </Box>
-      )}
     </Box>
   );
 
