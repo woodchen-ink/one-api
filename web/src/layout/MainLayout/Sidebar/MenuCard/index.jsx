@@ -3,10 +3,9 @@ import { useSelector } from 'react-redux';
 
 // material-ui
 import { styled, useTheme, alpha } from '@mui/material/styles';
-import { Avatar, Card, CardContent, Box, Typography, Chip, LinearProgress, Stack, Button, Divider } from '@mui/material';
+import { Avatar, Card, CardContent, Box, Typography, Chip, LinearProgress, Stack, Divider } from '@mui/material';
 import User1 from 'assets/images/users/user-round.svg';
 import { useNavigate } from 'react-router-dom';
-import { IconHeadset } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { Icon } from '@iconify/react';
 import { API } from 'utils/api';
@@ -303,25 +302,6 @@ const MenuCard = () => {
             </Stack>
           </Box>
         )}
-
-        <Button
-          variant="contained"
-          startIcon={<IconHeadset />}
-          fullWidth
-          sx={{
-            mt: 2,
-            //颜色适配暗色
-            background: theme.palette.secondary.main,
-            color: theme.palette.secondary.contrastText,
-            '&:hover': {
-              backgroundColor: theme.palette.secondary.dark,
-              color: theme.palette.secondary.contrastText
-            }
-          }}
-          onClick={() => window.open('https://work.weixin.qq.com/kfid/kfce787ac8bbad50026', '_blank')}
-        >
-          微信客服
-        </Button>
       </CardContent>
     </CardStyle>
   );

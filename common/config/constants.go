@@ -273,7 +273,6 @@ const (
 	ChannelTypeFlux            = 46
 	ChannelTypeRerank          = 48
 	ChannelTypeGithub          = 49 // deprecated: reserved for removed GitHub provider
-	ChannelTypeReplicate       = 52
 	ChannelTypeAzureDatabricks = 54
 	ChannelTypeAzureV1         = 55
 	ChannelTypeXAI             = 56

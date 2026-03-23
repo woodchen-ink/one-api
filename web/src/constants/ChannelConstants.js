@@ -146,13 +146,6 @@ export const CHANNEL_OPTIONS = {
     color: 'orange',
     url: 'https://portal.azure.com/'
   },
-  52: {
-    key: 52,
-    text: 'Replicate',
-    value: 52,
-    color: 'default',
-    url: ''
-  },
   54: {
     key: 54,
     text: 'Azure Databricks',

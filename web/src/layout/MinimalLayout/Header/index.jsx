@@ -19,8 +19,7 @@ import LogoSection from 'layout/MainLayout/LogoSection';
 import { Link } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { NoticeButton } from 'ui-component/notice';
-import I18nButton from 'ui-component/i18nButton';
+import { HeaderActionButtons, HeaderDesktopNav, HeaderMobileMenuItems } from 'ui-component/header';
 import { IconMenu2 } from '@tabler/icons-react';
 import Transitions from 'ui-component/extended/Transitions';
 import MainCard from 'ui-component/cards/MainCard';
@@ -36,7 +35,6 @@ const Header = () => {
   const [open, setOpen] = useState(null);
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { t } = useTranslation();
-  const siteInfo = useSelector((state) => state.siteInfo);
   const handleOpenMenu = (event) => {
     setOpen(open ? null : event.currentTarget);
   };
@@ -66,9 +64,7 @@ const Header = () => {
       <Stack spacing={{ xs: 0.5, sm: 1, md: 2 }} direction="row" justifyContent="center" alignItems="center">
         {isMobile ? (
           <>
-            <NoticeButton sx={{ mr: 0.5 }} />
-            {/* <ThemeButton sx={{ color: theme.palette.text.primary, mr: 1 }} /> */}
-            <I18nButton sx={{ color: theme.palette.text.primary, mr: 1 }} />
+            <HeaderActionButtons mobile />
             <IconButton
               onClick={handleOpenMenu}
               sx={{
@@ -86,49 +82,8 @@ const Header = () => {
           </>
         ) : (
           <>
-            <Button
-              component={Link}
-              variant="text"
-              to="/"
-              color={pathname === '/' ? 'primary' : 'inherit'}
-              sx={{
-                fontSize: '0.875rem',
-                fontWeight: 500,
-                textTransform: 'none',
-                color: pathname === '/' ? theme.palette.primary.main : theme.palette.text.primary
-              }}
-            >
-              {t('menu.home')}
-            </Button>
-            <Button
-              component={Link}
-              variant="text"
-              to="/price"
-              color={pathname === '/price' ? 'primary' : 'inherit'}
-              sx={{
-                fontSize: '0.875rem',
-                fontWeight: 500,
-                textTransform: 'none',
-                color: pathname === '/price' ? theme.palette.primary.main : theme.palette.text.primary
-              }}
-            >
-              {t('price')}
-            </Button>
-            <Button
-              component={Link}
-              variant="text"
-              to="/docs"
-              color={pathname === '/docs' ? 'primary' : 'inherit'}
-              sx={{
-                fontSize: '0.875rem',
-                fontWeight: 500,
-                textTransform: 'none',
-                color: pathname === '/docs' ? theme.palette.primary.main : theme.palette.text.primary
-              }}
-            >
-              文档
-            </Button>
-            <NoticeButton sx={{ mx: 0.5 }} />
+            <HeaderDesktopNav showStatus />
+            <HeaderActionButtons />
             {/* <Button
               component={Link}
               variant="text"
@@ -142,43 +97,6 @@ const Header = () => {
             >
             {t('menu.about')}
             </Button> */}
-            {/* <NoticeButton sx={{ color: theme.palette.text.primary, ml: 1 }} /> */}
-            <Button
-              variant="text"
-              href="https://work.weixin.qq.com/kfid/kfce787ac8bbad50026" // 使用href而不是to
-              target="_blank" // 在新标签页中打开链接
-              rel="noopener noreferrer" // 出于安全考虑，防止链接到不安全的地方
-              color={pathname === 'https://work.weixin.qq.com/kfid/kfce787ac8bbad50026' ? 'primary' : 'inherit'}
-              sx={{
-                fontSize: '0.875rem',
-                fontWeight: 500,
-                textTransform: 'none',
-                color: theme.palette.text.primary
-              }}
-            >
-              客服
-            </Button>
-            {siteInfo.UptimeEnabled && (
-              <Button
-                component="a"
-                variant="text"
-                href={siteInfo.UptimeDomain}
-                target="_blank"
-                rel="noopener noreferrer"
-                color={pathname === '/status' ? 'primary' : 'inherit'}
-                sx={{
-                  fontSize: '0.875rem',
-                  fontWeight: 500,
-                  textTransform: 'none',
-                  color: pathname === '/status' ? theme.palette.primary.main : theme.palette.text.primary
-                }}
-              >
-                {t('menu.status')}
-              </Button>
-            )}
-
-            {/* <ThemeButton sx={{ color: theme.palette.text.primary, ml: 0.5 }} /> */}
-            <I18nButton sx={{ color: theme.palette.text.primary, ml: 0.5 }} />
             {account.user ? (
               <Button
                 component={Link}
@@ -271,117 +189,7 @@ const Header = () => {
                     }}
                     onClick={handleCloseMenu}
                   >
-                    <ListItemButton component={Link} to="/" selected={pathname === '/'}>
-                      <ListItemText
-                        primary={
-                          <Typography
-                            variant="body1"
-                            sx={{
-                              fontWeight: pathname === '/' ? 500 : 400,
-                              textAlign: 'center',
-                              color: pathname === '/' ? theme.palette.primary.main : theme.palette.text.primary
-                            }}
-                          >
-                            {t('menu.home')}
-                          </Typography>
-                        }
-                      />
-                    </ListItemButton>
-
-                    <ListItemButton component={Link} to="/price" selected={pathname === '/price'}>
-                      <ListItemText
-                        primary={
-                          <Typography
-                            variant="body1"
-                            sx={{
-                              fontWeight: pathname === '/price' ? 500 : 400,
-                              textAlign: 'center',
-                              color: pathname === '/price' ? theme.palette.primary.main : theme.palette.text.primary
-                            }}
-                          >
-                            {t('price')}
-                          </Typography>
-                        }
-                      />
-                    </ListItemButton>
-
-                    <ListItemButton component={Link} to="/docs" selected={pathname === '/docs'}>
-                      <ListItemText
-                        primary={
-                          <Typography
-                            variant="body1"
-                            sx={{
-                              fontWeight: pathname === '/docs' ? 500 : 400,
-                              textAlign: 'center',
-                              color: pathname === '/docs' ? theme.palette.primary.main : theme.palette.text.primary
-                            }}
-                          >
-                            文档
-                          </Typography>
-                        }
-                      />
-                    </ListItemButton>
-
-                    <ListItemButton component={Link} to="/notice" selected={pathname === '/notice'}>
-                      <ListItemText
-                        primary={
-                          <Typography
-                            variant="body1"
-                            sx={{
-                              fontWeight: pathname === '/notice' ? 500 : 400,
-                              textAlign: 'center',
-                              color: pathname === '/notice' ? theme.palette.primary.main : theme.palette.text.primary
-                            }}
-                          >
-                            公告
-                          </Typography>
-                        }
-                      />
-                    </ListItemButton>
-
-                    <ListItemButton component={Link} to="/about" selected={pathname === '/about'}>
-                      <ListItemText
-                        primary={
-                          <Typography
-                            variant="body1"
-                            sx={{
-                              fontWeight: pathname === '/about' ? 500 : 400,
-                              textAlign: 'center',
-                              color: pathname === '/about' ? theme.palette.primary.main : theme.palette.text.primary
-                            }}
-                          >
-                            {t('menu.about')}
-                          </Typography>
-                        }
-                      />
-                    </ListItemButton>
-                    <ListItemButton
-                      variant="text"
-                      href="https://work.weixin.qq.com/kfid/kfce787ac8bbad50026" // 使用href而不是to
-                      target="_blank" // 在新标签页中打开链接
-                      rel="noopener noreferrer" // 出于安全考虑，防止链接到不安全的地方
-                      color={pathname === 'https://work.weixin.qq.com/kfid/kfce787ac8bbad50026' ? 'primary' : 'inherit'}
-                    >
-                      客服
-                    </ListItemButton>
-                    {siteInfo.UptimeEnabled && (
-                      <ListItemButton component="a" href={siteInfo.UptimeDomain} target="_blank" rel="noopener noreferrer">
-                        <ListItemText
-                          primary={
-                            <Typography
-                              variant="body1"
-                              sx={{
-                                fontWeight: pathname === '/status' ? 500 : 400,
-                                textAlign: 'center',
-                                color: pathname === '/status' ? theme.palette.primary.main : theme.palette.text.primary
-                              }}
-                            >
-                              {t('menu.status')}
-                            </Typography>
-                          }
-                        />
-                      </ListItemButton>
-                    )}
+                    <HeaderMobileMenuItems showStatus showAbout />
                     <Divider sx={{ my: 1 }} />
                     {account.user ? (
                       <ListItemButton
