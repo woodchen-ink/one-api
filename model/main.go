@@ -207,6 +207,11 @@ func InitDB() (err error) {
 			return err
 		}
 
+		err = db.AutoMigrate(&Notice{})
+		if err != nil {
+			return err
+		}
+
 		err = db.AutoMigrate(&SubscriptionPlan{})
 		if err != nil {
 			return err
