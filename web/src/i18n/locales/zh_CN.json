@@ -1469,7 +1469,6 @@
   "按照如下格式输入：APISecret|groupID": "按照如下格式输入：APISecret|groupID",
   "从Deepseek获取模型列表": "从Deepseek获取模型列表",
   "从Moonshot获取模型列表": "从Moonshot获取模型列表",
-  "从Mistral获取模型列表": "从Mistral获取模型列表",
   "从Groq获取模型列表": "从Groq获取模型列表",
   "按照如下格式输入：Region|AccessKeyID|SecretAccessKey|SessionToken 其中SessionToken可不填空": "按照如下格式输入：Region|AccessKeyID|SecretAccessKey|SessionToken 其中SessionToken可不填空",
   "密钥填写midjourney-proxy的密钥，如果没有设置密钥，可以随便填": "密钥填写midjourney-proxy的密钥，如果没有设置密钥，可以随便填",

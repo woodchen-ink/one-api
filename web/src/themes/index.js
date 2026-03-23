@@ -41,7 +41,7 @@ export const theme = (customization) => {
       }
     },
     shape: {
-      borderRadius: themeOption?.customization?.borderRadius || 8
+      borderRadius: themeOption?.customization?.borderRadius || 6
     },
     typography: themeTypography(themeOption),
     breakpoints: {

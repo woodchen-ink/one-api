@@ -1,12 +1,12 @@
 package model
 
 import (
-	"errors"
-	"fmt"
-	"math/rand"
 	"czloapi/common/config"
 	"czloapi/common/logger"
 	"czloapi/common/utils"
+	"errors"
+	"fmt"
+	"math/rand"
 	"sort"
 	"strings"
 	"sync"
@@ -264,6 +264,10 @@ func (cc *ChannelsChooser) Load() {
 
 	// 处理每个channel
 	for _, channel := range channels {
+		if channel.Type == config.ChannelTypeGithub {
+			continue
+		}
+
 		channel.SetProxy()
 		if *channel.Weight == 0 {
 			channel.Weight = &config.DefaultChannelWeight

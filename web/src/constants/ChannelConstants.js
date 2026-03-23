@@ -34,13 +34,6 @@ export const CHANNEL_OPTIONS = {
     color: 'orange',
     url: 'https://aistudio.google.com/'
   },
-  15: {
-    key: 15,
-    text: '百度文心千帆',
-    value: 15,
-    color: 'default',
-    url: 'https://console.bce.baidu.com/qianfan/overview'
-  },
   17: {
     key: 17,
     text: '阿里通义千问',
@@ -76,13 +69,6 @@ export const CHANNEL_OPTIONS = {
     color: 'default',
     url: 'https://cloud.tencent.com/product/hunyuan'
   },
-  26: {
-    key: 26,
-    text: '百川',
-    value: 26,
-    color: 'orange',
-    url: 'https://platform.baichuan-ai.com/console/apikey'
-  },
   27: {
     key: 27,
     text: 'MiniMax',
@@ -103,13 +89,6 @@ export const CHANNEL_OPTIONS = {
     value: 29,
     color: 'default',
     url: 'https://platform.moonshot.cn/console/info'
-  },
-  30: {
-    key: 30,
-    text: 'Mistral',
-    value: 30,
-    color: 'orange',
-    url: 'https://console.mistral.ai/'
   },
   31: {
     key: 31,
@@ -167,26 +146,12 @@ export const CHANNEL_OPTIONS = {
     color: 'orange',
     url: 'https://siliconflow.cn/'
   },
-  47: {
-    key: 47,
-    text: 'Jina',
-    value: 47,
-    color: 'orange',
-    url: 'https://jina.ai/'
-  },
   24: {
     key: 24,
     text: 'Azure Speech',
     value: 24,
     color: 'orange',
     url: 'https://portal.azure.com/'
-  },
-  49: {
-    key: 49,
-    text: 'Github',
-    value: 49,
-    color: 'default',
-    url: 'https://github.com/marketplace/models'
   },
   52: {
     key: 52,

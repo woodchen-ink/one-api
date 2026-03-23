@@ -10,6 +10,123 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import HubOutlinedIcon from '@mui/icons-material/HubOutlined';
 import PolylineOutlinedIcon from '@mui/icons-material/PolylineOutlined';
 import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
+import CampaignOutlinedIcon from '@mui/icons-material/CampaignOutlined';
+import { API } from 'utils/api';
+
+const formatNoticeDate = (timestamp) => {
+  if (!timestamp) return '';
+  const d = new Date(timestamp * 1000);
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${month}-${day}`;
+};
+
+const NoticeTicker = () => {
+  const theme = useTheme();
+  const [notices, setNotices] = useState([]);
+
+  useEffect(() => {
+    const fetchNotices = async () => {
+      try {
+        const res = await API.get('/api/notice/latest?limit=5');
+        const { success, data } = res.data;
+        if (success && data && data.length > 0) {
+          setNotices(data);
+        }
+      } catch (error) {
+        // silently fail
+      }
+    };
+    fetchNotices();
+  }, []);
+
+  if (notices.length === 0) return null;
+
+  return (
+    <Box
+      sx={{
+        py: 2,
+        px: 2,
+        borderBottom: `1px solid ${theme.palette.divider}`,
+        backgroundColor: alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.06 : 0.03),
+        overflow: 'hidden'
+      }}
+    >
+      <Container maxWidth="lg">
+        <Stack
+          component={RouterLink}
+          to="/notice"
+          direction="row"
+          alignItems="center"
+          spacing={1.5}
+          sx={{
+            textDecoration: 'none',
+            color: 'inherit',
+            '&:hover .notice-text': {
+              color: 'primary.main'
+            }
+          }}
+        >
+          <CampaignOutlinedIcon sx={{ color: 'primary.main', fontSize: '1.2rem', flexShrink: 0 }} />
+          <Box sx={{ overflow: 'hidden', flex: 1 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                gap: 4,
+                animation: notices.length > 1 ? 'scrollNotice 20s linear infinite' : 'none',
+                '&:hover': { animationPlayState: 'paused' },
+                '@keyframes scrollNotice': {
+                  '0%': { transform: 'translateX(0)' },
+                  '100%': { transform: `translateX(-${notices.length * 320}px)` }
+                }
+              }}
+            >
+              {/* Duplicate for seamless loop */}
+              {[...notices, ...notices].map((notice, idx) => (
+                <Stack key={idx} direction="row" spacing={1} alignItems="center" sx={{ flexShrink: 0, minWidth: 280 }}>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: 'text.secondary',
+                      whiteSpace: 'nowrap',
+                      fontSize: '0.75rem'
+                    }}
+                  >
+                    {formatNoticeDate(notice.publish_time)}
+                  </Typography>
+                  <Typography
+                    className="notice-text"
+                    variant="body2"
+                    sx={{
+                      color: 'text.primary',
+                      whiteSpace: 'nowrap',
+                      fontSize: '0.875rem',
+                      transition: 'color 0.2s'
+                    }}
+                  >
+                    {notice.title}
+                  </Typography>
+                </Stack>
+              ))}
+            </Box>
+          </Box>
+          <Typography
+            variant="caption"
+            sx={{
+              color: 'primary.main',
+              whiteSpace: 'nowrap',
+              flexShrink: 0,
+              fontSize: '0.75rem',
+              display: { xs: 'none', sm: 'block' }
+            }}
+          >
+            查看全部 →
+          </Typography>
+        </Stack>
+      </Container>
+    </Box>
+  );
+};
 
 const FooterLink = ({ icon, title, link }) => {
   const theme = useTheme();
@@ -588,6 +705,9 @@ const BaseIndex = () => {
           </Grid>
         </Container>
       </Box>
+
+      {/* 公告滚动条 */}
+      <NoticeTicker />
 
       {/* 优势区域 - Apple风格 */}
       <Box

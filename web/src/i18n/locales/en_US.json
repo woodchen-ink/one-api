@@ -1430,7 +1430,6 @@
   "从Deepseek获取模型列表": "Get model list from Deepseek",
   "从Gemini获取模型列表": "Get model list from Gemini",
   "从Groq获取模型列表": "Get list of models from Groq",
-  "从Mistral获取模型列表": "Get model list from Mistral",
   "从Moonshot获取模型列表": "Get model list from Moonshot",
   "从OpenAI获取模型列表": "Get model list from OpenAI",
   "从渠道获取模型列表": "Get model list from channel",

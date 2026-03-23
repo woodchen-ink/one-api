@@ -70,7 +70,8 @@ const defaultConfig = {
     compatible_response:
       '开启后，gpt-5* 的 /v1/chat/completions 请求会自动改走 /v1/responses，并将返回结果转换为 chat 格式。该开关不影响 /v1/responses 的原生转发。',
     allow_extra_body: '开启后，将会透传用户请求中的额外字段（如OpenAI SDK的extra_body参数），适用于需要传递自定义参数到上游API的场景',
-    responses_ws: '开启后，允许客户端通过 WebSocket 连接 /v1/responses 端点，适用于多轮 tool calling 等 agent 工作流场景，可降低延迟。该开关不影响 HTTP POST /v1/responses 的正常使用。',
+    responses_ws:
+      '开启后，允许客户端通过 WebSocket 连接 /v1/responses 端点，适用于多轮 tool calling 等 agent 工作流场景，可降低延迟。该开关不影响 HTTP POST /v1/responses 的正常使用。',
     retry_times:
       '当上游是账号池（多Key负载均衡）时，单次失败可能只是某个Key耗尽，设置后会在同一渠道内重试指定次数再切换其他渠道。0表示不启用。'
   },
@@ -130,49 +131,6 @@ const typeConfig = {
     },
     modelGroup: 'Anthropic'
   },
-  15: {
-    input: {
-      models: [
-        'ERNIE-4.0-Turbo-8K',
-        'ERNIE-4.0-8K-Latest',
-        'ERNIE-4.0-8K-0613',
-        'ERNIE-3.5-8K-0613',
-        'ERNIE-Bot-turbo',
-        'ERNIE-Lite-8K-0922',
-        'ERNIE-Lite-8K',
-        'ERNIE-Lite-8K-0308',
-        'ERNIE-3.5-8K',
-        'ERNIE-Bot',
-        'ERNIE-4.0-8K',
-        'ERNIE-4.0-8K-Preview',
-        'ERNIE-4.0-8K-Preview-0518',
-        'ERNIE-4.0-8K-0329',
-        'ERNIE-4.0-8K-0104',
-        'ERNIE-Bot-4',
-        'ERNIE-Bot-8k',
-        'ERNIE-3.5-128K',
-        'ERNIE-3.5-8K-preview',
-        'ERNIE-3.5-8K-0329',
-        'ERNIE-3.5-4K-0205',
-        'ERNIE-3.5-8K-0205',
-        'ERNIE-3.5-8K-1222',
-        'ERNIE-Speed',
-        'ERNIE-Speed-8K',
-        'ERNIE-Speed-128K',
-        'ERNIE-Tiny-8K',
-        'ERNIE-Function-8K',
-        'ERNIE-Character-8K',
-        'ERNIE-Character-Fiction-8K',
-        'ERNIE-Bot-turbo-AI',
-        'Embedding-V1'
-      ],
-      test_model: 'ERNIE-Speed'
-    },
-    prompt: {
-      key: '按照如下格式输入：APIKey|SecretKey, 如果开启了OpenAI API，请直接输入APIKEY'
-    },
-    modelGroup: 'Baidu'
-  },
   16: {
     input: {
       models: ['glm-3-turbo', 'glm-4', 'glm-4v', 'embedding-2', 'cogview-3'],
@@ -230,13 +188,6 @@ const typeConfig = {
     },
     modelGroup: 'Google Gemini'
   },
-  26: {
-    input: {
-      models: ['Baichuan2-Turbo', 'Baichuan2-Turbo-192k', 'Baichuan2-53B', 'Baichuan-Text-Embedding'],
-      test_model: 'Baichuan2-Turbo'
-    },
-    modelGroup: 'Baichuan'
-  },
   24: {
     inputLabel: {
       other: '位置/区域'
@@ -276,23 +227,6 @@ const typeConfig = {
       test_model: 'moonshot-v1-8k'
     },
     modelGroup: 'Moonshot'
-  },
-  30: {
-    input: {
-      models: [
-        'open-mistral-7b',
-        'open-mixtral-8x7b',
-        'mistral-small-latest',
-        'mistral-medium-latest',
-        'mistral-large-latest',
-        'mistral-embed'
-      ],
-      test_model: 'open-mistral-7b'
-    },
-    inputLabel: {
-      provider_models_list: '从Mistral获取模型列表'
-    },
-    modelGroup: 'Mistral'
   },
   31: {
     input: {
@@ -409,29 +343,6 @@ const typeConfig = {
       base_url: '官方api地址https://api.siliconflow.com即将停用，请使用https://api.siliconflow.cn'
     },
     modelGroup: 'Siliconflow'
-  },
-  47: {
-    input: {
-      models: ['jina-reranker-v2-base-multilingual']
-    },
-    prompt: {
-      test_model: ''
-    },
-    modelGroup: 'Jina'
-  },
-  49: {
-    input: {
-      models: ['gpt-4o', 'gpt-4o-mini', 'text-embedding-3-large', 'text-embedding-3-small', 'Cohere-command-r-plus', 'Cohere-command-r'],
-      test_model: 'gpt-4o-mini'
-    },
-    inputLabel: {
-      provider_models_list: '从Github获取模型列表'
-    },
-    prompt: {
-      key: '密钥信息请参考https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens',
-      base_url: 'https://models.inference.ai.azure.com'
-    },
-    modelGroup: 'Github'
   },
   54: {
     inputLabel: {

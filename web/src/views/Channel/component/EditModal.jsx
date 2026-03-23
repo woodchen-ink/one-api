@@ -674,10 +674,10 @@ const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, model
                         inputPrompt.responses_ws ||
                         inputPrompt.retry_times) && (
                         <Box sx={{ mt: 1.5, mb: 1 }}>
-                          <Typography variant="subtitle2" sx={{ mb: 0.5, px: 1.5 }}>
+                          <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
                             {t('channel_edit.optionSettings')}
                           </Typography>
-                          <Grid container spacing={1}>
+                          <Grid container spacing={1} sx={{ pl: 2 }}>
                             {inputPrompt.only_chat && (
                               <Grid item xs={12} sm={6}>
                                 <Tooltip title={customizeT(inputPrompt.only_chat)} placement="top">

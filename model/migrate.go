@@ -66,6 +66,7 @@ func autoMigrateModels(includeInvoiceMonth bool) []interface{} {
 		&WebAuthnCredential{},
 		&ModelMapping{},
 		&Tutorial{},
+		&Notice{},
 		&SubscriptionPlan{},
 		&UserSubscription{},
 	}

@@ -21,6 +21,7 @@ const ModelPrice = Loadable(lazy(() => import('views/ModelPrice')));
 const DocsLayout = Loadable(lazy(() => import('views/Docs/DocsLayout')));
 const DocsIndex = Loadable(lazy(() => import('views/Docs/DocsIndex')));
 const DocPage = Loadable(lazy(() => import('views/Docs/DocPage')));
+const PublicNotice = Loadable(lazy(() => import('views/Notice/PublicNotice')));
 
 const WithMargins = ({ children }) => (
   <Box
@@ -103,6 +104,14 @@ const OtherRoutes = {
         { path: '', element: <DocsIndex /> },
         { path: ':slug', element: <DocPage /> }
       ]
+    },
+    {
+      path: '/notice',
+      element: (
+        <WithMargins>
+          <PublicNotice />
+        </WithMargins>
+      )
     }
   ]
 };

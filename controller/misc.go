@@ -60,10 +60,30 @@ func GetStatus(c *gin.Context) {
 }
 
 func GetNotice(c *gin.Context) {
+	// Backward compatibility: return the latest published notice content
+	notices, err := model.GetLatestNotices(1)
+	if err != nil || len(notices) == 0 {
+		c.JSON(http.StatusOK, gin.H{
+			"success": true,
+			"message": "",
+			"data":    "",
+		})
+		return
+	}
+	// Fetch full content for the latest notice
+	notice, err := model.GetNoticeById(notices[0].Id)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": true,
+			"message": "",
+			"data":    "",
+		})
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "",
-		"data":    config.GlobalOption.Get("Notice"),
+		"data":    notice.Content,
 	})
 }
 

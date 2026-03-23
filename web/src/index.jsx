@@ -9,6 +9,7 @@ import App from 'App';
 import { store } from 'store';
 
 // style + assets
+import '@fontsource-variable/inter';
 import 'assets/scss/style.scss';
 import config from './config';
 import reportWebVitals from 'reportWebVitals';

@@ -303,23 +303,6 @@ func GetDefaultPrice() []*Price {
 		//  $0.25 / M $1.25 / M  0.00025$ / 1k tokens 0.00125$ / 1k tokens
 		"claude-3-haiku-20240307": {[]float64{0.125, 0.625}, config.ChannelTypeAnthropic},
 
-		// ￥0.004 / 1k tokens ￥0.008 / 1k tokens
-		"ERNIE-Speed": {[]float64{0.2857, 0.5714}, config.ChannelTypeBaidu},
-		// ￥0.012 / 1k tokens ￥0.012 / 1k tokens
-		"ERNIE-Bot":    {[]float64{0.8572, 0.8572}, config.ChannelTypeBaidu},
-		"ERNIE-3.5-8K": {[]float64{0.8572, 0.8572}, config.ChannelTypeBaidu},
-		// 0.024元/千tokens 0.048元/千tokens
-		"ERNIE-Bot-8k": {[]float64{1.7143, 3.4286}, config.ChannelTypeBaidu},
-		// ￥0.008 / 1k tokens ￥0.008 / 1k tokens
-		"ERNIE-Bot-turbo": {[]float64{0.5715, 0.5715}, config.ChannelTypeBaidu},
-		// ￥0.12 / 1k tokens ￥0.12 / 1k tokens
-		"ERNIE-Bot-4": {[]float64{8.572, 8.572}, config.ChannelTypeBaidu},
-		"ERNIE-4.0":   {[]float64{8.572, 8.572}, config.ChannelTypeBaidu},
-		// ￥0.002 / 1k tokens
-		"Embedding-V1": {[]float64{0.1429, 0.1429}, config.ChannelTypeBaidu},
-		// ￥0.004 / 1k tokens
-		"BLOOMZ-7B": {[]float64{0.2857, 0.2857}, config.ChannelTypeBaidu},
-
 		// $0.50 / 1 million tokens  $1.50 / 1 million tokens
 		// 0.0005$ / 1k tokens 0.0015$ / 1k tokens
 		"gemini-pro":        {[]float64{0.25, 0.75}, config.ChannelTypeGemini},
@@ -370,11 +353,6 @@ func GetDefaultPrice() []*Price {
 		//¥0.1 / 1k tokens
 		"ChatPro": {[]float64{7.143, 7.143}, config.ChannelTypeTencent},
 
-		"Baichuan2-Turbo":         {[]float64{0.5715, 0.5715}, config.ChannelTypeBaichuan}, // ¥0.008 / 1k tokens
-		"Baichuan2-Turbo-192k":    {[]float64{1.143, 1.143}, config.ChannelTypeBaichuan},   // ¥0.016 / 1k tokens
-		"Baichuan2-53B":           {[]float64{1.4286, 1.4286}, config.ChannelTypeBaichuan}, // ¥0.02 / 1k tokens
-		"Baichuan-Text-Embedding": {[]float64{0.0357, 0.0357}, config.ChannelTypeBaichuan}, // ¥0.0005 / 1k tokens
-
 		"abab5.5s-chat": {[]float64{0.3572, 0.3572}, config.ChannelTypeMiniMax},   // ¥0.005 / 1k tokens
 		"abab5.5-chat":  {[]float64{1.0714, 1.0714}, config.ChannelTypeMiniMax},   // ¥0.015 / 1k tokens
 		"abab6-chat":    {[]float64{14.2857, 14.2857}, config.ChannelTypeMiniMax}, // ¥0.2 / 1k tokens
@@ -386,13 +364,6 @@ func GetDefaultPrice() []*Price {
 		"moonshot-v1-8k":   {[]float64{0.8572, 0.8572}, config.ChannelTypeMoonshot}, // ¥0.012 / 1K tokens
 		"moonshot-v1-32k":  {[]float64{1.7143, 1.7143}, config.ChannelTypeMoonshot}, // ¥0.024 / 1K tokens
 		"moonshot-v1-128k": {[]float64{4.2857, 4.2857}, config.ChannelTypeMoonshot}, // ¥0.06 / 1K tokens
-
-		"open-mistral-7b":       {[]float64{0.125, 0.125}, config.ChannelTypeMistral}, // 0.25$ / 1M tokens	0.25$ / 1M tokens  0.00025$ / 1k tokens
-		"open-mixtral-8x7b":     {[]float64{0.35, 0.35}, config.ChannelTypeMistral},   // 0.7$ / 1M tokens	0.7$ / 1M tokens  0.0007$ / 1k tokens
-		"mistral-small-latest":  {[]float64{1, 3}, config.ChannelTypeMistral},         // 2$ / 1M tokens	6$ / 1M tokens  0.002$ / 1k tokens
-		"mistral-medium-latest": {[]float64{1.35, 4.05}, config.ChannelTypeMistral},   // 2.7$ / 1M tokens	8.1$ / 1M tokens  0.0027$ / 1k tokens
-		"mistral-large-latest":  {[]float64{4, 12}, config.ChannelTypeMistral},        // 8$ / 1M tokens	24$ / 1M tokens  0.008$ / 1k tokens
-		"mistral-embed":         {[]float64{0.05, 0.05}, config.ChannelTypeMistral},   // 0.1$ / 1M tokens 0.1$ / 1M tokens  0.0001$ / 1k tokens
 
 		// $0.70/$0.80 /1M Tokens 0.0007$ / 1k tokens
 		"llama2-70b-4096": {[]float64{0.35, 0.4}, config.ChannelTypeGroq},

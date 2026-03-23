@@ -1,11 +1,6 @@
 package controller
 
 import (
-	"encoding/json"
-	"errors"
-	"fmt"
-	"net/http"
-	"net/http/httptest"
 	"czloapi/common/config"
 	"czloapi/common/logger"
 	"czloapi/common/notify"
@@ -14,6 +9,11 @@ import (
 	"czloapi/providers"
 	providers_base "czloapi/providers/base"
 	"czloapi/types"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"regexp"
 	"strconv"
 	"strings"
@@ -24,7 +24,7 @@ import (
 )
 
 var (
-	embeddingsRegex = regexp.MustCompile(`(?:^text-|embed|Embed|rerank|davinci|babbage|bge-|e5-|LLM2Vec|retrieval|uae-|gte-|jina-clip|jina-embeddings)`)
+	embeddingsRegex = regexp.MustCompile(`(?:^text-|embed|Embed|rerank|davinci|babbage|bge-|e5-|LLM2Vec|retrieval|uae-|gte-)`)
 	imageRegex      = regexp.MustCompile(`flux|diffusion|stabilityai|sd-|dall|cogview|janus|image`)
 	responseRegex   = regexp.MustCompile(`(?:^o[1-9])`)
 	noSupportRegex  = regexp.MustCompile(`(?:^tts|rerank|whisper|speech|^chirp)`)

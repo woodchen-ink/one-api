@@ -8,8 +8,6 @@ import (
 	azurespeech "czloapi/providers/azureSpeech"
 	"czloapi/providers/azure_v1"
 	"czloapi/providers/azuredatabricks"
-	"czloapi/providers/baichuan"
-	"czloapi/providers/baidu"
 	"czloapi/providers/base"
 	"czloapi/providers/bedrock"
 	"czloapi/providers/claude"
@@ -17,12 +15,9 @@ import (
 	"czloapi/providers/cohere"
 	"czloapi/providers/deepseek"
 	"czloapi/providers/gemini"
-	"czloapi/providers/github"
 	"czloapi/providers/groq"
 	"czloapi/providers/hunyuan"
-	"czloapi/providers/jina"
 	"czloapi/providers/minimax"
-	"czloapi/providers/mistral"
 	"czloapi/providers/moonshot"
 	"czloapi/providers/ollama"
 	"czloapi/providers/openai"
@@ -52,15 +47,12 @@ func init() {
 		config.ChannelTypeAzure:           azure.AzureProviderFactory{},
 		config.ChannelTypeAli:             ali.AliProviderFactory{},
 		config.ChannelTypeTencent:         tencent.TencentProviderFactory{},
-		config.ChannelTypeBaidu:           baidu.BaiduProviderFactory{},
 		config.ChannelTypeAnthropic:       claude.ClaudeProviderFactory{},
 		config.ChannelTypeZhipu:           zhipu.ZhipuProviderFactory{},
 		config.ChannelTypeAzureSpeech:     azurespeech.AzureSpeechProviderFactory{},
 		config.ChannelTypeGemini:          gemini.GeminiProviderFactory{},
-		config.ChannelTypeBaichuan:        baichuan.BaichuanProviderFactory{},
 		config.ChannelTypeMiniMax:         minimax.MiniMaxProviderFactory{},
 		config.ChannelTypeDeepseek:        deepseek.DeepseekProviderFactory{},
-		config.ChannelTypeMistral:         mistral.MistralProviderFactory{},
 		config.ChannelTypeGroq:            groq.GroqProviderFactory{},
 		config.ChannelTypeBedrock:         bedrock.BedrockProviderFactory{},
 		config.ChannelTypeCloudflareAI:    cloudflareAI.CloudflareAIProviderFactory{},
@@ -70,8 +62,6 @@ func init() {
 		config.ChannelTypeHunyuan:         hunyuan.HunyuanProviderFactory{},
 		config.ChannelTypeVertexAI:        vertexai.VertexAIProviderFactory{},
 		config.ChannelTypeSiliconflow:     siliconflow.SiliconflowProviderFactory{},
-		config.ChannelTypeJina:            jina.JinaProviderFactory{},
-		config.ChannelTypeGithub:          github.GithubProviderFactory{},
 		config.ChannelTypeReplicate:       replicate.ReplicateProviderFactory{},
 		config.ChannelTypeOpenRouter:      openrouter.OpenRouterProviderFactory{},
 		config.ChannelTypeAzureDatabricks: azuredatabricks.AzureDatabricksProviderFactory{},
@@ -82,6 +72,10 @@ func init() {
 
 // 获取供应商
 func GetProvider(channel *model.Channel, c *gin.Context) base.ProviderInterface {
+	if channel.Type == config.ChannelTypeGithub {
+		return nil
+	}
+
 	factory, ok := providerFactories[channel.Type]
 	var provider base.ProviderInterface
 	if !ok {

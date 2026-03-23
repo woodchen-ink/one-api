@@ -128,6 +128,20 @@ const Header = () => {
             >
               文档
             </Button>
+            <Button
+              component={Link}
+              variant="text"
+              to="/notice"
+              color={pathname === '/notice' ? 'primary' : 'inherit'}
+              sx={{
+                fontSize: '0.875rem',
+                fontWeight: 500,
+                textTransform: 'none',
+                color: pathname === '/notice' ? theme.palette.primary.main : theme.palette.text.primary
+              }}
+            >
+              公告
+            </Button>
             {/* <Button
               component={Link}
               variant="text"
@@ -316,6 +330,23 @@ const Header = () => {
                             }}
                           >
                             文档
+                          </Typography>
+                        }
+                      />
+                    </ListItemButton>
+
+                    <ListItemButton component={Link} to="/notice" selected={pathname === '/notice'}>
+                      <ListItemText
+                        primary={
+                          <Typography
+                            variant="body1"
+                            sx={{
+                              fontWeight: pathname === '/notice' ? 500 : 400,
+                              textAlign: 'center',
+                              color: pathname === '/notice' ? theme.palette.primary.main : theme.palette.text.primary
+                            }}
+                          >
+                            公告
                           </Typography>
                         }
                       />

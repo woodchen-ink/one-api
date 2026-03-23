@@ -258,6 +258,17 @@ func SetApiRouter(router *gin.Engine) {
 			tutorialRoute.PUT("/", controller.UpdateTutorial)
 			tutorialRoute.DELETE("/:id", controller.DeleteTutorial)
 		}
+		apiRouter.GET("/notice/list", controller.GetPublicNoticeList)
+		apiRouter.GET("/notice/latest", controller.GetLatestNotices)
+		noticeRoute := apiRouter.Group("/notice")
+		noticeRoute.Use(middleware.AdminAuth())
+		{
+			noticeRoute.GET("/", controller.GetNoticesList)
+			noticeRoute.GET("/:id", controller.GetNotice2)
+			noticeRoute.POST("/", controller.AddNotice)
+			noticeRoute.PUT("/", controller.UpdateNotice)
+			noticeRoute.DELETE("/:id", controller.DeleteNotice)
+		}
 		logRoute := apiRouter.Group("/log")
 		logRoute.GET("/", middleware.AdminAuth(), controller.GetLogsList)
 		logRoute.DELETE("/", middleware.AdminAuth(), controller.DeleteHistoryLogs)

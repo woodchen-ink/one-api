@@ -15,6 +15,7 @@ const icons = {
   IconModel: () => <Icon width={20} icon="mingcute:ai-fill" />,
   IconInfo: () => <Icon width={20} icon="solar:info-circle-bold-duotone" />,
   IconTutorial: () => <Icon width={20} icon="solar:document-text-bold-duotone" />,
+  IconNotice: () => <Icon width={20} icon="solar:bell-bold-duotone" />,
   IconSubscription: () => <Icon width={20} icon="solar:card-recive-bold-duotone" />,
   IconSubscriptionOrder: () => <Icon width={20} icon="solar:clipboard-list-bold-duotone" />,
   IconMySubscription: () => <Icon width={20} icon="solar:card-bold-duotone" />
@@ -102,6 +103,15 @@ const Setting = {
           type: 'item',
           url: '/panel/tutorial',
           icon: icons.IconTutorial,
+          breadcrumbs: false,
+          isAdmin: true
+        },
+        {
+          id: 'notice',
+          title: '公告管理',
+          type: 'item',
+          url: '/panel/notice',
+          icon: icons.IconNotice,
           breadcrumbs: false,
           isAdmin: true
         },

@@ -1,10 +1,10 @@
 package siliconflow
 
 import (
-	"net/http"
 	"czloapi/common"
 	"czloapi/common/config"
 	"czloapi/types"
+	"net/http"
 )
 
 func (p *SiliconflowProvider) CreateRerank(request *types.RerankRequest) (*types.RerankResponse, *types.OpenAIErrorWithStatusCode) {
@@ -21,7 +21,7 @@ func (p *SiliconflowProvider) CreateRerank(request *types.RerankRequest) (*types
 	// 获取请求地址
 	fullRequestURL := p.GetFullRequestURL(url, request.Model)
 	if fullRequestURL == "" {
-		return nil, common.ErrorWrapper(nil, "invalid_jina_config", http.StatusInternalServerError)
+		return nil, common.ErrorWrapper(nil, "invalid_siliconflow_config", http.StatusInternalServerError)
 	}
 
 	// 获取请求头

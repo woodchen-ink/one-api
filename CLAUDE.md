@@ -94,6 +94,9 @@ The provider system implements a plugin-based architecture in `providers/`:
   - Model listing interfaces
 - Automatic model discovery and pricing updates
 - Provider additions/removals must keep `common/config/constants.go`, `providers/providers.go`, `model/model_ownedby.go`, and `web/src/constants/ChannelConstants.js` in sync
+- Baichuan provider support has been removed in this fork; avoid reintroducing channel type `26` unless the backend provider, pricing data, admin metadata, and docs are restored together
+- Baidu/Qianfan provider support has been removed in this fork; avoid reintroducing channel type `15` unless the backend provider, pricing data, and admin metadata are restored together
+- GitHub provider support has been removed in this fork; keep channel type `49` reserved and blocked unless the backend provider, admin metadata, and compatibility handling are restored together
 - Pricing data is stored as direct USD amounts.
   - Token prices use USD per 1M tokens.
   - `extra_ratios` now carries direct USD prices for extra token categories rather than relative multipliers.

@@ -3,9 +3,9 @@
  */
 
 const primaryFont =
-  '"Public Sans Variable",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol"';
+  '"Inter Variable", "Public Sans Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 const secondaryFont =
-  '"Barlow",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol"';
+  '"Inter Variable", "Public Sans Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 
 export default function themeTypography(theme) {
   return {
@@ -17,54 +17,54 @@ export default function themeTypography(theme) {
     fontWeightSemiBold: 600,
     fontWeightBold: 700,
     h1: {
-      fontWeight: 800,
-      fontSize: '2.125rem',
-      lineHeight: 1.35,
-      fontFamily: secondaryFont,
+      fontWeight: 700,
+      fontSize: '1.875rem',
+      lineHeight: 1.3,
+      letterSpacing: '-0.025em',
       color: theme.heading
     },
     h2: {
-      fontWeight: 800,
+      fontWeight: 600,
       fontSize: '1.5rem',
       lineHeight: 1.35,
-      fontFamily: secondaryFont,
+      letterSpacing: '-0.02em',
       color: theme.heading
     },
     h3: {
-      fontWeight: 700,
+      fontWeight: 600,
       fontSize: '1.25rem',
-      lineHeight: 1.5,
-      fontFamily: secondaryFont,
+      lineHeight: 1.4,
+      letterSpacing: '-0.01em',
       color: theme.heading
     },
     h4: {
-      fontWeight: 700,
+      fontWeight: 600,
       fontSize: '1.125rem',
-      lineHeight: 1.5,
+      lineHeight: 1.45,
       color: theme.heading
     },
     h5: {
-      fontWeight: 600,
+      fontWeight: 500,
       fontSize: '1rem',
       lineHeight: 1.5,
       color: theme.heading
     },
     h6: {
-      fontWeight: 600,
+      fontWeight: 500,
       fontSize: '0.875rem',
-      lineHeight: 28 / 18,
+      lineHeight: 1.5,
       color: theme.heading
     },
     subtitle1: {
-      fontSize: '1rem',
+      fontSize: '0.9375rem',
       lineHeight: 1.5,
-      fontWeight: 600,
+      fontWeight: 500,
       color: theme.textDark
     },
     subtitle2: {
-      fontSize: '0.875rem',
-      lineHeight: 22 / 14,
-      fontWeight: 600,
+      fontSize: '0.8125rem',
+      lineHeight: 1.5,
+      fontWeight: 500,
       color: theme.darkTextSecondary
     },
     body1: {
@@ -91,7 +91,7 @@ export default function themeTypography(theme) {
     },
     button: {
       textTransform: 'unset',
-      fontWeight: 700,
+      fontWeight: 500,
       fontSize: '0.875rem',
       lineHeight: 24 / 14
     },
