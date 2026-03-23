@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -15,6 +16,301 @@ import (
 )
 
 const legacyQuotaPerUnitDefault = 500 * 1000.0
+
+type postgresPrimaryConstraint struct {
+	ConstraintName string `gorm:"column:constraint_name"`
+	Columns        string `gorm:"column:columns"`
+}
+
+type postgresIndexMetadata struct {
+	IndexName         string `gorm:"column:index_name"`
+	IsUnique          bool   `gorm:"column:is_unique"`
+	IsPrimary         bool   `gorm:"column:is_primary"`
+	IsConstraintIndex bool   `gorm:"column:is_constraint_index"`
+	Columns           string `gorm:"column:columns"`
+}
+
+func autoMigrateModels(includeInvoiceMonth bool) []interface{} {
+	models := []interface{}{
+		&Channel{},
+		&Token{},
+		&User{},
+		&Option{},
+		&Redemption{},
+		&Log{},
+		&TelegramMenu{},
+		&Price{},
+		&Payment{},
+		&Order{},
+		&Task{},
+		&Statistics{},
+		&UserGroup{},
+		&ModelOwnedBy{},
+		&ModelInfo{},
+		&WebAuthnCredential{},
+		&ModelMapping{},
+		&Tutorial{},
+		&SubscriptionPlan{},
+		&UserSubscription{},
+	}
+
+	if includeInvoiceMonth {
+		models = append(models, &StatisticsMonthGeneratedHistory{}, &StatisticsMonth{})
+	}
+
+	return models
+}
+
+func quoteIdentifier(identifier string) string {
+	return `"` + strings.ReplaceAll(identifier, `"`, `""`) + `"`
+}
+
+func normalizeColumns(columns []string) []string {
+	result := make([]string, 0, len(columns))
+	for _, column := range columns {
+		column = strings.TrimSpace(strings.ToLower(column))
+		if column != "" {
+			result = append(result, column)
+		}
+	}
+	sort.Strings(result)
+	return result
+}
+
+func sameColumns(a, b []string) bool {
+	left := normalizeColumns(a)
+	right := normalizeColumns(b)
+	if len(left) != len(right) {
+		return false
+	}
+	for i := range left {
+		if left[i] != right[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func getExpectedPrimaryColumns(tx *gorm.DB, model interface{}) (string, []string, error) {
+	stmt := &gorm.Statement{DB: tx}
+	if err := stmt.Parse(model); err != nil {
+		return "", nil, err
+	}
+
+	columns := make([]string, 0, len(stmt.Schema.PrimaryFields))
+	for _, field := range stmt.Schema.PrimaryFields {
+		columns = append(columns, field.DBName)
+	}
+	return stmt.Schema.Table, columns, nil
+}
+
+func getPostgresPrimaryConstraint(tx *gorm.DB, tableName string) (*postgresPrimaryConstraint, error) {
+	var constraint postgresPrimaryConstraint
+	err := tx.Raw(`
+SELECT
+    c.conname AS constraint_name,
+    string_agg(a.attname, ',' ORDER BY cols.ord) AS columns
+FROM pg_constraint c
+JOIN pg_class t ON t.oid = c.conrelid
+JOIN unnest(c.conkey) WITH ORDINALITY AS cols(attnum, ord) ON TRUE
+JOIN pg_attribute a ON a.attrelid = t.oid AND a.attnum = cols.attnum
+WHERE c.contype = 'p'
+  AND t.relname = ?
+GROUP BY c.conname
+LIMIT 1
+`, tableName).Scan(&constraint).Error
+	if err != nil {
+		return nil, err
+	}
+	if constraint.ConstraintName == "" {
+		return nil, nil
+	}
+	return &constraint, nil
+}
+
+func tableHasForeignKeyReferences(tx *gorm.DB, tableName string) (bool, error) {
+	var count int64
+	err := tx.Raw(`
+SELECT COUNT(1)
+FROM pg_constraint c
+JOIN pg_class t ON t.oid = c.confrelid
+WHERE c.contype = 'f'
+  AND t.relname = ?
+`, tableName).Scan(&count).Error
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
+
+func repairPostgresPrimaryConstraints(tx *gorm.DB, includeInvoiceMonth bool) error {
+	models := autoMigrateModels(includeInvoiceMonth)
+	for _, model := range models {
+		tableName, expectedPrimaryColumns, err := getExpectedPrimaryColumns(tx, model)
+		if err != nil {
+			return err
+		}
+		if !tx.Migrator().HasTable(tableName) {
+			continue
+		}
+
+		constraint, err := getPostgresPrimaryConstraint(tx, tableName)
+		if err != nil {
+			return err
+		}
+		if constraint == nil {
+			continue
+		}
+
+		actualPrimaryColumns := strings.Split(constraint.Columns, ",")
+		if sameColumns(actualPrimaryColumns, expectedPrimaryColumns) {
+			continue
+		}
+
+		// 模型已不再定义主键（典型场景：legacy prices.model 主键），可自动删除历史主键。
+		if len(expectedPrimaryColumns) == 0 {
+			hasReferences, err := tableHasForeignKeyReferences(tx, tableName)
+			if err != nil {
+				return err
+			}
+			if hasReferences {
+				logger.SysError(fmt.Sprintf("skip dropping primary key on %s due to foreign key references", tableName))
+				continue
+			}
+			err = tx.Exec("ALTER TABLE " + quoteIdentifier(tableName) + " DROP CONSTRAINT " + quoteIdentifier(constraint.ConstraintName)).Error
+			if err != nil {
+				return err
+			}
+			logger.SysLog(fmt.Sprintf("dropped legacy primary key constraint %s on %s", constraint.ConstraintName, tableName))
+			continue
+		}
+
+		logger.SysError(fmt.Sprintf(
+			"detected mismatched primary key on %s (actual: %s, expected: %s), keep unchanged for safety",
+			tableName,
+			strings.Join(actualPrimaryColumns, ","),
+			strings.Join(expectedPrimaryColumns, ","),
+		))
+	}
+	return nil
+}
+
+func listPostgresTableIndexes(tx *gorm.DB, tableName string) ([]postgresIndexMetadata, error) {
+	var indexes []postgresIndexMetadata
+	err := tx.Raw(`
+SELECT
+    idx.relname AS index_name,
+    i.indisunique AS is_unique,
+    i.indisprimary AS is_primary,
+    EXISTS (SELECT 1 FROM pg_constraint c WHERE c.conindid = i.indexrelid) AS is_constraint_index,
+    COALESCE(string_agg(att.attname, ',' ORDER BY cols.ord), '') AS columns
+FROM pg_class tbl
+JOIN pg_namespace ns ON ns.oid = tbl.relnamespace
+JOIN pg_index i ON tbl.oid = i.indrelid
+JOIN pg_class idx ON idx.oid = i.indexrelid
+LEFT JOIN LATERAL unnest(i.indkey) WITH ORDINALITY AS cols(attnum, ord) ON TRUE
+LEFT JOIN pg_attribute att ON att.attrelid = tbl.oid AND att.attnum = cols.attnum
+WHERE ns.nspname = current_schema()
+  AND tbl.relname = ?
+GROUP BY idx.relname, i.indisunique, i.indisprimary, i.indexrelid
+`, tableName).Scan(&indexes).Error
+	return indexes, err
+}
+
+func pickIndexToKeep(indexes []postgresIndexMetadata) postgresIndexMetadata {
+	if len(indexes) == 0 {
+		return postgresIndexMetadata{}
+	}
+
+	sorted := make([]postgresIndexMetadata, len(indexes))
+	copy(sorted, indexes)
+	sort.SliceStable(sorted, func(i, j int) bool {
+		if sorted[i].IsConstraintIndex != sorted[j].IsConstraintIndex {
+			return sorted[i].IsConstraintIndex
+		}
+		leftIdxPrefix := strings.HasPrefix(sorted[i].IndexName, "idx_")
+		rightIdxPrefix := strings.HasPrefix(sorted[j].IndexName, "idx_")
+		if leftIdxPrefix != rightIdxPrefix {
+			return leftIdxPrefix
+		}
+		return sorted[i].IndexName < sorted[j].IndexName
+	})
+	return sorted[0]
+}
+
+func repairPostgresDuplicateIndexes(tx *gorm.DB, includeInvoiceMonth bool) error {
+	models := autoMigrateModels(includeInvoiceMonth)
+	for _, model := range models {
+		stmt := &gorm.Statement{DB: tx}
+		if err := stmt.Parse(model); err != nil {
+			return err
+		}
+		tableName := stmt.Schema.Table
+		if !tx.Migrator().HasTable(tableName) {
+			continue
+		}
+
+		indexes, err := listPostgresTableIndexes(tx, tableName)
+		if err != nil {
+			return err
+		}
+
+		grouped := make(map[string][]postgresIndexMetadata)
+		for _, index := range indexes {
+			if index.IsPrimary {
+				continue
+			}
+			columns := strings.TrimSpace(index.Columns)
+			if columns == "" {
+				// 表达式索引或无法解析列信息，不做自动处理。
+				continue
+			}
+			signature := strconv.FormatBool(index.IsUnique) + "|" + strings.ToLower(columns)
+			grouped[signature] = append(grouped[signature], index)
+		}
+
+		for signature, candidates := range grouped {
+			if len(candidates) <= 1 {
+				continue
+			}
+
+			keep := pickIndexToKeep(candidates)
+			for _, index := range candidates {
+				if index.IndexName == keep.IndexName {
+					continue
+				}
+				err = tx.Exec("DROP INDEX IF EXISTS " + quoteIdentifier(index.IndexName)).Error
+				if err != nil {
+					return err
+				}
+				logger.SysLog(fmt.Sprintf("dropped duplicate index %s on %s (signature: %s, kept: %s)", index.IndexName, tableName, signature, keep.IndexName))
+			}
+		}
+	}
+	return nil
+}
+
+func repairPostgresSchemaCompatibility() *gormigrate.Migration {
+	return &gormigrate.Migration{
+		ID: "202603230003",
+		Migrate: func(tx *gorm.DB) error {
+			if tx.Dialector.Name() != "postgres" {
+				return nil
+			}
+			includeInvoiceMonth := config.UserInvoiceMonth
+			if err := repairPostgresPrimaryConstraints(tx, includeInvoiceMonth); err != nil {
+				return err
+			}
+			if err := repairPostgresDuplicateIndexes(tx, includeInvoiceMonth); err != nil {
+				return err
+			}
+			return nil
+		},
+		Rollback: func(tx *gorm.DB) error {
+			return nil
+		},
+	}
+}
 
 func getOptionKeyColumnName(tx *gorm.DB) string {
 	if tx != nil && tx.Dialector.Name() == "postgres" {
@@ -94,6 +390,51 @@ func changeTokenKeyColumnType() *gormigrate.Migration {
 	}
 }
 
+func dropLegacyPricesPrimaryKeyOnPostgres() *gormigrate.Migration {
+	return &gormigrate.Migration{
+		ID: "202603230002",
+		Migrate: func(tx *gorm.DB) error {
+			if tx.Dialector.Name() != "postgres" {
+				return nil
+			}
+			if !tx.Migrator().HasTable("prices") {
+				return nil
+			}
+
+			// 旧版本可能把 prices.model 作为主键，当前模型已取消主键定义。
+			// 先移除该历史主键，避免 AutoMigrate 在调整列属性时触发 PostgreSQL 错误。
+			const sql = `
+DO $$
+DECLARE
+    pk_name TEXT;
+    pk_has_model BOOLEAN;
+BEGIN
+    SELECT c.conname,
+           EXISTS (
+               SELECT 1
+               FROM unnest(c.conkey) AS k(attnum)
+               JOIN pg_attribute a ON a.attrelid = c.conrelid AND a.attnum = k.attnum
+               WHERE a.attname = 'model'
+           )
+    INTO pk_name, pk_has_model
+    FROM pg_constraint c
+    JOIN pg_class t ON t.oid = c.conrelid
+    WHERE c.contype = 'p' AND t.relname = 'prices'
+    LIMIT 1;
+
+    IF pk_name IS NOT NULL AND pk_has_model THEN
+        EXECUTE format('ALTER TABLE %I DROP CONSTRAINT %I', 'prices', pk_name);
+    END IF;
+END $$;
+`
+			return tx.Exec(sql).Error
+		},
+		Rollback: func(tx *gorm.DB) error {
+			return nil
+		},
+	}
+}
+
 func migrationBefore(db *gorm.DB) error {
 	// 从库不执行
 	if !config.IsMasterNode {
@@ -109,6 +450,8 @@ func migrationBefore(db *gorm.DB) error {
 	m := gormigrate.New(db, gormigrate.DefaultOptions, []*gormigrate.Migration{
 		removeKeyIndexMigration(),
 		changeTokenKeyColumnType(),
+		dropLegacyPricesPrimaryKeyOnPostgres(),
+		repairPostgresSchemaCompatibility(),
 	})
 	return m.Migrate()
 }
