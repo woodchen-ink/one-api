@@ -338,13 +338,6 @@ func GetDefaultPrice() []*Price {
 		// ￥0.0007 / 1k tokens
 		"text-embedding-v1": {[]float64{0.05, 0.05}, config.ChannelTypeAli},
 
-		// ¥0.012 / 1k tokens
-		"360GPT_S2_V9": {[]float64{0.8572, 0.8572}, config.ChannelType360},
-		// ¥0.001 / 1k tokens
-		"embedding-bert-512-v1":     {[]float64{0.0715, 0.0715}, config.ChannelType360},
-		"embedding_s1_v1":           {[]float64{0.0715, 0.0715}, config.ChannelType360},
-		"semantic_similarity_s1_v1": {[]float64{0.0715, 0.0715}, config.ChannelType360},
-
 		"abab5.5s-chat": {[]float64{0.3572, 0.3572}, config.ChannelTypeMiniMax},   // ¥0.005 / 1k tokens
 		"abab5.5-chat":  {[]float64{1.0714, 1.0714}, config.ChannelTypeMiniMax},   // ¥0.015 / 1k tokens
 		"abab6-chat":    {[]float64{14.2857, 14.2857}, config.ChannelTypeMiniMax}, // ¥0.2 / 1k tokens

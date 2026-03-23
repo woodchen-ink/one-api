@@ -152,13 +152,6 @@ const typeConfig = {
     },
     modelGroup: 'Ali'
   },
-  19: {
-    input: {
-      models: ['360GPT_S2_V9', 'embedding-bert-512-v1', 'embedding_s1_v1', 'semantic_similarity_s1_v1'],
-      test_model: '360GPT_S2_V9'
-    },
-    modelGroup: '360'
-  },
   22: {
     prompt: {
       key: '按照如下格式输入：APIKey-AppId，例如：fastgpt-0sp2gtvfdgyi4k30jwlgwf1i-64f335d84283f05518e9e041'

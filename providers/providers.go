@@ -63,6 +63,7 @@ func init() {
 // 获取供应商
 func GetProvider(channel *model.Channel, c *gin.Context) base.ProviderInterface {
 	if channel.Type == config.ChannelTypeGithub ||
+		channel.Type == config.ChannelType360 ||
 		channel.Type == config.ChannelTypeOpenRouter ||
 		channel.Type == config.ChannelTypeTencent ||
 		channel.Type == config.ChannelTypeHunyuan {

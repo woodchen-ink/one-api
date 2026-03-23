@@ -48,13 +48,6 @@ export const CHANNEL_OPTIONS = {
     color: 'default',
     url: 'https://open.bigmodel.cn/overview'
   },
-  19: {
-    key: 19,
-    text: '360 智脑',
-    value: 19,
-    color: 'default',
-    url: 'https://ai.360.com/open'
-  },
   27: {
     key: 27,
     text: 'MiniMax',

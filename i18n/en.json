@@ -459,7 +459,6 @@
   "OpenAI 接口聚合管理，支持多种渠道包括 Azure，可用于二次分发管理 key，仅单可执行文件，已打包好 Docker 镜像，一键部署，开箱即用": "OpenAI interface aggregation management. Supports multiple channels including Azure. Can be used for secondary distribution management key. Only single executable file, packaged Docker image, one-click deployment, ready to use",
   "阿里通义千问": "Alibaba Tongyi Qianwen",
   "智谱 ChatGLM": "Zhipu ChatGLM",
-  "360 智脑": "360 Brain",
   "自定义渠道": "Custom Channel",
   "新版本可用：${data.version}，请使用快捷键 Shift + F5 刷新页面": "New version available: ${data.version}, please use the shortcut key Shift + F5 to refresh the page",
   "无法正常连接至服务器！": "Unable to connect to the server normally!",
