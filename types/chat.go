@@ -217,8 +217,8 @@ type ChatCompletionRequest struct {
 	ThinkingBudget *int  `json:"thinking_budget,omitempty"` // qwen3 思考长度，只有enable_thinking开启才生效
 	EnableSearch   *bool `json:"enable_search,omitempty"`   // qwen 搜索开关
 
-  Thinking *interface{} `json:"thinking,omitempty"` // thinking 思考开关，兼容火山引擎
-  
+	Thinking *interface{} `json:"thinking,omitempty"` // thinking 思考开关，兼容火山引擎
+
 	OneOtherArg string `json:"-"`
 }
 
@@ -592,12 +592,8 @@ func (c *ChatCompletionRequest) ToResponsesRequest() *OpenAIResponsesRequest {
 					ImageUrl: part.ImageURL.URL,
 				})
 			case ContentTypeText:
-				roleType := ContentTypeInputText
-				if msg.Role == ChatMessageRoleAssistant {
-					roleType = ContentTypeOutputText
-				}
 				inputContent = append(inputContent, ContentResponses{
-					Type: roleType,
+					Type: ContentTypeInputText,
 					Text: part.Text,
 				})
 			}
