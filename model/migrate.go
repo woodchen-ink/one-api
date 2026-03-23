@@ -36,6 +36,16 @@ type postgresColumnMetadata struct {
 	DataType      string `gorm:"column:data_type"`
 }
 
+func isIgnorableSequenceOwnershipError(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	message := strings.ToLower(err.Error())
+	return strings.Contains(message, "sqlstate 55000") ||
+		strings.Contains(message, "must have same owner as table")
+}
+
 func autoMigrateModels(includeInvoiceMonth bool) []interface{} {
 	models := []interface{}{
 		&Channel{},
@@ -348,7 +358,11 @@ LIMIT 1
 			return err
 		}
 		if err = tx.Exec("ALTER SEQUENCE " + quotedSequence + " OWNED BY " + quotedTable + ".\"id\"").Error; err != nil {
-			return err
+			if isIgnorableSequenceOwnershipError(err) {
+				logger.SysError(fmt.Sprintf("skip sequence ownership binding for %s.%s: %s", tableName, sequenceName, err.Error()))
+			} else {
+				return err
+			}
 		}
 		if err = tx.Exec(`
 SELECT setval(
