@@ -306,6 +306,29 @@ func GetUserDashboard(c *gin.Context) {
 	})
 }
 
+func GetUserTodayTokenUsage(c *gin.Context) {
+	id := c.GetInt("id")
+
+	now := time.Now()
+	startOfDay := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location()).Unix()
+	endTimestamp := now.Unix()
+
+	statistics, err := model.GetUserTokenUsageToday(id, startOfDay, endTimestamp)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "无法获取今日令牌消耗信息.",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "",
+		"data":    statistics,
+	})
+}
+
 func GenerateAccessToken(c *gin.Context) {
 	id := c.GetInt("id")
 	user, err := model.GetUserById(id, true)

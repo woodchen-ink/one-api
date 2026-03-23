@@ -1235,6 +1235,35 @@ func migrateTokenLimitsStructure() *gormigrate.Migration {
 		},
 	}
 }
+
+func addLogTokenID() *gormigrate.Migration {
+	return &gormigrate.Migration{
+		ID: "202603240001",
+		Migrate: func(tx *gorm.DB) error {
+			if !tx.Migrator().HasTable("logs") {
+				return nil
+			}
+
+			if !tx.Migrator().HasColumn(&Log{}, "token_id") {
+				if err := tx.Migrator().AddColumn(&Log{}, "TokenId"); err != nil {
+					return err
+				}
+			}
+
+			if !tx.Migrator().HasIndex(&Log{}, "idx_logs_token_id") {
+				if err := tx.Migrator().CreateIndex(&Log{}, "TokenId"); err != nil {
+					return err
+				}
+			}
+
+			return nil
+		},
+		Rollback: func(tx *gorm.DB) error {
+			return nil
+		},
+	}
+}
+
 func migrationAfter(db *gorm.DB) error {
 	// 从库不执行
 	if !config.IsMasterNode {
@@ -1253,6 +1282,7 @@ func migrationAfter(db *gorm.DB) error {
 		removeDeprecatedOAuthAuth(),
 		migrateTokenLimitsStructure(),
 		migrateQuotaScaleToMicroUSD(),
+		addLogTokenID(),
 	})
 	return m.Migrate()
 }

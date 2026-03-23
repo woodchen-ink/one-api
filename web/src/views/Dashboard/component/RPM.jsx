@@ -16,8 +16,7 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
   borderRadius: `${theme.shape.borderRadius}px`,
   border: theme.palette.mode === 'dark' ? '1px solid rgba(255, 255, 255, 0.05)' : 'none',
   boxShadow: theme.palette.mode === 'dark' ? 'none' : '0px 1px 3px rgba(0, 0, 0, 0.1)',
-  overflow: 'hidden',
-  height: '100px'
+  overflow: 'hidden'
 }));
 
 // ==============================|| RPM - REQUEST RATE LIMIT CARD ||============================== //
@@ -70,7 +69,7 @@ const RPM = () => {
         <CardWrapper border={false} content={false} sx={{ height: '100%' }}>
           <Box
             sx={{
-              p: 2.5,
+              p: 2,
               height: '100%',
               position: 'relative'
             }}
@@ -81,10 +80,10 @@ const RPM = () => {
                   <Typography
                     variant="h3"
                     sx={{
-                      fontSize: '24px',
+                      fontSize: '20px',
                       fontWeight: 500,
                       color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.95)' : 'rgba(0, 0, 0, 0.87)',
-                      mb: 0.5
+                      mb: 0.25
                     }}
                   >
                     {rateData.rpm} RPM
@@ -133,8 +132,8 @@ const RPM = () => {
                   valueBuffer={100}
                   color={rateData.usageRpmRate > 80 ? 'error' : rateData.usageRpmRate > 50 ? 'warning' : 'success'}
                   sx={{
-                    mt: 1.5,
-                    mb: 1.5
+                    mt: 1,
+                    mb: 1
                   }}
                 />
                 <Box

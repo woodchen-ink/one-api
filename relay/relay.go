@@ -1,12 +1,12 @@
 package relay
 
 import (
-	"net/http"
 	"czloapi/common"
 	"czloapi/common/config"
 	"czloapi/model"
 	"czloapi/providers/azure"
 	"czloapi/providers/openai"
+	"net/http"
 	"strings"
 	"time"
 
@@ -83,6 +83,21 @@ func RelayOnly(c *gin.Context) {
 			requestTime = int(time.Since(requestStartTime).Milliseconds())
 		}
 	}
-	model.RecordConsumeLog(c.Request.Context(), c.GetInt("id"), c.GetInt("channel_id"), 0, 0, "", c.GetString("token_name"), 0, "中继:"+path, requestTime, false, map[string]any{"request_path": path}, common.GetClientIP(c))
+	model.RecordConsumeLog(
+		c.Request.Context(),
+		c.GetInt("id"),
+		c.GetInt("channel_id"),
+		c.GetInt("token_id"),
+		0,
+		0,
+		"",
+		c.GetString("token_name"),
+		0,
+		"中继:"+path,
+		requestTime,
+		false,
+		map[string]any{"request_path": path},
+		common.GetClientIP(c),
+	)
 
 }

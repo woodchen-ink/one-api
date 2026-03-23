@@ -53,9 +53,9 @@ const ModelUsagePieChart = ({ isLoading, data }) => {
       },
       legend: {
         show: true,
-        fontSize: '14px',
+        fontSize: '12px',
         position: 'bottom',
-        offsetY: 10,
+        offsetY: 6,
         labels: {
           colors: theme.palette.text.primary
         },
@@ -65,8 +65,8 @@ const ModelUsagePieChart = ({ isLoading, data }) => {
           radius: 5
         },
         itemMargin: {
-          horizontal: 12,
-          vertical: 5
+          horizontal: 10,
+          vertical: 4
         },
         formatter: function (seriesName, opts) {
           return [seriesName, ' - ', opts.w.globals.series[opts.seriesIndex]];
@@ -104,12 +104,13 @@ const ModelUsagePieChart = ({ isLoading, data }) => {
               name: {
                 show: true,
                 fontSize: '16px',
+                offsetY: -6,
                 fontWeight: 600,
                 color: theme.palette.text.primary
               },
               value: {
                 show: true,
-                fontSize: '22px',
+                fontSize: '20px',
                 fontWeight: 600,
                 color: theme.palette.text.primary,
                 formatter: function (val) {
@@ -119,7 +120,7 @@ const ModelUsagePieChart = ({ isLoading, data }) => {
               total: {
                 show: true,
                 label: t('dashboard_index.total'),
-                fontSize: '14px',
+                fontSize: '13px',
                 fontWeight: 400,
                 color: theme.palette.text.secondary,
                 formatter: function (w) {
@@ -147,7 +148,7 @@ const ModelUsagePieChart = ({ isLoading, data }) => {
           breakpoint: 480,
           options: {
             chart: {
-              height: 400
+              height: 340
             },
             legend: {
               position: 'bottom',
@@ -181,9 +182,9 @@ const ModelUsagePieChart = ({ isLoading, data }) => {
               <Typography
                 variant="h3"
                 sx={{
-                  mb: 2,
+                  mb: 1.5,
                   fontWeight: 600,
-                  fontSize: '1.25rem',
+                  fontSize: '1.15rem',
                   letterSpacing: '0.015em'
                 }}
               >
@@ -199,15 +200,15 @@ const ModelUsagePieChart = ({ isLoading, data }) => {
                     position: 'relative',
                     borderRadius: `${theme.shape.borderRadius}px`,
                     overflow: 'hidden',
-                    p: 2
+                    p: 1
                   }}
                 >
-                  <ReactApexChart options={chartData.options} series={chartData.series} type="donut" height={500} />
+                  <ReactApexChart options={chartData.options} series={chartData.series} type="donut" height={380} />
                 </Paper>
               ) : (
                 <Box
                   sx={{
-                    height: 400,
+                    height: 320,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',

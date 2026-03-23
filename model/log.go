@@ -19,6 +19,7 @@ type Log struct {
 	Content          string                             `json:"content"`
 	Username         string                             `json:"username" gorm:"index:index_username_model_name,priority:2;default:''"`
 	TokenName        string                             `json:"token_name" gorm:"index;default:''"`
+	TokenId          int                                `json:"token_id" gorm:"index;default:0"`
 	ModelName        string                             `json:"model_name" gorm:"index;index:index_username_model_name,priority:1;default:''"`
 	Quota            int                                `json:"quota" gorm:"default:0"`
 	PromptTokens     int                                `json:"prompt_tokens" gorm:"default:0"`
@@ -83,6 +84,7 @@ func RecordConsumeLog(
 	ctx context.Context,
 	userId int,
 	channelId int,
+	tokenId int,
 	promptTokens int,
 	completionTokens int,
 	modelName string,
@@ -106,6 +108,7 @@ func RecordConsumeLog(
 		CreatedAt:        utils.GetTimestamp(),
 		Type:             LogTypeConsume,
 		Content:          content,
+		TokenId:          tokenId,
 		PromptTokens:     promptTokens,
 		CompletionTokens: completionTokens,
 		TokenName:        tokenName,
@@ -269,4 +272,39 @@ type LogStatisticGroupModel struct {
 type LogStatisticGroupChannel struct {
 	LogStatistic
 	Channel string `gorm:"column:channel"`
+}
+
+type TokenUsageTodayStatistic struct {
+	TokenId          int    `json:"token_id" gorm:"column:token_id"`
+	TokenName        string `json:"token_name" gorm:"column:token_name"`
+	RequestCount     int64  `json:"request_count" gorm:"column:request_count"`
+	Quota            int64  `json:"quota" gorm:"column:quota"`
+	PromptTokens     int64  `json:"prompt_tokens" gorm:"column:prompt_tokens"`
+	CompletionTokens int64  `json:"completion_tokens" gorm:"column:completion_tokens"`
+	LastUsedAt       int64  `json:"last_used_at" gorm:"column:last_used_at"`
+}
+
+func GetUserTokenUsageToday(userId int, startTimestamp int64, endTimestamp int64) (statistics []*TokenUsageTodayStatistic, err error) {
+	err = DB.Table("logs AS l").
+		Select(`
+			l.token_id,
+			MAX(CASE WHEN t.name IS NOT NULL AND t.name <> '' THEN t.name ELSE l.token_name END) AS token_name,
+			COUNT(1) AS request_count,
+			SUM(l.quota) AS quota,
+			SUM(l.prompt_tokens) AS prompt_tokens,
+			SUM(l.completion_tokens) AS completion_tokens,
+			MAX(l.created_at) AS last_used_at`).
+		Joins("LEFT JOIN tokens AS t ON t.id = l.token_id").
+		Where("l.user_id = ? AND l.type = ? AND l.created_at >= ? AND l.created_at <= ? AND l.token_id > 0",
+			userId,
+			LogTypeConsume,
+			startTimestamp,
+			endTimestamp,
+		).
+		Group("l.token_id").
+		Order("quota DESC").
+		Order("request_count DESC").
+		Order("l.token_id ASC").
+		Scan(&statistics).Error
+	return statistics, err
 }

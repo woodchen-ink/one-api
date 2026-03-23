@@ -166,7 +166,7 @@ const StatisticalLineChartCard = ({ isLoading, title, chartData, todayValue, las
         <CardWrapper border={false} content={false}>
           <Box
             sx={{
-              p: 2,
+              p: 1.75,
               flex: 1,
               display: 'flex',
               flexDirection: 'column'
@@ -179,7 +179,7 @@ const StatisticalLineChartCard = ({ isLoading, title, chartData, todayValue, las
                     <Typography
                       variant="h3"
                       sx={{
-                        fontSize: '22px',
+                        fontSize: '20px',
                         fontWeight: 500,
                         color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.95)' : 'rgba(0, 0, 0, 0.87)'
                       }}
@@ -195,8 +195,8 @@ const StatisticalLineChartCard = ({ isLoading, title, chartData, todayValue, las
                           alignItems: 'center',
                           bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)',
                           borderRadius: `${theme.shape.borderRadius}px`,
-                          py: 0.5,
-                          px: 1
+                          py: 0.35,
+                          px: 0.75
                         }}
                       >
                         <Icon icon={trendIcon} style={{ color: trendColor, fontSize: '16px', marginRight: '4px' }} />
@@ -229,12 +229,12 @@ const StatisticalLineChartCard = ({ isLoading, title, chartData, todayValue, las
               </Grid>
             </Grid>
 
-            <Divider sx={{ my: 1.5 }} />
+            <Divider sx={{ my: 1 }} />
 
             <Box
               sx={{
                 mt: 'auto',
-                height: '45px',
+                height: '38px',
                 width: '100%'
               }}
             >

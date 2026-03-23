@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Grid, Box, Stack, Typography, Button } from '@mui/material';
+import PropTypes from 'prop-types';
+import { Grid, Box, Stack, Button } from '@mui/material';
 import { gridSpacing } from 'store/constant';
 import StatisticalLineChartCard from './component/StatisticalLineChartCard';
 import ApexCharts from 'ui-component/chart/ApexCharts';
@@ -11,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 import QuotaLogWeek from './component/QuotaLogWeek';
 import RPM from './component/RPM';
 import StatusPanel from './component/StatusPanel';
+import TodayTokenUsageCard from './component/TodayTokenUsageCard';
 import { useSelector } from 'react-redux';
 
 // TabPanel component for tab content
@@ -24,8 +26,15 @@ function TabPanel(props) {
   );
 }
 
+TabPanel.propTypes = {
+  children: PropTypes.node,
+  index: PropTypes.number,
+  value: PropTypes.number
+};
+
 const Dashboard = () => {
   const [isLoading, setLoading] = useState(true);
+  const [tokenUsageLoading, setTokenUsageLoading] = useState(true);
   const [statisticalData, setStatisticalData] = useState([]);
   const [requestChart, setRequestChart] = useState(null);
   const [quotaChart, setQuotaChart] = useState(null);
@@ -35,6 +44,7 @@ const Dashboard = () => {
   const [currentTab, setCurrentTab] = useState(0);
 
   const [dashboardData, setDashboardData] = useState(null);
+  const [todayTokenUsage, setTodayTokenUsage] = useState([]);
   const siteInfo = useSelector((state) => state.siteInfo);
 
   const handleTabChange = (newValue) => {
@@ -64,8 +74,26 @@ const Dashboard = () => {
     }
   };
 
+  const fetchTodayTokenUsage = async () => {
+    setTokenUsageLoading(true);
+    try {
+      const res = await API.get('/api/user/dashboard/token-usage-today');
+      const { success, message, data } = res.data;
+      if (success) {
+        setTodayTokenUsage(data || []);
+      } else {
+        showError(message);
+      }
+    } catch (error) {
+      return;
+    } finally {
+      setTokenUsageLoading(false);
+    }
+  };
+
   useEffect(() => {
     userDashboard();
+    fetchTodayTokenUsage();
   }, []);
 
   // Dashboard content
@@ -74,7 +102,7 @@ const Dashboard = () => {
       {/* 今日请求、消费、token */}
       <Grid item xs={12}>
         <Grid container spacing={gridSpacing}>
-          <Grid item lg={3} xs={12} sx={{ height: '160' }}>
+          <Grid item lg={3} xs={12} sx={{ height: 140 }}>
             <StatisticalLineChartCard
               isLoading={isLoading}
               title={t('dashboard_index.today_requests')}
@@ -84,7 +112,7 @@ const Dashboard = () => {
               lastDayValue={requestChart?.lastDayValue}
             />
           </Grid>
-          <Grid item lg={3} xs={12} sx={{ height: '160' }}>
+          <Grid item lg={3} xs={12} sx={{ height: 140 }}>
             <StatisticalLineChartCard
               isLoading={isLoading}
               title={t('dashboard_index.today_consumption')}
@@ -94,7 +122,7 @@ const Dashboard = () => {
               lastDayValue={quotaChart?.lastDayValue}
             />
           </Grid>
-          <Grid item lg={3} xs={12} sx={{ height: '160' }}>
+          <Grid item lg={3} xs={12} sx={{ height: 140 }}>
             <StatisticalLineChartCard
               isLoading={isLoading}
               title={t('dashboard_index.today_tokens')}
@@ -104,7 +132,7 @@ const Dashboard = () => {
               lastDayValue={tokenChart?.lastDayValue}
             />
           </Grid>
-          <Grid item lg={3} xs={12} sx={{ height: '160' }}>
+          <Grid item lg={3} xs={12} sx={{ height: 140 }}>
             <RPM />
           </Grid>
         </Grid>
@@ -122,8 +150,10 @@ const Dashboard = () => {
           </Grid>
 
           <Grid item lg={4} xs={12}>
-            {/* 用户信息 */}
-            <ModelUsagePieChart isLoading={isLoading} data={modelUsageData} /> {/* 新增 */}
+            <ModelUsagePieChart isLoading={isLoading} data={modelUsageData} />
+            <Box mt={2}>
+              <TodayTokenUsageCard data={todayTokenUsage} isLoading={tokenUsageLoading} />
+            </Box>
           </Grid>
         </Grid>
       </Grid>
