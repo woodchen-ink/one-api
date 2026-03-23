@@ -596,6 +596,7 @@ func (c *ChatCompletionRequest) ToResponsesRequest() *OpenAIResponsesRequest {
 		}
 
 		inputContent := make([]ContentResponses, 0)
+		textOnly := true
 
 		messges := msg.ParseContent()
 		for _, part := range messges {
@@ -604,6 +605,7 @@ func (c *ChatCompletionRequest) ToResponsesRequest() *OpenAIResponsesRequest {
 				if part.ImageURL == nil {
 					continue
 				}
+				textOnly = false
 				inputContent = append(inputContent, ContentResponses{
 					Type:     ContentTypeInputImage,
 					ImageUrl: part.ImageURL.URL,
@@ -617,16 +619,35 @@ func (c *ChatCompletionRequest) ToResponsesRequest() *OpenAIResponsesRequest {
 				if part.File == nil {
 					continue
 				}
+				textOnly = false
 				inputContent = append(inputContent, ContentResponses{
 					Type:     ContentTypeInputFile,
 					FileData: part.File.FileData,
 					FileName: part.File.Filename,
 				})
+			default:
+				if part.Text != "" {
+					inputContent = append(inputContent, ContentResponses{
+						Type: ContentTypeInputText,
+						Text: part.Text,
+					})
+				}
 			}
 		}
 
 		if len(inputContent) > 0 {
-			input.Content = inputContent
+			if textOnly {
+				contentText := ""
+				for _, content := range inputContent {
+					if content.Text != "" {
+						contentText += content.Text
+					}
+				}
+
+				input.Content = contentText
+			} else {
+				input.Content = inputContent
+			}
 			inputs = append(inputs, input)
 		}
 	}

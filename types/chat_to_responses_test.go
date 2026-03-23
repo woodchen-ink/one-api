@@ -29,6 +29,8 @@ func TestToResponsesRequestAssistantTextUsesInputText(t *testing.T) {
 
 	assert.Equal(t, ContentTypeInputText, contents[0].Type)
 	assert.Equal(t, "previous assistant response", contents[0].Text)
+	_, ok := inputs[0].Content.(string)
+	assert.True(t, ok)
 }
 
 func TestToResponsesRequestSupportsOutputTextInputType(t *testing.T) {
@@ -57,6 +59,8 @@ func TestToResponsesRequestSupportsOutputTextInputType(t *testing.T) {
 	require.Len(t, contents, 1)
 	assert.Equal(t, ContentTypeInputText, contents[0].Type)
 	assert.Equal(t, "assistant history", contents[0].Text)
+	_, ok := inputs[0].Content.(string)
+	assert.True(t, ok)
 }
 
 func TestToResponsesRequestNormalizesToolOutputToString(t *testing.T) {
