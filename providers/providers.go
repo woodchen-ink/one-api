@@ -28,7 +28,6 @@ import (
 	"czloapi/providers/ollama"
 	"czloapi/providers/openai"
 	"czloapi/providers/openrouter"
-	"czloapi/providers/palm"
 	"czloapi/providers/replicate"
 	"czloapi/providers/siliconflow"
 	"czloapi/providers/tencent"
@@ -56,7 +55,6 @@ func init() {
 		config.ChannelTypeTencent:         tencent.TencentProviderFactory{},
 		config.ChannelTypeBaidu:           baidu.BaiduProviderFactory{},
 		config.ChannelTypeAnthropic:       claude.ClaudeProviderFactory{},
-		config.ChannelTypePaLM:            palm.PalmProviderFactory{},
 		config.ChannelTypeZhipu:           zhipu.ZhipuProviderFactory{},
 		config.ChannelTypeAzureSpeech:     azurespeech.AzureSpeechProviderFactory{},
 		config.ChannelTypeGemini:          gemini.GeminiProviderFactory{},

@@ -166,7 +166,6 @@ func (m *ModelOwnedBys) SyncModelOwnedBy(modelOwnedBies []*ModelOwnedBy) {
 func GetDefaultModelOwnedBy() []*ModelOwnedBy {
 	return []*ModelOwnedBy{
 		{Id: config.ChannelTypeOpenAI, Name: "OpenAI", Icon: "https://registry.npmmirror.com/@lobehub/icons-static-svg/latest/files/icons/openai.svg"},
-		{Id: config.ChannelTypePaLM, Name: "Google PaLM", Icon: "https://registry.npmmirror.com/@lobehub/icons-static-svg/latest/files/icons/gemini-color.svg"},
 		{Id: config.ChannelTypeAnthropic, Name: "Anthropic", Icon: "https://registry.npmmirror.com/@lobehub/icons-static-svg/latest/files/icons/claude-color.svg"},
 		{Id: config.ChannelTypeBaidu, Name: "Baidu", Icon: "https://registry.npmmirror.com/@lobehub/icons-static-svg/latest/files/icons/wenxin-color.svg"},
 		{Id: config.ChannelTypeZhipu, Name: "Zhipu", Icon: "https://registry.npmmirror.com/@lobehub/icons-static-svg/latest/files/icons/zhipu-color.svg"},

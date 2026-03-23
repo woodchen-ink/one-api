@@ -320,7 +320,6 @@ func GetDefaultPrice() []*Price {
 		// ￥0.004 / 1k tokens
 		"BLOOMZ-7B": {[]float64{0.2857, 0.2857}, config.ChannelTypeBaidu},
 
-		"PaLM-2": {[]float64{1, 1}, config.ChannelTypePaLM},
 		// $0.50 / 1 million tokens  $1.50 / 1 million tokens
 		// 0.0005$ / 1k tokens 0.0015$ / 1k tokens
 		"gemini-pro":        {[]float64{0.25, 0.75}, config.ChannelTypeGemini},

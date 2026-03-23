@@ -145,7 +145,6 @@
   "如果等于 DONE 则结束": "If it is equal to DONE, it ends",
   "阻塞 20ms": "Block 20ms",
   "请求流处理函数": "Request stream processing function",
-  "创建 PalmProvider": "Create PalmProvider",
   "创建 TencentProvider": "Create TencentProvider",
   "腾讯云账号的 APPID": "Tencent Cloud account APPID",
   "官网 SecretId": "Official website SecretId",

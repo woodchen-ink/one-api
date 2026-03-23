@@ -27,13 +27,6 @@ export const CHANNEL_OPTIONS = {
     color: 'secondary',
     url: 'https://oai.azure.com/'
   },
-  11: {
-    key: 11,
-    text: 'Google PaLM2',
-    value: 11,
-    color: 'orange',
-    url: 'https://aistudio.google.com/'
-  },
   25: {
     key: 25,
     text: 'Google Gemini',

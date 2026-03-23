@@ -109,13 +109,6 @@ const typeConfig = {
       other: '请输入默认API版本，例如：preview OR latest'
     }
   },
-  11: {
-    input: {
-      models: ['PaLM-2'],
-      test_model: 'PaLM-2'
-    },
-    modelGroup: 'Google PaLM'
-  },
   14: {
     inputLabel: {
       provider_models_list: '从Claude获取模型列表'
