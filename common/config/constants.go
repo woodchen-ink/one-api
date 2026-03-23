@@ -23,7 +23,16 @@ var TopUpLink = ""
 var ChatLink = ""
 var ChatLinks = ""
 var AnalyticsCode = ""
-var QuotaPerUnit = 500 * 1000.0 // internal quota units per USD
+
+const (
+	// MoneyScaleMicroUSD defines the fixed internal money precision.
+	// 1 USD = 1,000,000 internal units.
+	MoneyScaleMicroUSD = 1_000_000.0
+	// TokenPricePerMillionBase indicates that token prices are stored as USD / 1M tokens.
+	TokenPricePerMillionBase = 1_000_000.0
+)
+
+var QuotaPerUnit = MoneyScaleMicroUSD
 var DisplayInCurrencyEnabled = true
 
 // 是否开启用户月账单功能
@@ -173,8 +182,8 @@ var QuotaForInvitee = 0
 var ChannelDisableThreshold = 5.0
 var AutomaticDisableChannelEnabled = false
 var AutomaticEnableChannelEnabled = false
-var QuotaRemindThreshold = 1000
-var PreConsumedQuota = 500
+var QuotaRemindThreshold = 2000
+var PreConsumedQuota = 1000
 var ApproximateTokenEnabled = false
 var DisableTokenEncoders = false
 var RetryTimes = 0

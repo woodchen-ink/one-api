@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { ValueFormatter } from 'utils/common';
 import { hasBillingRules, summarizeBillingRule } from './billingRules';
 
-const PricesTableRow = ({ item, onEdit, onDelete, ownedby, unit = 'M' }) => {
+const PricesTableRow = ({ item, onEdit, onDelete, ownedby }) => {
   const { t } = useTranslation();
   const theme = useTheme();
   const models = item.models;
@@ -58,17 +58,13 @@ const PricesTableRow = ({ item, onEdit, onDelete, ownedby, unit = 'M' }) => {
       return 'Free';
     }
 
-    // 确定是否使用M单位和单位后缀
-    let isM = unit === 'M';
     let unitLabel = '';
 
     if (item.type === 'tokens') {
-      unitLabel = `/ 1${unit}`;
-    } else {
-      isM = false;
+      unitLabel = '/ 1M';
     }
 
-    return ValueFormatter(value, true, isM) + unitLabel;
+    return ValueFormatter(value, true, item.type === 'tokens') + unitLabel;
   };
 
   const formatExtraPrice = (value) => {
@@ -76,9 +72,7 @@ const PricesTableRow = ({ item, onEdit, onDelete, ownedby, unit = 'M' }) => {
       return 'Free';
     }
 
-    const isM = unit === 'M';
-    const unitLabel = isM ? '/ 1M' : '/ 1K';
-    return ValueFormatter(value, true, isM) + unitLabel;
+    return ValueFormatter(value, true, true) + '/ 1M';
   };
 
   // 判断是否有extra_ratios
@@ -401,8 +395,7 @@ PricesTableRow.propTypes = {
   item: PropTypes.object,
   onEdit: PropTypes.func,
   onDelete: PropTypes.func,
-  ownedby: PropTypes.array,
-  unit: PropTypes.string
+  ownedby: PropTypes.array
 };
 
 export default PricesTableRow;

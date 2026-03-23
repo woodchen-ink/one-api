@@ -19,7 +19,7 @@ const config = {
     github_oauth: false,
     oidc_auth: false,
     logo: '',
-    quota_per_unit: 500000,
+    quota_per_unit: 1000000,
     server_address: '',
     start_time: 0,
     system_name: 'CZLOapi',

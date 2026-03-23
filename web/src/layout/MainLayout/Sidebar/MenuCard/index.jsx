@@ -71,7 +71,7 @@ const MenuCard = () => {
   const [usedQuota, setUsedQuota] = useState(0);
   const [subscriptions, setSubscriptions] = useState([]);
 
-  const quotaPerUnit = localStorage.getItem('quota_per_unit') || 500000;
+  const quotaPerUnit = localStorage.getItem('quota_per_unit') || 1000000;
 
   const balanceValue = parseFloat(balance) || 0;
   const usedQuotaValue = parseFloat(usedQuota) || 0;

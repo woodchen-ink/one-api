@@ -35,7 +35,6 @@ import { useTranslation } from 'react-i18next';
 import { alpha } from '@mui/material/styles';
 import { getPageSize, savePageSize } from 'constants';
 import EditModal from './component/EditModal';
-import ToggleButtonGroup from 'ui-component/ToggleButton';
 
 // ----------------------------------------------------------------------
 export default function Multiple({ prices, reloadData, ownedby, noPriceModels }) {
@@ -50,12 +49,6 @@ export default function Multiple({ prices, reloadData, ownedby, noPriceModels })
   const [rowsPerPage, setRowsPerPage] = useState(getPageSize('pricing_multiple', 10));
   const [channelFilter, setChannelFilter] = useState('all');
   const [lockFilter, setLockFilter] = useState('all');
-  const [unit, setUnit] = useState('M');
-
-  const unitOptions = [
-    { value: 'K', label: 'K' },
-    { value: 'M', label: 'M' }
-  ];
 
   // 处理刷新
   const handleRefresh = async () => {
@@ -88,12 +81,6 @@ export default function Multiple({ prices, reloadData, ownedby, noPriceModels })
 
   const handleEditClose = () => {
     setEditRow(null);
-  };
-
-  const handleUnitChange = (event, newUnit) => {
-    if (newUnit !== null) {
-      setUnit(newUnit);
-    }
   };
 
   useEffect(() => {
@@ -296,7 +283,6 @@ export default function Multiple({ prices, reloadData, ownedby, noPriceModels })
               </Select>
             </FormControl>
 
-            <ToggleButtonGroup value={unit} onChange={handleUnitChange} options={unitOptions} aria-label="unit toggle" />
           </Box>
         </Box>
       </Paper>
@@ -332,14 +318,7 @@ export default function Multiple({ prices, reloadData, ownedby, noPriceModels })
               />
               <TableBody>
                 {paginatedRows.map((row) => (
-                  <PricesTableRow
-                    item={row}
-                    key={row.id}
-                    onEdit={handleEditClick}
-                    onDelete={handleDeleteClick}
-                    ownedby={ownedby}
-                    unit={unit}
-                  />
+                  <PricesTableRow item={row} key={row.id} onEdit={handleEditClick} onDelete={handleDeleteClick} ownedby={ownedby} />
                 ))}
               </TableBody>
             </Table>
@@ -397,7 +376,6 @@ export default function Multiple({ prices, reloadData, ownedby, noPriceModels })
         singleMode={false}
         pricesItem={editRow}
         rows={rows}
-        unit={unit}
         noPriceModel={noPriceModels}
       />
     </>

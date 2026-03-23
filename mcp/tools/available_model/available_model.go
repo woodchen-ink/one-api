@@ -2,12 +2,12 @@ package available_model
 
 import (
 	"context"
-	"errors"
-	"fmt"
-	"github.com/ThinkInAIXYZ/go-mcp/protocol"
 	"czloapi/common/logger"
 	"czloapi/model"
 	"czloapi/relay"
+	"errors"
+	"fmt"
+	"github.com/ThinkInAIXYZ/go-mcp/protocol"
 )
 
 const NAME = "available_model"
@@ -56,7 +56,7 @@ func (c *AvailableModel) HandleRequest(ctx context.Context, req *protocol.CallTo
 	// 转成字符串
 	modelsStr := fmt.Sprintf("分组[%s]模型列表\n", query.GroupName)
 	for _, m := range models {
-		modelsStr += fmt.Sprintf("供应商:%s 名称:%s 输入价格:$%f/1K 输出价格:$%f/1K \n", m.OwnedBy, m.Price.Model, m.Price.Input*0.002, m.Price.Output*0.002)
+		modelsStr += fmt.Sprintf("供应商:%s 名称:%s 输入价格:$%.6f/1M 输出价格:$%.6f/1M \n", m.OwnedBy, m.Price.Model, m.Price.Input, m.Price.Output)
 	}
 	// 返回查询结果
 	return &protocol.CallToolResult{

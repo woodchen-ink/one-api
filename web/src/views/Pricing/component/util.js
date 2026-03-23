@@ -10,5 +10,7 @@ export function ValueFormatter(value) {
   if (Number(value) === 0) {
     return 'Free';
   }
-  return `$${parseFloat(value * 0.002).toFixed(6)} / ￥${parseFloat(value * 0.014).toFixed(6)}`;
+  const usdPerK = Number(value) / 1000;
+  const cnyPerK = usdPerK * 7;
+  return `$${usdPerK.toFixed(6)} / ￥${cnyPerK.toFixed(6)}`;
 }

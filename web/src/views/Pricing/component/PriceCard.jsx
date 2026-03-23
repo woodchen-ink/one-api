@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { ValueFormatter } from 'utils/common';
 import { hasBillingRules, summarizeBillingRule } from './billingRules';
 
-const PriceCard = ({ price, onEdit, onDelete, ownedby, unit = 'M' }) => {
+const PriceCard = ({ price, onEdit, onDelete, ownedby }) => {
   const theme = useTheme();
   const { t } = useTranslation();
 
@@ -70,17 +70,13 @@ const PriceCard = ({ price, onEdit, onDelete, ownedby, unit = 'M' }) => {
       return 'Free';
     }
 
-    // 确定是否使用M单位和单位后缀
-    let isM = unit === 'M';
     let unitLabel = '';
 
     if (price.type === 'tokens') {
-      unitLabel = `/ 1${unit}`;
-    } else {
-      isM = false;
+      unitLabel = '/ 1M';
     }
 
-    return ValueFormatter(value, true, isM) + unitLabel;
+    return ValueFormatter(value, true, price.type === 'tokens') + unitLabel;
   };
 
   const formatExtraPrice = (value) => {
@@ -88,9 +84,7 @@ const PriceCard = ({ price, onEdit, onDelete, ownedby, unit = 'M' }) => {
       return 'Free';
     }
 
-    const isM = unit === 'M';
-    const unitLabel = isM ? '/ 1M' : '/ 1K';
-    return ValueFormatter(value, true, isM) + unitLabel;
+    return ValueFormatter(value, true, true) + '/ 1M';
   };
 
   const channelColor = getChannelColor();
@@ -398,8 +392,7 @@ PriceCard.propTypes = {
   price: PropTypes.object.isRequired,
   onEdit: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
-  ownedby: PropTypes.array.isRequired,
-  unit: PropTypes.string
+  ownedby: PropTypes.array.isRequired
 };
 
 export default PriceCard;

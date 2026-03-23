@@ -23,7 +23,6 @@ export default function BillingRulesEditor({
   value = [],
   onChange,
   priceStartAdornment,
-  unit = 'M',
   currentChannelType = null,
   ownedby = []
 }) {
@@ -106,7 +105,7 @@ export default function BillingRulesEditor({
             const helperText =
               strategy === 'multiply'
                 ? '倍率模式下填写倍数，例如 2 表示 x2，1.5 表示 x1.5'
-                : `覆盖模式下填写实际价格，单位为 USD / 1${unit === 'K' ? 'K' : 'M'} tokens`;
+                : '覆盖模式下填写实际价格，单位为 USD / 1M tokens';
 
             return (
               <Box
@@ -272,7 +271,6 @@ BillingRulesEditor.propTypes = {
   value: PropTypes.array,
   onChange: PropTypes.func.isRequired,
   priceStartAdornment: PropTypes.func,
-  unit: PropTypes.string,
   currentChannelType: PropTypes.number,
   ownedby: PropTypes.array
 };

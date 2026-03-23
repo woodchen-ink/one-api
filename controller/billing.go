@@ -1,11 +1,11 @@
 package controller
 
 import (
-	"fmt"
-	"net/http"
 	"czloapi/common"
 	"czloapi/common/config"
 	"czloapi/model"
+	"fmt"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -46,10 +46,7 @@ func GetSubscription(c *gin.Context) {
 	}
 
 	quota := remainQuota + usedQuota
-	amount := float64(quota)
-	if config.DisplayInCurrencyEnabled {
-		amount /= config.QuotaPerUnit
-	}
+	amount := float64(quota) / config.QuotaPerUnit
 
 	subscription := OpenAISubscriptionResponse{
 		Object:             "billing_subscription",
@@ -88,10 +85,7 @@ func GetUsage(c *gin.Context) {
 		quota = token.UsedQuota
 	}
 
-	amount := float64(quota)
-	if config.DisplayInCurrencyEnabled {
-		amount /= config.QuotaPerUnit
-	}
+	amount := float64(quota) / config.QuotaPerUnit
 	usage := OpenAIUsageResponse{
 		Object:     "list",
 		TotalUsage: amount * 100,

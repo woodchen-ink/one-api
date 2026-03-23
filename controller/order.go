@@ -175,8 +175,7 @@ func PaymentCallback(c *gin.Context) {
 		logger.SysError(fmt.Sprintf("gateway callback failed to increase user quota, trade_no: %s,", payNotify.TradeNo))
 		return
 	}
-	//改为美金显示
-	UsdQuota := order.Quota / 500000
+	usdQuota := float64(order.Quota) / config.QuotaPerUnit
 
 	// Try to upgrade user group based on cumulative recharge amount
 	err = model.CheckAndUpgradeUserGroup(order.UserId, order.Quota)
@@ -184,7 +183,7 @@ func PaymentCallback(c *gin.Context) {
 		logger.SysError(fmt.Sprintf("failed to check and upgrade user group, trade_no: %s, error: %s", payNotify.TradeNo, err.Error()))
 	}
 
-	model.RecordQuotaLog(order.UserId, model.LogTypeTopup, order.Quota, common.GetClientIP(c), fmt.Sprintf("在线充值成功，充值金额: %d，支付金额：%.2f %s", UsdQuota, order.OrderAmount, order.OrderCurrency))
+	model.RecordQuotaLog(order.UserId, model.LogTypeTopup, order.Quota, common.GetClientIP(c), fmt.Sprintf("在线充值成功，充值金额: %.2f USD，支付金额：%.2f %s", usdQuota, order.OrderAmount, order.OrderCurrency))
 
 }
 

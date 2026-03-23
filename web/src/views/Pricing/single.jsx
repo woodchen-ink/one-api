@@ -28,7 +28,6 @@ import { getPageSize, savePageSize } from 'constants';
 import PriceCard from './component/PriceCard';
 import { alpha } from '@mui/material/styles';
 import EditModal from './component/EditModal';
-import ToggleButtonGroup from 'ui-component/ToggleButton';
 
 const Single = ({ ownedby, prices, reloadData }) => {
   const { t } = useTranslation();
@@ -42,12 +41,6 @@ const Single = ({ ownedby, prices, reloadData }) => {
   const [rowsPerPage, setRowsPerPage] = useState(getPageSize('pricing', 24));
   const [channelFilter, setChannelFilter] = useState('all');
   const [lockFilter, setLockFilter] = useState('all');
-  const [unit, setUnit] = useState('M');
-
-  const unitOptions = [
-    { value: 'K', label: 'K' },
-    { value: 'M', label: 'M' }
-  ];
 
   // 删除确认对话框
   const handleDeleteClick = (row) => {
@@ -70,12 +63,6 @@ const Single = ({ ownedby, prices, reloadData }) => {
 
   const handleEditClose = () => {
     setEditRow(null);
-  };
-
-  const handleUnitChange = (event, newUnit) => {
-    if (newUnit !== null) {
-      setUnit(newUnit);
-    }
   };
 
   const handleSaveEdit = async (formData) => {
@@ -279,7 +266,6 @@ const Single = ({ ownedby, prices, reloadData }) => {
               </Select>
             </FormControl>
 
-            <ToggleButtonGroup value={unit} onChange={handleUnitChange} options={unitOptions} aria-label="unit toggle" />
           </Box>
         </Box>
       </Paper>
@@ -327,7 +313,7 @@ const Single = ({ ownedby, prices, reloadData }) => {
               </Box>
               <Box width="20%" px={1}>
                 <Typography variant="subtitle2" color="text.secondary">
-                  {t('modelpricePage.price')} ({unit})
+                  {t('modelpricePage.price')} (/1M)
                 </Typography>
               </Box>
               <Box width="45%" px={1}>
@@ -353,14 +339,7 @@ const Single = ({ ownedby, prices, reloadData }) => {
             >
               <Box component="tbody">
                 {paginatedRows.map((price) => (
-                  <PriceCard
-                    key={price.id}
-                    price={price}
-                    onEdit={handleEditClick}
-                    onDelete={handleDeleteClick}
-                    ownedby={ownedby}
-                    unit={unit}
-                  />
+                  <PriceCard key={price.id} price={price} onEdit={handleEditClick} onDelete={handleDeleteClick} ownedby={ownedby} />
                 ))}
               </Box>
             </Box>
@@ -433,7 +412,6 @@ const Single = ({ ownedby, prices, reloadData }) => {
         singleMode={true}
         price={editRow}
         rows={rows}
-        unit={unit}
       />
     </Box>
   );

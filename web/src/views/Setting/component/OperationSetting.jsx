@@ -5,6 +5,7 @@ import {
   FormControl,
   InputLabel,
   OutlinedInput,
+  InputAdornment,
   Checkbox,
   Button,
   FormControlLabel,
@@ -27,6 +28,37 @@ import 'dayjs/locale/zh-cn';
 import { DateTimePicker } from '@mui/x-date-pickers';
 import { useSelector } from 'react-redux';
 
+const quotaOptionKeys = ['QuotaForNewUser', 'QuotaForInviter', 'QuotaForInvitee', 'QuotaRemindThreshold', 'PreConsumedQuota'];
+const quotaInputSx = { '& input': { MozAppearance: 'textfield' } };
+
+const getQuotaPerUnit = () => Number(localStorage.getItem('quota_per_unit') || 1000000);
+
+const quotaToUsd = (value) => {
+  if (value === '' || value === null || value === undefined) {
+    return '';
+  }
+
+  const quotaValue = Number(value);
+  if (Number.isNaN(quotaValue)) {
+    return value;
+  }
+
+  return (quotaValue / getQuotaPerUnit()).toFixed(6).replace(/\.?0+$/, '');
+};
+
+const usdToQuota = (value) => {
+  if (value === '' || value === null || value === undefined) {
+    return '0';
+  }
+
+  const usdValue = Number(value);
+  if (Number.isNaN(usdValue)) {
+    return '0';
+  }
+
+  return String(Math.round(usdValue * getQuotaPerUnit()));
+};
+
 const OperationSetting = () => {
   const { t } = useTranslation();
   const siteInfo = useSelector((state) => state.siteInfo);
@@ -40,12 +72,10 @@ const OperationSetting = () => {
     TopUpLink: '',
     ChatLink: '',
     ChatLinks: '',
-    QuotaPerUnit: 0,
     AutomaticDisableChannelEnabled: '',
     AutomaticEnableChannelEnabled: '',
     ChannelDisableThreshold: 0,
     LogConsumeEnabled: '',
-    DisplayInCurrencyEnabled: '',
     ApproximateTokenEnabled: '',
     RetryTimes: 0,
     RetryTimeOut: 0,
@@ -81,6 +111,9 @@ const OperationSetting = () => {
         data.forEach((item) => {
           if (item.key === 'RechargeDiscount') {
             item.value = JSON.stringify(JSON.parse(item.value), null, 2);
+          }
+          if (quotaOptionKeys.includes(item.key)) {
+            item.value = quotaToUsd(item.value);
           }
           if (item.key === 'SafeKeyWords' && typeof item.value === 'string' && item.value.startsWith('[')) {
             try {
@@ -188,7 +221,7 @@ const OperationSetting = () => {
             await updateOption('ChannelDisableThreshold', inputs.ChannelDisableThreshold);
           }
           if (originInputs['QuotaRemindThreshold'] !== inputs.QuotaRemindThreshold) {
-            await updateOption('QuotaRemindThreshold', inputs.QuotaRemindThreshold);
+            await updateOption('QuotaRemindThreshold', usdToQuota(inputs.QuotaRemindThreshold));
           }
           break;
         case 'chatlinks':
@@ -202,21 +235,21 @@ const OperationSetting = () => {
           break;
         case 'quota':
           if (originInputs['QuotaForNewUser'] !== inputs.QuotaForNewUser) {
-            await updateOption('QuotaForNewUser', inputs.QuotaForNewUser);
+            await updateOption('QuotaForNewUser', usdToQuota(inputs.QuotaForNewUser));
           }
           if (originInputs['QuotaForInvitee'] !== inputs.QuotaForInvitee) {
-            await updateOption('QuotaForInvitee', inputs.QuotaForInvitee);
+            await updateOption('QuotaForInvitee', usdToQuota(inputs.QuotaForInvitee));
           }
           if (originInputs['QuotaForInviter'] !== inputs.QuotaForInviter) {
-            await updateOption('QuotaForInviter', inputs.QuotaForInviter);
+            await updateOption('QuotaForInviter', usdToQuota(inputs.QuotaForInviter));
           }
           if (originInputs['PreConsumedQuota'] !== inputs.PreConsumedQuota) {
-            await updateOption('PreConsumedQuota', inputs.PreConsumedQuota);
+            await updateOption('PreConsumedQuota', usdToQuota(inputs.PreConsumedQuota));
           }
           break;
         case 'general':
-          if (inputs.QuotaPerUnit < 0 || inputs.RetryTimes < 0 || inputs.RetryCooldownSeconds < 0 || inputs.RetryTimeOut < 0) {
-            showError('单位额度、重试次数、冷却时间、重试超时时间不能为负数');
+          if (inputs.RetryTimes < 0 || inputs.RetryCooldownSeconds < 0 || inputs.RetryTimeOut < 0) {
+            showError('重试次数、冷却时间、重试超时时间不能为负数');
             return;
           }
 
@@ -225,9 +258,6 @@ const OperationSetting = () => {
           }
           if (originInputs['ChatLink'] !== inputs.ChatLink) {
             await updateOption('ChatLink', inputs.ChatLink);
-          }
-          if (originInputs['QuotaPerUnit'] !== inputs.QuotaPerUnit) {
-            await updateOption('QuotaPerUnit', inputs.QuotaPerUnit);
           }
           if (originInputs['RetryTimes'] !== inputs.RetryTimes) {
             await updateOption('RetryTimes', inputs.RetryTimes);
@@ -404,18 +434,6 @@ const OperationSetting = () => {
               />
             </FormControl>
             <FormControl fullWidth>
-              <InputLabel htmlFor="QuotaPerUnit">{t('setting_index.operationSettings.generalSettings.quotaPerUnit.label')}</InputLabel>
-              <OutlinedInput
-                id="QuotaPerUnit"
-                name="QuotaPerUnit"
-                value={inputs.QuotaPerUnit}
-                onChange={handleInputChange}
-                label={t('setting_index.operationSettings.generalSettings.quotaPerUnit.label')}
-                placeholder={t('setting_index.operationSettings.generalSettings.quotaPerUnit.placeholder')}
-                disabled={loading}
-              />
-            </FormControl>
-            <FormControl fullWidth>
               <InputLabel htmlFor="RetryTimes">{t('setting_index.operationSettings.generalSettings.retryTimes.label')}</InputLabel>
               <OutlinedInput
                 id="RetryTimes"
@@ -460,18 +478,6 @@ const OperationSetting = () => {
             justifyContent="flex-start"
             alignItems="flex-start"
           >
-            <FormControlLabel
-              sx={{ marginLeft: '0px' }}
-              label={t('setting_index.operationSettings.generalSettings.displayInCurrency')}
-              control={
-                <Checkbox
-                  checked={inputs.DisplayInCurrencyEnabled === 'true'}
-                  onChange={handleInputChange}
-                  name="DisplayInCurrencyEnabled"
-                />
-              }
-            />
-
             <FormControlLabel
               label={t('setting_index.operationSettings.generalSettings.approximateToken')}
               control={
@@ -650,6 +656,7 @@ const OperationSetting = () => {
 
       <SubCard title={t('setting_index.operationSettings.monitoringSettings.title')}>
         <Stack justifyContent="flex-start" alignItems="flex-start" spacing={2}>
+          <Alert severity="info">额度提醒阈值按美元填写，保存时会自动换算为系统内部精度。</Alert>
           <Stack direction={{ sm: 'column', md: 'row' }} spacing={{ xs: 3, sm: 2, md: 4 }}>
             <FormControl fullWidth>
               <InputLabel htmlFor="ChannelDisableThreshold">
@@ -678,6 +685,8 @@ const OperationSetting = () => {
                 onChange={handleInputChange}
                 label={t('setting_index.operationSettings.monitoringSettings.quotaRemindThreshold.label')}
                 placeholder={t('setting_index.operationSettings.monitoringSettings.quotaRemindThreshold.placeholder')}
+                startAdornment={<InputAdornment position="start">$</InputAdornment>}
+                sx={quotaInputSx}
                 disabled={loading}
               />
             </FormControl>
@@ -714,6 +723,7 @@ const OperationSetting = () => {
       </SubCard>
       <SubCard title={t('setting_index.operationSettings.quotaSettings.title')}>
         <Stack justifyContent="flex-start" alignItems="flex-start" spacing={2}>
+          <Alert severity="info">以下额度项全部按美元输入，保存时会自动换算为系统内部微美元。</Alert>
           <Stack direction={{ sm: 'column', md: 'row' }} spacing={{ xs: 3, sm: 2, md: 4 }}>
             <FormControl fullWidth>
               <InputLabel htmlFor="QuotaForNewUser">{t('setting_index.operationSettings.quotaSettings.quotaForNewUser.label')}</InputLabel>
@@ -725,6 +735,8 @@ const OperationSetting = () => {
                 onChange={handleInputChange}
                 label={t('setting_index.operationSettings.quotaSettings.quotaForNewUser.label')}
                 placeholder={t('setting_index.operationSettings.quotaSettings.quotaForNewUser.placeholder')}
+                startAdornment={<InputAdornment position="start">$</InputAdornment>}
+                sx={quotaInputSx}
                 disabled={loading}
               />
             </FormControl>
@@ -740,6 +752,8 @@ const OperationSetting = () => {
                 onChange={handleInputChange}
                 label={t('setting_index.operationSettings.quotaSettings.preConsumedQuota.label')}
                 placeholder={t('setting_index.operationSettings.quotaSettings.preConsumedQuota.placeholder')}
+                startAdornment={<InputAdornment position="start">$</InputAdornment>}
+                sx={quotaInputSx}
                 disabled={loading}
               />
             </FormControl>
@@ -753,6 +767,8 @@ const OperationSetting = () => {
                 value={inputs.QuotaForInviter}
                 onChange={handleInputChange}
                 placeholder={t('setting_index.operationSettings.quotaSettings.quotaForInviter.placeholder')}
+                startAdornment={<InputAdornment position="start">$</InputAdornment>}
+                sx={quotaInputSx}
                 disabled={loading}
               />
             </FormControl>
@@ -767,6 +783,8 @@ const OperationSetting = () => {
                 onChange={handleInputChange}
                 autoComplete="new-password"
                 placeholder={t('setting_index.operationSettings.quotaSettings.quotaForInvitee.placeholder')}
+                startAdornment={<InputAdornment position="start">$</InputAdornment>}
+                sx={quotaInputSx}
                 disabled={loading}
               />
             </FormControl>

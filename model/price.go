@@ -1,8 +1,8 @@
 package model
 
 import (
-	"encoding/json"
 	"czloapi/common/config"
+	"encoding/json"
 
 	"github.com/shopspring/decimal"
 	"gorm.io/datatypes"
@@ -10,11 +10,11 @@ import (
 )
 
 const (
-	TokensPriceType  = "tokens"
-	TimesPriceType   = "times"
-	DefaultPrice     = 60.0
-	LegacyDollarRate = 0.002
-	RMBRate          = 0.014
+	TokensPriceType                = "tokens"
+	TimesPriceType                 = "times"
+	DefaultPrice                   = 60.0
+	legacyTokenRateToUSDPerMillion = 2.0
+	legacyTimesRateToUSD           = 1.0 / 500.0
 
 	DefaultCachedWriteRatio = 1.25
 	DefaultCachedReadRatio  = 0.1
@@ -26,7 +26,7 @@ func LegacyTokenPriceToUSDPerMillion(price float64) float64 {
 	}
 
 	return decimal.NewFromFloat(price).
-		Mul(decimal.NewFromFloat(LegacyDollarRate * 1000)).
+		Mul(decimal.NewFromFloat(legacyTokenRateToUSDPerMillion)).
 		InexactFloat64()
 }
 
@@ -36,7 +36,7 @@ func LegacyTimesPriceToUSD(price float64) float64 {
 	}
 
 	return decimal.NewFromFloat(price).
-		Mul(decimal.NewFromFloat(LegacyDollarRate)).
+		Mul(decimal.NewFromFloat(legacyTimesRateToUSD)).
 		InexactFloat64()
 }
 
@@ -233,8 +233,8 @@ type ModelType struct {
 	Type  int
 }
 
-// 1 === $0.002 / 1K tokens
-// 1 === ￥0.014 / 1k tokens
+// Legacy default table uses historical "rate" values.
+// It is converted to direct USD prices when loading defaults.
 func GetDefaultPrice() []*Price {
 	ModelTypes := map[string]ModelType{
 		// 	$0.03 / 1K tokens	$0.06 / 1K tokens

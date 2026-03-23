@@ -515,15 +515,10 @@ export function calculateQuota(quota, digits = 2) {
 }
 
 export function renderQuota(quota, digits = 2) {
-  let displayInCurrency = localStorage.getItem('display_in_currency');
-  displayInCurrency = displayInCurrency === 'true';
-  if (displayInCurrency) {
-    if (quota < 0) {
-      return '-$' + calculateQuota(Math.abs(quota), digits);
-    }
-    return '$' + calculateQuota(quota, digits);
+  if (quota < 0) {
+    return '-$' + calculateQuota(Math.abs(quota), digits);
   }
-  return renderNumber(quota);
+  return '$' + calculateQuota(quota, digits);
 }
 
 export function renderQuotaByMoney(money) {
@@ -563,14 +558,8 @@ export function thousandsSeparator(num) {
 }
 
 export function renderQuotaWithPrompt(quota, digits) {
-  let displayInCurrency = localStorage.getItem('display_in_currency');
-  displayInCurrency = displayInCurrency === 'true';
-  if (displayInCurrency) {
-    let quotaPerUnit = localStorage.getItem('quota_per_unit');
-    quotaPerUnit = parseFloat(quotaPerUnit);
-    let actualQuota = (parseFloat(quota) * quotaPerUnit).toFixed(0);
-    return `（等价额度：${renderNumber(actualQuota)}）`;
-  }
+  void quota;
+  void digits;
   return '';
 }
 

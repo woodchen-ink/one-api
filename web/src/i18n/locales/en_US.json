@@ -730,7 +730,7 @@
     "currencyInfo1": "USD",
     "currencyInfo2": ": direct pricing",
     "currencyInfo3": "Primary Unit",
-    "currencyInfo4": ": 1 === ￥0.014 / 1k tokens",
+    "currencyInfo4": ": token models use USD / 1M tokens for display and input",
     "currencyInfo5": "Runtime Billing",
     "currencyInfo6": ": token prices are billed directly in USD, and times prices are billed directly per request",
     "currencyInfo7": "Only group ratio is applied at runtime. Model prices and cache prices are no longer multiplier-based.",

@@ -4,6 +4,7 @@ import (
 	"czloapi/common/config"
 	"czloapi/common/logger"
 	"encoding/json"
+	"math"
 	"strconv"
 	"strings"
 
@@ -407,6 +408,126 @@ func migrateReliableUsersToCommon() *gormigrate.Migration {
 	}
 }
 
+func migrateQuotaScaleToMicroUSD() *gormigrate.Migration {
+	return &gormigrate.Migration{
+		ID: "202603230001",
+		Migrate: func(tx *gorm.DB) error {
+			const targetQuotaPerUnit = config.MoneyScaleMicroUSD
+			const defaultLegacyQuotaPerUnit = 500 * 1000.0
+
+			legacyQuotaPerUnit := defaultLegacyQuotaPerUnit
+			if tx.Migrator().HasTable("options") {
+				var option Option
+				err := tx.Where("key = ?", "QuotaPerUnit").First(&option).Error
+				if err == nil {
+					parsed, parseErr := strconv.ParseFloat(strings.TrimSpace(option.Value), 64)
+					if parseErr == nil && parsed > 0 {
+						legacyQuotaPerUnit = parsed
+					}
+				}
+			}
+
+			if legacyQuotaPerUnit <= 0 {
+				legacyQuotaPerUnit = defaultLegacyQuotaPerUnit
+			}
+
+			ratio := targetQuotaPerUnit / legacyQuotaPerUnit
+			if math.Abs(ratio-1.0) < 1e-9 {
+				if tx.Migrator().HasTable("options") {
+					if err := tx.Where("key = ?", "QuotaPerUnit").Delete(&Option{}).Error; err != nil {
+						return err
+					}
+				}
+				return nil
+			}
+
+			logger.SysLog("migrating quota scale to micro-USD with ratio: " + strconv.FormatFloat(ratio, 'f', 8, 64))
+
+			quotaColumnsByTable := []struct {
+				Table   string
+				Columns []string
+			}{
+				{Table: "users", Columns: []string{"quota", "used_quota", "aff_quota", "aff_history"}},
+				{Table: "tokens", Columns: []string{"remain_quota", "used_quota"}},
+				{Table: "orders", Columns: []string{"quota"}},
+				{Table: "logs", Columns: []string{"quota"}},
+				{Table: "channels", Columns: []string{"used_quota"}},
+				{Table: "redemptions", Columns: []string{"quota"}},
+				{Table: "tasks", Columns: []string{"quota"}},
+				{Table: "statistics", Columns: []string{"quota"}},
+				{Table: "statistics_months", Columns: []string{"quota"}},
+				{Table: "statistics_month_generated_histories", Columns: []string{"quota"}},
+			}
+
+			for _, item := range quotaColumnsByTable {
+				if !tx.Migrator().HasTable(item.Table) {
+					continue
+				}
+
+				columnTypes, err := tx.Migrator().ColumnTypes(item.Table)
+				if err != nil {
+					return err
+				}
+				existingColumns := make(map[string]struct{}, len(columnTypes))
+				for _, columnType := range columnTypes {
+					existingColumns[strings.ToLower(columnType.Name())] = struct{}{}
+				}
+
+				for _, column := range item.Columns {
+					if _, ok := existingColumns[strings.ToLower(column)]; !ok {
+						continue
+					}
+
+					if err := tx.Session(&gorm.Session{AllowGlobalUpdate: true}).
+						Table(item.Table).
+						Update(column, gorm.Expr("ROUND("+column+" * ?)", ratio)).Error; err != nil {
+						return err
+					}
+				}
+			}
+
+			if tx.Migrator().HasTable("options") {
+				quotaOptionKeys := []string{
+					"QuotaForNewUser",
+					"QuotaForInviter",
+					"QuotaForInvitee",
+					"QuotaRemindThreshold",
+					"PreConsumedQuota",
+				}
+
+				var options []Option
+				if err := tx.Where("key IN ?", quotaOptionKeys).Find(&options).Error; err != nil {
+					return err
+				}
+
+				for _, option := range options {
+					value := strings.TrimSpace(option.Value)
+					if value == "" {
+						continue
+					}
+					parsed, err := strconv.ParseFloat(value, 64)
+					if err != nil {
+						continue
+					}
+					scaled := int(math.Round(parsed * ratio))
+					if err := tx.Model(&Option{}).Where("key = ?", option.Key).Update("value", strconv.Itoa(scaled)).Error; err != nil {
+						return err
+					}
+				}
+
+				if err := tx.Where("key = ?", "QuotaPerUnit").Delete(&Option{}).Error; err != nil {
+					return err
+				}
+			}
+
+			return nil
+		},
+		Rollback: func(tx *gorm.DB) error {
+			return nil
+		},
+	}
+}
+
 func removeDeprecatedOAuthAuth() *gormigrate.Migration {
 	return &gormigrate.Migration{
 		ID: "202603190003",
@@ -596,6 +717,7 @@ func migrationAfter(db *gorm.DB) error {
 		migrateReliableUsersToCommon(),
 		removeDeprecatedOAuthAuth(),
 		migrateTokenLimitsStructure(),
+		migrateQuotaScaleToMicroUSD(),
 	})
 	return m.Migrate()
 }

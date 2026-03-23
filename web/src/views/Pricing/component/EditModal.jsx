@@ -137,21 +137,13 @@ const EditModal = ({
   singleMode = false,
   price = null,
   rows = [],
-  onSaveSingle = null,
-  unit = 'M'
+  onSaveSingle = null
 }) => {
   const { t } = useTranslation();
   const theme = useTheme();
   const [inputs, setInputs] = useState(singleMode ? singleOriginInputs : multipleOriginInputs);
   const [selectModel, setSelectModel] = useState([]);
   const [errors, setErrors] = useState({});
-  const unitType = 'USD';
-  const [localUnit, setLocalUnit] = useState(unit);
-
-  // 当外部unit变化时同步本地unit
-  useEffect(() => {
-    setLocalUnit(unit);
-  }, [unit]);
 
   const calculatePrice = useCallback(
     (price) => {
@@ -159,24 +151,14 @@ const EditModal = ({
         return 0;
       }
 
-      let priceValue = new Decimal(price);
-      if (localUnit === 'K') {
-        priceValue = priceValue.div(1000);
-      }
-
-      return Number(priceValue.toFixed(8));
+      return Number(new Decimal(price).toFixed(8));
     },
-    [localUnit]
+    []
   );
 
   const lockedOptions = [
     { value: true, label: t('pricing_edit.locked') },
     { value: false, label: t('pricing_edit.unlocked') }
-  ];
-
-  const unitOptions = [
-    { value: 'K', label: 'K' },
-    { value: 'M', label: 'M' }
   ];
 
   const handleEndAdornment = useCallback(
@@ -185,27 +167,12 @@ const EditModal = ({
         return 'Free';
       }
 
-      if (localUnit === 'K') {
-        return `$${calculatePrice(value)} / 1M`;
-      }
-
       return '';
     },
-    [calculatePrice, localUnit]
+    [calculatePrice]
   );
 
-  const priceStartAdornment = useCallback(() => (localUnit === 'M' ? 'USD / 1M:' : 'USD / 1K:'), [localUnit]);
-
-  const handleStartAdornment = useCallback(() => {
-    switch (unitType) {
-      case 'rate':
-        return 'Rate：';
-      case 'USD':
-        return `USD(${localUnit})：`;
-      case 'RMB':
-        return `RMB(${localUnit})：`;
-    }
-  }, [unitType, localUnit]);
+  const priceStartAdornment = useCallback(() => 'USD / 1M:', []);
 
   // 表单提交处理
   const submit = async (values, { setErrors, setStatus, setSubmitting }) => {
@@ -368,12 +335,6 @@ const EditModal = ({
     }));
   };
 
-  useEffect(() => {
-    if (open) {
-      setLocalUnit('M');
-    }
-  }, [open]);
-
   // 渲染类型选择表单
   const renderTypeSelector = (formProps) => {
     const { errors = {}, touched = {}, handleBlur, handleChange: formikHandleChange, values = {} } = formProps || {};
@@ -455,22 +416,6 @@ const EditModal = ({
       </FormControl>
     );
   };
-
-  // 渲染单位类型切换按钮组
-  const renderUnitTypeToggle = () => (
-    <FormControl fullWidth sx={{ ...theme.typography.otherInput }}>
-      <ToggleButtonGroup
-        value={localUnit}
-        onChange={(_event, newUnit) => {
-          if (newUnit) {
-            setLocalUnit(newUnit);
-          }
-        }}
-        options={unitOptions}
-        aria-label="price unit toggle"
-      />
-    </FormControl>
-  );
 
   // 渲染输入价格表单
   const renderInputField = (formProps) => {
@@ -625,7 +570,6 @@ const EditModal = ({
             value={inputs.billing_rules || []}
             onChange={handleChangeBillingRules}
             priceStartAdornment={priceStartAdornment}
-            unit={localUnit}
             currentChannelType={inputs.channel_type}
             ownedby={ownedby}
           />
@@ -641,7 +585,6 @@ const EditModal = ({
             setFieldValue('billing_rules', newBillingRules);
           }}
           priceStartAdornment={priceStartAdornment}
-          unit={localUnit}
           currentChannelType={values.channel_type}
           ownedby={ownedby}
         />
@@ -755,7 +698,6 @@ const EditModal = ({
 
             {renderTypeSelector()}
             {renderChannelTypeSelector()}
-            {renderUnitTypeToggle()}
 
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
               {renderInputField()}
@@ -783,7 +725,6 @@ const EditModal = ({
               <form noValidate onSubmit={formProps.handleSubmit}>
                 {renderTypeSelector(formProps)}
                 {renderChannelTypeSelector(formProps)}
-                {renderUnitTypeToggle()}
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                   {renderInputField(formProps)}
                   {formProps.values.type === 'tokens' && renderOutputField(formProps)}
@@ -816,6 +757,5 @@ EditModal.propTypes = {
   singleMode: PropTypes.bool,
   price: PropTypes.object,
   rows: PropTypes.array,
-  onSaveSingle: PropTypes.func,
-  unit: PropTypes.string
+  onSaveSingle: PropTypes.func
 };

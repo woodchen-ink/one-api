@@ -1,12 +1,12 @@
 package model
 
 import (
-	"errors"
-	"fmt"
 	"czloapi/common"
 	"czloapi/common/config"
 	"czloapi/common/logger"
 	"czloapi/common/utils"
+	"errors"
+	"fmt"
 
 	"gorm.io/gorm"
 )
@@ -17,7 +17,7 @@ type Redemption struct {
 	Key          string `json:"key" gorm:"type:char(32);uniqueIndex"`
 	Status       int    `json:"status" gorm:"default:1"`
 	Name         string `json:"name" gorm:"index"`
-	Quota        int    `json:"quota" gorm:"default:100"`
+	Quota        int    `json:"quota" gorm:"default:200"`
 	CreatedTime  int64  `json:"created_time" gorm:"bigint"`
 	RedeemedTime int64  `json:"redeemed_time" gorm:"bigint"`
 	Count        int    `json:"count" gorm:"-:all"` // only for api request

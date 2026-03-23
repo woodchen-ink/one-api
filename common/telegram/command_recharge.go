@@ -1,8 +1,9 @@
 package telegram
 
 import (
-	"fmt"
+	"czloapi/common/config"
 	"czloapi/model"
+	"fmt"
 	"strings"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
@@ -48,7 +49,7 @@ func commandRechargeToken(b *gotgbot.Bot, ctx *ext.Context) error {
 		return handlers.EndConversation()
 	}
 
-	money := fmt.Sprintf("%.2f", float64(quota)/500000)
+	money := fmt.Sprintf("%.2f", float64(quota)/config.QuotaPerUnit)
 	_, err = ctx.EffectiveMessage.Reply(b, fmt.Sprintf("成功充值 $%s ", money), nil)
 	if err != nil {
 		return fmt.Errorf("failed to send recharge token message: %w", err)

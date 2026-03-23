@@ -32,7 +32,6 @@ import { Icon } from '@iconify/react';
 import { API } from 'utils/api';
 import { showError, ValueFormatter, copy } from 'utils/common';
 import { useTheme } from '@mui/material/styles';
-import CustomToggleButtonGroup from 'ui-component/ToggleButton';
 import { alpha } from '@mui/material/styles';
 import ModelCard from './component/ModelCard';
 import ModelDetailModal from './component/ModelDetailModal';
@@ -57,7 +56,6 @@ export default function ModelPrice() {
   const [selectedOwnedBy, setSelectedOwnedBy] = useState('all');
   const [selectedModality, setSelectedModality] = useState('all');
   const [selectedTag, setSelectedTag] = useState('all');
-  const [unit, setUnit] = useState('M');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [viewMode, setViewMode] = useState('card'); // 'card' or 'list'
@@ -65,11 +63,6 @@ export default function ModelPrice() {
   // 详情对话框状态
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [selectedModelDetail, setSelectedModelDetail] = useState(null);
-
-  const unitOptions = [
-    { value: 'K', label: 'K' },
-    { value: 'M', label: 'M' }
-  ];
 
   const pageSizeOptions = [20, 30, 60, 100];
 
@@ -176,12 +169,12 @@ export default function ModelPrice() {
   const formatPrice = (value, type) => {
     if (typeof value === 'number') {
       let nowUnit = '';
-      let isM = unit === 'M';
+      let isM = true;
       if (type === 'times') {
         isM = false;
       }
       if (type === 'tokens') {
-        nowUnit = `/ 1${unit}`;
+        nowUnit = '/ 1M';
       }
       return ValueFormatter(value, true, isM) + nowUnit;
     }
@@ -310,8 +303,7 @@ export default function ModelPrice() {
     userGroupMap,
     sortedGroupEntries,
     ownedby,
-    t,
-    unit
+    t
   ]);
 
   // 分页处理
@@ -351,12 +343,6 @@ export default function ModelPrice() {
 
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
-  };
-
-  const handleUnitChange = (_event, newUnit) => {
-    if (newUnit !== null) {
-      setUnit(newUnit);
-    }
   };
 
   const uniqueOwnedBy = [
@@ -460,26 +446,8 @@ export default function ModelPrice() {
 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <Typography variant="body2" color="text.secondary">
-                {t('modelpricePage.unit')}:
+                USD / 1M
               </Typography>
-              <CustomToggleButtonGroup
-                value={unit}
-                onChange={handleUnitChange}
-                options={unitOptions}
-                aria-label="unit toggle"
-                size="small"
-                sx={{
-                  '& .MuiToggleButtonGroup-grouped': {
-                    borderRadius: '6px !important',
-                    mx: 0.5,
-                    border: 0,
-                    boxShadow: theme.palette.mode === 'dark' ? '0 1px 4px rgba(0,0,0,0.2)' : '0 1px 4px rgba(0,0,0,0.05)',
-                    '&.Mui-selected': {
-                      boxShadow: `0 0 0 1px ${theme.palette.primary.main}`
-                    }
-                  }
-                }}
-              />
               <MuiToggleButtonGroup
                 value={viewMode}
                 exclusive
@@ -979,7 +947,6 @@ export default function ModelPrice() {
                         extraRatios={model.priceData.selectedGroupExtraRatios}
                         billingRules={model.priceData.price.billing_rules}
                         ownedbyIcon={getIconByName(model.provider)}
-                        unit={unit}
                         type={model.type}
                         formatPrice={formatPrice}
                         onViewDetail={() => handleViewDetail(model)}
@@ -1216,7 +1183,6 @@ export default function ModelPrice() {
           ownedbyIcon={selectedModelDetail ? getIconByName(selectedModelDetail.provider) : null}
           userGroupMap={userGroupMap}
           formatPrice={formatPrice}
-          unit={unit}
         />
       </Stack>
     </>

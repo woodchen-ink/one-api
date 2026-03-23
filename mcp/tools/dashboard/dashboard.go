@@ -2,11 +2,12 @@ package dashboard
 
 import (
 	"context"
+	"czloapi/common/config"
+	"czloapi/common/logger"
+	"czloapi/model"
 	"errors"
 	"fmt"
 	"github.com/ThinkInAIXYZ/go-mcp/protocol"
-	"czloapi/common/logger"
-	"czloapi/model"
 	"time"
 )
 
@@ -59,7 +60,7 @@ func (c *Dashboard) HandleRequest(ctx context.Context, req *protocol.CallToolReq
 	// 转成字符串
 	result := fmt.Sprintf("%s-%s账单\n", query.StartOfDay, query.EndOfDay)
 	for _, m := range dashboards {
-		quotaCost := float64(m.Quota) * 0.002 / 1000
+		quotaCost := float64(m.Quota) / config.QuotaPerUnit
 		result += fmt.Sprintf("Date:%v RequestCount:%d RequestTime(ms):%d Quota($):%.6f ModelName:%s InputToken:%d OutputToken:%d \n", m.Date, m.RequestCount, m.RequestTime, quotaCost, m.ModelName, m.PromptTokens, m.CompletionTokens)
 	}
 	// 返回查询结果

@@ -48,7 +48,6 @@ func InitOptionMap() {
 	config.GlobalOption.RegisterBool("AutomaticEnableChannelEnabled", &config.AutomaticEnableChannelEnabled)
 	config.GlobalOption.RegisterBool("ApproximateTokenEnabled", &config.ApproximateTokenEnabled)
 	config.GlobalOption.RegisterBool("LogConsumeEnabled", &config.LogConsumeEnabled)
-	config.GlobalOption.RegisterBool("DisplayInCurrencyEnabled", &config.DisplayInCurrencyEnabled)
 	config.GlobalOption.RegisterFloat("ChannelDisableThreshold", &config.ChannelDisableThreshold)
 	config.GlobalOption.RegisterBool("EmailDomainRestrictionEnabled", &config.EmailDomainRestrictionEnabled)
 
@@ -95,7 +94,6 @@ func InitOptionMap() {
 	config.GlobalOption.RegisterString("TopUpLink", &config.TopUpLink)
 	config.GlobalOption.RegisterString("ChatLink", &config.ChatLink)
 	config.GlobalOption.RegisterString("ChatLinks", &config.ChatLinks)
-	config.GlobalOption.RegisterFloat("QuotaPerUnit", &config.QuotaPerUnit)
 	config.GlobalOption.RegisterInt("RetryTimes", &config.RetryTimes)
 	config.GlobalOption.RegisterInt("RetryCooldownSeconds", &config.RetryCooldownSeconds)
 

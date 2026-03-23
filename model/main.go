@@ -1,12 +1,12 @@
 package model
 
 import (
-	"fmt"
-	"net/url"
 	"czloapi/common"
 	"czloapi/common/config"
 	"czloapi/common/logger"
 	"czloapi/common/utils"
+	"fmt"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -55,7 +55,7 @@ func createRootAccountIfNeed() error {
 			Status:      config.UserStatusEnabled,
 			DisplayName: "Root User",
 			AccessToken: utils.GetUUID(),
-			Quota:       100000000,
+			Quota:       200000000,
 		}
 		defaultGroupSymbol, defaultGroupErr := GetDefaultUserGroupSymbol()
 		if defaultGroupErr == nil && defaultGroupSymbol != "" {

@@ -667,7 +667,7 @@
     "currencyInfo1": "美元",
     "currencyInfo2": "：直接美元价格",
     "currencyInfo3": "主单位",
-    "currencyInfo4": "： 1 === ￥0.014 / 1k tokens",
+    "currencyInfo4": "：Token 模型统一按 USD / 1M tokens 展示和录入",
     "currencyInfo5": "运行时计费",
     "currencyInfo6": "：Token 模型直接按美元价格计费，按次模型直接按单次美元价格计费",
     "currencyInfo7": "运行时只会叠加分组倍率，模型价格和缓存价格都不再走倍率换算。",

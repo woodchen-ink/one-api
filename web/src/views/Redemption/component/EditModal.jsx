@@ -10,6 +10,7 @@ import {
   DialogActions,
   Button,
   Divider,
+  Alert,
   FormControl,
   InputLabel,
   OutlinedInput,
@@ -18,7 +19,7 @@ import {
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 
-import { renderQuotaWithPrompt, showSuccess, showError, downloadTextAsFile, trims } from 'utils/common';
+import { calculateQuota, renderQuotaByMoney, showSuccess, showError, downloadTextAsFile, trims } from 'utils/common';
 import { API } from 'utils/api';
 
 const getValidationSchema = (t) =>
@@ -36,7 +37,7 @@ const getValidationSchema = (t) =>
 const originInputs = {
   is_edit: false,
   name: '',
-  quota: 100000,
+  quota: 1,
   count: 1
 };
 
@@ -47,7 +48,10 @@ const EditModal = ({ open, redemptiondId, onCancel, onOk }) => {
 
   const submit = async (values, { setErrors, setStatus, setSubmitting }) => {
     setSubmitting(true);
-    values = trims(values);
+    values = {
+      ...trims(values),
+      quota: Number(renderQuotaByMoney(values.quota))
+    };
     let res;
     try {
       if (values.is_edit) {
@@ -87,6 +91,9 @@ const EditModal = ({ open, redemptiondId, onCancel, onOk }) => {
       const { success, message, data } = res.data;
       if (success) {
         data.is_edit = true;
+        if (typeof data.quota === 'number') {
+          data.quota = Number(calculateQuota(data.quota, 6));
+        }
         setInputs(data);
       } else {
         showError(message);
@@ -112,6 +119,9 @@ const EditModal = ({ open, redemptiondId, onCancel, onOk }) => {
       </DialogTitle>
       <Divider />
       <DialogContent>
+        <Alert severity="info" sx={{ mb: 2 }}>
+          兑换码额度按美元填写，保存时会自动换算为系统内部微美元。
+        </Alert>
         <Formik initialValues={inputs} enableReinitialize validationSchema={getValidationSchema(t)} onSubmit={submit}>
           {({ errors, handleBlur, handleChange, handleSubmit, touched, values, isSubmitting }) => (
             <form noValidate onSubmit={handleSubmit}>
@@ -143,11 +153,10 @@ const EditModal = ({ open, redemptiondId, onCancel, onOk }) => {
                   type="number"
                   value={values.quota}
                   name="quota"
-                  endAdornment={<InputAdornment position="end">{renderQuotaWithPrompt(values.quota)}</InputAdornment>}
+                  startAdornment={<InputAdornment position="start">$</InputAdornment>}
                   onBlur={handleBlur}
                   onChange={handleChange}
                   aria-describedby="helper-text-channel-quota-label"
-                  disabled={values.unlimited_quota}
                 />
 
                 {touched.quota && errors.quota && (

@@ -18,31 +18,31 @@ import (
 )
 
 type Quota struct {
-	modelName          string
-	promptTokens       int
-	price              model.Price
-	billingContext     model.BillingContext
-	billingResolution  *model.BillingResolution
-	groupName          string
-	isBackupGroup      bool
-	backupGroupName    string
-	groupRatio         float64
-	inputPrice         float64
-	outputPrice        float64
-	preConsumedQuota   int
-	cacheQuota         int
-	userId             int
-	channelId          int
-	tokenId            int
-	unlimitedQuota     bool
-	HandelStatus       bool
-	usingSubscription  bool
+	modelName         string
+	promptTokens      int
+	price             model.Price
+	billingContext    model.BillingContext
+	billingResolution *model.BillingResolution
+	groupName         string
+	isBackupGroup     bool
+	backupGroupName   string
+	groupRatio        float64
+	inputPrice        float64
+	outputPrice       float64
+	preConsumedQuota  int
+	cacheQuota        int
+	userId            int
+	channelId         int
+	tokenId           int
+	unlimitedQuota    bool
+	HandelStatus      bool
+	usingSubscription bool
 
-	startTime          time.Time
-	firstResponseTime  time.Time
-	extraBillingData   map[string]ExtraBillingData
-	requestPath        string
-	reasoningMetadata  *types.LogReasoningMetadata
+	startTime         time.Time
+	firstResponseTime time.Time
+	extraBillingData  map[string]ExtraBillingData
+	requestPath       string
+	reasoningMetadata *types.LogReasoningMetadata
 }
 
 func NewQuota(c *gin.Context, modelName string, promptTokens int, billingContexts ...model.BillingContext) *Quota {
@@ -306,7 +306,7 @@ func (q *Quota) buildBillingBreakdown(usage *types.Usage, resolution *model.Bill
 			Type:      model.TokensPriceType,
 			Quantity:  quantity,
 			UnitPrice: unitPrice,
-			CostUSD:   float64(quantity) * unitPrice / 1000000.0,
+			CostUSD:   float64(quantity) * unitPrice / config.TokenPricePerMillionBase,
 			Quota:     q.getTokenPriceQuota(quantity, unitPrice),
 		})
 	}
@@ -410,7 +410,7 @@ func (q *Quota) getTokenPriceQuota(tokens int, unitPrice float64) int {
 		return 0
 	}
 
-	return int(math.Ceil(float64(tokens) * unitPrice * q.groupRatio * config.QuotaPerUnit / 1000000.0))
+	return int(math.Ceil(float64(tokens) * unitPrice * q.groupRatio * config.QuotaPerUnit / config.TokenPricePerMillionBase))
 }
 
 func (q *Quota) getFlatPriceQuota(unitPrice float64) int {

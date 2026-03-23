@@ -80,7 +80,7 @@ func TestQuotaGetTotalQuotaUsesDirectUSDPerMillion(t *testing.T) {
 		},
 	}
 
-	assert.Equal(t, 1300000, quota.GetTotalQuotaByUsage(usage))
+	assert.Equal(t, 2600000, quota.GetTotalQuotaByUsage(usage))
 }
 
 func TestQuotaGetLogMetaIncludesBillingRulesAndBreakdown(t *testing.T) {
