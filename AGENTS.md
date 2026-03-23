@@ -6,6 +6,7 @@ Forked from songquanpeng/czloapi. Multi-provider proxy for OpenAI, Claude, Gemin
 ## Important
 
 - 前端 管理员界面直接使用中文, 不需要i18n, 用户界面使用i18n.
+- 当需要实现新功能或新组件, 先看看`https://github.com/QuantumNous/new-api`这个项目有没有参考实现.
 
 ## Build / Run / Test Commands
 
