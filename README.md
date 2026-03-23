@@ -81,7 +81,6 @@ ghcr.io/martialbe/czloapi
 | [Mistral](https://mistral.ai/)                                        | ✅                       | ✅         | -      | -           | -                                                                |
 | [Groq](https://console.groq.com/keys)                                 | ✅                       | -          | -      | -           | -                                                                |
 | [Amazon Bedrock](https://console.aws.amazon.com/bedrock/home)         | ⚠️ 仅支持 Anthropic 模型 | -          | -      | -           | -                                                                |
-| [零一万物](https://platform.lingyiwanwu.com/details)                  | ✅                       | -          | -      | -           | -                                                                |
 | [Cloudflare AI](https://ai.cloudflare.com/)                           | ✅                       | -          | ⚠️ stt | ⚠️ 图片生成 | -                                                                |
 | [Midjourney](https://www.midjourney.com/)                             | -                        | -          | -      | -           | [midjourney-proxy](https://github.com/novicezk/midjourney-proxy) |
 | [Cohere](https://cohere.com/)                                         | ✅                       | -          | -      | -           | -                                                                |

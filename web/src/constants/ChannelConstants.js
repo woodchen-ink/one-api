@@ -139,13 +139,6 @@ export const CHANNEL_OPTIONS = {
     color: 'orange',
     url: 'https://console.aws.amazon.com/bedrock/home'
   },
-  33: {
-    key: 33,
-    text: '零一万物',
-    value: 33,
-    color: 'primary',
-    url: 'https://platform.lingyiwanwu.com/details'
-  },
   35: {
     key: 35,
     text: 'Cloudflare AI',

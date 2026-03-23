@@ -22,7 +22,6 @@ import (
 	"czloapi/providers/groq"
 	"czloapi/providers/hunyuan"
 	"czloapi/providers/jina"
-	"czloapi/providers/lingyi"
 	"czloapi/providers/minimax"
 	"czloapi/providers/mistral"
 	"czloapi/providers/moonshot"
@@ -76,7 +75,6 @@ func init() {
 		config.ChannelTypeCoze:            coze.CozeProviderFactory{},
 		config.ChannelTypeOllama:          ollama.OllamaProviderFactory{},
 		config.ChannelTypeMoonshot:        moonshot.MoonshotProviderFactory{},
-		config.ChannelTypeLingyi:          lingyi.LingyiProviderFactory{},
 		config.ChannelTypeHunyuan:         hunyuan.HunyuanProviderFactory{},
 		config.ChannelTypeVertexAI:        vertexai.VertexAIProviderFactory{},
 		config.ChannelTypeSiliconflow:     siliconflow.SiliconflowProviderFactory{},

@@ -278,7 +278,6 @@ const (
 	ChannelTypeMistral         = 30
 	ChannelTypeGroq            = 31
 	ChannelTypeBedrock         = 32
-	ChannelTypeLingyi          = 33
 	ChannelTypeCloudflareAI    = 35
 	ChannelTypeCohere          = 36
 	ChannelTypeStabilityAI     = 37

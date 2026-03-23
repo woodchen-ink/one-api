@@ -334,13 +334,6 @@ const typeConfig = {
     },
     modelGroup: 'Anthropic'
   },
-  33: {
-    input: {
-      models: ['yi-34b-chat-0205', 'yi-34b-chat-200k', 'yi-vl-plus'],
-      test_model: 'yi-34b-chat-0205'
-    },
-    modelGroup: 'Lingyiwanwu'
-  },
   35: {
     input: {
       models: [

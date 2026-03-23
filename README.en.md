@@ -90,7 +90,6 @@ If you find that a new model is missing, please update the newly added model in 
 | [Mistral](https://mistral.ai/)                                        | ✅                               | ✅         | -      | -        | -                                                                |
 | [Groq](https://console.groq.com/keys)                                 | ✅                               | -          | -      | -        | -                                                                |
 | [Amazon Bedrock](https://console.aws.amazon.com/bedrock/home)         | ⚠️ Only support Anthropic models | -          | -      | -        | -                                                                |
-| [零一万物](https://platform.lingyiwanwu.com/details)                  | ✅                               | -          | -      | -        | -                                                                |
 | [Cloudflare AI](https://ai.cloudflare.com/)                           | ✅                               | -          | ⚠️ stt | ⚠️ image | -                                                                |
 | [Midjourney](https://www.midjourney.com/)                             | -                                | -          | -      | -        | [midjourney-proxy](https://github.com/novicezk/midjourney-proxy) |
 | [Cohere](https://cohere.com/)                                         | ✅                               | -          | -      | -        | -                                                                |
