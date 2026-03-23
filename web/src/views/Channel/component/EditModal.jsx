@@ -670,7 +670,8 @@ const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, model
                       {(inputPrompt.only_chat ||
                         inputPrompt.pre_cost ||
                         inputPrompt.compatible_response ||
-                        inputPrompt.allow_extra_body) && (
+                        inputPrompt.allow_extra_body ||
+                        inputPrompt.retry_times) && (
                         <Box sx={{ mt: 1.5, mb: 1 }}>
                           <Typography variant="subtitle2" sx={{ mb: 0.5, px: 1.5 }}>
                             {t('channel_edit.optionSettings')}
@@ -768,6 +769,25 @@ const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, model
                                     </FormHelperText>
                                   )}
                                 </FormControl>
+                              </Grid>
+                            )}
+                            {inputPrompt.retry_times && (
+                              <Grid item xs={12} sm={6}>
+                                <Tooltip title={customizeT(inputPrompt.retry_times)} placement="top">
+                                  <TextField
+                                    id="channel-retry_times-label"
+                                    label={customizeT(inputLabel.retry_times)}
+                                    type="number"
+                                    size="small"
+                                    fullWidth
+                                    value={values.retry_times}
+                                    name="retry_times"
+                                    disabled={hasTag}
+                                    onBlur={handleBlur}
+                                    onChange={handleChange}
+                                    inputProps={{ min: 0, max: 10 }}
+                                  />
+                                </Tooltip>
                               </Grid>
                             )}
                           </Grid>

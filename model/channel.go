@@ -41,6 +41,7 @@ type Channel struct {
 	PreCost            int     `json:"pre_cost" form:"pre_cost" gorm:"default:1"`
 	CompatibleResponse bool    `json:"compatible_response" gorm:"default:false"`
 	AllowExtraBody     bool    `json:"allow_extra_body" form:"allow_extra_body" gorm:"default:false"`
+	RetryTimes         *int    `json:"retry_times" gorm:"default:0"`
 
 	DisabledStream *datatypes.JSONSlice[string] `json:"disabled_stream,omitempty" gorm:"type:json"`
 
@@ -54,6 +55,13 @@ func (c *Channel) AllowStream(modelName string) bool {
 	}
 
 	return !slices.Contains(*c.DisabledStream, modelName)
+}
+
+func (c *Channel) GetRetryTimes() int {
+	if c.RetryTimes == nil {
+		return 0
+	}
+	return *c.RetryTimes
 }
 
 type PluginType map[string]map[string]interface{}

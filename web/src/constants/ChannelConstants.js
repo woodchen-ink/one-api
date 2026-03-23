@@ -146,13 +146,6 @@ export const CHANNEL_OPTIONS = {
     color: 'default',
     url: 'https://cohere.com/'
   },
-  37: {
-    key: 37,
-    text: 'Stability AI',
-    value: 37,
-    color: 'default',
-    url: 'https://platform.stability.ai/account/credits'
-  },
   38: {
     key: 38,
     text: 'Coze',

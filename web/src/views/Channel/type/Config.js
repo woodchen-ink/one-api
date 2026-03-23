@@ -18,7 +18,8 @@ const defaultConfig = {
     pre_cost: 1,
     disabled_stream: [],
     compatible_response: false,
-    allow_extra_body: false
+    allow_extra_body: false,
+    retry_times: 0
   },
   inputLabel: {
     name: '渠道名称',
@@ -39,7 +40,8 @@ const defaultConfig = {
     pre_cost: '预计费选项',
     disabled_stream: '禁用流式的模型',
     compatible_response: 'GPT-5 Chat转Response',
-    allow_extra_body: '允许额外字段透传'
+    allow_extra_body: '允许额外字段透传',
+    retry_times: '同渠道重试'
   },
   prompt: {
     type: '请选择渠道类型',
@@ -65,7 +67,8 @@ const defaultConfig = {
     disabled_stream: '这里填写禁用流式的模型，注意：如果填写了禁用流式的模型，那么这些模型在流式请求时会跳过该渠道',
     compatible_response:
       '开启后，gpt-5* 的 /v1/chat/completions 请求会自动改走 /v1/responses，并将返回结果转换为 chat 格式。该开关不影响 /v1/responses 的原生转发。',
-    allow_extra_body: '开启后，将会透传用户请求中的额外字段（如OpenAI SDK的extra_body参数），适用于需要传递自定义参数到上游API的场景'
+    allow_extra_body: '开启后，将会透传用户请求中的额外字段（如OpenAI SDK的extra_body参数），适用于需要传递自定义参数到上游API的场景',
+    retry_times: '当上游是账号池（多Key负载均衡）时，单次失败可能只是某个Key耗尽，设置后会在同一渠道内重试指定次数再切换其他渠道。0表示不启用。'
   },
   modelGroup: 'OpenAI'
 };
@@ -351,15 +354,6 @@ const typeConfig = {
       provider_models_list: '从Cohere获取模型列表'
     },
     modelGroup: 'Cohere'
-  },
-  37: {
-    input: {
-      models: ['sd3', 'sd3-turbo', 'stable-image-core']
-    },
-    prompt: {
-      test_model: ''
-    },
-    modelGroup: 'Stability AI'
   },
   38: {
     input: {

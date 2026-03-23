@@ -66,6 +66,18 @@ func Relay(c *gin.Context) {
 	startTime := c.GetTime("requestStartTime")
 	timeout := time.Duration(config.RetryTimeOut) * time.Second
 
+	// 同渠道重试（账号池模式）
+	if retryTimes > 0 {
+		apiErr, done = retrySameChannel(c, relay, channel, apiErr, startTime, timeout)
+		if apiErr == nil {
+			metrics.RecordProvider(c, 200)
+			return
+		}
+		if done || !shouldRetry(c, apiErr, channel.Type) {
+			retryTimes = 0
+		}
+	}
+
 	for i := retryTimes; i > 0; i-- {
 		// 冻结通道
 		shouldCooldowns(c, channel, apiErr)
@@ -87,6 +99,16 @@ func Relay(c *gin.Context) {
 			return
 		}
 		go processChannelRelayError(c.Request.Context(), channel.Id, channel.Name, apiErr, channel.Type)
+		if done || !shouldRetry(c, apiErr, channel.Type) {
+			break
+		}
+
+		// 新渠道也尝试同渠道重试
+		apiErr, done = retrySameChannel(c, relay, channel, apiErr, startTime, timeout)
+		if apiErr == nil {
+			metrics.RecordProvider(c, 200)
+			return
+		}
 		if done || !shouldRetry(c, apiErr, channel.Type) {
 			break
 		}
@@ -139,6 +161,55 @@ func RelayHandler(relay RelayBaseInterface) (err *types.OpenAIErrorWithStatusCod
 	quota.Consume(relay.getContext(), usage, relay.IsStream())
 
 	return
+}
+
+// retrySameChannel 同渠道重试（账号池模式）
+// 当渠道配置了 retry_times > 0 时，在同一渠道上重试指定次数
+// 429 错误不进行同渠道重试，因为整个渠道被限流
+func retrySameChannel(
+	c *gin.Context,
+	relay RelayBaseInterface,
+	channel *model.Channel,
+	lastErr *types.OpenAIErrorWithStatusCode,
+	startTime time.Time,
+	timeout time.Duration,
+) (*types.OpenAIErrorWithStatusCode, bool) {
+	sameChannelRetries := channel.GetRetryTimes()
+	if sameChannelRetries <= 0 {
+		return lastErr, false
+	}
+
+	apiErr := lastErr
+	for j := 0; j < sameChannelRetries; j++ {
+		// 429 表示整个渠道被限流，不再同渠道重试
+		if apiErr.StatusCode == http.StatusTooManyRequests {
+			break
+		}
+
+		if time.Since(startTime) > timeout {
+			return common.StringErrorWrapperLocal(
+				"重试超时，上游负载已饱和，请稍后再试",
+				"system_error",
+				http.StatusTooManyRequests,
+			), true
+		}
+
+		logger.LogError(c.Request.Context(), fmt.Sprintf(
+			"same-channel retry channel #%d(%s), attempt %d/%d",
+			channel.Id, channel.Name, j+1, sameChannelRetries))
+
+		var done bool
+		apiErr, done = RelayHandler(relay)
+		if apiErr == nil {
+			return nil, false
+		}
+		go processChannelRelayError(c.Request.Context(), channel.Id, channel.Name, apiErr, channel.Type)
+		if done || !shouldRetry(c, apiErr, channel.Type) {
+			return apiErr, done
+		}
+	}
+
+	return apiErr, false
 }
 
 func shouldCooldowns(c *gin.Context, channel *model.Channel, apiErr *types.OpenAIErrorWithStatusCode) {

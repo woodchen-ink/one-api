@@ -182,7 +182,6 @@ func GetDefaultModelOwnedBy() []*ModelOwnedBy {
 		{Id: config.ChannelTypeGroq, Name: "Groq", Icon: "https://registry.npmmirror.com/@lobehub/icons-static-svg/latest/files/icons/groq.svg"},
 		{Id: config.ChannelTypeCloudflareAI, Name: "Cloudflare AI", Icon: "https://registry.npmmirror.com/@lobehub/icons-static-svg/latest/files/icons/cloudflare-color.svg"},
 		{Id: config.ChannelTypeCohere, Name: "Cohere", Icon: "https://registry.npmmirror.com/@lobehub/icons-static-svg/latest/files/icons/cohere-color.svg"},
-		{Id: config.ChannelTypeStabilityAI, Name: "Stability AI", Icon: "https://registry.npmmirror.com/@lobehub/icons-static-svg/latest/files/icons/stability-color.svg"},
 		{Id: config.ChannelTypeCoze, Name: "Coze", Icon: "https://registry.npmmirror.com/@lobehub/icons-static-svg/latest/files/icons/coze.svg"},
 		{Id: config.ChannelTypeOllama, Name: "Ollama", Icon: "https://registry.npmmirror.com/@lobehub/icons-static-svg/latest/files/icons/ollama.svg"},
 		{Id: config.ChannelTypeHunyuan, Name: "Hunyuan", Icon: "https://registry.npmmirror.com/@lobehub/icons-static-svg/latest/files/icons/hunyuan-color.svg"},

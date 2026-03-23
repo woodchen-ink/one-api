@@ -31,7 +31,6 @@ import (
 	"czloapi/providers/palm"
 	"czloapi/providers/replicate"
 	"czloapi/providers/siliconflow"
-	"czloapi/providers/stabilityAI"
 	"czloapi/providers/tencent"
 	"czloapi/providers/vertexai"
 	"czloapi/providers/xAI"
@@ -69,7 +68,6 @@ func init() {
 		config.ChannelTypeBedrock:         bedrock.BedrockProviderFactory{},
 		config.ChannelTypeCloudflareAI:    cloudflareAI.CloudflareAIProviderFactory{},
 		config.ChannelTypeCohere:          cohere.CohereProviderFactory{},
-		config.ChannelTypeStabilityAI:     stabilityAI.StabilityAIProviderFactory{},
 		config.ChannelTypeCoze:            coze.CozeProviderFactory{},
 		config.ChannelTypeOllama:          ollama.OllamaProviderFactory{},
 		config.ChannelTypeMoonshot:        moonshot.MoonshotProviderFactory{},
