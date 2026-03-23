@@ -260,6 +260,9 @@ func buildCompatibleResponsesRequest(chatRequest types.ChatCompletionRequest, mo
 
 	resRequest := chatRequest.ToResponsesRequest()
 	resRequest.ConvertChat = true
+	// Some upstream Responses-compatible gateways reject or mishandle
+	// max_output_tokens on converted chat requests, so omit it here.
+	resRequest.MaxOutputTokens = 0
 
 	return resRequest
 }
