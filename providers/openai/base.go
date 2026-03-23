@@ -326,6 +326,13 @@ func (p *OpenAIProvider) GetRequestTextBody(relayMode int, ModelName string, req
 
 	// 获取请求头
 	headers := p.GetRequestHeaders()
+	if relayMode == config.RelayModeResponses {
+		if responsesRequest, ok := request.(*types.OpenAIResponsesRequest); ok && responsesRequest.Stream {
+			headers["Accept"] = "text/event-stream"
+		} else {
+			headers["Accept"] = "application/json"
+		}
+	}
 
 	// 处理额外参数
 	customParams, err := p.CustomParameterHandler()

@@ -20,6 +20,7 @@ func (c *ChatCompletionRequest) ToResponsesRequest() *OpenAIResponsesRequest {
 		Stream:            c.Stream,
 		Temperature:       c.Temperature,
 		TopP:              c.TopP,
+		User:              c.User,
 	}
 
 	if c.MaxCompletionTokens > 0 && c.MaxTokens == 0 {
