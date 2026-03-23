@@ -268,6 +268,53 @@ func (p *OpenAIProvider) mergeExtraBodyFromRawRequest(requestMap map[string]inte
 	return rawRequest
 }
 
+func sanitizeResponsesRequestMap(requestMap map[string]interface{}, convertChat bool) map[string]interface{} {
+	// Strip legacy chat-only fields that may be reintroduced by extra_body/custom params.
+	dropKeys := []string{
+		"messages",
+		"max_tokens",
+		"max_completion_tokens",
+		"stream_options",
+		"presence_penalty",
+		"frequency_penalty",
+		"seed",
+		"logit_bias",
+		"logprobs",
+		"top_logprobs",
+		"n",
+		"user",
+		"functions",
+		"function_call",
+		"response_format",
+		"stop",
+		"reasoning_effort",
+		"verbosity",
+		"thinking",
+		"enable_thinking",
+		"thinking_budget",
+		"enable_search",
+		"prediction",
+		"web_search_options",
+		"modalities",
+		"audio",
+	}
+
+	for _, key := range dropKeys {
+		delete(requestMap, key)
+	}
+
+	if !convertChat {
+		return requestMap
+	}
+
+	modelName, _ := requestMap["model"].(string)
+	if strings.HasPrefix(modelName, "gpt-5") && modelName != "gpt-5-chat-latest" {
+		delete(requestMap, "temperature")
+	}
+
+	return requestMap
+}
+
 // 修改GetRequestTextBody函数中的对应部分
 func (p *OpenAIProvider) GetRequestTextBody(relayMode int, ModelName string, request any) (*http.Request, *types.OpenAIErrorWithStatusCode) {
 	url, errWithCode := p.GetSupportedAPIUri(relayMode)
@@ -316,6 +363,14 @@ func (p *OpenAIProvider) GetRequestTextBody(relayMode int, ModelName string, req
 		// 处理自定义额外参数
 		if customParams != nil {
 			requestMap = p.mergeCustomParams(requestMap, customParams)
+		}
+
+		if relayMode == config.RelayModeResponses {
+			convertChat := false
+			if responsesRequest, ok := request.(*types.OpenAIResponsesRequest); ok {
+				convertChat = responsesRequest.ConvertChat
+			}
+			requestMap = sanitizeResponsesRequestMap(requestMap, convertChat)
 		}
 
 		// 使用修改后的请求体创建请求

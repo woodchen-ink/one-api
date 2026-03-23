@@ -547,8 +547,17 @@ func (c *ChatCompletionRequest) ToResponsesRequest() *OpenAIResponsesRequest {
 		}
 	}
 
+	instructionsParts := make([]string, 0)
 	inputs := make([]InputResponses, 0)
 	for _, msg := range c.Messages {
+		if msg.IsSystemRole() {
+			instructionText := msg.StringContent()
+			if instructionText != "" {
+				instructionsParts = append(instructionsParts, instructionText)
+			}
+			continue
+		}
+
 		// 处理ToolCalls
 		if len(msg.ToolCalls) > 0 {
 			for _, tool := range msg.ToolCalls {
@@ -639,6 +648,10 @@ func (c *ChatCompletionRequest) ToResponsesRequest() *OpenAIResponsesRequest {
 			input.Content = inputContent
 			inputs = append(inputs, input)
 		}
+	}
+
+	if len(instructionsParts) > 0 {
+		res.Instructions = strings.Join(instructionsParts, "\n\n")
 	}
 
 	if len(inputs) > 0 {

@@ -50,6 +50,56 @@ func TestToResponsesRequestSingleUserTextUsesStringInput(t *testing.T) {
 	assert.Equal(t, "hello world", input)
 }
 
+func TestToResponsesRequestMovesSystemMessageToInstructions(t *testing.T) {
+	req := &ChatCompletionRequest{
+		Model: "gpt-5.2-codex",
+		Messages: []ChatCompletionMessage{
+			{
+				Role:    ChatMessageRoleSystem,
+				Content: "system prompt",
+			},
+			{
+				Role:    ChatMessageRoleUser,
+				Content: "hello world",
+			},
+		},
+	}
+
+	resReq := req.ToResponsesRequest()
+	assert.Equal(t, "system prompt", resReq.Instructions)
+
+	input, ok := resReq.Input.(string)
+	require.True(t, ok)
+	assert.Equal(t, "hello world", input)
+}
+
+func TestToResponsesRequestCombinesSystemAndDeveloperIntoInstructions(t *testing.T) {
+	req := &ChatCompletionRequest{
+		Model: "gpt-5.2-codex",
+		Messages: []ChatCompletionMessage{
+			{
+				Role:    ChatMessageRoleSystem,
+				Content: "system prompt",
+			},
+			{
+				Role:    ChatMessageRoleDeveloper,
+				Content: "developer prompt",
+			},
+			{
+				Role:    ChatMessageRoleUser,
+				Content: "hello world",
+			},
+		},
+	}
+
+	resReq := req.ToResponsesRequest()
+	assert.Equal(t, "system prompt\n\ndeveloper prompt", resReq.Instructions)
+
+	input, ok := resReq.Input.(string)
+	require.True(t, ok)
+	assert.Equal(t, "hello world", input)
+}
+
 func TestToResponsesRequestSupportsOutputTextInputType(t *testing.T) {
 	req := &ChatCompletionRequest{
 		Model: "gpt-5.2-codex",
