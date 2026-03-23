@@ -1,6 +1,9 @@
 package types
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"strings"
+)
 
 const (
 	ContentTypeText     = "text"
@@ -639,6 +642,28 @@ func (c *ChatCompletionRequest) ToResponsesRequest() *OpenAIResponsesRequest {
 	}
 
 	if len(inputs) > 0 {
+		if len(inputs) == 1 {
+			input := inputs[0]
+			if input.Type == InputTypeMessage && input.Role == ChatMessageRoleUser {
+				contents, err := input.ParseContent()
+				if err == nil && len(contents) > 0 {
+					textOnly := true
+					var builder strings.Builder
+					for _, content := range contents {
+						if content.Type != ContentTypeInputText {
+							textOnly = false
+							break
+						}
+						builder.WriteString(content.Text)
+					}
+					if textOnly {
+						res.Input = builder.String()
+						return res
+					}
+				}
+			}
+		}
+
 		res.Input = inputs
 	}
 

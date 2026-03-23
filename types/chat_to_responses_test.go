@@ -33,6 +33,23 @@ func TestToResponsesRequestAssistantTextUsesInputText(t *testing.T) {
 	assert.False(t, isString)
 }
 
+func TestToResponsesRequestSingleUserTextUsesStringInput(t *testing.T) {
+	req := &ChatCompletionRequest{
+		Model: "gpt-5.2-codex",
+		Messages: []ChatCompletionMessage{
+			{
+				Role:    ChatMessageRoleUser,
+				Content: "hello world",
+			},
+		},
+	}
+
+	resReq := req.ToResponsesRequest()
+	input, ok := resReq.Input.(string)
+	require.True(t, ok)
+	assert.Equal(t, "hello world", input)
+}
+
 func TestToResponsesRequestSupportsOutputTextInputType(t *testing.T) {
 	req := &ChatCompletionRequest{
 		Model: "gpt-5.2-codex",
