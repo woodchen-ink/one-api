@@ -322,6 +322,93 @@ func responseJsonClient(c *gin.Context, data interface{}) *types.OpenAIErrorWith
 	return nil
 }
 
+func responseJsonToChatStreamClient(c *gin.Context, response *types.ChatCompletionResponse, endHandler StreamEndHandler) (firstResponseTime time.Time, errWithOP *types.OpenAIErrorWithStatusCode) {
+	requester.SetEventStreamHeaders(c)
+
+	writeStreamPayload := func(payload string) *types.OpenAIErrorWithStatusCode {
+		select {
+		case <-c.Request.Context().Done():
+			return nil
+		default:
+			if firstResponseTime.IsZero() {
+				firstResponseTime = time.Now()
+			}
+			if _, err := c.Writer.Write([]byte("data: " + payload + "\n\n")); err != nil {
+				logger.LogError(c.Request.Context(), "write_response_stream_failed:"+err.Error())
+				return common.ErrorWrapper(err, "write_response_stream_failed", http.StatusInternalServerError)
+			}
+			c.Writer.Flush()
+			return nil
+		}
+	}
+
+	initialChunk := types.ChatCompletionStreamResponse{
+		ID:      response.ID,
+		Object:  "chat.completion.chunk",
+		Created: response.Created,
+		Model:   response.Model,
+		Choices: make([]types.ChatCompletionStreamChoice, 0, len(response.Choices)),
+	}
+
+	finishChunk := types.ChatCompletionStreamResponse{
+		ID:      response.ID,
+		Object:  "chat.completion.chunk",
+		Created: response.Created,
+		Model:   response.Model,
+		Choices: make([]types.ChatCompletionStreamChoice, 0, len(response.Choices)),
+	}
+
+	for index, choice := range response.Choices {
+		initialChunk.Choices = append(initialChunk.Choices, types.ChatCompletionStreamChoice{
+			Index: index,
+			Delta: types.ChatCompletionStreamChoiceDelta{
+				Role:             choice.Message.Role,
+				Content:          choice.Message.StringContent(),
+				ReasoningContent: choice.Message.ReasoningContent,
+				ToolCalls:        choice.Message.ToolCalls,
+			},
+			FinishReason: nil,
+		})
+
+		finishChunk.Choices = append(finishChunk.Choices, types.ChatCompletionStreamChoice{
+			Index:        index,
+			Delta:        types.ChatCompletionStreamChoiceDelta{},
+			FinishReason: choice.FinishReason,
+		})
+	}
+
+	initialBody, err := json.Marshal(initialChunk)
+	if err != nil {
+		logger.LogError(c.Request.Context(), "marshal_chat_stream_initial_failed:"+err.Error())
+		return firstResponseTime, common.ErrorWrapper(err, "marshal_chat_stream_initial_failed", http.StatusInternalServerError)
+	}
+	if errWithOP = writeStreamPayload(string(initialBody)); errWithOP != nil {
+		return firstResponseTime, errWithOP
+	}
+
+	finishBody, err := json.Marshal(finishChunk)
+	if err != nil {
+		logger.LogError(c.Request.Context(), "marshal_chat_stream_finish_failed:"+err.Error())
+		return firstResponseTime, common.ErrorWrapper(err, "marshal_chat_stream_finish_failed", http.StatusInternalServerError)
+	}
+	if errWithOP = writeStreamPayload(string(finishBody)); errWithOP != nil {
+		return firstResponseTime, errWithOP
+	}
+
+	if endHandler != nil {
+		streamData := endHandler()
+		if streamData != "" {
+			if errWithOP = writeStreamPayload(streamData); errWithOP != nil {
+				return firstResponseTime, errWithOP
+			}
+		}
+	}
+
+	_ = writeStreamPayload("[DONE]")
+
+	return firstResponseTime, nil
+}
+
 type StreamEndHandler func() string
 
 func responseStreamClient(c *gin.Context, stream requester.StreamReaderInterface[string], endHandler StreamEndHandler) (firstResponseTime time.Time, errWithOP *types.OpenAIErrorWithStatusCode) {

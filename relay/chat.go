@@ -215,6 +215,29 @@ func (r *relayChat) compatibleSend(resProvider providersBase.ResponsesInterface)
 		response, err = resProvider.CreateResponsesStream(resRequest)
 		if err != nil {
 			logger.LogError(r.c.Request.Context(), fmt.Sprintf("chat->responses stream forward failed, model=%s, status=%d, upstream=%s, debug=%s", r.modelName, err.StatusCode, err.Message, debugSummary))
+			fallbackRequest := *resRequest
+			fallbackRequest.Stream = false
+			var fallbackResponse *types.OpenAIResponsesResponses
+			fallbackResponse, err = resProvider.CreateResponses(&fallbackRequest)
+			if err != nil {
+				logger.LogError(r.c.Request.Context(), fmt.Sprintf("chat->responses non-stream fallback failed, model=%s, status=%d, upstream=%s, debug=%s", r.modelName, err.StatusCode, err.Message, debugSummary))
+				return
+			}
+
+			if r.heartbeat != nil {
+				r.heartbeat.Stop()
+			}
+
+			doneStr := func() string {
+				return r.getUsageResponse()
+			}
+
+			var firstResponseTime time.Time
+			firstResponseTime, err = responseJsonToChatStreamClient(r.c, fallbackResponse.ToChat(), doneStr)
+			r.SetFirstResponseTime(firstResponseTime)
+			if err != nil {
+				done = true
+			}
 			return
 		}
 
