@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import React, { useState, useEffect } from 'react';
 // material-ui
 import { useTheme, styled } from '@mui/material/styles';
-import { Box, Grid, Typography, IconButton, LinearProgress } from '@mui/material';
+import { Box, Grid, Typography, IconButton, LinearProgress, Stack } from '@mui/material';
 
 // project imports
 import MainCard from 'ui-component/cards/MainCard';
@@ -16,7 +16,8 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
   borderRadius: `${theme.shape.borderRadius}px`,
   border: theme.palette.mode === 'dark' ? '1px solid rgba(255, 255, 255, 0.05)' : 'none',
   boxShadow: theme.palette.mode === 'dark' ? 'none' : '0px 1px 3px rgba(0, 0, 0, 0.1)',
-  overflow: 'hidden'
+  overflow: 'hidden',
+  height: '100px'
 }));
 
 // ==============================|| RPM - REQUEST RATE LIMIT CARD ||============================== //
@@ -69,7 +70,7 @@ const RPM = () => {
         <CardWrapper border={false} content={false} sx={{ height: '100%' }}>
           <Box
             sx={{
-              p: 2,
+              p: 2.5,
               height: '100%',
               position: 'relative'
             }}
@@ -80,60 +81,62 @@ const RPM = () => {
                   <Typography
                     variant="h3"
                     sx={{
-                      fontSize: '20px',
+                      fontSize: '24px',
                       fontWeight: 500,
                       color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.95)' : 'rgba(0, 0, 0, 0.87)',
-                      mb: 0.25
+                      mb: 0.5
                     }}
                   >
                     {rateData.rpm} RPM
                   </Typography>
-                  <IconButton
-                    onClick={fetchRPMData}
-                    disabled={localLoading}
-                    size="small"
-                    sx={{
-                      p: 0.5,
-                      '&:hover': {
-                        backgroundColor: 'transparent'
-                      }
-                    }}
-                  >
-                    <RefreshIcon
-                      fontSize="small"
+                  <Stack direction="row" alignItems="center" spacing={0.5}>
+                    <Typography
+                      variant="body2"
                       sx={{
-                        color: localLoading ? theme.palette.primary.main : theme.palette.text.secondary,
-                        animation: localLoading ? 'spin 1s linear infinite' : 'none',
-                        '@keyframes spin': {
-                          '0%': {
-                            transform: 'rotate(0deg)'
-                          },
-                          '100%': {
-                            transform: 'rotate(360deg)'
-                          }
+                        fontSize: '13px',
+                        color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      {t('dashboard_index.RPM')}
+                    </Typography>
+                    <IconButton
+                      onClick={fetchRPMData}
+                      disabled={localLoading}
+                      size="small"
+                      sx={{
+                        p: 0.5,
+                        '&:hover': {
+                          backgroundColor: 'transparent'
                         }
                       }}
-                    />
-                  </IconButton>
+                    >
+                      <RefreshIcon
+                        fontSize="small"
+                        sx={{
+                          color: localLoading ? theme.palette.primary.main : theme.palette.text.secondary,
+                          animation: localLoading ? 'spin 1s linear infinite' : 'none',
+                          '@keyframes spin': {
+                            '0%': {
+                              transform: 'rotate(0deg)'
+                            },
+                            '100%': {
+                              transform: 'rotate(360deg)'
+                            }
+                          }
+                        }}
+                      />
+                    </IconButton>
+                  </Stack>
                 </Box>
-
-                <Typography
-                  variant="body2"
-                  sx={{
-                    fontSize: '13px',
-                    color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)'
-                  }}
-                >
-                  {t('dashboard_index.RPM')}
-                </Typography>
                 <LinearProgress
                   variant="buffer"
                   value={rateData.usageRpmRate > 100 ? 100 : rateData.usageRpmRate}
                   valueBuffer={100}
                   color={rateData.usageRpmRate > 80 ? 'error' : rateData.usageRpmRate > 50 ? 'warning' : 'success'}
                   sx={{
-                    mt: 1,
-                    mb: 1
+                    mt: 1.5,
+                    mb: 1.5
                   }}
                 />
                 <Box

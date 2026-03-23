@@ -1,7 +1,8 @@
+import { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 // material-ui
 import { useTheme, styled } from '@mui/material/styles';
-import { Box, Grid, Typography, Divider } from '@mui/material';
+import { Box, Grid, Typography, Stack } from '@mui/material';
 
 // third-party
 import Chart from 'react-apexcharts';
@@ -11,6 +12,7 @@ import MainCard from 'ui-component/cards/MainCard';
 import SkeletonTotalOrderCard from 'ui-component/cards/Skeleton/EarningCard';
 import { Icon } from '@iconify/react';
 import { renderNumber } from 'utils/common';
+import { useTranslation } from 'react-i18next';
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
   borderRadius: `${theme.shape.borderRadius}px`,
@@ -74,29 +76,13 @@ const getChartOptions = (theme, type = 'default') => {
     },
     colors: [getChartColor()],
     tooltip: {
-      enabled: true,
-      theme: theme.palette.mode,
-      style: {
-        fontSize: '12px',
-        fontFamily: theme.typography.fontFamily
-      },
-      x: {
-        show: true,
-        format: 'yyyy-MM-dd'
-      },
-      y: {
-        title: {
-          formatter: () => ''
-        }
-      },
-      marker: {
-        show: false
-      }
+      enabled: false
     },
     markers: {
-      size: 0,
+      size: 3,
+      strokeWidth: 0,
       hover: {
-        size: 3,
+        size: 4,
         sizeOffset: 1
       }
     }
@@ -107,6 +93,17 @@ const getChartOptions = (theme, type = 'default') => {
 
 const StatisticalLineChartCard = ({ isLoading, title, chartData, todayValue, lastDayValue, type = 'default' }) => {
   const theme = useTheme();
+  const { t } = useTranslation();
+  const [activePoint, setActivePoint] = useState(null);
+  const chartAreaRef = useRef(null);
+
+  const points = chartData?.series?.[0]?.data || [];
+
+  useEffect(() => {
+    const latestPoint = points[points.length - 1] || null;
+    setActivePoint(latestPoint);
+  }, [points]);
+
   const customChartData = chartData
     ? {
         ...chartData,
@@ -128,6 +125,25 @@ const StatisticalLineChartCard = ({ isLoading, title, chartData, todayValue, las
         }
       }
     : null;
+
+  const handleChartMouseMove = (event) => {
+    if (!chartAreaRef.current || points.length === 0) {
+      return;
+    }
+
+    const rect = chartAreaRef.current.getBoundingClientRect();
+    if (rect.width <= 0) {
+      return;
+    }
+
+    const relativeX = Math.min(Math.max(event.clientX - rect.left, 0), rect.width);
+    const index = Math.round((relativeX / rect.width) * (points.length - 1));
+    setActivePoint(points[index] || points[points.length - 1] || null);
+  };
+
+  const handleChartMouseLeave = () => {
+    setActivePoint(points[points.length - 1] || null);
+  };
 
   // 获取趋势图标
   const getTrendIcon = (percentChange) => {
@@ -158,6 +174,18 @@ const StatisticalLineChartCard = ({ isLoading, title, chartData, todayValue, las
   const trendIcon = getTrendIcon(percentChange);
   const trendColor = getTrendColor(percentChange);
 
+  const formatPointValue = (point) => {
+    if (!point) {
+      return '';
+    }
+
+    if (type === 'quota') {
+      return `$${renderNumber(point.y || 0)}`;
+    }
+
+    return renderNumber(point.y || 0);
+  };
+
   return (
     <>
       {isLoading ? (
@@ -166,7 +194,7 @@ const StatisticalLineChartCard = ({ isLoading, title, chartData, todayValue, las
         <CardWrapper border={false} content={false}>
           <Box
             sx={{
-              p: 1.75,
+              p: 2,
               flex: 1,
               display: 'flex',
               flexDirection: 'column'
@@ -174,12 +202,23 @@ const StatisticalLineChartCard = ({ isLoading, title, chartData, todayValue, las
           >
             <Grid container spacing={1}>
               <Grid item xs={12}>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    display: 'block',
+                    mb: 0.5,
+                    fontSize: '11px',
+                    color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.45)' : 'rgba(0, 0, 0, 0.45)'
+                  }}
+                >
+                  {title} · {t('dashboard_index.seven_day_trend')}
+                </Typography>
                 <Grid container justifyContent="space-between" alignItems="center">
                   <Grid item>
                     <Typography
                       variant="h3"
                       sx={{
-                        fontSize: '20px',
+                        fontSize: '22px',
                         fontWeight: 500,
                         color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.95)' : 'rgba(0, 0, 0, 0.87)'
                       }}
@@ -187,58 +226,60 @@ const StatisticalLineChartCard = ({ isLoading, title, chartData, todayValue, las
                       {renderNumber(todayValue || 0)}
                     </Typography>
                   </Grid>
-                  {lastDayValue !== undefined && (
-                    <Grid item>
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)',
-                          borderRadius: `${theme.shape.borderRadius}px`,
-                          py: 0.35,
-                          px: 0.75
-                        }}
-                      >
-                        <Icon icon={trendIcon} style={{ color: trendColor, fontSize: '16px', marginRight: '4px' }} />
+                  <Grid item>
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                      {activePoint && (
                         <Typography
                           variant="caption"
                           sx={{
-                            color: trendColor,
+                            color: theme.palette.text.secondary,
                             fontSize: '12px',
-                            fontWeight: 500
+                            whiteSpace: 'nowrap'
                           }}
                         >
-                          {`${Math.abs(percentChange)}%`}
+                          {activePoint.x}: {formatPointValue(activePoint)}
                         </Typography>
-                      </Box>
-                    </Grid>
-                  )}
+                      )}
+                      {lastDayValue !== undefined && (
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)',
+                            borderRadius: `${theme.shape.borderRadius}px`,
+                            py: 0.5,
+                            px: 1
+                          }}
+                        >
+                          <Icon icon={trendIcon} style={{ color: trendColor, fontSize: '16px', marginRight: '4px' }} />
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: trendColor,
+                              fontSize: '12px',
+                              fontWeight: 500
+                            }}
+                          >
+                            {`${Math.abs(percentChange)}%`}
+                          </Typography>
+                        </Box>
+                      )}
+                    </Stack>
+                  </Grid>
                 </Grid>
               </Grid>
-
-              <Grid item xs={12}>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    fontSize: '12px',
-                    color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)'
-                  }}
-                >
-                  {title}
-                </Typography>
-              </Grid>
             </Grid>
-
-            <Divider sx={{ my: 1 }} />
 
             <Box
               sx={{
                 mt: 'auto',
-                height: '38px',
+                height: '58px',
                 width: '100%'
               }}
             >
-              {customChartData && <Chart {...customChartData} height="100%" width="100%" />}
+              <Box ref={chartAreaRef} onMouseMove={handleChartMouseMove} onMouseLeave={handleChartMouseLeave}>
+                {customChartData && <Chart {...customChartData} height="45px" width="100%" />}
+              </Box>
             </Box>
           </Box>
         </CardWrapper>
