@@ -207,8 +207,7 @@ func (r *relayChat) getUsageResponse() string {
 }
 
 func (r *relayChat) compatibleSend(resProvider providersBase.ResponsesInterface) (err *types.OpenAIErrorWithStatusCode, done bool) {
-	resRequest := r.chatRequest.ToResponsesRequest()
-	resRequest.ConvertChat = true
+	resRequest := buildCompatibleResponsesRequest(r.chatRequest, r.modelName, r.getOtherArg())
 	debugSummary := buildResponsesCompatDebugSummary(resRequest)
 
 	if r.chatRequest.Stream {
@@ -251,6 +250,41 @@ func (r *relayChat) compatibleSend(resProvider providersBase.ResponsesInterface)
 	return
 }
 
+func buildCompatibleResponsesRequest(chatRequest types.ChatCompletionRequest, modelName string, otherArg string) *types.OpenAIResponsesRequest {
+	chatRequest.Model = modelName
+	normalizeChatRequestForResponsesCompat(&chatRequest, otherArg)
+
+	resRequest := chatRequest.ToResponsesRequest()
+	resRequest.ConvertChat = true
+
+	return resRequest
+}
+
+func normalizeChatRequestForResponsesCompat(request *types.ChatCompletionRequest, otherArg string) {
+	modelName := request.Model
+	isReasoningModel := strings.HasPrefix(modelName, "gpt-5")
+	if len(modelName) >= 2 && modelName[0] == 'o' && modelName[1] >= '1' && modelName[1] <= '9' {
+		isReasoningModel = true
+	}
+
+	if !isReasoningModel {
+		return
+	}
+
+	if request.MaxTokens > 0 {
+		request.MaxCompletionTokens = request.MaxTokens
+		request.MaxTokens = 0
+	}
+
+	if request.Model != "gpt-5-chat-latest" {
+		request.Temperature = nil
+	}
+
+	if otherArg != "" {
+		request.ReasoningEffort = &otherArg
+	}
+}
+
 type responsesCompatDebugItem struct {
 	Index      int      `json:"index"`
 	Type       string   `json:"type,omitempty"`
@@ -267,6 +301,8 @@ type responsesCompatDebugSummary struct {
 	InputCount int                        `json:"input_count"`
 	Items      []responsesCompatDebugItem `json:"items,omitempty"`
 	ParseError string                     `json:"parse_error,omitempty"`
+	Payload    any                        `json:"payload,omitempty"`
+	PayloadErr string                     `json:"payload_error,omitempty"`
 }
 
 func buildResponsesCompatDebugSummary(req *types.OpenAIResponsesRequest) string {
@@ -317,6 +353,13 @@ func buildResponsesCompatDebugSummary(req *types.OpenAIResponsesRequest) string 
 		summary.Items = append(summary.Items, item)
 	}
 
+	payload, payloadErr := buildSanitizedResponsesCompatPayload(req)
+	if payloadErr != nil {
+		summary.PayloadErr = payloadErr.Error()
+	} else {
+		summary.Payload = payload
+	}
+
 	data, marshalErr := json.Marshal(summary)
 	if marshalErr != nil {
 		return fmt.Sprintf("{\"marshal_error\":%q}", marshalErr.Error())
@@ -328,4 +371,51 @@ func buildResponsesCompatDebugSummary(req *types.OpenAIResponsesRequest) string 
 	}
 
 	return string(data)
+}
+
+func buildSanitizedResponsesCompatPayload(req *types.OpenAIResponsesRequest) (any, error) {
+	requestBytes, err := json.Marshal(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var payload any
+	if err = json.Unmarshal(requestBytes, &payload); err != nil {
+		return nil, err
+	}
+
+	return sanitizeResponsesCompatValue("", payload), nil
+}
+
+func sanitizeResponsesCompatValue(key string, value any) any {
+	switch typedValue := value.(type) {
+	case map[string]any:
+		result := make(map[string]any, len(typedValue))
+		for childKey, childValue := range typedValue {
+			result[childKey] = sanitizeResponsesCompatValue(childKey, childValue)
+		}
+		return result
+	case []any:
+		result := make([]any, 0, len(typedValue))
+		for _, item := range typedValue {
+			result = append(result, sanitizeResponsesCompatValue(key, item))
+		}
+		return result
+	case string:
+		if shouldRedactResponsesCompatKey(key) {
+			return fmt.Sprintf("<redacted len=%d>", len(typedValue))
+		}
+		return typedValue
+	default:
+		return value
+	}
+}
+
+func shouldRedactResponsesCompatKey(key string) bool {
+	switch key {
+	case "input", "text", "instructions", "output", "arguments", "image_url", "file_data", "file_url", "content":
+		return true
+	default:
+		return false
+	}
 }
