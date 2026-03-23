@@ -13,7 +13,8 @@ import {
   Alert,
   Select,
   MenuItem,
-  Chip
+  Chip,
+  FormHelperText
 } from '@mui/material';
 import { showSuccess, showError, verifyJSON } from 'utils/common';
 import { API } from 'utils/api';
@@ -444,6 +445,7 @@ const OperationSetting = () => {
                 placeholder={t('setting_index.operationSettings.generalSettings.retryTimes.placeholder')}
                 disabled={loading}
               />
+              <FormHelperText>请求失败后最多尝试几个不同渠道，0 表示不重试</FormHelperText>
             </FormControl>
             <FormControl fullWidth>
               <InputLabel htmlFor="RetryCooldownSeconds">
@@ -458,6 +460,7 @@ const OperationSetting = () => {
                 placeholder={t('setting_index.operationSettings.generalSettings.retryCooldownSeconds.placeholder')}
                 disabled={loading}
               />
+              <FormHelperText>渠道遇到 429 限流后的冷却秒数，冷却期间该渠道不会被选中</FormHelperText>
             </FormControl>
             <FormControl fullWidth>
               <InputLabel htmlFor="RetryTimeOut">{t('setting_index.operationSettings.generalSettings.retryTimeOut.label')}</InputLabel>
@@ -470,6 +473,7 @@ const OperationSetting = () => {
                 placeholder={t('setting_index.operationSettings.generalSettings.retryTimeOut.placeholder')}
                 disabled={loading}
               />
+              <FormHelperText>所有重试的总时间上限（秒），超时后停止重试</FormHelperText>
             </FormControl>
           </Stack>
           <Stack
