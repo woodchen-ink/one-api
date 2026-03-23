@@ -268,7 +268,7 @@ func (p *OpenAIProvider) mergeExtraBodyFromRawRequest(requestMap map[string]inte
 	return rawRequest
 }
 
-func sanitizeResponsesRequestMap(requestMap map[string]interface{}, convertChat bool) map[string]interface{} {
+func sanitizeResponsesRequestMap(requestMap map[string]interface{}) map[string]interface{} {
 	// Strip legacy chat-only fields that may be reintroduced by extra_body/custom params.
 	dropKeys := []string{
 		"messages",
@@ -301,10 +301,6 @@ func sanitizeResponsesRequestMap(requestMap map[string]interface{}, convertChat 
 
 	for _, key := range dropKeys {
 		delete(requestMap, key)
-	}
-
-	if !convertChat {
-		return requestMap
 	}
 
 	modelName, _ := requestMap["model"].(string)
@@ -377,7 +373,9 @@ func (p *OpenAIProvider) GetRequestTextBody(relayMode int, ModelName string, req
 			if responsesRequest, ok := request.(*types.OpenAIResponsesRequest); ok {
 				convertChat = responsesRequest.ConvertChat
 			}
-			requestMap = sanitizeResponsesRequestMap(requestMap, convertChat)
+			if convertChat {
+				requestMap = sanitizeResponsesRequestMap(requestMap)
+			}
 		}
 
 		// 使用修改后的请求体创建请求
