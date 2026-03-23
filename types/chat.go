@@ -564,10 +564,27 @@ func (c *ChatCompletionRequest) ToResponsesRequest() *OpenAIResponsesRequest {
 		}
 
 		if msg.ToolCallID != "" {
+			output := msg.Content
+			if _, ok := output.(string); !ok {
+				textParts := msg.ParseContent()
+				contentText := ""
+				for _, part := range textParts {
+					if part.Text != "" {
+						contentText += part.Text
+					}
+				}
+				output = contentText
+				if output == "" {
+					contentBytes, err := json.Marshal(msg.Content)
+					if err == nil {
+						output = string(contentBytes)
+					}
+				}
+			}
 			inputs = append(inputs, InputResponses{
 				Type:   InputTypeFunctionCallOutput,
 				CallID: msg.ToolCallID,
-				Output: msg.Content,
+				Output: output,
 			})
 
 			continue
@@ -583,7 +600,7 @@ func (c *ChatCompletionRequest) ToResponsesRequest() *OpenAIResponsesRequest {
 		messges := msg.ParseContent()
 		for _, part := range messges {
 			switch part.Type {
-			case ContentTypeImageURL:
+			case ContentTypeImageURL, ContentTypeInputImage:
 				if part.ImageURL == nil {
 					continue
 				}
@@ -591,10 +608,19 @@ func (c *ChatCompletionRequest) ToResponsesRequest() *OpenAIResponsesRequest {
 					Type:     ContentTypeInputImage,
 					ImageUrl: part.ImageURL.URL,
 				})
-			case ContentTypeText:
+			case ContentTypeText, ContentTypeInputText, ContentTypeOutputText:
 				inputContent = append(inputContent, ContentResponses{
 					Type: ContentTypeInputText,
 					Text: part.Text,
+				})
+			case "file", ContentTypeInputFile:
+				if part.File == nil {
+					continue
+				}
+				inputContent = append(inputContent, ContentResponses{
+					Type:     ContentTypeInputFile,
+					FileData: part.File.FileData,
+					FileName: part.File.Filename,
 				})
 			}
 		}
