@@ -58,7 +58,7 @@ func TestToResponsesRequestSingleUserTextUsesMessageInput(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, inputs, 1)
 
-	assert.Equal(t, InputTypeMessage, inputs[0].Type)
+	assert.Equal(t, "", inputs[0].Type)
 	assert.Equal(t, ChatMessageRoleUser, inputs[0].Role)
 	assert.Equal(t, "hello world", inputs[0].Content)
 }
@@ -118,7 +118,7 @@ func TestToResponsesRequestAssistantStringAndToolCallsBecomeMessageAndFunctionCa
 	require.NoError(t, err)
 	require.Len(t, inputs, 2)
 
-	assert.Equal(t, InputTypeMessage, inputs[0].Type)
+	assert.Equal(t, "", inputs[0].Type)
 	assert.Equal(t, ChatMessageRoleAssistant, inputs[0].Role)
 	assert.Equal(t, "calling tool", inputs[0].Content)
 
@@ -144,7 +144,7 @@ func TestToResponsesRequestToolOutputWithoutCallIDFallsBackToUserMessage(t *test
 	require.NoError(t, err)
 	require.Len(t, inputs, 1)
 
-	assert.Equal(t, InputTypeMessage, inputs[0].Type)
+	assert.Equal(t, "", inputs[0].Type)
 	assert.Equal(t, ChatMessageRoleUser, inputs[0].Role)
 	assert.Equal(t, "[tool_output_missing_call_id] tool output", inputs[0].Content)
 }

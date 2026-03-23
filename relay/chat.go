@@ -336,7 +336,7 @@ func buildResponsesCompatDebugSummary(req *types.OpenAIResponsesRequest) string 
 			item.Content = fmt.Sprintf("%T", content)
 		}
 
-		if input.Type == types.InputTypeMessage {
+		if input.Type == types.InputTypeMessage || input.Type == "" {
 			contents, contentErr := input.ParseContent()
 			if contentErr != nil {
 				item.ParseError = contentErr.Error()

@@ -198,7 +198,7 @@ func normalizeLegacyFunctionCallChoice(choice any) any {
 
 func applyChatMessagesToResponses(res *OpenAIResponsesRequest, messages []ChatCompletionMessage) {
 	instructionsParts := make([]string, 0)
-	inputItems := make([]InputResponses, 0, len(messages))
+	inputItems := make([]any, 0, len(messages))
 
 	for _, originalMessage := range messages {
 		msg := originalMessage
@@ -216,10 +216,9 @@ func applyChatMessagesToResponses(res *OpenAIResponsesRequest, messages []ChatCo
 
 			output := stringifyResponsesToolOutput(msg.Content)
 			if callID == "" {
-				inputItems = append(inputItems, InputResponses{
-					Type:    InputTypeMessage,
-					Role:    ChatMessageRoleUser,
-					Content: fmt.Sprintf("[tool_output_missing_call_id] %v", output),
+				inputItems = append(inputItems, map[string]any{
+					"role":    ChatMessageRoleUser,
+					"content": fmt.Sprintf("[tool_output_missing_call_id] %v", output),
 				})
 				continue
 			}
@@ -239,24 +238,25 @@ func applyChatMessagesToResponses(res *OpenAIResponsesRequest, messages []ChatCo
 			continue
 		}
 
-		item := InputResponses{
-			Type: InputTypeMessage,
-			Role: role,
+		item := map[string]any{
+			"role": role,
 		}
 
 		switch content := msg.Content.(type) {
 		case nil:
-			item.Content = ""
+			item["content"] = ""
 		case string:
-			item.Content = content
+			item["content"] = content
 		default:
-			item.Content = buildResponsesMessageParts(role, msg.ParseContent())
+			item["content"] = buildResponsesMessageParts(role, msg.ParseContent())
 		}
 
 		inputItems = append(inputItems, item)
 
 		if role == ChatMessageRoleAssistant {
-			inputItems = append(inputItems, buildResponsesFunctionCallsFromAssistant(msg.ToolCalls)...)
+			for _, toolCallItem := range buildResponsesFunctionCallsFromAssistant(msg.ToolCalls) {
+				inputItems = append(inputItems, toolCallItem)
+			}
 		}
 	}
 
