@@ -443,6 +443,7 @@
       "originalPrice": "原始价格",
       "inputPrice": "原输入价格",
       "outputPrice": "原输出价格",
+      "userRatio": "用户倍率",
       "groupRatio": "分组倍率",
       "groupRatioValue": "分组倍率",
       "actualPrice": "实际价格",

@@ -78,7 +78,7 @@ function LogTableRow({ item, userIsAdmin, userGroup, columnVisibility }) {
   const { t } = useTranslation();
   const LogType = useLogType();
 
-  const { totalInputTokens, totalOutputTokens, tokenDetails, cacheCost } = useMemo(() => calculateTokens(item), [item]);
+  const { totalInputTokens, totalOutputTokens, tokenDetails } = useMemo(() => calculateTokens(item), [item]);
 
   return (
     <>
@@ -151,7 +151,7 @@ function LogTableRow({ item, userIsAdmin, userGroup, columnVisibility }) {
             {viewTokens(item, t, totalInputTokens, totalOutputTokens, tokenDetails)}
           </TableCell>
         )}
-        {columnVisibility.quota && <TableCell sx={{ p: '10px 8px' }}>{viewQuota(item, t, cacheCost)}</TableCell>}
+        {columnVisibility.quota && <TableCell sx={{ p: '10px 8px' }}>{viewQuota(item, t)}</TableCell>}
         {columnVisibility.source_ip && <TableCell sx={{ p: '10px 8px' }}>{renderIpLink(item.source_ip)}</TableCell>}
       </TableRow>
     </>
@@ -462,13 +462,17 @@ function viewDuration(item, t) {
   );
 }
 
-function viewQuota(item, t, cacheCost = 0) {
+function viewQuota(item, t) {
   const displayValue = item.quota ? renderQuota(item.quota, 6) : '$0';
   const metadata = item?.metadata;
-  const hasBillingInfo =
-    metadata?.billing_context ||
-    (Array.isArray(metadata?.billing_rules) && metadata.billing_rules.length > 0) ||
-    (Array.isArray(metadata?.billing_breakdown) && metadata.billing_breakdown.length > 0);
+  const billingBreakdown = metadata?.billing_breakdown || [];
+  const billingRules = metadata?.billing_rules || [];
+  const rawUserRatio = Number(metadata?.user_ratio);
+  const rawGroupRatio = Number(metadata?.group_ratio);
+  const userRatio = Number.isFinite(rawUserRatio) && rawUserRatio > 0 ? rawUserRatio : null;
+  const groupRatio = Number.isFinite(rawGroupRatio) && rawGroupRatio > 0 ? rawGroupRatio : null;
+  const originalBilling = billingBreakdown.reduce((sum, detail) => sum + Number(detail?.cost_usd || 0), 0);
+  const hasBillingInfo = metadata?.billing_context || billingRules.length > 0 || billingBreakdown.length > 0;
 
   const content = <Typography variant="body2">{displayValue}</Typography>;
 
@@ -482,7 +486,7 @@ function viewQuota(item, t, cacheCost = 0) {
         成本明细{' '}
       </Typography>
 
-      {(metadata?.billing_breakdown || []).map((detail, index) => (
+      {billingBreakdown.map((detail, index) => (
         <Stack key={`billing-breakdown-${index}`} direction="row" justifyContent="space-between" spacing={2}>
           <Stack direction="row" spacing={0.75} alignItems="center">
             <Icon icon={getMetricIcon(detail.metric)} width={14} />
@@ -520,7 +524,21 @@ function viewQuota(item, t, cacheCost = 0) {
         <MetadataTypography>{`Prompt=${metadata.billing_context.prompt_tokens || 0} / Request=${metadata.billing_context.request_tokens || 0}`}</MetadataTypography>
       )} */}
 
-      {(metadata?.billing_rules || []).map((rule, index) => {
+      {(userRatio != null || groupRatio != null || billingBreakdown.length > 0) && (
+        <Stack spacing={0.5}>
+          {userRatio != null && (
+            <MetadataTypography>{`${t('logPage.quotaDetail.userRatio')}: x${formatRatio(userRatio)}`}</MetadataTypography>
+          )}
+          {groupRatio != null && (
+            <MetadataTypography>{`${t('logPage.quotaDetail.groupRatio')}: x${formatRatio(groupRatio)}`}</MetadataTypography>
+          )}
+          {billingBreakdown.length > 0 && (
+            <MetadataTypography>{`${t('logPage.quotaDetail.originalBilling')}: $${formatUSD(originalBilling)}`}</MetadataTypography>
+          )}
+        </Stack>
+      )}
+
+      {billingRules.map((rule, index) => {
         const summary = summarizeRule(rule);
         return (
           <MetadataTypography
@@ -532,7 +550,7 @@ function viewQuota(item, t, cacheCost = 0) {
       <Box sx={{ height: 1, bgcolor: 'rgba(255,255,255,0.12)' }} />
       <Stack direction="row" justifyContent="space-between">
         <Typography variant="caption" sx={{ color: '#d1d5db' }}>
-          计费{' '}
+          {t('logPage.quotaDetail.actualBilling')}
         </Typography>
         <Typography variant="caption" sx={{ color: '#22c55e', fontWeight: 700 }}>
           {displayValue}
@@ -550,6 +568,15 @@ function viewQuota(item, t, cacheCost = 0) {
 
 function formatUSD(value) {
   if (value == null) {
+    return '0';
+  }
+
+  const formatted = value >= 1 ? value.toFixed(4) : value.toFixed(6);
+  return formatted.replace(/(\.\d*?[1-9])0+$|\.0*$/, '$1');
+}
+
+function formatRatio(value) {
+  if (value == null || !Number.isFinite(value)) {
     return '0';
   }
 

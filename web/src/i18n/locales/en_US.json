@@ -497,6 +497,7 @@
       "originalPrice": "Original Price",
       "inputPrice": "Input Price",
       "outputPrice": "Output Price",
+      "userRatio": "User Ratio",
       "groupRatio": "Group Ratio",
       "groupRatioValue": "Group Ratio",
       "actualPrice": "Actual Price",
