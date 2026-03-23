@@ -93,6 +93,7 @@ The provider system implements a plugin-based architecture in `providers/`:
   - Balance checking interfaces
   - Model listing interfaces
 - Automatic model discovery and pricing updates
+- Provider additions/removals must keep `common/config/constants.go`, `providers/providers.go`, `model/model_ownedby.go`, and `web/src/constants/ChannelConstants.js` in sync
 - Pricing data is stored as direct USD amounts.
   - Token prices use USD per 1M tokens.
   - `extra_ratios` now carries direct USD prices for extra token categories rather than relative multipliers.

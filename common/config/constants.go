@@ -278,7 +278,6 @@ const (
 	ChannelTypeBedrock         = 32
 	ChannelTypeCloudflareAI    = 35
 	ChannelTypeCohere          = 36
-	ChannelTypeCoze            = 38
 	ChannelTypeOllama          = 39
 	ChannelTypeHunyuan         = 40
 	ChannelTypeVertexAI        = 42

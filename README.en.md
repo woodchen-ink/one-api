@@ -92,7 +92,6 @@ If you find that a new model is missing, please update the newly added model in 
 | [Cloudflare AI](https://ai.cloudflare.com/)                           | ✅                               | -          | ⚠️ stt | ⚠️ image | -                                                                |
 | [Midjourney](https://www.midjourney.com/)                             | -                                | -          | -      | -        | [midjourney-proxy](https://github.com/novicezk/midjourney-proxy) |
 | [Cohere](https://cohere.com/)                                         | ✅                               | -          | -      | -        | -                                                                |
-| [Coze](https://www.coze.com/open/docs/chat?_lang=zh)                  | ✅                               | -          | -      | -        | -                                                                |
 | [Ollama](https://github.com/ollama/ollama)                            | ✅                               | ✅         | -      | -        | -                                                                |
 
 ## Acknowledgements

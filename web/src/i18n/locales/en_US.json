@@ -1466,8 +1466,6 @@
   "本配置主要是用于使用cloudflare Zero Trust将端口暴露到公网时，需要配置的header": "This configuration is mainly used for the headers that need to be configured when using cloudflare Zero Trust to expose the port to the public network.",
   "标签": "Label",
   "模型": "Model",
-  "模型名称为coze-{bot_id}，你也可以直接使用 coze-* 通配符来匹配所有coze开头的模型": "The model name is coze-{bot_id}. You can also directly use coze-* wildcards to match all models starting with coze.",
-  "模型名称映射， 你可以取一个容易记忆的名字来代替coze-{bot_id}，例如：{\"coze-translate\": \"coze-xxxxx\"},注意：如果使用了模型映射，那么上面的模型名称必须使用映射前的名称，上述例子中，你应该在模型中填入coze-translate(如果已经使用了coze-*，可以忽略)。": "Model name mapping, you can replace coze-{bot_id} with an easy-to-remember name, for example: {\"coze-translate\": \"coze-xxxxx\"}. Note: If model mapping is used, the above model name must \nUse the name before mapping. In the above example, you should fill in coze-translate in the model (you can ignore it if coze-* is already used).",
   "模型映射关系": "Model mapping relationship",
   "测速模型": "speed model",
   "渠道API地址": "Channel API address",

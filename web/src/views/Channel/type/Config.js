@@ -68,7 +68,8 @@ const defaultConfig = {
     compatible_response:
       '开启后，gpt-5* 的 /v1/chat/completions 请求会自动改走 /v1/responses，并将返回结果转换为 chat 格式。该开关不影响 /v1/responses 的原生转发。',
     allow_extra_body: '开启后，将会透传用户请求中的额外字段（如OpenAI SDK的extra_body参数），适用于需要传递自定义参数到上游API的场景',
-    retry_times: '当上游是账号池（多Key负载均衡）时，单次失败可能只是某个Key耗尽，设置后会在同一渠道内重试指定次数再切换其他渠道。0表示不启用。'
+    retry_times:
+      '当上游是账号池（多Key负载均衡）时，单次失败可能只是某个Key耗尽，设置后会在同一渠道内重试指定次数再切换其他渠道。0表示不启用。'
   },
   modelGroup: 'OpenAI'
 };
@@ -347,17 +348,6 @@ const typeConfig = {
       provider_models_list: '从Cohere获取模型列表'
     },
     modelGroup: 'Cohere'
-  },
-  38: {
-    input: {
-      models: ['coze-*']
-    },
-    prompt: {
-      models: '模型名称为coze-{bot_id}，你也可以直接使用 coze-* 通配符来匹配所有coze开头的模型',
-      model_mapping:
-        '模型名称映射， 你可以取一个容易记忆的名字来代替coze-{bot_id}，例如：{"coze-translate": "coze-xxxxx"},注意：如果使用了模型映射，那么上面的模型名称必须使用映射前的名称，上述例子中，你应该在模型中填入coze-translate(如果已经使用了coze-*，可以忽略)。'
-    },
-    modelGroup: 'Coze'
   },
   39: {
     inputLabel: {

@@ -15,7 +15,6 @@ import (
 	"czloapi/providers/claude"
 	"czloapi/providers/cloudflareAI"
 	"czloapi/providers/cohere"
-	"czloapi/providers/coze"
 	"czloapi/providers/deepseek"
 	"czloapi/providers/gemini"
 	"czloapi/providers/github"
@@ -66,7 +65,6 @@ func init() {
 		config.ChannelTypeBedrock:         bedrock.BedrockProviderFactory{},
 		config.ChannelTypeCloudflareAI:    cloudflareAI.CloudflareAIProviderFactory{},
 		config.ChannelTypeCohere:          cohere.CohereProviderFactory{},
-		config.ChannelTypeCoze:            coze.CozeProviderFactory{},
 		config.ChannelTypeOllama:          ollama.OllamaProviderFactory{},
 		config.ChannelTypeMoonshot:        moonshot.MoonshotProviderFactory{},
 		config.ChannelTypeHunyuan:         hunyuan.HunyuanProviderFactory{},

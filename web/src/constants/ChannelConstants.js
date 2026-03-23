@@ -139,13 +139,6 @@ export const CHANNEL_OPTIONS = {
     color: 'default',
     url: 'https://cohere.com/'
   },
-  38: {
-    key: 38,
-    text: 'Coze',
-    value: 38,
-    color: 'primary',
-    url: 'https://www.coze.com/open/docs/chat?_lang=zh'
-  },
   39: {
     key: 39,
     text: 'Ollama',
