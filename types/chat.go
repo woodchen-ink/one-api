@@ -547,19 +547,29 @@ func (c *ChatCompletionRequest) ToResponsesRequest() *OpenAIResponsesRequest {
 		}
 	}
 
-	instructionsParts := make([]string, 0)
 	inputs := make([]InputResponses, 0)
 	for _, msg := range c.Messages {
 		if msg.IsSystemRole() {
-			instructionText := msg.StringContent()
-			if instructionText != "" {
-				instructionsParts = append(instructionsParts, instructionText)
+			content, ok := buildResponsesInputMessageContent(msg)
+			if ok {
+				role := msg.Role
+				if role == ChatMessageRoleDeveloper {
+					role = ChatMessageRoleSystem
+				}
+				inputs = append(inputs, InputResponses{
+					Type:    InputTypeMessage,
+					Role:    role,
+					Content: content,
+				})
 			}
 			continue
 		}
 
 		// 处理ToolCalls
 		if len(msg.ToolCalls) > 0 {
+			if item, ok := buildResponsesAssistantMessageItem(msg); ok {
+				inputs = append(inputs, item)
+			}
 			for _, tool := range msg.ToolCalls {
 				if tool == nil || tool.Function == nil {
 					continue
@@ -575,23 +585,24 @@ func (c *ChatCompletionRequest) ToResponsesRequest() *OpenAIResponsesRequest {
 			continue
 		}
 
+		if msg.Role == ChatMessageRoleFunction && msg.Name != nil {
+			output := flattenResponsesOutputText(msg)
+			if output == "" {
+				output = "(empty)"
+			}
+			inputs = append(inputs, InputResponses{
+				Type:   InputTypeFunctionCallOutput,
+				CallID: *msg.Name,
+				Output: output,
+			})
+
+			continue
+		}
+
 		if msg.ToolCallID != "" {
-			output := msg.Content
-			if _, ok := output.(string); !ok {
-				textParts := msg.ParseContent()
-				contentText := ""
-				for _, part := range textParts {
-					if part.Text != "" {
-						contentText += part.Text
-					}
-				}
-				output = contentText
-				if output == "" {
-					contentBytes, err := json.Marshal(msg.Content)
-					if err == nil {
-						output = string(contentBytes)
-					}
-				}
+			output := flattenResponsesOutputText(msg)
+			if output == "" {
+				output = "(empty)"
 			}
 			inputs = append(inputs, InputResponses{
 				Type:   InputTypeFunctionCallOutput,
@@ -602,83 +613,157 @@ func (c *ChatCompletionRequest) ToResponsesRequest() *OpenAIResponsesRequest {
 			continue
 		}
 
-		input := InputResponses{
-			Type: InputTypeMessage,
-			Role: msg.Role,
-		}
-
-		inputContent := make([]ContentResponses, 0)
-
-		messges := msg.ParseContent()
-		for _, part := range messges {
-			switch part.Type {
-			case ContentTypeImageURL, ContentTypeInputImage:
-				if part.ImageURL == nil {
-					continue
-				}
-				inputContent = append(inputContent, ContentResponses{
-					Type:     ContentTypeInputImage,
-					ImageUrl: part.ImageURL.URL,
-				})
-			case ContentTypeText, ContentTypeInputText, ContentTypeOutputText:
-				inputContent = append(inputContent, ContentResponses{
-					Type: ContentTypeInputText,
-					Text: part.Text,
-				})
-			case "file", ContentTypeInputFile:
-				if part.File == nil {
-					continue
-				}
-				inputContent = append(inputContent, ContentResponses{
-					Type:     ContentTypeInputFile,
-					FileData: part.File.FileData,
-					FileName: part.File.Filename,
-				})
-			default:
-				if part.Text != "" {
-					inputContent = append(inputContent, ContentResponses{
-						Type: ContentTypeInputText,
-						Text: part.Text,
-					})
-				}
+		if msg.Role == ChatMessageRoleAssistant {
+			if item, ok := buildResponsesAssistantMessageItem(msg); ok {
+				inputs = append(inputs, item)
 			}
+			continue
 		}
 
-		if len(inputContent) > 0 {
-			input.Content = inputContent
-			inputs = append(inputs, input)
+		content, ok := buildResponsesInputMessageContent(msg)
+		if ok {
+			inputs = append(inputs, InputResponses{
+				Type:    InputTypeMessage,
+				Role:    msg.Role,
+				Content: content,
+			})
 		}
-	}
-
-	if len(instructionsParts) > 0 {
-		res.Instructions = strings.Join(instructionsParts, "\n\n")
 	}
 
 	if len(inputs) > 0 {
-		if len(inputs) == 1 {
-			input := inputs[0]
-			if input.Type == InputTypeMessage && input.Role == ChatMessageRoleUser {
-				contents, err := input.ParseContent()
-				if err == nil && len(contents) > 0 {
-					textOnly := true
-					var builder strings.Builder
-					for _, content := range contents {
-						if content.Type != ContentTypeInputText {
-							textOnly = false
-							break
-						}
-						builder.WriteString(content.Text)
-					}
-					if textOnly {
-						res.Input = builder.String()
-						return res
-					}
-				}
-			}
-		}
-
 		res.Input = inputs
 	}
 
 	return res
+}
+
+func buildResponsesInputMessageContent(msg ChatCompletionMessage) (any, bool) {
+	if content, ok := msg.Content.(string); ok {
+		if content == "" {
+			return nil, false
+		}
+		return content, true
+	}
+
+	inputContent := make([]ContentResponses, 0)
+	for _, part := range msg.ParseContent() {
+		switch part.Type {
+		case ContentTypeImageURL, ContentTypeInputImage:
+			if part.ImageURL == nil || part.ImageURL.URL == "" {
+				continue
+			}
+			inputContent = append(inputContent, ContentResponses{
+				Type:     ContentTypeInputImage,
+				ImageUrl: part.ImageURL.URL,
+			})
+		case ContentTypeText, ContentTypeInputText, ContentTypeOutputText:
+			if part.Text == "" {
+				continue
+			}
+			inputContent = append(inputContent, ContentResponses{
+				Type: ContentTypeInputText,
+				Text: part.Text,
+			})
+		case "file", ContentTypeInputFile:
+			if part.File == nil {
+				continue
+			}
+			inputContent = append(inputContent, ContentResponses{
+				Type:     ContentTypeInputFile,
+				FileData: part.File.FileData,
+				FileName: part.File.Filename,
+			})
+		default:
+			if part.Text != "" {
+				inputContent = append(inputContent, ContentResponses{
+					Type: ContentTypeInputText,
+					Text: part.Text,
+				})
+			}
+		}
+	}
+
+	if len(inputContent) == 0 {
+		return nil, false
+	}
+
+	return inputContent, true
+}
+
+func buildResponsesAssistantMessageItem(msg ChatCompletionMessage) (InputResponses, bool) {
+	content := parseResponsesAssistantContent(msg.Content)
+	if content == "" {
+		return InputResponses{}, false
+	}
+
+	return InputResponses{
+		Type: InputTypeMessage,
+		Role: ChatMessageRoleAssistant,
+		Content: []ContentResponses{
+			{
+				Type: ContentTypeOutputText,
+				Text: content,
+			},
+		},
+	}, true
+}
+
+func parseResponsesAssistantContent(content any) string {
+	if content == nil {
+		return ""
+	}
+
+	if text, ok := content.(string); ok {
+		return text
+	}
+
+	var parts []map[string]any
+	contentBytes, err := json.Marshal(content)
+	if err != nil {
+		return ""
+	}
+	if err = json.Unmarshal(contentBytes, &parts); err != nil {
+		return ""
+	}
+
+	var builder strings.Builder
+	for _, part := range parts {
+		partType, _ := part["type"].(string)
+		text, _ := part["text"].(string)
+		thinking, _ := part["thinking"].(string)
+
+		switch partType {
+		case "thinking", "reasoning":
+			if thinking != "" {
+				builder.WriteString("<thinking>")
+				builder.WriteString(thinking)
+				builder.WriteString("</thinking>")
+			} else if text != "" {
+				builder.WriteString("<thinking>")
+				builder.WriteString(text)
+				builder.WriteString("</thinking>")
+			}
+		default:
+			if text != "" {
+				builder.WriteString(text)
+			}
+		}
+	}
+
+	return builder.String()
+}
+
+func flattenResponsesOutputText(msg ChatCompletionMessage) string {
+	if content, ok := msg.Content.(string); ok {
+		return content
+	}
+
+	var builder strings.Builder
+	for _, part := range msg.ParseContent() {
+		if part.Text != "" {
+			builder.WriteString(part.Text)
+		}
+	}
+
+	return builder.String()
 }
