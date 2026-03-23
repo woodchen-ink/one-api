@@ -327,6 +327,9 @@ func (p *OpenAIProvider) GetRequestTextBody(relayMode int, ModelName string, req
 	// 获取请求头
 	headers := p.GetRequestHeaders()
 	if relayMode == config.RelayModeResponses {
+		// Responses API only accepts application/json; override whatever
+		// the original client sent (e.g. multipart/form-data from compat path).
+		headers["Content-Type"] = "application/json"
 		if responsesRequest, ok := request.(*types.OpenAIResponsesRequest); ok && responsesRequest.Stream {
 			headers["Accept"] = "text/event-stream"
 		} else {
