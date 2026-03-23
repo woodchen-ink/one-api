@@ -147,6 +147,12 @@ func (r *RelayModeResponsesWS) getProvider() bool {
 		}
 		channel := r.provider.GetChannel()
 
+		// 检查渠道是否启用了 ResponsesWS
+		if !channel.ResponsesWS {
+			r.abortWithMessage("channel ResponsesWS not enabled")
+			return false
+		}
+
 		providerConn, messageHandler, apiErr := responsesWSProvider.CreateResponsesWS()
 		if apiErr != nil {
 			r.skipChannelIds(channel.Id)

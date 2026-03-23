@@ -92,11 +92,6 @@ func DeleteModelOwnedBy(c *gin.Context) {
 		return
 	}
 
-	if checkModelOwnedByReserveID(id) {
-		common.APIRespondWithError(c, http.StatusOK, errors.New("invalid id"))
-		return
-	}
-
 	if err := model.DeleteModelOwnedBy(id); err != nil {
 		common.APIRespondWithError(c, http.StatusOK, err)
 		return

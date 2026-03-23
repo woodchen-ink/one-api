@@ -671,6 +671,7 @@ const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, model
                         inputPrompt.pre_cost ||
                         inputPrompt.compatible_response ||
                         inputPrompt.allow_extra_body ||
+                        inputPrompt.responses_ws ||
                         inputPrompt.retry_times) && (
                         <Box sx={{ mt: 1.5, mb: 1 }}>
                           <Typography variant="subtitle2" sx={{ mb: 0.5, px: 1.5 }}>
@@ -730,6 +731,25 @@ const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, model
                                       />
                                     }
                                     label={<Typography variant="body2">{customizeT(inputLabel.allow_extra_body)}</Typography>}
+                                  />
+                                </Tooltip>
+                              </Grid>
+                            )}
+                            {inputPrompt.responses_ws && (
+                              <Grid item xs={12} sm={6}>
+                                <Tooltip title={customizeT(inputPrompt.responses_ws)} placement="top">
+                                  <FormControlLabel
+                                    control={
+                                      <Switch
+                                        size="small"
+                                        disabled={hasTag}
+                                        checked={Boolean(values.responses_ws)}
+                                        onChange={(event) => {
+                                          setFieldValue('responses_ws', event.target.checked);
+                                        }}
+                                      />
+                                    }
+                                    label={<Typography variant="body2">{customizeT(inputLabel.responses_ws)}</Typography>}
                                   />
                                 </Tooltip>
                               </Grid>

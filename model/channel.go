@@ -41,6 +41,7 @@ type Channel struct {
 	PreCost            int     `json:"pre_cost" form:"pre_cost" gorm:"default:1"`
 	CompatibleResponse bool    `json:"compatible_response" gorm:"default:false"`
 	AllowExtraBody     bool    `json:"allow_extra_body" form:"allow_extra_body" gorm:"default:false"`
+	ResponsesWS        bool    `json:"responses_ws" form:"responses_ws" gorm:"default:false"`
 	RetryTimes         *int    `json:"retry_times" gorm:"default:0"`
 
 	DisabledStream *datatypes.JSONSlice[string] `json:"disabled_stream,omitempty" gorm:"type:json"`

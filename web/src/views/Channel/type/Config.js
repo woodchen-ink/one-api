@@ -19,6 +19,7 @@ const defaultConfig = {
     disabled_stream: [],
     compatible_response: false,
     allow_extra_body: false,
+    responses_ws: false,
     retry_times: 0
   },
   inputLabel: {
@@ -41,6 +42,7 @@ const defaultConfig = {
     disabled_stream: '禁用流式的模型',
     compatible_response: 'GPT-5 Chat转Response',
     allow_extra_body: '允许额外字段透传',
+    responses_ws: 'Responses WebSocket',
     retry_times: '同渠道重试'
   },
   prompt: {
@@ -68,6 +70,7 @@ const defaultConfig = {
     compatible_response:
       '开启后，gpt-5* 的 /v1/chat/completions 请求会自动改走 /v1/responses，并将返回结果转换为 chat 格式。该开关不影响 /v1/responses 的原生转发。',
     allow_extra_body: '开启后，将会透传用户请求中的额外字段（如OpenAI SDK的extra_body参数），适用于需要传递自定义参数到上游API的场景',
+    responses_ws: '开启后，允许客户端通过 WebSocket 连接 /v1/responses 端点，适用于多轮 tool calling 等 agent 工作流场景，可降低延迟。该开关不影响 HTTP POST /v1/responses 的正常使用。',
     retry_times:
       '当上游是账号池（多Key负载均衡）时，单次失败可能只是某个Key耗尽，设置后会在同一渠道内重试指定次数再切换其他渠道。0表示不启用。'
   },
