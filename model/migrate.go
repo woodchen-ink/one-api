@@ -544,6 +544,27 @@ END $$;
 	}
 }
 
+func dropLegacyLogsChannelForeignKeyOnPostgres() *gormigrate.Migration {
+	return &gormigrate.Migration{
+		ID: "202603230005",
+		Migrate: func(tx *gorm.DB) error {
+			if tx.Dialector.Name() != "postgres" {
+				return nil
+			}
+			if !tx.Migrator().HasTable("channels") {
+				return nil
+			}
+
+			// 历史错误关系可能在 channels 表上生成了反向外键 fk_logs_channel。
+			// 正确关系应为 logs.channel_id -> channels.id。
+			return tx.Exec(`ALTER TABLE "channels" DROP CONSTRAINT IF EXISTS "fk_logs_channel"`).Error
+		},
+		Rollback: func(tx *gorm.DB) error {
+			return nil
+		},
+	}
+}
+
 func migrationBefore(db *gorm.DB) error {
 	// 从库不执行
 	if !config.IsMasterNode {
@@ -562,6 +583,7 @@ func migrationBefore(db *gorm.DB) error {
 		dropLegacyPricesPrimaryKeyOnPostgres(),
 		repairPostgresSchemaCompatibility(),
 		repairPostgresIDAutoIncrementMigration(),
+		dropLegacyLogsChannelForeignKeyOnPostgres(),
 	})
 	return m.Migrate()
 }

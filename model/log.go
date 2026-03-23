@@ -29,7 +29,7 @@ type Log struct {
 	SourceIp         string                             `json:"source_ip" gorm:"default:''"`
 	Metadata         datatypes.JSONType[map[string]any] `json:"metadata" gorm:"type:json"`
 
-	Channel *Channel `json:"channel" gorm:"foreignKey:Id;references:ChannelId"`
+	Channel *Channel `json:"channel" gorm:"foreignKey:ChannelId;references:Id"`
 }
 
 const (
