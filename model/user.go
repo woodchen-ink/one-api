@@ -19,7 +19,7 @@ import (
 // Otherwise, the sensitive information will be saved on local storage in plain text!
 type User struct {
 	Id               int            `json:"id"`
-	Username         string         `json:"username" gorm:"unique;index" validate:"max=12"`
+	Username         string         `json:"username" gorm:"uniqueIndex" validate:"max=12"`
 	Password         string         `json:"password" gorm:"not null;" validate:"min=8,max=20"`
 	DisplayName      string         `json:"display_name" gorm:"index" validate:"max=20"`
 	Role             int            `json:"role" gorm:"type:int;default:1"`   // admin, common
@@ -594,7 +594,7 @@ func (user *User) WebAuthnCredentials() []webauthn.Credential {
 type WebAuthnCredential struct {
 	Id              int    `json:"id" gorm:"primaryKey"`
 	UserId          int    `json:"user_id" gorm:"index"`
-	CredentialId    []byte `json:"credential_id" gorm:"unique;size:255"`
+	CredentialId    []byte `json:"credential_id" gorm:"uniqueIndex;size:255"`
 	PublicKey       []byte `json:"public_key"`
 	AttestationType string `json:"attestation_type"`
 	Alias           string `json:"alias" gorm:"type:varchar(255);default:''"`
