@@ -268,49 +268,6 @@ func (p *OpenAIProvider) mergeExtraBodyFromRawRequest(requestMap map[string]inte
 	return rawRequest
 }
 
-func sanitizeResponsesRequestMap(requestMap map[string]interface{}) map[string]interface{} {
-	// Strip legacy chat-only fields that may be reintroduced by extra_body/custom params.
-	dropKeys := []string{
-		"messages",
-		"max_tokens",
-		"max_completion_tokens",
-		"stream_options",
-		"presence_penalty",
-		"frequency_penalty",
-		"seed",
-		"logit_bias",
-		"logprobs",
-		"top_logprobs",
-		"n",
-		"user",
-		"functions",
-		"function_call",
-		"response_format",
-		"stop",
-		"reasoning_effort",
-		"verbosity",
-		"thinking",
-		"enable_thinking",
-		"thinking_budget",
-		"enable_search",
-		"prediction",
-		"web_search_options",
-		"modalities",
-		"audio",
-	}
-
-	for _, key := range dropKeys {
-		delete(requestMap, key)
-	}
-
-	modelName, _ := requestMap["model"].(string)
-	if strings.HasPrefix(modelName, "gpt-5") && modelName != "gpt-5-chat-latest" {
-		delete(requestMap, "temperature")
-	}
-
-	return requestMap
-}
-
 // 修改GetRequestTextBody函数中的对应部分
 func (p *OpenAIProvider) GetRequestTextBody(relayMode int, ModelName string, request any) (*http.Request, *types.OpenAIErrorWithStatusCode) {
 	url, errWithCode := p.GetSupportedAPIUri(relayMode)
@@ -324,14 +281,8 @@ func (p *OpenAIProvider) GetRequestTextBody(relayMode int, ModelName string, req
 	headers := p.GetRequestHeaders()
 	if relayMode == config.RelayModeResponses {
 		if responsesRequest, ok := request.(*types.OpenAIResponsesRequest); ok && responsesRequest.ConvertChat {
-			// Chat->Responses compat path: the client's original headers are for
-			// chat/completions and may carry a wrong Content-Type (e.g. multipart/form-data).
-			// Force correct headers for the upstream Responses API.
-			headers["Content-Type"] = "application/json"
-			if responsesRequest.Stream {
-				headers["Accept"] = "text/event-stream"
-			} else {
-				headers["Accept"] = "application/json"
+			for k, v := range responsesCompatHeaders(responsesRequest.Stream) {
+				headers[k] = v
 			}
 		}
 	}
@@ -374,7 +325,7 @@ func (p *OpenAIProvider) GetRequestTextBody(relayMode int, ModelName string, req
 				convertChat = responsesRequest.ConvertChat
 			}
 			if convertChat {
-				requestMap = sanitizeResponsesRequestMap(requestMap)
+				requestMap = sanitizeResponsesCompatRequestMap(requestMap)
 			}
 		}
 
