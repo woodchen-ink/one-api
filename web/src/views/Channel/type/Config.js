@@ -353,11 +353,6 @@ const typeConfig = {
       base_url: '请填写Azure Databricks Endpoint',
       key: '请输入DATABRICKS_TOKEN'
     }
-  },
-  20: {
-    inputLabel: {
-      provider_models_list: '从OR获取模型列表'
-    }
   }
 };
 

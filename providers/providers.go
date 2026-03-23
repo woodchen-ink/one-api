@@ -21,7 +21,6 @@ import (
 	"czloapi/providers/moonshot"
 	"czloapi/providers/ollama"
 	"czloapi/providers/openai"
-	"czloapi/providers/openrouter"
 	"czloapi/providers/replicate"
 	"czloapi/providers/siliconflow"
 	"czloapi/providers/tencent"
@@ -63,7 +62,6 @@ func init() {
 		config.ChannelTypeVertexAI:        vertexai.VertexAIProviderFactory{},
 		config.ChannelTypeSiliconflow:     siliconflow.SiliconflowProviderFactory{},
 		config.ChannelTypeReplicate:       replicate.ReplicateProviderFactory{},
-		config.ChannelTypeOpenRouter:      openrouter.OpenRouterProviderFactory{},
 		config.ChannelTypeAzureDatabricks: azuredatabricks.AzureDatabricksProviderFactory{},
 		config.ChannelTypeAzureV1:         azure_v1.AzureV1ProviderFactory{},
 		config.ChannelTypeXAI:             xAI.XAIProviderFactory{},
@@ -72,7 +70,7 @@ func init() {
 
 // 获取供应商
 func GetProvider(channel *model.Channel, c *gin.Context) base.ProviderInterface {
-	if channel.Type == config.ChannelTypeGithub {
+	if channel.Type == config.ChannelTypeGithub || channel.Type == config.ChannelTypeOpenRouter {
 		return nil
 	}
 

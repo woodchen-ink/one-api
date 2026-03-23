@@ -264,7 +264,7 @@ func (cc *ChannelsChooser) Load() {
 
 	// 处理每个channel
 	for _, channel := range channels {
-		if channel.Type == config.ChannelTypeGithub {
+		if channel.Type == config.ChannelTypeGithub || channel.Type == config.ChannelTypeOpenRouter {
 			continue
 		}
 

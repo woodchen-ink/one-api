@@ -253,7 +253,7 @@ const (
 	ChannelTypeZhipu           = 16
 	ChannelTypeAli             = 17
 	ChannelType360             = 19
-	ChannelTypeOpenRouter      = 20
+	ChannelTypeOpenRouter      = 20 // deprecated: reserved for removed OpenRouter provider
 	ChannelTypeTencent         = 23
 	ChannelTypeAzureSpeech     = 24
 	ChannelTypeGemini          = 25

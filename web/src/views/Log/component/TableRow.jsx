@@ -360,6 +360,47 @@ const MetadataTypography = styled(Typography)(({ theme }) => ({
   }
 }));
 
+const detailTooltipSlotProps = {
+  popper: {
+    modifiers: [
+      {
+        name: 'offset',
+        options: {
+          offset: [0, 10]
+        }
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          padding: 16,
+          altAxis: true,
+          tether: true
+        }
+      },
+      {
+        name: 'flip',
+        options: {
+          padding: 16
+        }
+      }
+    ]
+  },
+  tooltip: {
+    sx: {
+      maxWidth: 'min(360px, calc(100vw - 32px))',
+      maxHeight: 'min(60vh, 420px)',
+      overflowY: 'auto',
+      overflowX: 'hidden',
+      p: 1.5,
+      wordBreak: 'break-word',
+      overflowWrap: 'anywhere',
+      '&::-webkit-scrollbar': {
+        width: 6
+      }
+    }
+  }
+};
+
 function viewTokens(item, t, totalInputTokens, totalOutputTokens, tokenDetails) {
   const { prompt_tokens, completion_tokens } = item;
   const detailMetrics = (tokenDetails || [])
@@ -481,23 +522,40 @@ function viewQuota(item, t) {
   }
 
   const tooltipContent = (
-    <Stack spacing={1}>
-      <Typography variant="subtitle2" sx={{ color: '#fff', fontWeight: 700 }}>
+    <Stack spacing={1} sx={{ minWidth: 0 }}>
+      <Typography variant="subtitle2" sx={{ color: 'common.white', fontWeight: 700 }}>
         成本明细{' '}
       </Typography>
 
       {billingBreakdown.map((detail, index) => (
-        <Stack key={`billing-breakdown-${index}`} direction="row" justifyContent="space-between" spacing={2}>
-          <Stack direction="row" spacing={0.75} alignItems="center">
+        <Box
+          key={`billing-breakdown-${index}`}
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: 'minmax(0, 1fr) auto',
+            gap: 1,
+            alignItems: 'start'
+          }}
+        >
+          <Stack direction="row" spacing={0.75} alignItems="flex-start" sx={{ minWidth: 0 }}>
             <Icon icon={getMetricIcon(detail.metric)} width={14} />
-            <Typography variant="caption" sx={{ color: '#d1d5db' }}>
+            <Typography
+              variant="caption"
+              sx={{
+                color: 'grey.300',
+                minWidth: 0,
+                lineHeight: 1.5,
+                wordBreak: 'break-word',
+                overflowWrap: 'anywhere'
+              }}
+            >
               {`${formatBillingMetricLabel(detail.metric)} ${detail.quantity || 0} x $${formatUSD(detail.unit_price || 0)} / 1M`}
             </Typography>
           </Stack>
-          <Typography variant="caption" sx={{ color: '#fff', fontWeight: 600 }}>
+          <Typography variant="caption" sx={{ color: 'common.white', fontWeight: 600, whiteSpace: 'nowrap' }}>
             ${formatUSD(detail.cost_usd || 0)}
           </Typography>
-        </Stack>
+        </Box>
       ))}
 
       {/* {(metadata?.input_price != null || metadata?.output_price != null) && (
@@ -549,10 +607,10 @@ function viewQuota(item, t) {
 
       <Box sx={{ height: 1, bgcolor: 'rgba(255,255,255,0.12)' }} />
       <Stack direction="row" justifyContent="space-between">
-        <Typography variant="caption" sx={{ color: '#d1d5db' }}>
+        <Typography variant="caption" sx={{ color: 'grey.300' }}>
           {t('logPage.quotaDetail.actualBilling')}
         </Typography>
-        <Typography variant="caption" sx={{ color: '#22c55e', fontWeight: 700 }}>
+        <Typography variant="caption" sx={{ color: 'success.light', fontWeight: 700 }}>
           {displayValue}
         </Typography>
       </Stack>
@@ -560,7 +618,7 @@ function viewQuota(item, t) {
   );
 
   return (
-    <Tooltip title={tooltipContent} placement="top" arrow>
+    <Tooltip title={tooltipContent} placement="top" arrow slotProps={detailTooltipSlotProps} disableInteractive>
       <span style={{ cursor: 'help' }}>{content}</span>
     </Tooltip>
   );
