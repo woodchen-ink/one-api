@@ -4,6 +4,7 @@ import (
 	"czloapi/common/config"
 	"czloapi/common/logger"
 	"encoding/json"
+	"fmt"
 	"math"
 	"strconv"
 	"strings"
@@ -12,6 +13,8 @@ import (
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
+
+const legacyQuotaPerUnitDefault = 500 * 1000.0
 
 func removeKeyIndexMigration() *gormigrate.Migration {
 	return &gormigrate.Migration{
@@ -412,120 +415,161 @@ func migrateQuotaScaleToMicroUSD() *gormigrate.Migration {
 	return &gormigrate.Migration{
 		ID: "202603230001",
 		Migrate: func(tx *gorm.DB) error {
-			const targetQuotaPerUnit = config.MoneyScaleMicroUSD
-			const defaultLegacyQuotaPerUnit = 500 * 1000.0
-
-			legacyQuotaPerUnit := defaultLegacyQuotaPerUnit
-			if tx.Migrator().HasTable("options") {
-				var option Option
-				err := tx.Where("key = ?", "QuotaPerUnit").First(&option).Error
-				if err == nil {
-					parsed, parseErr := strconv.ParseFloat(strings.TrimSpace(option.Value), 64)
-					if parseErr == nil && parsed > 0 {
-						legacyQuotaPerUnit = parsed
-					}
-				}
+			legacyQuotaPerUnit, _, err := detectLegacyQuotaScale(tx)
+			if err != nil {
+				return err
 			}
-
-			if legacyQuotaPerUnit <= 0 {
-				legacyQuotaPerUnit = defaultLegacyQuotaPerUnit
-			}
-
-			ratio := targetQuotaPerUnit / legacyQuotaPerUnit
-			if math.Abs(ratio-1.0) < 1e-9 {
-				if tx.Migrator().HasTable("options") {
-					if err := tx.Where("key = ?", "QuotaPerUnit").Delete(&Option{}).Error; err != nil {
-						return err
-					}
-				}
-				return nil
-			}
-
-			logger.SysLog("migrating quota scale to micro-USD with ratio: " + strconv.FormatFloat(ratio, 'f', 8, 64))
-
-			quotaColumnsByTable := []struct {
-				Table   string
-				Columns []string
-			}{
-				{Table: "users", Columns: []string{"quota", "used_quota", "aff_quota", "aff_history"}},
-				{Table: "tokens", Columns: []string{"remain_quota", "used_quota"}},
-				{Table: "orders", Columns: []string{"quota"}},
-				{Table: "logs", Columns: []string{"quota"}},
-				{Table: "channels", Columns: []string{"used_quota"}},
-				{Table: "redemptions", Columns: []string{"quota"}},
-				{Table: "tasks", Columns: []string{"quota"}},
-				{Table: "statistics", Columns: []string{"quota"}},
-				{Table: "statistics_months", Columns: []string{"quota"}},
-				{Table: "statistics_month_generated_histories", Columns: []string{"quota"}},
-			}
-
-			for _, item := range quotaColumnsByTable {
-				if !tx.Migrator().HasTable(item.Table) {
-					continue
-				}
-
-				columnTypes, err := tx.Migrator().ColumnTypes(item.Table)
-				if err != nil {
-					return err
-				}
-				existingColumns := make(map[string]struct{}, len(columnTypes))
-				for _, columnType := range columnTypes {
-					existingColumns[strings.ToLower(columnType.Name())] = struct{}{}
-				}
-
-				for _, column := range item.Columns {
-					if _, ok := existingColumns[strings.ToLower(column)]; !ok {
-						continue
-					}
-
-					if err := tx.Session(&gorm.Session{AllowGlobalUpdate: true}).
-						Table(item.Table).
-						Update(column, gorm.Expr("ROUND("+column+" * ?)", ratio)).Error; err != nil {
-						return err
-					}
-				}
-			}
-
-			if tx.Migrator().HasTable("options") {
-				quotaOptionKeys := []string{
-					"QuotaForNewUser",
-					"QuotaForInviter",
-					"QuotaForInvitee",
-					"QuotaRemindThreshold",
-					"PreConsumedQuota",
-				}
-
-				var options []Option
-				if err := tx.Where("key IN ?", quotaOptionKeys).Find(&options).Error; err != nil {
-					return err
-				}
-
-				for _, option := range options {
-					value := strings.TrimSpace(option.Value)
-					if value == "" {
-						continue
-					}
-					parsed, err := strconv.ParseFloat(value, 64)
-					if err != nil {
-						continue
-					}
-					scaled := int(math.Round(parsed * ratio))
-					if err := tx.Model(&Option{}).Where("key = ?", option.Key).Update("value", strconv.Itoa(scaled)).Error; err != nil {
-						return err
-					}
-				}
-
-				if err := tx.Where("key = ?", "QuotaPerUnit").Delete(&Option{}).Error; err != nil {
-					return err
-				}
-			}
-
-			return nil
+			return applyQuotaScaleMigration(tx, legacyQuotaPerUnit)
 		},
 		Rollback: func(tx *gorm.DB) error {
 			return nil
 		},
 	}
+}
+
+func detectLegacyQuotaScale(tx *gorm.DB) (float64, bool, error) {
+	if !tx.Migrator().HasTable("users") {
+		return 0, false, nil
+	}
+
+	if tx.Migrator().HasTable("options") {
+		var option Option
+		err := tx.Where("key = ?", "QuotaPerUnit").First(&option).Error
+		if err == nil {
+			parsed, parseErr := strconv.ParseFloat(strings.TrimSpace(option.Value), 64)
+			if parseErr == nil && parsed > 0 && math.Abs(parsed-config.MoneyScaleMicroUSD) > 1e-9 {
+				return parsed, true, nil
+			}
+		}
+	}
+
+	if !tx.Migrator().HasTable("orders") {
+		return 0, false, nil
+	}
+
+	var oldScaleCount int64
+	var newScaleCount int64
+	if err := tx.Model(&Order{}).
+		Where("status = ? AND subscription_plan_id = 0 AND amount > 0 AND quota = amount * ?", OrderStatusSuccess, int(legacyQuotaPerUnitDefault)).
+		Count(&oldScaleCount).Error; err != nil {
+		return 0, false, err
+	}
+	if err := tx.Model(&Order{}).
+		Where("status = ? AND subscription_plan_id = 0 AND amount > 0 AND quota = amount * ?", OrderStatusSuccess, int(config.MoneyScaleMicroUSD)).
+		Count(&newScaleCount).Error; err != nil {
+		return 0, false, err
+	}
+
+	if oldScaleCount > 0 && newScaleCount == 0 {
+		return legacyQuotaPerUnitDefault, true, nil
+	}
+
+	if oldScaleCount > 0 && newScaleCount > 0 {
+		logger.SysError(fmt.Sprintf(
+			"detected mixed quota scales in orders, old=%d new=%d; automatic repair skipped",
+			oldScaleCount,
+			newScaleCount,
+		))
+	}
+
+	return 0, false, nil
+}
+
+func applyQuotaScaleMigration(tx *gorm.DB, legacyQuotaPerUnit float64) error {
+	if legacyQuotaPerUnit <= 0 {
+		return nil
+	}
+
+	ratio := config.MoneyScaleMicroUSD / legacyQuotaPerUnit
+	if math.Abs(ratio-1.0) < 1e-9 {
+		if tx.Migrator().HasTable("options") {
+			if err := tx.Where("key = ?", "QuotaPerUnit").Delete(&Option{}).Error; err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+
+	logger.SysLog("migrating quota scale to micro-USD with ratio: " + strconv.FormatFloat(ratio, 'f', 8, 64))
+
+	quotaColumnsByTable := []struct {
+		Table   string
+		Columns []string
+	}{
+		{Table: "users", Columns: []string{"quota", "used_quota", "aff_quota", "aff_history"}},
+		{Table: "tokens", Columns: []string{"remain_quota", "used_quota"}},
+		{Table: "orders", Columns: []string{"quota"}},
+		{Table: "logs", Columns: []string{"quota"}},
+		{Table: "channels", Columns: []string{"used_quota"}},
+		{Table: "redemptions", Columns: []string{"quota"}},
+		{Table: "tasks", Columns: []string{"quota"}},
+		{Table: "statistics", Columns: []string{"quota"}},
+		{Table: "statistics_months", Columns: []string{"quota"}},
+		{Table: "statistics_month_generated_histories", Columns: []string{"quota"}},
+	}
+
+	for _, item := range quotaColumnsByTable {
+		if !tx.Migrator().HasTable(item.Table) {
+			continue
+		}
+
+		columnTypes, err := tx.Migrator().ColumnTypes(item.Table)
+		if err != nil {
+			return err
+		}
+		existingColumns := make(map[string]struct{}, len(columnTypes))
+		for _, columnType := range columnTypes {
+			existingColumns[strings.ToLower(columnType.Name())] = struct{}{}
+		}
+
+		for _, column := range item.Columns {
+			if _, ok := existingColumns[strings.ToLower(column)]; !ok {
+				continue
+			}
+
+			if err := tx.Session(&gorm.Session{AllowGlobalUpdate: true}).
+				Table(item.Table).
+				Update(column, gorm.Expr("ROUND("+column+" * ?)", ratio)).Error; err != nil {
+				return err
+			}
+		}
+	}
+
+	if tx.Migrator().HasTable("options") {
+		quotaOptionKeys := []string{
+			"QuotaForNewUser",
+			"QuotaForInviter",
+			"QuotaForInvitee",
+			"QuotaRemindThreshold",
+			"PreConsumedQuota",
+		}
+
+		var options []Option
+		if err := tx.Where("key IN ?", quotaOptionKeys).Find(&options).Error; err != nil {
+			return err
+		}
+
+		for _, option := range options {
+			value := strings.TrimSpace(option.Value)
+			if value == "" {
+				continue
+			}
+			parsed, err := strconv.ParseFloat(value, 64)
+			if err != nil {
+				continue
+			}
+			scaled := int(math.Round(parsed * ratio))
+			if err := tx.Model(&Option{}).Where("key = ?", option.Key).Update("value", strconv.Itoa(scaled)).Error; err != nil {
+				return err
+			}
+		}
+
+		if err := tx.Where("key = ?", "QuotaPerUnit").Delete(&Option{}).Error; err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func removeDeprecatedOAuthAuth() *gormigrate.Migration {
@@ -720,4 +764,23 @@ func migrationAfter(db *gorm.DB) error {
 		migrateQuotaScaleToMicroUSD(),
 	})
 	return m.Migrate()
+}
+
+func EnsureQuotaScaleConsistency(db *gorm.DB) error {
+	if !config.IsMasterNode {
+		return nil
+	}
+
+	return db.Transaction(func(tx *gorm.DB) error {
+		legacyQuotaPerUnit, shouldRepair, err := detectLegacyQuotaScale(tx)
+		if err != nil {
+			return err
+		}
+		if !shouldRepair {
+			return nil
+		}
+
+		logger.SysLog("detected legacy quota scale after migrations, applying compatibility repair")
+		return applyQuotaScaleMigration(tx, legacyQuotaPerUnit)
+	})
 }

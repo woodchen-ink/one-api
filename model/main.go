@@ -123,7 +123,10 @@ func InitDB() (err error) {
 		}
 		logger.SysLog("database migration started")
 
-		migrationBefore(DB)
+		err = migrationBefore(DB)
+		if err != nil {
+			return err
+		}
 
 		err = db.AutoMigrate(&Channel{})
 		if err != nil {
@@ -226,7 +229,15 @@ func InitDB() (err error) {
 			}
 		}
 
-		migrationAfter(DB)
+		err = migrationAfter(DB)
+		if err != nil {
+			return err
+		}
+
+		err = EnsureQuotaScaleConsistency(DB)
+		if err != nil {
+			return err
+		}
 
 		logger.SysLog("database migrated")
 		err = createRootAccountIfNeed()
