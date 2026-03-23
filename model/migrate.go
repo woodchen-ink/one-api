@@ -16,6 +16,13 @@ import (
 
 const legacyQuotaPerUnitDefault = 500 * 1000.0
 
+func getOptionKeyColumnName(tx *gorm.DB) string {
+	if tx != nil && tx.Dialector.Name() == "postgres" {
+		return `"key"`
+	}
+	return "`key`"
+}
+
 func removeKeyIndexMigration() *gormigrate.Migration {
 	return &gormigrate.Migration{
 		ID: "202405152141",
@@ -434,7 +441,7 @@ func detectLegacyQuotaScale(tx *gorm.DB) (float64, bool, error) {
 
 	if tx.Migrator().HasTable("options") {
 		var option Option
-		err := tx.Where("key = ?", "QuotaPerUnit").First(&option).Error
+		err := tx.Where(getOptionKeyColumnName(tx)+" = ?", "QuotaPerUnit").First(&option).Error
 		if err == nil {
 			parsed, parseErr := strconv.ParseFloat(strings.TrimSpace(option.Value), 64)
 			if parseErr == nil && parsed > 0 && math.Abs(parsed-config.MoneyScaleMicroUSD) > 1e-9 {
@@ -483,7 +490,7 @@ func applyQuotaScaleMigration(tx *gorm.DB, legacyQuotaPerUnit float64) error {
 	ratio := config.MoneyScaleMicroUSD / legacyQuotaPerUnit
 	if math.Abs(ratio-1.0) < 1e-9 {
 		if tx.Migrator().HasTable("options") {
-			if err := tx.Where("key = ?", "QuotaPerUnit").Delete(&Option{}).Error; err != nil {
+			if err := tx.Where(getOptionKeyColumnName(tx)+" = ?", "QuotaPerUnit").Delete(&Option{}).Error; err != nil {
 				return err
 			}
 		}
@@ -545,7 +552,7 @@ func applyQuotaScaleMigration(tx *gorm.DB, legacyQuotaPerUnit float64) error {
 		}
 
 		var options []Option
-		if err := tx.Where("key IN ?", quotaOptionKeys).Find(&options).Error; err != nil {
+		if err := tx.Where(getOptionKeyColumnName(tx)+" IN ?", quotaOptionKeys).Find(&options).Error; err != nil {
 			return err
 		}
 
@@ -559,12 +566,12 @@ func applyQuotaScaleMigration(tx *gorm.DB, legacyQuotaPerUnit float64) error {
 				continue
 			}
 			scaled := int(math.Round(parsed * ratio))
-			if err := tx.Model(&Option{}).Where("key = ?", option.Key).Update("value", strconv.Itoa(scaled)).Error; err != nil {
+			if err := tx.Model(&Option{}).Where(getOptionKeyColumnName(tx)+" = ?", option.Key).Update("value", strconv.Itoa(scaled)).Error; err != nil {
 				return err
 			}
 		}
 
-		if err := tx.Where("key = ?", "QuotaPerUnit").Delete(&Option{}).Error; err != nil {
+		if err := tx.Where(getOptionKeyColumnName(tx)+" = ?", "QuotaPerUnit").Delete(&Option{}).Error; err != nil {
 			return err
 		}
 	}
@@ -599,7 +606,7 @@ func removeDeprecatedOAuthAuth() *gormigrate.Migration {
 					"LarkClientId",
 					"LarkClientSecret",
 				}
-				if err := tx.Where("key IN ?", optionKeys).Delete(&Option{}).Error; err != nil {
+				if err := tx.Where(getOptionKeyColumnName(tx)+" IN ?", optionKeys).Delete(&Option{}).Error; err != nil {
 					return err
 				}
 			}
