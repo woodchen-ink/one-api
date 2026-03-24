@@ -42,6 +42,7 @@ type Quota struct {
 	firstResponseTime time.Time
 	extraBillingData  map[string]ExtraBillingData
 	requestPath       string
+	userAgent         string
 	reasoningMetadata *types.LogReasoningMetadata
 }
 
@@ -246,6 +247,7 @@ func (q *Quota) Consume(c *gin.Context, usage *types.Usage, isStream bool) {
 	tokenName := c.GetString("token_name")
 	q.startTime = c.GetTime("requestStartTime")
 	q.requestPath = c.Request.URL.Path
+	q.userAgent = c.Request.UserAgent()
 
 	go func(ctx context.Context) {
 		err := q.completedQuotaConsumption(usage, tokenName, isStream, common.GetClientIP(c), ctx)
@@ -375,6 +377,9 @@ func (q *Quota) GetLogMeta(usage *types.Usage, requestPath ...string) map[string
 
 	if len(requestPath) > 0 && requestPath[0] != "" {
 		meta["request_path"] = requestPath[0]
+	}
+	if q.userAgent != "" {
+		meta["user_agent"] = q.userAgent
 	}
 
 	firstResponseTime := q.GetFirstResponseTime()

@@ -419,6 +419,7 @@
     "totalInputTokens": "计算输入Tokens",
     "totalOutputTokens": "计算输出Tokens",
     "sourceIp": "来源IP",
+    "userAgent": "User-Agent",
     "requestPath": "请求路径",
     "logType": {
       "all": "全部",

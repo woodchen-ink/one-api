@@ -96,7 +96,10 @@ func RelayOnly(c *gin.Context) {
 		"中继:"+path,
 		requestTime,
 		false,
-		map[string]any{"request_path": path},
+		map[string]any{
+			"request_path": path,
+			"user_agent":   c.Request.UserAgent(),
+		},
 		common.GetClientIP(c),
 	)
 

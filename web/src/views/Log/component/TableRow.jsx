@@ -74,6 +74,29 @@ function renderIpLink(ip) {
   );
 }
 
+function viewCompactText(value, width = 220, typographyProps = {}) {
+  if (!value) {
+    return '';
+  }
+
+  return (
+    <Tooltip title={value} placement="top" arrow>
+      <Typography
+        variant="body2"
+        sx={{
+          maxWidth: width,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+          ...typographyProps.sx
+        }}
+      >
+        {value}
+      </Typography>
+    </Tooltip>
+  );
+}
+
 function LogTableRow({ item, userIsAdmin, userGroup, columnVisibility }) {
   const { t } = useTranslation();
   const LogType = useLogType();
@@ -83,15 +106,17 @@ function LogTableRow({ item, userIsAdmin, userGroup, columnVisibility }) {
   return (
     <>
       <TableRow tabIndex={item.id}>
-        {columnVisibility.created_at && <TableCell sx={{ p: '10px 8px' }}>{timestamp2string(item.created_at)}</TableCell>}
+        {columnVisibility.created_at && (
+          <TableCell sx={{ p: '10px 8px', whiteSpace: 'nowrap' }}>{timestamp2string(item.created_at)}</TableCell>
+        )}
 
         {userIsAdmin && columnVisibility.channel_id && (
-          <TableCell sx={{ p: '10px 8px' }}>
+          <TableCell sx={{ p: '10px 8px', minWidth: 160 }}>
             {(item.channel_id || '') + ' ' + (item.channel?.name ? '(' + item.channel.name + ')' : '')}
           </TableCell>
         )}
         {userIsAdmin && columnVisibility.user_id && (
-          <TableCell sx={{ p: '10px 8px' }}>
+          <TableCell sx={{ p: '10px 8px', minWidth: 120 }}>
             <Label color="default" variant="outlined" copyText={item.username}>
               {item.username}
             </Label>
@@ -99,7 +124,7 @@ function LogTableRow({ item, userIsAdmin, userGroup, columnVisibility }) {
         )}
 
         {columnVisibility.group && (
-          <TableCell sx={{ p: '10px 8px' }}>
+          <TableCell sx={{ p: '10px 8px', minWidth: 140 }}>
             {item?.metadata?.is_backup_group ? (
               // 显示分组重定向：原始分组 → 备份分组
               <Stack direction="row" spacing={1} alignItems="center">
@@ -122,7 +147,7 @@ function LogTableRow({ item, userIsAdmin, userGroup, columnVisibility }) {
           </TableCell>
         )}
         {columnVisibility.token_name && (
-          <TableCell sx={{ p: '10px 8px' }}>
+          <TableCell sx={{ p: '10px 8px', minWidth: 140 }}>
             {item.token_name && (
               <Label color="default" variant="soft" copyText={item.token_name}>
                 {item.token_name}
@@ -130,29 +155,39 @@ function LogTableRow({ item, userIsAdmin, userGroup, columnVisibility }) {
             )}
           </TableCell>
         )}
-        {columnVisibility.type && <TableCell sx={{ p: '10px 8px' }}>{renderType(item.type, LogType, t)}</TableCell>}
-        {columnVisibility.model_name && <TableCell sx={{ p: '10px 8px' }}>{viewModelName(item.model_name, item.is_stream)}</TableCell>}
-        {columnVisibility.reasoning && <TableCell sx={{ p: '10px 8px' }}>{viewReasoning(item?.metadata?.reasoning, t)}</TableCell>}
+        {columnVisibility.type && <TableCell sx={{ p: '10px 8px', minWidth: 110 }}>{renderType(item.type, LogType, t)}</TableCell>}
+        {columnVisibility.model_name && (
+          <TableCell sx={{ p: '10px 8px', minWidth: 150 }}>{viewModelName(item.model_name, item.is_stream)}</TableCell>
+        )}
+        {columnVisibility.reasoning && (
+          <TableCell sx={{ p: '10px 8px', minWidth: 110 }}>{viewReasoning(item?.metadata?.reasoning, t)}</TableCell>
+        )}
 
         {columnVisibility.request_path && (
-          <TableCell sx={{ p: '10px 8px' }}>
-            {item?.metadata?.request_path && (
-              <Typography variant="caption" sx={{ fontFamily: 'monospace', color: 'text.secondary', whiteSpace: 'nowrap' }}>
-                {item.metadata.request_path}
-              </Typography>
-            )}
+          <TableCell sx={{ p: '10px 8px', minWidth: 160, maxWidth: 200 }}>
+            {viewCompactText(item?.metadata?.request_path, 180, {
+              sx: {
+                fontFamily: 'monospace',
+                color: 'text.secondary'
+              }
+            })}
           </TableCell>
         )}
         {columnVisibility.duration && (
-          <TableCell sx={{ p: '10px 8px', whiteSpace: 'nowrap', textAlign: 'center' }}>{viewDuration(item, t)}</TableCell>
+          <TableCell sx={{ p: '10px 8px', minWidth: 150, whiteSpace: 'nowrap', textAlign: 'center' }}>{viewDuration(item, t)}</TableCell>
         )}
         {columnVisibility.tokens && (
-          <TableCell sx={{ p: '10px 8px', whiteSpace: 'nowrap', textAlign: 'center' }}>
+          <TableCell sx={{ p: '10px 8px', minWidth: 160, whiteSpace: 'nowrap', textAlign: 'center' }}>
             {viewTokens(item, t, totalInputTokens, totalOutputTokens, tokenDetails)}
           </TableCell>
         )}
-        {columnVisibility.quota && <TableCell sx={{ p: '10px 8px' }}>{viewQuota(item, t)}</TableCell>}
-        {columnVisibility.source_ip && <TableCell sx={{ p: '10px 8px' }}>{renderIpLink(item.source_ip)}</TableCell>}
+        {columnVisibility.quota && <TableCell sx={{ p: '10px 8px', minWidth: 100 }}>{viewQuota(item, t)}</TableCell>}
+        {columnVisibility.source_ip && (
+          <TableCell sx={{ p: '10px 8px', minWidth: 140, whiteSpace: 'nowrap' }}>{renderIpLink(item.source_ip)}</TableCell>
+        )}
+        {userIsAdmin && columnVisibility.user_agent && (
+          <TableCell sx={{ p: '10px 8px', minWidth: 220, maxWidth: 260 }}>{viewCompactText(item?.metadata?.user_agent, 240)}</TableCell>
+        )}
       </TableRow>
     </>
   );

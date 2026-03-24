@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { showError, trims } from 'utils/common';
 
 import Table from '@mui/material/Table';
@@ -31,17 +31,20 @@ import { Navigate } from 'react-router-dom';
 export default function Log({ adminMode = false }) {
   const { t } = useTranslation();
   const LogType = useLogType();
-  const originalKeyword = {
-    p: 0,
-    username: '',
-    token_name: '',
-    model_name: '',
-    start_timestamp: 0,
-    end_timestamp: dayjs().unix() + 3600,
-    log_type: '0',
-    channel_id: '',
-    source_ip: ''
-  };
+  const originalKeyword = useMemo(
+    () => ({
+      p: 0,
+      username: '',
+      token_name: '',
+      model_name: '',
+      start_timestamp: 0,
+      end_timestamp: dayjs().unix() + 3600,
+      log_type: '0',
+      channel_id: '',
+      source_ip: ''
+    }),
+    []
+  );
 
   const [page, setPage] = useState(0);
   const [order, setOrder] = useState('desc');
@@ -74,7 +77,8 @@ export default function Log({ adminMode = false }) {
     duration: true,
     tokens: true,
     quota: true,
-    source_ip: canViewAdminLogs
+    source_ip: canViewAdminLogs,
+    user_agent: canViewAdminLogs
   });
   const [columnMenuAnchor, setColumnMenuAnchor] = useState(null);
 
@@ -102,10 +106,11 @@ export default function Log({ adminMode = false }) {
       duration: true,
       tokens: true,
       quota: true,
-      source_ip: canViewAdminLogs
+      source_ip: canViewAdminLogs,
+      user_agent: canViewAdminLogs
     });
     setColumnMenuAnchor(null);
-  }, [canViewAdminLogs]);
+  }, [canViewAdminLogs, originalKeyword]);
 
   // 处理列显示菜单打开和关闭
   const handleColumnMenuOpen = (event) => {
@@ -334,7 +339,8 @@ export default function Log({ adminMode = false }) {
                 { id: 'duration', label: t('logPage.durationLabel') },
                 { id: 'tokens', label: t('logPage.tokensLabel') },
                 { id: 'quota', label: t('logPage.quotaLabel') },
-                { id: 'source_ip', label: t('logPage.sourceIp'), adminOnly: true }
+                { id: 'source_ip', label: t('logPage.sourceIp'), adminOnly: true },
+                { id: 'user_agent', label: t('logPage.userAgent'), adminOnly: true }
               ].map(
                 (column) =>
                   (!column.adminOnly || canViewAdminLogs) && (
@@ -350,7 +356,7 @@ export default function Log({ adminMode = false }) {
         {searching && <LinearProgress />}
         <PerfectScrollbar component="div">
           <TableContainer sx={{ overflow: 'unset' }}>
-            <Table sx={{ minWidth: 800 }}>
+            <Table sx={{ minWidth: canViewAdminLogs ? 1760 : 1180 }}>
               <KeywordTableHead
                 order={order}
                 orderBy={orderBy}
@@ -360,79 +366,101 @@ export default function Log({ adminMode = false }) {
                     id: 'created_at',
                     label: t('logPage.timeLabel'),
                     disableSort: false,
-                    hide: !columnVisibility.created_at
+                    hide: !columnVisibility.created_at,
+                    minWidth: 160
                   },
                   {
                     id: 'channel_id',
                     label: t('logPage.channelLabel'),
                     disableSort: false,
-                    hide: !columnVisibility.channel_id || !canViewAdminLogs
+                    hide: !columnVisibility.channel_id || !canViewAdminLogs,
+                    minWidth: 160
                   },
                   {
                     id: 'user_id',
                     label: t('logPage.userLabel'),
                     disableSort: false,
-                    hide: !columnVisibility.user_id || !canViewAdminLogs
+                    hide: !columnVisibility.user_id || !canViewAdminLogs,
+                    minWidth: 120
                   },
                   {
                     id: 'group',
                     label: t('logPage.groupLabel'),
                     disableSort: false,
-                    hide: !columnVisibility.group
+                    hide: !columnVisibility.group,
+                    minWidth: 140
                   },
                   {
                     id: 'token_name',
                     label: t('logPage.tokenLabel'),
                     disableSort: false,
-                    hide: !columnVisibility.token_name
+                    hide: !columnVisibility.token_name,
+                    minWidth: 140
                   },
                   {
                     id: 'type',
                     label: t('logPage.typeLabel'),
                     disableSort: false,
-                    hide: !columnVisibility.type
+                    hide: !columnVisibility.type,
+                    minWidth: 110
                   },
                   {
                     id: 'model_name',
                     label: t('logPage.modelLabel'),
                     disableSort: false,
-                    hide: !columnVisibility.model_name
+                    hide: !columnVisibility.model_name,
+                    minWidth: 150
                   },
                   {
                     id: 'reasoning',
                     label: t('logPage.reasoningLabel'),
                     disableSort: true,
-                    hide: !columnVisibility.reasoning
+                    hide: !columnVisibility.reasoning,
+                    minWidth: 110
                   },
                   {
                     id: 'request_path',
                     label: t('logPage.requestPath'),
                     disableSort: true,
-                    hide: !columnVisibility.request_path
+                    hide: !columnVisibility.request_path,
+                    minWidth: 160,
+                    width: 200
                   },
                   {
                     id: 'duration',
                     label: t('logPage.durationLabel'),
                     disableSort: true,
-                    hide: !columnVisibility.duration
+                    hide: !columnVisibility.duration,
+                    minWidth: 150
                   },
                   {
                     id: 'tokens',
                     label: t('logPage.tokensLabel'),
                     disableSort: true,
-                    hide: !columnVisibility.tokens
+                    hide: !columnVisibility.tokens,
+                    minWidth: 160
                   },
                   {
                     id: 'quota',
                     label: t('logPage.quotaLabel'),
                     disableSort: true,
-                    hide: !columnVisibility.quota
+                    hide: !columnVisibility.quota,
+                    minWidth: 100
                   },
                   {
                     id: 'source_ip',
                     label: t('logPage.sourceIp'),
                     disableSort: true,
-                    hide: !columnVisibility.source_ip || !canViewAdminLogs
+                    hide: !columnVisibility.source_ip || !canViewAdminLogs,
+                    minWidth: 140
+                  },
+                  {
+                    id: 'user_agent',
+                    label: t('logPage.userAgent'),
+                    disableSort: true,
+                    hide: !columnVisibility.user_agent || !canViewAdminLogs,
+                    minWidth: 220,
+                    width: 260
                   }
                 ]}
               />
