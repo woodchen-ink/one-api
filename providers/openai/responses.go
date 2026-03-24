@@ -161,7 +161,7 @@ func getResponsesExtraBilling(response *types.OpenAIResponsesResponses, usage *t
 			case types.InputTypeFileSearchCall:
 				usage.IncExtraBilling(types.APITollTypeFileSearch, "")
 			case types.InputTypeImageGenerationCall:
-				imageType := output.Quality + "-" + output.Size
+				imageType := buildImageGenerationBillingType(response.Tools, &output)
 				usage.IncExtraBilling(types.APITollTypeImageGeneration, imageType)
 			}
 		}
@@ -186,4 +186,38 @@ func getContainerMemoryLimit(tools []types.ResponsesTools) string {
 		return "1g"
 	}
 	return "1g"
+}
+
+func buildImageGenerationBillingType(tools []types.ResponsesTools, output *types.ResponsesOutput) string {
+	if output == nil {
+		return ""
+	}
+
+	model := ""
+	quality := strings.TrimSpace(strings.ToLower(output.Quality))
+	size := strings.TrimSpace(strings.ToLower(output.Size))
+
+	for _, tool := range tools {
+		if tool.Type != types.APITollTypeImageGeneration {
+			continue
+		}
+		if model == "" {
+			model = strings.TrimSpace(strings.ToLower(tool.Model))
+		}
+		if quality == "" && tool.Quality != "" {
+			quality = strings.TrimSpace(strings.ToLower(tool.Quality))
+		}
+		if size == "" && tool.Size != "" {
+			size = strings.TrimSpace(strings.ToLower(tool.Size))
+		}
+	}
+
+	if model == "" {
+		if quality == "" || size == "" {
+			return ""
+		}
+		return quality + "-" + size
+	}
+
+	return model + "|" + quality + "|" + size
 }

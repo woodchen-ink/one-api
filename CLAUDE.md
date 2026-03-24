@@ -96,6 +96,10 @@ The provider system implements a plugin-based architecture in `providers/`:
   - Model listing interfaces
 - Automatic model discovery and pricing updates
 - Provider additions/removals must keep `common/config/constants.go`, `providers/providers.go`, `model/model_ownedby.go`, and `web/src/constants/ChannelConstants.js` in sync
+- Pricing sync providers currently support `openai`, `claude`, and `gemini`.
+  - OpenAI price sync pulls from `https://developers.openai.com/api/docs/pricing.md` and currently imports the `standard` token pricing rows only.
+  - OpenAI `gpt-5.4` / `gpt-5.4-pro` long-context pricing (`>272K` prompt tokens) is mapped into pricing `billing_rules`.
+  - Tool-only charges still stay outside `Price` rows; Responses image-generation extra billing now distinguishes GPT Image model variants.
 - Baichuan provider support has been removed in this fork; avoid reintroducing channel type `26` unless the backend provider, pricing data, admin metadata, and docs are restored together
 - Baidu/Qianfan provider support has been removed in this fork; avoid reintroducing channel type `15` unless the backend provider, pricing data, and admin metadata are restored together
 - OpenRouter provider support has been removed in this fork; keep channel type `20` reserved and blocked unless the backend provider, admin metadata, and compatibility handling are restored together

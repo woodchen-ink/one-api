@@ -14,7 +14,8 @@ type ExtraServicePriceConfig struct {
 	// Code Interpreter / Container 价格 (按 memory_limit 阶梯)
 	CodeInterpreter map[string]float64 `json:"code_interpreter"` // memory_limit -> price per container session
 
-	ImageGeneration map[string]map[string]float64 `json:"image_generation"`
+	ImageGeneration        map[string]map[string]float64            `json:"image_generation"`
+	ImageGenerationByModel map[string]map[string]map[string]float64 `json:"image_generation_by_model"`
 }
 
 var defaultExtraServicePrices = ExtraServicePriceConfig{
@@ -31,6 +32,8 @@ var defaultExtraServicePrices = ExtraServicePriceConfig{
 		"16g": 0.48,
 		"64g": 1.92,
 	},
+	// Legacy fallback keeps the previous GPT Image 1 pricing shape for callers
+	// that only pass quality-size without the tool model.
 	ImageGeneration: map[string]map[string]float64{
 		"low": {
 			"1024x1024": 0.011,
@@ -46,6 +49,93 @@ var defaultExtraServicePrices = ExtraServicePriceConfig{
 			"1024x1024": 0.167,
 			"1024x1536": 0.25,
 			"1536x1024": 0.25,
+		},
+	},
+	ImageGenerationByModel: map[string]map[string]map[string]float64{
+		"gpt-image-1.5": {
+			"low": {
+				"1024x1024": 0.009,
+				"1024x1536": 0.013,
+				"1536x1024": 0.013,
+			},
+			"medium": {
+				"1024x1024": 0.034,
+				"1024x1536": 0.05,
+				"1536x1024": 0.05,
+			},
+			"high": {
+				"1024x1024": 0.133,
+				"1024x1536": 0.2,
+				"1536x1024": 0.2,
+			},
+		},
+		"gpt-image-latest": {
+			"low": {
+				"1024x1024": 0.009,
+				"1024x1536": 0.013,
+				"1536x1024": 0.013,
+			},
+			"medium": {
+				"1024x1024": 0.034,
+				"1024x1536": 0.05,
+				"1536x1024": 0.05,
+			},
+			"high": {
+				"1024x1024": 0.133,
+				"1024x1536": 0.2,
+				"1536x1024": 0.2,
+			},
+		},
+		"chatgpt-image-latest": {
+			"low": {
+				"1024x1024": 0.009,
+				"1024x1536": 0.013,
+				"1536x1024": 0.013,
+			},
+			"medium": {
+				"1024x1024": 0.034,
+				"1024x1536": 0.05,
+				"1536x1024": 0.05,
+			},
+			"high": {
+				"1024x1024": 0.133,
+				"1024x1536": 0.2,
+				"1536x1024": 0.2,
+			},
+		},
+		"gpt-image-1": {
+			"low": {
+				"1024x1024": 0.011,
+				"1024x1536": 0.016,
+				"1536x1024": 0.016,
+			},
+			"medium": {
+				"1024x1024": 0.042,
+				"1024x1536": 0.063,
+				"1536x1024": 0.063,
+			},
+			"high": {
+				"1024x1024": 0.167,
+				"1024x1536": 0.25,
+				"1536x1024": 0.25,
+			},
+		},
+		"gpt-image-1-mini": {
+			"low": {
+				"1024x1024": 0.005,
+				"1024x1536": 0.006,
+				"1536x1024": 0.006,
+			},
+			"medium": {
+				"1024x1024": 0.011,
+				"1024x1536": 0.015,
+				"1536x1024": 0.015,
+			},
+			"high": {
+				"1024x1024": 0.036,
+				"1024x1536": 0.052,
+				"1536x1024": 0.052,
+			},
 		},
 	},
 }
@@ -83,29 +173,66 @@ func getDefaultExtraServicePrice(serviceType, modelName, extraType string) float
 		return defaultExtraServicePrices.CodeInterpreter["1g"]
 
 	case types.APITollTypeImageGeneration:
-		if extraType == "" {
-			return 0
-		}
-		// imageType 需要是 quality + "-" + size 的格式
-		parts := strings.Split(extraType, "-")
-		if len(parts) != 2 {
-			return 0
-		}
-		quality := strings.ToLower(parts[0])
-		size := strings.ToLower(parts[1])
-
-		if quality == "" || size == "" {
-			return 0
-		}
-
-		if _, ok := defaultExtraServicePrices.ImageGeneration[quality]; !ok {
-			return 0
-		}
-		if price, ok := defaultExtraServicePrices.ImageGeneration[quality][size]; ok {
-			return price
-		}
-		return 0
+		return getImageGenerationPrice(extraType)
 	default:
 		return 0
+	}
+}
+
+func getImageGenerationPrice(extraType string) float64 {
+	model, quality, size := parseImageGenerationExtraType(extraType)
+	if quality == "" || size == "" {
+		return 0
+	}
+
+	model = normalizeImageGenerationModel(model)
+	if model != "" {
+		if qualityMap, ok := defaultExtraServicePrices.ImageGenerationByModel[model]; ok {
+			if sizeMap, ok := qualityMap[quality]; ok {
+				if price, ok := sizeMap[size]; ok {
+					return price
+				}
+			}
+		}
+	}
+
+	if qualityMap, ok := defaultExtraServicePrices.ImageGeneration[quality]; ok {
+		if price, ok := qualityMap[size]; ok {
+			return price
+		}
+	}
+
+	return 0
+}
+
+func parseImageGenerationExtraType(extraType string) (model string, quality string, size string) {
+	normalized := strings.TrimSpace(strings.ToLower(extraType))
+	if normalized == "" {
+		return "", "", ""
+	}
+
+	if strings.Contains(normalized, "|") {
+		parts := strings.SplitN(normalized, "|", 3)
+		if len(parts) == 3 {
+			return strings.TrimSpace(parts[0]), strings.TrimSpace(parts[1]), strings.TrimSpace(parts[2])
+		}
+	}
+
+	parts := strings.SplitN(normalized, "-", 2)
+	if len(parts) != 2 {
+		return "", "", ""
+	}
+
+	return "", strings.TrimSpace(parts[0]), strings.TrimSpace(parts[1])
+}
+
+func normalizeImageGenerationModel(model string) string {
+	switch strings.TrimSpace(strings.ToLower(model)) {
+	case "", "auto":
+		return ""
+	case "gpt-image-latest", "chatgpt-image-latest", "gpt-image-1.5":
+		return strings.TrimSpace(strings.ToLower(model))
+	default:
+		return strings.TrimSpace(strings.ToLower(model))
 	}
 }

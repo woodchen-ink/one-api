@@ -167,3 +167,145 @@ func TestGeminiPriceSyncProviderSuggestModel(t *testing.T) {
 	assert.Equal(t, "gemini-3.1-pro-preview", provider.SuggestModel("gemini-3.1-pro-preview", []string{"gemini-3.1-pro-preview", "gemini-3.1-pro-preview-customtools"}))
 	assert.Equal(t, "gemini-2.5-flash-lite-preview", provider.SuggestModel("gemini-2.5-flash-lite-preview-09-2025", []string{"gemini-2.5-flash-lite-preview", "gemini-2.5-flash"}))
 }
+
+func TestOpenAIPriceSyncProviderParse(t *testing.T) {
+	provider := newOpenAIPriceSyncProvider()
+	raw := []byte(`<div data-content-switcher-pane data-value="standard">
+      <div class="hidden">Standard</div>
+
+      <TextTokenPricingTables
+        client:load
+        tier="standard"
+        rows={[
+          ["gpt-5.4 (<272K context length)", 2.5, 0.25, 15],
+          ["gpt-5.4-pro (<272K context length)", 30, "", 180],
+          ["gpt-4o", 2.5, 1.25, 10],
+        ]}
+      />
+    </div>
+    <div data-content-switcher-pane data-value="batch" hidden>
+      <div class="hidden">Batch</div>
+
+      <TextTokenPricingTables
+        client:load
+        tier="batch"
+        rows={[
+          ["gpt-4o", 1.25, "-", 5],
+        ]}
+      />
+    </div>
+
+<div data-content-switcher-pane data-value="standard">
+      <div class="hidden">Standard</div>
+
+      <GroupedPricingTable
+        client:load
+        groups={[
+          {
+            model: "Deep research",
+            rows: [
+              ["o3-deep-research", 10, 2.5, 40],
+            ],
+          },
+          {
+            model: "Computer use",
+            rows: [["computer-use-preview", 3, "-", 12]],
+          },
+          {
+            model: "Embedding",
+            rows: [
+              ["text-embedding-3-small", 0.02, "-", "-"],
+            ],
+          },
+          {
+            model: "Moderation",
+            rows: [
+              ["omni-moderation-latest", "Free", "-", "-"],
+            ],
+          },
+        ]}
+      />
+    </div>
+    <div data-content-switcher-pane data-value="priority" hidden>
+      <div class="hidden">Priority</div>
+    </div>
+`)
+
+	rows, err := provider.Parse(raw)
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	rowMap := make(map[string]PriceSyncDraftRow, len(rows))
+	for _, row := range rows {
+		rowMap[row.SourceModel] = row
+	}
+
+	if assert.Contains(t, rowMap, "gpt-5.4 (<272K context length)") {
+		row := rowMap["gpt-5.4 (<272K context length)"]
+		assert.Equal(t, 2.5, row.Input)
+		assert.Equal(t, 15.0, row.Output)
+		assert.Equal(t, 0.25, row.ExtraRatios[config.UsageExtraCache])
+		if assert.Len(t, row.BillingRules, 1) {
+			assert.Equal(t, "prompt_tokens_gt_272000_long_context", row.BillingRules[0].Name)
+			if assert.NotNil(t, row.BillingRules[0].Match.PromptTokensGT) {
+				assert.Equal(t, 272000, *row.BillingRules[0].Match.PromptTokensGT)
+			}
+			if assert.NotNil(t, row.BillingRules[0].Input) {
+				assert.Equal(t, 5.0, *row.BillingRules[0].Input)
+			}
+			if assert.NotNil(t, row.BillingRules[0].Output) {
+				assert.Equal(t, 22.5, *row.BillingRules[0].Output)
+			}
+		}
+	}
+
+	if assert.Contains(t, rowMap, "gpt-5.4-pro (<272K context length)") {
+		row := rowMap["gpt-5.4-pro (<272K context length)"]
+		if assert.Len(t, row.BillingRules, 1) {
+			if assert.NotNil(t, row.BillingRules[0].Input) {
+				assert.Equal(t, 60.0, *row.BillingRules[0].Input)
+			}
+			if assert.NotNil(t, row.BillingRules[0].Output) {
+				assert.Equal(t, 270.0, *row.BillingRules[0].Output)
+			}
+		}
+	}
+
+	if assert.Contains(t, rowMap, "gpt-4o") {
+		row := rowMap["gpt-4o"]
+		assert.Equal(t, 2.5, row.Input)
+		assert.Equal(t, 10.0, row.Output)
+		assert.Equal(t, 1.25, row.ExtraRatios[config.UsageExtraCache])
+	}
+
+	if assert.Contains(t, rowMap, "o3-deep-research") {
+		row := rowMap["o3-deep-research"]
+		assert.Equal(t, 10.0, row.Input)
+		assert.Equal(t, 40.0, row.Output)
+		assert.Equal(t, 2.5, row.ExtraRatios[config.UsageExtraCache])
+	}
+
+	if assert.Contains(t, rowMap, "computer-use-preview") {
+		row := rowMap["computer-use-preview"]
+		assert.Equal(t, 3.0, row.Input)
+		assert.Equal(t, 12.0, row.Output)
+		assert.Nil(t, row.ExtraRatios)
+	}
+
+	if assert.Contains(t, rowMap, "text-embedding-3-small") {
+		row := rowMap["text-embedding-3-small"]
+		assert.Equal(t, 0.02, row.Input)
+		assert.Equal(t, 0.0, row.Output)
+	}
+
+	assert.NotContains(t, rowMap, "omni-moderation-latest")
+}
+
+func TestOpenAIPriceSyncProviderSuggestModel(t *testing.T) {
+	provider := newOpenAIPriceSyncProvider()
+
+	assert.Equal(t, "gpt-5.4", provider.SuggestModel("gpt-5.4 (<272K context length)", []string{"gpt-5.4", "gpt-5.4-mini"}))
+	assert.Equal(t, "o3-deep-research", provider.SuggestModel("o3-deep-research", []string{"o3-deep-research", "o4-mini-deep-research"}))
+	assert.Equal(t, "", provider.SuggestModel("gpt-4o", []string{"gpt-4o-2024-08-06", "gpt-4o-mini"}))
+}

@@ -67,3 +67,11 @@ func TestGetDefaultExtraServicePriceCodeInterpreter(t *testing.T) {
 	// 未知 memory_limit 默认 1g
 	assert.Equal(t, 0.03, getDefaultExtraServicePrice("code_interpreter", "gpt-4o", "unknown"))
 }
+
+func TestGetDefaultExtraServicePriceImageGeneration(t *testing.T) {
+	assert.Equal(t, 0.133, getDefaultExtraServicePrice("image_generation", "gpt-4o", "gpt-image-1.5|high|1024x1024"))
+	assert.Equal(t, 0.05, getDefaultExtraServicePrice("image_generation", "gpt-4o", "chatgpt-image-latest|medium|1024x1536"))
+	assert.Equal(t, 0.052, getDefaultExtraServicePrice("image_generation", "gpt-4o", "gpt-image-1-mini|high|1536x1024"))
+	// 兼容旧的 quality-size 结构，默认回退到原先的 GPT Image 1 价格
+	assert.Equal(t, 0.011, getDefaultExtraServicePrice("image_generation", "gpt-4o", "low-1024x1024"))
+}

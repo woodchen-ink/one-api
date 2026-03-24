@@ -56,6 +56,7 @@ type PriceSyncApplyRequest struct {
 }
 
 var priceSyncProviders = map[string]PriceSyncProvider{
+	"openai": newOpenAIPriceSyncProvider(),
 	"claude": newClaudePriceSyncProvider(),
 	"gemini": newGeminiPriceSyncProvider(),
 }
