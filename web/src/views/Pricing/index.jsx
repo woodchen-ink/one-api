@@ -9,6 +9,7 @@ import AdminContainer from 'ui-component/AdminContainer';
 import { API } from 'utils/api';
 import { showError } from 'utils/common';
 import EditeModal from './component/EditModal';
+import PriceSyncDialog from './component/PriceSyncDialog';
 import { useTranslation } from 'react-i18next';
 
 function CustomTabPanel(props) {
@@ -39,6 +40,7 @@ const Pricing = () => {
   const [ownedby, setOwnedby] = useState([]);
   const [modelList, setModelList] = useState([]);
   const [openaddModal, setOpenaddModal] = useState(false);
+  const [openSyncDialog, setOpenSyncDialog] = useState(false);
   const [errPrices, setErrPrices] = useState('');
   const [prices, setPrices] = useState([]);
   const [noPriceModel, setNoPriceModel] = useState([]);
@@ -81,6 +83,14 @@ const Pricing = () => {
   const handleCloseModal = () => {
     setOpenaddModal(false);
     setEditPricesItem(null);
+  };
+
+  const handleOpenSyncDialog = () => {
+    setOpenSyncDialog(true);
+  };
+
+  const handleCloseSyncDialog = () => {
+    setOpenSyncDialog(false);
   };
 
   const handleOkaddModal = (status) => {
@@ -184,6 +194,9 @@ const Pricing = () => {
         <Button onClick={handleRefresh} startIcon={<Icon icon="solar:refresh-bold-duotone" />}>
           {t('pricingPage.refreshButton')}
         </Button>
+        <Button color="secondary" onClick={handleOpenSyncDialog} startIcon={<Icon icon="solar:download-bold-duotone" />}>
+          更新价格
+        </Button>
       </ButtonGroup>
       <Alert severity="info">
         当前价格配置为直接美元计费。
@@ -218,6 +231,7 @@ const Pricing = () => {
         ownedby={ownedby}
         noPriceModel={noPriceModel}
       />
+      <PriceSyncDialog open={openSyncDialog} onClose={handleCloseSyncDialog} onApplied={handleRefresh} fallbackModelOptions={modelList} />
       <Card>
         <AdminContainer>
           <Box sx={{ width: '100%' }}>
