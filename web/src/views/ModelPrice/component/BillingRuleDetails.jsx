@@ -19,6 +19,21 @@ const matchFieldConfig = [
 
 export const getExtraRatioDisplayName = (key) => extraRatiosConfig.find((item) => item.key === key)?.name || key;
 
+const compactAdjustmentLabelMap = {
+  cached_tokens: '缓存',
+  cached_write_tokens: '写缓存',
+  cached_write_5m_tokens: '写缓存 5m',
+  cached_write_1h_tokens: '写缓存 1h',
+  cached_read_tokens: '读缓存',
+  input_audio_tokens: '音频入',
+  output_audio_tokens: '音频出',
+  reasoning_tokens: '推理',
+  input_text_tokens: '文本入',
+  output_text_tokens: '文本出',
+  input_image_tokens: '图片入',
+  output_image_tokens: '图片出'
+};
+
 const formatMultiplier = (value) => {
   if (value === undefined || value === null) {
     return '-';
@@ -26,6 +41,23 @@ const formatMultiplier = (value) => {
 
   const numericValue = Number(value);
   return `x${Number.isInteger(numericValue) ? numericValue : numericValue.toFixed(4).replace(/\.?0+$/, '')}`;
+};
+
+const formatCompactNumber = (value) => {
+  const numericValue = Number(value);
+  if (!Number.isFinite(numericValue)) {
+    return value;
+  }
+
+  if (numericValue >= 1000000) {
+    return `${(numericValue / 1000000).toFixed(numericValue % 1000000 === 0 ? 0 : 1)}m`;
+  }
+
+  if (numericValue >= 1000) {
+    return `${(numericValue / 1000).toFixed(numericValue % 1000 === 0 ? 0 : 1)}k`;
+  }
+
+  return numericValue.toLocaleString();
 };
 
 const getMatchLabels = (rule, t) =>
@@ -48,6 +80,7 @@ const getAdjustmentLabels = ({ rule, priceType, groupRatio, formatPrice, t }) =>
   if (rule?.input !== undefined && rule?.input !== null) {
     labels.push({
       label: inputLabel,
+      compactLabel: priceType === 'times' ? t('modelpricePage.timesPriceShort', '单次') : t('modelpricePage.inputShort', '输入'),
       value: strategy === 'multiply' ? formatMultiplier(rule.input) : formatPrice(rule.input * effectiveRatio, priceType),
       color: priceType === 'times' ? 'primary' : 'success'
     });
@@ -56,6 +89,7 @@ const getAdjustmentLabels = ({ rule, priceType, groupRatio, formatPrice, t }) =>
   if (rule?.output !== undefined && rule?.output !== null) {
     labels.push({
       label: t('modelpricePage.output', '输出'),
+      compactLabel: t('modelpricePage.outputShort', '输出'),
       value: strategy === 'multiply' ? formatMultiplier(rule.output) : formatPrice(rule.output * effectiveRatio, priceType),
       color: 'warning'
     });
@@ -64,12 +98,21 @@ const getAdjustmentLabels = ({ rule, priceType, groupRatio, formatPrice, t }) =>
   Object.entries(rule?.extra_ratios || {}).forEach(([key, value]) => {
     labels.push({
       label: getExtraRatioDisplayName(key),
+      compactLabel: compactAdjustmentLabelMap[key] || getExtraRatioDisplayName(key),
       value: strategy === 'multiply' ? formatMultiplier(value) : formatPrice(value * effectiveRatio, 'tokens'),
       color: 'default'
     });
   });
 
   return labels;
+};
+
+const getCompactConditionText = (labels, t) => {
+  if (!labels.length) {
+    return t('modelpricePage.noBillingCondition', '未配置匹配条件');
+  }
+
+  return labels.map((item) => item.replace(/(\d[\d,]*)/g, (match) => formatCompactNumber(match.replace(/,/g, '')))).join(' · ');
 };
 
 export default function BillingRuleDetails({ rules, priceType, groupRatio, formatPrice, compact = false }) {
@@ -91,6 +134,95 @@ export default function BillingRuleDetails({ rules, priceType, groupRatio, forma
         const adjustmentLabels = getAdjustmentLabels({ rule, priceType, groupRatio, formatPrice, t });
         const strategyLabel =
           rule?.strategy === 'multiply' ? t('modelpricePage.billingMultiply', '倍率调整') : t('modelpricePage.billingOverride', '覆盖价格');
+        const strategyColor = rule?.strategy === 'multiply' ? theme.palette.warning.main : theme.palette.primary.main;
+
+        if (compact) {
+          const conditionTitle = getCompactConditionText(matchLabels, t);
+
+          return (
+            <Box
+              key={`${rule?.name || 'rule'}-${index}`}
+              sx={{
+                py: 0.5,
+                px: 0.75,
+                borderRadius: 1,
+                backgroundColor: alpha(strategyColor, theme.palette.mode === 'dark' ? 0.06 : 0.035)
+              }}
+            >
+              <Typography
+                variant="caption"
+                sx={{
+                  display: 'block',
+                  fontSize: '0.72rem',
+                  fontWeight: 700,
+                  color: theme.palette.text.primary,
+                  lineHeight: 1.3,
+                  mb: 0.375
+                }}
+              >
+                {conditionTitle}
+              </Typography>
+
+              <Stack spacing={0.25}>
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'baseline', gap: 0.5 }}>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      fontSize: '0.68rem',
+                      minWidth: 28,
+                      color: strategyColor,
+                      fontWeight: 700,
+                      lineHeight: 1.2
+                    }}
+                  >
+                    {strategyLabel}
+                  </Typography>
+                  {adjustmentLabels.length === 0 && (
+                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.68rem', lineHeight: 1.2 }}>
+                      -
+                    </Typography>
+                  )}
+                </Box>
+
+                {adjustmentLabels.map((item) => (
+                  <Box
+                    key={`${item.label}-${item.value}`}
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'baseline',
+                      gap: 0.5
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        fontSize: '0.68rem',
+                        minWidth: 28,
+                        color: theme.palette.text.secondary,
+                        lineHeight: 1.2
+                      }}
+                    >
+                      {item.compactLabel || item.label}
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        fontSize: '0.72rem',
+                        fontWeight: 700,
+                        color: theme.palette.text.primary,
+                        lineHeight: 1.2,
+                        wordBreak: 'break-word'
+                      }}
+                    >
+                      {item.value}
+                    </Typography>
+                  </Box>
+                ))}
+              </Stack>
+            </Box>
+          );
+        }
 
         return (
           <Box
