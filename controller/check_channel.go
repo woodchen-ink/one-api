@@ -1,11 +1,11 @@
 package controller
 
 import (
-	"io"
-	"net/http"
 	"czloapi/common"
 	"czloapi/common/requester"
 	"czloapi/controller/check_channel"
+	"io"
+	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"

@@ -54,8 +54,8 @@ func GinzapWithConfig() gin.HandlerFunc {
 			zap.Int("user_id", userID),
 			zap.String("original_model", c.GetString("original_model")),
 			zap.String("new_model", c.GetString("new_model")),
-			zap.Int("token_id", c.GetInt("token_id")),
-			zap.String("token_name", c.GetString("token_name")),
+			zap.Int("key_id", c.GetInt("key_id")),
+			zap.String("key_name", c.GetString("key_name")),
 			zap.Int("channel_id", c.GetInt("channel_id")),
 		}
 

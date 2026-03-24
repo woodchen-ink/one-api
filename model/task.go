@@ -38,7 +38,7 @@ type Task struct {
 	Properties datatypes.JSON `json:"properties" gorm:"type:json"`
 	Data       datatypes.JSON `json:"data" gorm:"type:json"`
 	NotifyHook string         `json:"notify_hook"`
-	TokenID    int            `json:"token_id" gorm:"default:0"`
+	KeyID      int            `json:"key_id" gorm:"column:key_id;default:0"`
 }
 
 func GetTaskByTaskIds(platform string, userId int, taskIds []string) (task []*Task, err error) {
@@ -122,7 +122,7 @@ type TaskQueryParams struct {
 	StartTimestamp int64  `form:"start_timestamp"`
 	EndTimestamp   int64  `form:"end_timestamp"`
 	UserIDs        []int  `form:"user_ids"`
-	TokenID        int    `form:"token_id"`
+	KeyID          int    `form:"key_id"`
 }
 
 var allowedTaskOrderFields = map[string]bool{
@@ -174,8 +174,8 @@ func GetAllUserTasks(userId int, params *TaskQueryParams) (*DataResult[Task], er
 	tx := DB.Omit("channel_id").Where("user_id = ?", userId)
 	var tasks []*Task
 
-	if params.TokenID > 0 {
-		tx = tx.Where("token_id = ?", params.TokenID)
+	if params.KeyID > 0 {
+		tx = tx.Where("key_id = ?", params.KeyID)
 	}
 
 	if params.Platform != "" {

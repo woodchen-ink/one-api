@@ -33,7 +33,7 @@ type Quota struct {
 	cacheQuota        int
 	userId            int
 	channelId         int
-	tokenId           int
+	keyId             int
 	unlimitedQuota    bool
 	HandelStatus      bool
 	usingSubscription bool
@@ -61,8 +61,8 @@ func NewQuota(c *gin.Context, modelName string, promptTokens int, billingContext
 		billingContext:   billingContext,
 		userId:           c.GetInt("id"),
 		channelId:        c.GetInt("channel_id"),
-		tokenId:          c.GetInt("token_id"),
-		unlimitedQuota:   c.GetBool("token_unlimited_quota"),
+		keyId:            c.GetInt("key_id"),
+		unlimitedQuota:   c.GetBool("key_unlimited_quota"),
 		HandelStatus:     false,
 		isBackupGroup:    isBackupGroup,
 		requestMode:      c.GetString("log_request_mode"),
@@ -80,8 +80,8 @@ func NewQuota(c *gin.Context, modelName string, promptTokens int, billingContext
 
 	quota.price = *model.PricingInstance.GetPrice(quota.modelName)
 	quota.billingResolution = model.PricingInstance.GetBillingResolution(quota.modelName, billingContext)
-	quota.groupName = c.GetString("token_group")
-	quota.backupGroupName = c.GetString("token_backup_group")
+	quota.groupName = c.GetString("key_group")
+	quota.backupGroupName = c.GetString("key_backup_group")
 	quota.groupRatio = c.GetFloat64("group_ratio")
 	quota.inputPrice = quota.billingResolution.Input
 	quota.outputPrice = quota.billingResolution.Output
@@ -106,7 +106,7 @@ func (q *Quota) PreQuotaConsumption() *types.OpenAIErrorWithStatusCode {
 		q.usingSubscription = true
 
 		if q.preConsumedQuota > 0 {
-			err := model.PreConsumeTokenQuota(q.tokenId, q.preConsumedQuota)
+			err := model.PreConsumeKeyQuota(q.keyId, q.preConsumedQuota)
 			if err != nil {
 				return common.ErrorWrapper(err, "pre_consume_token_quota_failed", http.StatusForbidden)
 			}
@@ -135,7 +135,7 @@ func (q *Quota) PreQuotaConsumption() *types.OpenAIErrorWithStatusCode {
 	}
 
 	if q.preConsumedQuota > 0 {
-		err := model.PreConsumeTokenQuota(q.tokenId, q.preConsumedQuota)
+		err := model.PreConsumeKeyQuota(q.keyId, q.preConsumedQuota)
 		if err != nil {
 			return common.ErrorWrapper(err, "pre_consume_token_quota_failed", http.StatusForbidden)
 		}
@@ -177,7 +177,7 @@ func (q *Quota) UpdateUserRealtimeQuota(usage *types.UsageEvent, nowUsage *types
 	return nil
 }
 
-func (q *Quota) completedQuotaConsumption(usage *types.Usage, tokenName string, isStream bool, sourceIP string, ctx context.Context) error {
+func (q *Quota) completedQuotaConsumption(usage *types.Usage, keyName string, isStream bool, sourceIP string, ctx context.Context) error {
 	defer func() {
 		if q.cacheQuota > 0 {
 			model.CacheDecreaseUserRealtimeQuota(q.userId, q.cacheQuota)
@@ -193,13 +193,13 @@ func (q *Quota) completedQuotaConsumption(usage *types.Usage, tokenName string, 
 			// 订阅配额模式：调整订阅配额
 			model.AdjustSubscriptionQuota(q.userId, q.groupName, quotaDelta)
 			// token quota 仍需调整
-			err := model.PostConsumeTokenQuotaWithInfo(q.tokenId, q.userId, q.unlimitedQuota, quotaDelta)
+			err := model.PostConsumeKeyQuotaWithInfo(q.keyId, q.userId, q.unlimitedQuota, quotaDelta)
 			if err != nil {
 				return errors.New("error consuming token remain quota: " + err.Error())
 			}
 		} else {
 			// 原有逻辑：调整用户余额
-			err := model.PostConsumeTokenQuotaWithInfo(q.tokenId, q.userId, q.unlimitedQuota, quotaDelta)
+			err := model.PostConsumeKeyQuotaWithInfo(q.keyId, q.userId, q.unlimitedQuota, quotaDelta)
 			if err != nil {
 				return errors.New("error consuming token remain quota: " + err.Error())
 			}
@@ -215,11 +215,11 @@ func (q *Quota) completedQuotaConsumption(usage *types.Usage, tokenName string, 
 		ctx,
 		q.userId,
 		q.channelId,
-		q.tokenId,
+		q.keyId,
 		usage.PromptTokens,
 		usage.CompletionTokens,
 		q.modelName,
-		tokenName,
+		keyName,
 		quota,
 		"",
 		q.getRequestTime(),
@@ -239,7 +239,7 @@ func (q *Quota) Undo(c *gin.Context) {
 				// 退还订阅配额
 				model.AdjustSubscriptionQuota(q.userId, q.groupName, -q.preConsumedQuota)
 			}
-			err := model.PostConsumeTokenQuotaWithInfo(q.tokenId, q.userId, q.unlimitedQuota, -q.preConsumedQuota)
+			err := model.PostConsumeKeyQuotaWithInfo(q.keyId, q.userId, q.unlimitedQuota, -q.preConsumedQuota)
 			if err != nil {
 				logger.LogError(ctx, "error return pre-consumed quota: "+err.Error())
 			}
@@ -248,13 +248,13 @@ func (q *Quota) Undo(c *gin.Context) {
 }
 
 func (q *Quota) Consume(c *gin.Context, usage *types.Usage, isStream bool) {
-	tokenName := c.GetString("token_name")
+	keyName := c.GetString("key_name")
 	q.startTime = c.GetTime("requestStartTime")
 	q.requestPath = c.Request.URL.Path
 	q.userAgent = c.Request.UserAgent()
 
 	go func(ctx context.Context) {
-		err := q.completedQuotaConsumption(usage, tokenName, isStream, common.GetClientIP(c), ctx)
+		err := q.completedQuotaConsumption(usage, keyName, isStream, common.GetClientIP(c), ctx)
 		if err != nil {
 			logger.LogError(ctx, err.Error())
 		}

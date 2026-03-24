@@ -54,7 +54,7 @@ func createRootAccountIfNeed() error {
 			Role:        config.RoleRootUser,
 			Status:      config.UserStatusEnabled,
 			DisplayName: "Root User",
-			AccessToken: utils.GetUUID(),
+			AccessKey:   utils.GetUUID(),
 			Quota:       200000000,
 		}
 		defaultGroupSymbol, defaultGroupErr := GetDefaultUserGroupSymbol()
@@ -132,7 +132,7 @@ func InitDB() (err error) {
 		if err != nil {
 			return err
 		}
-		err = db.AutoMigrate(&Token{})
+		err = db.AutoMigrate(&Key{})
 		if err != nil {
 			return err
 		}

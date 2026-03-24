@@ -28,7 +28,7 @@ type OpenAIModels struct {
 }
 
 func ListModelsByToken(c *gin.Context) {
-	groupName := c.GetString("token_group")
+	groupName := c.GetString("key_group")
 	if groupName == "" {
 		groupName = c.GetString("group")
 	}
@@ -72,7 +72,7 @@ func ListModelsByToken(c *gin.Context) {
 
 // https://generativelanguage.googleapis.com/v1beta/models?key=xxxxxxx
 func ListGeminiModelsByToken(c *gin.Context) {
-	groupName := c.GetString("token_group")
+	groupName := c.GetString("key_group")
 	if groupName == "" {
 		groupName = c.GetString("group")
 	}
@@ -112,7 +112,7 @@ func ListGeminiModelsByToken(c *gin.Context) {
 }
 
 func ListClaudeModelsByToken(c *gin.Context) {
-	groupName := c.GetString("token_group")
+	groupName := c.GetString("key_group")
 	if groupName == "" {
 		groupName = c.GetString("group")
 	}

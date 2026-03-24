@@ -16,15 +16,22 @@ import (
 )
 
 var (
-	ErrTokenNotFound          = errors.New("Key不存在")
-	ErrTokenExpired           = errors.New("令牌已过期")
-	ErrTokenQuotaExhausted    = errors.New("令牌额度已用尽")
-	ErrTokenStatusUnavailable = errors.New("令牌状态不可用")
-	ErrTokenInvalid           = errors.New("无效的令牌")
-	ErrTokenQuotaGet          = errors.New("获取令牌额度失败")
+	ErrKeyNotFound          = errors.New("Key不存在")
+	ErrKeyExpired           = errors.New("Key已过期")
+	ErrKeyQuotaExhausted    = errors.New("Key额度已用尽")
+	ErrKeyStatusUnavailable = errors.New("Key状态不可用")
+	ErrKeyInvalid           = errors.New("无效的Key")
+	ErrKeyQuotaGet          = errors.New("获取Key额度失败")
+
+	ErrTokenNotFound          = ErrKeyNotFound
+	ErrTokenExpired           = ErrKeyExpired
+	ErrTokenQuotaExhausted    = ErrKeyQuotaExhausted
+	ErrTokenStatusUnavailable = ErrKeyStatusUnavailable
+	ErrTokenInvalid           = ErrKeyInvalid
+	ErrTokenQuotaGet          = ErrKeyQuotaGet
 )
 
-type Token struct {
+type Key struct {
 	Id             int            `json:"id"`
 	UserId         int            `json:"user_id"`
 	Key            string         `json:"key" gorm:"type:varchar(59);uniqueIndex"`
@@ -40,10 +47,16 @@ type Token struct {
 	BackupGroup    string         `json:"backup_group" gorm:"default:''"`
 	DeletedAt      gorm.DeletedAt `json:"-" gorm:"index"`
 
-	Setting database.JSONType[TokenSetting] `json:"setting" form:"setting" gorm:"type:json"`
+	Setting database.JSONType[KeySetting] `json:"setting" form:"setting" gorm:"type:json"`
 }
 
-var allowedTokenOrderFields = map[string]bool{
+type Token = Key
+
+func (Key) TableName() string {
+	return "keys"
+}
+
+var allowedKeyOrderFields = map[string]bool{
 	"id":           true,
 	"name":         true,
 	"status":       true,
@@ -54,21 +67,23 @@ var allowedTokenOrderFields = map[string]bool{
 }
 
 // 添加 AfterCreate 钩子方法
-func (token *Token) AfterCreate(tx *gorm.DB) (err error) {
-	tokenKey, err := common.GenerateToken(token.Id, token.UserId)
+func (key *Key) AfterCreate(tx *gorm.DB) (err error) {
+	tokenKey, err := common.GenerateToken(key.Id, key.UserId)
 	if err != nil {
 		return err
 	}
 
 	// 更新 key 字段
-	return tx.Model(token).Update("key", tokenKey).Error
+	return tx.Model(key).Update("key", tokenKey).Error
 }
 
-type TokenSetting struct {
+type KeySetting struct {
 	Heartbeat      HeartbeatSetting `json:"heartbeat,omitempty"`
 	Limits         LimitsConfig     `json:"limits,omitempty"`
 	FallbackGroups []string         `json:"fallback_groups,omitempty"`
 }
+
+type TokenSetting = KeySetting
 
 type HeartbeatSetting struct {
 	Enabled        bool `json:"enabled"`
@@ -118,43 +133,49 @@ func MergeTokenFallbackGroups(primaryGroup, backupGroup string, fallbackGroups [
 	return groups
 }
 
-func GetUserTokensList(userId int, params *GenericParams) (*DataResult[Token], error) {
-	var tokens []*Token
+func GetUserKeysList(userId int, params *GenericParams) (*DataResult[Key], error) {
+	var keys []*Key
 	db := DB.Where("user_id = ?", userId)
 
 	if params.Keyword != "" {
 		db = db.Where("name LIKE ?", params.Keyword+"%")
 	}
 
-	return PaginateAndOrder(db, &params.PaginationParams, &tokens, allowedTokenOrderFields)
+	return PaginateAndOrder(db, &params.PaginationParams, &keys, allowedKeyOrderFields)
 }
 
-// AdminSearchTokensParams 管理员搜索令牌的参数
-type AdminSearchTokensParams struct {
+func GetUserTokensList(userId int, params *GenericParams) (*DataResult[Key], error) {
+	return GetUserKeysList(userId, params)
+}
+
+// AdminSearchKeysParams 管理员搜索 Key 的参数
+type AdminSearchKeysParams struct {
 	GenericParams
-	UserId  int `form:"user_id"`
-	TokenId int `form:"token_id"`
+	UserId int `form:"user_id"`
+	KeyId  int `form:"key_id"`
 }
 
-// TokenWithOwner 包含令牌信息和所属用户信息
-type TokenWithOwner struct {
-	Token
+// KeyWithOwner 包含 Key 信息和所属用户信息
+type KeyWithOwner struct {
+	Key
 	OwnerName string `json:"owner_name"` // 用户名称（优先显示 display_name，其次 username）
 }
 
-// GetTokensListByAdmin 管理员查询令牌列表（可按用户ID或令牌ID查询）
-func GetTokensListByAdmin(params *AdminSearchTokensParams) (*DataResult[TokenWithOwner], error) {
-	var tokens []*Token
-	db := DB.Model(&Token{})
+type TokenWithOwner = KeyWithOwner
+
+// GetKeysListByAdmin 管理员查询 Key 列表（可按用户ID或Key ID查询）
+func GetKeysListByAdmin(params *AdminSearchKeysParams) (*DataResult[KeyWithOwner], error) {
+	var keys []*Key
+	db := DB.Model(&Key{})
 
 	// 按用户ID筛选
 	if params.UserId > 0 {
 		db = db.Where("user_id = ?", params.UserId)
 	}
 
-	// 按令牌ID筛选
-	if params.TokenId > 0 {
-		db = db.Where("id = ?", params.TokenId)
+	// 按Key ID筛选
+	if params.KeyId > 0 {
+		db = db.Where("id = ?", params.KeyId)
 	}
 
 	// 按关键词搜索名称
@@ -162,7 +183,7 @@ func GetTokensListByAdmin(params *AdminSearchTokensParams) (*DataResult[TokenWit
 		db = db.Where("name LIKE ?", params.Keyword+"%")
 	}
 
-	result, err := PaginateAndOrder(db, &params.PaginationParams, &tokens, allowedTokenOrderFields)
+	result, err := PaginateAndOrder(db, &params.PaginationParams, &keys, allowedKeyOrderFields)
 	if err != nil {
 		return nil, err
 	}
@@ -192,23 +213,23 @@ func GetTokensListByAdmin(params *AdminSearchTokensParams) (*DataResult[TokenWit
 	}
 
 	// 构建带用户信息的结果
-	tokensWithOwner := make([]*TokenWithOwner, len(*result.Data))
-	for i, token := range *result.Data {
-		tokensWithOwner[i] = &TokenWithOwner{
-			Token:     *token,
-			OwnerName: userNameMap[token.UserId],
+	keysWithOwner := make([]*KeyWithOwner, len(*result.Data))
+	for i, key := range *result.Data {
+		keysWithOwner[i] = &KeyWithOwner{
+			Key:       *key,
+			OwnerName: userNameMap[key.UserId],
 		}
 	}
 
-	return &DataResult[TokenWithOwner]{
-		Data:       &tokensWithOwner,
+	return &DataResult[KeyWithOwner]{
+		Data:       &keysWithOwner,
 		TotalCount: result.TotalCount,
 	}, nil
 }
 
-func GetTokenModel(key string) (token *Token, err error) {
+func GetKeyModel(key string) (credential *Key, err error) {
 	if key == "" {
-		return nil, ErrTokenInvalid
+		return nil, ErrKeyInvalid
 	}
 
 	var userId int
@@ -221,174 +242,202 @@ func GetTokenModel(key string) (token *Token, err error) {
 		if config.RedisEnabled {
 			exists, _ := redis.RedisSIsMember(OldUserTokensCacheKey, key)
 			if !exists {
-				return nil, ErrTokenInvalid
+				return nil, ErrKeyInvalid
 			}
 		}
 	case 59:
 		tokenId, userId, err = common.ValidateToken(key)
 		if err != nil || userId == 0 || tokenId == 0 {
-			return nil, ErrTokenInvalid
+			return nil, ErrKeyInvalid
 		}
 		if userEnabled, err := CacheIsUserEnabled(userId); err != nil || !userEnabled {
-			return nil, ErrTokenInvalid
+			return nil, ErrKeyInvalid
 		}
 	default:
-		return nil, ErrTokenInvalid
+		return nil, ErrKeyInvalid
 	}
 
-	token, err = CacheGetTokenByKey(key)
+	credential, err = CacheGetKeyByValue(key)
 	if err != nil {
 		maskedKey := key[:3] + "*********" + key[len(key)-3:]
 		logger.SysError(fmt.Sprintf("DB Not Found: userId=%d, tokenId=%d, key=%s, err=%s", userId, tokenId, maskedKey, err.Error()))
-		return nil, ErrTokenInvalid
+		return nil, ErrKeyInvalid
 	}
 
 	if validUser {
-		if userEnabled, err := CacheIsUserEnabled(token.UserId); err != nil || !userEnabled {
-			return nil, ErrTokenInvalid
+		if userEnabled, err := CacheIsUserEnabled(credential.UserId); err != nil || !userEnabled {
+			return nil, ErrKeyInvalid
 		}
 	}
 
-	return token, nil
+	return credential, nil
 }
 
-func ValidateUserToken(key string) (token *Token, err error) {
-	token, err = GetTokenModel(key)
+func GetTokenModel(key string) (*Key, error) {
+	return GetKeyModel(key)
+}
+
+func ValidateUserKey(key string) (credential *Key, err error) {
+	credential, err = GetKeyModel(key)
 	if err != nil {
 		return nil, err
 	}
 
-	if token.Status != config.TokenStatusEnabled {
-		switch token.Status {
+	if credential.Status != config.TokenStatusEnabled {
+		switch credential.Status {
 		case config.TokenStatusExhausted:
-			return nil, ErrTokenQuotaExhausted
+			return nil, ErrKeyQuotaExhausted
 		case config.TokenStatusExpired:
-			return nil, ErrTokenExpired
+			return nil, ErrKeyExpired
 		default:
-			return nil, ErrTokenStatusUnavailable
+			return nil, ErrKeyStatusUnavailable
 		}
 	}
 
-	if token.ExpiredTime != -1 && token.ExpiredTime < utils.GetTimestamp() {
-		return nil, ErrTokenExpired
+	if credential.ExpiredTime != -1 && credential.ExpiredTime < utils.GetTimestamp() {
+		return nil, ErrKeyExpired
 	}
 
-	if !token.UnlimitedQuota {
-		if !token.UnlimitedQuota && token.RemainQuota <= 0 {
+	if !credential.UnlimitedQuota {
+		if !credential.UnlimitedQuota && credential.RemainQuota <= 0 {
 			if !config.RedisEnabled {
 				// in this case, we can make sure the token is exhausted
-				token.Status = config.TokenStatusExhausted
-				err := token.SelectUpdate()
+				credential.Status = config.TokenStatusExhausted
+				err := credential.SelectUpdate()
 				if err != nil {
 					logger.SysError("failed to update token status" + err.Error())
 				}
 			}
-			return nil, ErrTokenQuotaExhausted
+			return nil, ErrKeyQuotaExhausted
 		}
 	}
 
-	return token, nil
+	return credential, nil
 }
 
-func GetTokenByIds(id int, userId int) (*Token, error) {
+func ValidateUserToken(key string) (*Key, error) {
+	return ValidateUserKey(key)
+}
+
+func GetKeyByIds(id int, userId int) (*Key, error) {
 	if id == 0 || userId == 0 {
 		return nil, errors.New("id 或 userId 为空！")
 	}
-	token := Token{Id: id, UserId: userId}
+	key := Key{Id: id, UserId: userId}
 	var err error = nil
-	err = DB.First(&token, "id = ? and user_id = ?", id, userId).Error
-	return &token, err
+	err = DB.First(&key, "id = ? and user_id = ?", id, userId).Error
+	return &key, err
 }
 
-func GetTokenById(id int) (*Token, error) {
+func GetTokenByIds(id int, userId int) (*Key, error) {
+	return GetKeyByIds(id, userId)
+}
+
+func GetKeyById(id int) (*Key, error) {
 	if id == 0 {
 		return nil, errors.New("id 为空！")
 	}
-	var token Token
-	err := DB.First(&token, "id = ?", id).Error
-	return &token, err
+	var key Key
+	err := DB.First(&key, "id = ?", id).Error
+	return &key, err
 }
 
-func GetTokenByName(name string, userId int) (*Token, error) {
+func GetTokenById(id int) (*Key, error) {
+	return GetKeyById(id)
+}
+
+func GetKeyByName(name string, userId int) (*Key, error) {
 	if name == "" {
 		return nil, errors.New("name 为空！")
 	}
-	token := Token{Name: name}
+	key := Key{Name: name}
 	var err error = nil
-	err = DB.First(&token, "user_id = ? and name = ?", userId, name).Error
-	return &token, err
+	err = DB.First(&key, "user_id = ? and name = ?", userId, name).Error
+	return &key, err
 }
 
-func GetTokenByKey(key string) (*Token, error) {
+func GetTokenByName(name string, userId int) (*Key, error) {
+	return GetKeyByName(name, userId)
+}
+
+func GetKeyByValue(keyValue string) (*Key, error) {
 	keyCol := "`key`"
 	if common.UsingPostgreSQL {
 		keyCol = `"key"`
 	}
 
-	var token Token
+	var key Key
 
-	err := DB.Where(keyCol+" = ?", key).First(&token).Error
-	return &token, err
+	err := DB.Where(keyCol+" = ?", keyValue).First(&key).Error
+	return &key, err
 }
 
-func (token *Token) Insert() error {
-	err := DB.Create(token).Error
+func GetTokenByKey(key string) (*Key, error) {
+	return GetKeyByValue(key)
+}
+
+func (key *Key) Insert() error {
+	err := DB.Create(key).Error
 	return err
 }
 
 // Update Make sure your token's fields is completed, because this will update non-zero values
-func (token *Token) Update() error {
-	err := DB.Model(token).Select("name", "status", "expired_time", "remain_quota", "unlimited_quota", "group", "backup_group", "setting").Updates(token).Error
+func (key *Key) Update() error {
+	err := DB.Model(key).Select("name", "status", "expired_time", "remain_quota", "unlimited_quota", "group", "backup_group", "setting").Updates(key).Error
 	// 防止Redis缓存不生效，直接删除
 	if err == nil && config.RedisEnabled {
-		redis.RedisDel(fmt.Sprintf(UserTokensKey, token.Key))
+		redis.RedisDel(fmt.Sprintf(UserKeysKey, key.Key))
 	}
 
 	return err
 }
 
 // UpdateByAdmin 管理员更新token，支持更新user_id字段
-func (token *Token) UpdateByAdmin() error {
-	err := DB.Model(token).Select("user_id", "name", "status", "expired_time", "remain_quota", "unlimited_quota", "group", "backup_group", "setting").Updates(token).Error
+func (key *Key) UpdateByAdmin() error {
+	err := DB.Model(key).Select("user_id", "name", "status", "expired_time", "remain_quota", "unlimited_quota", "group", "backup_group", "setting").Updates(key).Error
 	// 防止Redis缓存不生效，直接删除
 	if err == nil && config.RedisEnabled {
-		redis.RedisDel(fmt.Sprintf(UserTokensKey, token.Key))
+		redis.RedisDel(fmt.Sprintf(UserKeysKey, key.Key))
 	}
 
 	return err
 }
 
-func (token *Token) SelectUpdate() error {
+func (key *Key) SelectUpdate() error {
 	// This can update zero values
-	return DB.Model(token).Select("accessed_time", "status").Updates(token).Error
+	return DB.Model(key).Select("accessed_time", "status").Updates(key).Error
 }
 
-func (token *Token) Delete() error {
-	err := DB.Delete(token).Error
+func (key *Key) Delete() error {
+	err := DB.Delete(key).Error
 	return err
 }
 
-func DeleteTokenById(id int, userId int) (err error) {
+func DeleteKeyById(id int, userId int) (err error) {
 	// Why we need userId here? In case user want to delete other's token.
 	if id == 0 || userId == 0 {
 		return errors.New("id 或 userId 为空！")
 	}
-	token := Token{Id: id, UserId: userId}
-	err = DB.Where(token).First(&token).Error
+	key := Key{Id: id, UserId: userId}
+	err = DB.Where(key).First(&key).Error
 	if err != nil {
 		return err
 	}
-	err = token.Delete()
+	err = key.Delete()
 
 	if err == nil && config.RedisEnabled {
-		redis.RedisDel(fmt.Sprintf(UserTokensKey, token.Key))
+		redis.RedisDel(fmt.Sprintf(UserKeysKey, key.Key))
 	}
 
 	return err
 
 }
 
-func IncreaseTokenQuota(id int, quota int) (err error) {
+func DeleteTokenById(id int, userId int) error {
+	return DeleteKeyById(id, userId)
+}
+
+func IncreaseKeyQuota(id int, quota int) (err error) {
 	if quota < 0 {
 		return errors.New("quota 不能为负数！")
 	}
@@ -396,11 +445,15 @@ func IncreaseTokenQuota(id int, quota int) (err error) {
 		addNewRecord(BatchUpdateTypeTokenQuota, id, quota)
 		return nil
 	}
-	return increaseTokenQuota(id, quota)
+	return increaseKeyQuota(id, quota)
 }
 
-func increaseTokenQuota(id int, quota int) (err error) {
-	err = DB.Model(&Token{}).Where("id = ?", id).Updates(
+func IncreaseTokenQuota(id int, quota int) error {
+	return IncreaseKeyQuota(id, quota)
+}
+
+func increaseKeyQuota(id int, quota int) (err error) {
+	err = DB.Model(&Key{}).Where("id = ?", id).Updates(
 		map[string]interface{}{
 			"remain_quota":  gorm.Expr("remain_quota + ?", quota),
 			"used_quota":    gorm.Expr("used_quota - ?", quota),
@@ -410,17 +463,25 @@ func increaseTokenQuota(id int, quota int) (err error) {
 	return err
 }
 
-// UpdateTokenUsedQuota 仅更新 token 的 used_quota，不修改 remain_quota（用于无限额度 token）
-func UpdateTokenUsedQuota(id int, quota int) (err error) {
+func increaseTokenQuota(id int, quota int) error {
+	return increaseKeyQuota(id, quota)
+}
+
+// UpdateKeyUsedQuota 仅更新 key 的 used_quota，不修改 remain_quota（用于无限额度 key）
+func UpdateKeyUsedQuota(id int, quota int) (err error) {
 	if config.BatchUpdateEnabled {
 		addNewRecord(BatchUpdateTypeTokenUsedQuota, id, quota)
 		return nil
 	}
-	return updateTokenUsedQuota(id, quota)
+	return updateKeyUsedQuota(id, quota)
 }
 
-func updateTokenUsedQuota(id int, quota int) (err error) {
-	err = DB.Model(&Token{}).Where("id = ?", id).Updates(
+func UpdateTokenUsedQuota(id int, quota int) error {
+	return UpdateKeyUsedQuota(id, quota)
+}
+
+func updateKeyUsedQuota(id int, quota int) (err error) {
+	err = DB.Model(&Key{}).Where("id = ?", id).Updates(
 		map[string]interface{}{
 			"used_quota":    gorm.Expr("used_quota + ?", quota),
 			"accessed_time": utils.GetTimestamp(),
@@ -429,7 +490,11 @@ func updateTokenUsedQuota(id int, quota int) (err error) {
 	return err
 }
 
-func DecreaseTokenQuota(id int, quota int) (err error) {
+func updateTokenUsedQuota(id int, quota int) error {
+	return updateKeyUsedQuota(id, quota)
+}
+
+func DecreaseKeyQuota(id int, quota int) (err error) {
 	if quota < 0 {
 		return errors.New("quota 不能为负数！")
 	}
@@ -437,11 +502,15 @@ func DecreaseTokenQuota(id int, quota int) (err error) {
 		addNewRecord(BatchUpdateTypeTokenQuota, id, -quota)
 		return nil
 	}
-	return decreaseTokenQuota(id, quota)
+	return decreaseKeyQuota(id, quota)
 }
 
-func decreaseTokenQuota(id int, quota int) (err error) {
-	err = DB.Model(&Token{}).Where("id = ?", id).Updates(
+func DecreaseTokenQuota(id int, quota int) error {
+	return DecreaseKeyQuota(id, quota)
+}
+
+func decreaseKeyQuota(id int, quota int) (err error) {
+	err = DB.Model(&Key{}).Where("id = ?", id).Updates(
 		map[string]interface{}{
 			"remain_quota":  gorm.Expr("remain_quota - ?", quota),
 			"used_quota":    gorm.Expr("used_quota + ?", quota),
@@ -451,18 +520,22 @@ func decreaseTokenQuota(id int, quota int) (err error) {
 	return err
 }
 
-func PreConsumeTokenQuota(tokenId int, quota int) (err error) {
+func decreaseTokenQuota(id int, quota int) error {
+	return decreaseKeyQuota(id, quota)
+}
+
+func PreConsumeKeyQuota(keyID int, quota int) (err error) {
 	if quota < 0 {
 		return errors.New("quota 不能为负数！")
 	}
-	token, err := GetTokenById(tokenId)
+	key, err := GetKeyById(keyID)
 	if err != nil {
 		return err
 	}
-	if !token.UnlimitedQuota && token.RemainQuota < quota {
+	if !key.UnlimitedQuota && key.RemainQuota < quota {
 		return errors.New("Key额度不足")
 	}
-	userQuota, err := GetUserQuota(token.UserId)
+	userQuota, err := GetUserQuota(key.UserId)
 	if err != nil {
 		return err
 	}
@@ -472,21 +545,25 @@ func PreConsumeTokenQuota(tokenId int, quota int) (err error) {
 	quotaTooLow := userQuota >= config.QuotaRemindThreshold && userQuota-quota < config.QuotaRemindThreshold
 	noMoreQuota := userQuota-quota <= 0
 	if quotaTooLow || noMoreQuota {
-		go sendQuotaWarningEmail(token.UserId, userQuota, noMoreQuota)
+		go sendQuotaWarningEmail(key.UserId, userQuota, noMoreQuota)
 	}
-	if !token.UnlimitedQuota {
-		err = DecreaseTokenQuota(tokenId, quota)
+	if !key.UnlimitedQuota {
+		err = DecreaseKeyQuota(keyID, quota)
 		if err != nil {
 			return err
 		}
 	} else {
-		err = UpdateTokenUsedQuota(tokenId, quota)
+		err = UpdateKeyUsedQuota(keyID, quota)
 		if err != nil {
 			return err
 		}
 	}
-	err = DecreaseUserQuota(token.UserId, quota)
+	err = DecreaseUserQuota(key.UserId, quota)
 	return err
+}
+
+func PreConsumeTokenQuota(tokenId int, quota int) error {
+	return PreConsumeKeyQuota(tokenId, quota)
 }
 
 func sendQuotaWarningEmail(userId int, userQuota int, noMoreQuota bool) {
@@ -514,8 +591,8 @@ func sendQuotaWarningEmail(userId int, userQuota int, noMoreQuota bool) {
 	}
 }
 
-// PostConsumeTokenQuotaWithInfo 消费 token 配额，直接使用传入的 userId 和 unlimitedQuota，避免数据库查询
-func PostConsumeTokenQuotaWithInfo(tokenId int, userId int, unlimitedQuota bool, quota int) (err error) {
+// PostConsumeKeyQuotaWithInfo 消费 key 配额，直接使用传入的 userId 和 unlimitedQuota，避免数据库查询
+func PostConsumeKeyQuotaWithInfo(keyID int, userId int, unlimitedQuota bool, quota int) (err error) {
 	if quota == 0 {
 		return nil
 	}
@@ -529,18 +606,22 @@ func PostConsumeTokenQuotaWithInfo(tokenId int, userId int, unlimitedQuota bool,
 	}
 	if !unlimitedQuota {
 		if quota > 0 {
-			err = DecreaseTokenQuota(tokenId, quota)
+			err = DecreaseKeyQuota(keyID, quota)
 		} else {
-			err = IncreaseTokenQuota(tokenId, -quota)
+			err = IncreaseKeyQuota(keyID, -quota)
 		}
 		if err != nil {
 			return err
 		}
 	} else {
-		err = UpdateTokenUsedQuota(tokenId, quota)
+		err = UpdateKeyUsedQuota(keyID, quota)
 		if err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+func PostConsumeTokenQuotaWithInfo(tokenId int, userId int, unlimitedQuota bool, quota int) error {
+	return PostConsumeKeyQuotaWithInfo(tokenId, userId, unlimitedQuota, quota)
 }

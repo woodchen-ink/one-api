@@ -1,9 +1,9 @@
 package telegram
 
 import (
+	"czloapi/model"
 	"fmt"
 	"html"
-	"czloapi/model"
 	"strings"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"

@@ -35,7 +35,7 @@ export default function Log({ adminMode = false }) {
     () => ({
       p: 0,
       username: '',
-      token_name: '',
+      key_name: '',
       model_name: '',
       start_timestamp: 0,
       end_timestamp: dayjs().unix() + 3600,
@@ -69,7 +69,7 @@ export default function Log({ adminMode = false }) {
     channel_id: canViewAdminLogs,
     user_id: canViewAdminLogs,
     group: true,
-    token_name: true,
+    key_name: true,
     type: true,
     model_name: true,
     reasoning: true,
@@ -98,7 +98,7 @@ export default function Log({ adminMode = false }) {
       channel_id: canViewAdminLogs,
       user_id: canViewAdminLogs,
       group: true,
-      token_name: true,
+      key_name: true,
       type: true,
       model_name: true,
       reasoning: true,
@@ -331,7 +331,7 @@ export default function Log({ adminMode = false }) {
                 { id: 'channel_id', label: t('logPage.channelLabel'), adminOnly: true },
                 { id: 'user_id', label: t('logPage.userLabel'), adminOnly: true },
                 { id: 'group', label: t('logPage.groupLabel') },
-                { id: 'token_name', label: t('logPage.tokenLabel') },
+                { id: 'key_name', label: t('logPage.tokenLabel') },
                 { id: 'type', label: t('logPage.typeLabel') },
                 { id: 'model_name', label: t('logPage.modelLabel') },
                 { id: 'reasoning', label: t('logPage.reasoningLabel') },
@@ -391,10 +391,10 @@ export default function Log({ adminMode = false }) {
                     minWidth: 140
                   },
                   {
-                    id: 'token_name',
+                    id: 'key_name',
                     label: t('logPage.tokenLabel'),
                     disableSort: false,
-                    hide: !columnVisibility.token_name,
+                    hide: !columnVisibility.key_name,
                     minWidth: 140
                   },
                   {

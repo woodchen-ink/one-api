@@ -1,10 +1,10 @@
 package telegram
 
 import (
-	"fmt"
-	"net/url"
 	"czloapi/common/config"
 	"czloapi/model"
+	"fmt"
+	"net/url"
 	"strings"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"

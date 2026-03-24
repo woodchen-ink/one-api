@@ -1,10 +1,10 @@
 package controller
 
 import (
-	"net/http"
 	"czloapi/model"
 	"czloapi/providers"
 	providersBase "czloapi/providers/base"
+	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"

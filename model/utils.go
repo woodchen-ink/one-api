@@ -1,9 +1,9 @@
 package model
 
 import (
-	"fmt"
 	"czloapi/common/config"
 	"czloapi/common/logger"
+	"fmt"
 	"sync"
 	"time"
 

@@ -1,14 +1,14 @@
 package middleware
 
 import (
+	"czloapi/common"
+	"czloapi/common/config"
+	"czloapi/common/logger"
 	"encoding/json"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"net/url"
-	"czloapi/common"
-	"czloapi/common/config"
-	"czloapi/common/logger"
 )
 
 type turnstileCheckResponse struct {

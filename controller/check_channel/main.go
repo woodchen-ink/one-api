@@ -1,14 +1,14 @@
 package check_channel
 
 import (
-	"errors"
-	"net/http"
-	"net/http/httptest"
 	"czloapi/common/config"
 	"czloapi/model"
 	"czloapi/providers"
 	providers_base "czloapi/providers/base"
 	"czloapi/types"
+	"errors"
+	"net/http"
+	"net/http/httptest"
 	"strings"
 
 	"github.com/gin-gonic/gin"

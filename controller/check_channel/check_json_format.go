@@ -1,8 +1,8 @@
 package check_channel
 
 import (
-	"encoding/json"
 	"czloapi/types"
+	"encoding/json"
 )
 
 type CheckJsonFormatProcess struct {

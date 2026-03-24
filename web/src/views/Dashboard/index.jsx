@@ -32,7 +32,7 @@ TabPanel.propTypes = {
 
 const Dashboard = () => {
   const [isLoading, setLoading] = useState(true);
-  const [tokenUsageLoading, setTokenUsageLoading] = useState(true);
+  const [keyUsageLoading, setKeyUsageLoading] = useState(true);
   const [statisticalData, setStatisticalData] = useState([]);
   const [requestChart, setRequestChart] = useState(null);
   const [quotaChart, setQuotaChart] = useState(null);
@@ -42,8 +42,8 @@ const Dashboard = () => {
   const [currentTab, setCurrentTab] = useState(0);
 
   const [dashboardData, setDashboardData] = useState(null);
-  const [todayTokenUsage, setTodayTokenUsage] = useState([]);
-  const [weekTokenUsage, setWeekTokenUsage] = useState([]);
+  const [todayKeyUsage, setTodayKeyUsage] = useState([]);
+  const [weekKeyUsage, setWeekKeyUsage] = useState([]);
   const siteInfo = useSelector((state) => state.siteInfo);
 
   const handleTabChange = (newValue) => {
@@ -73,14 +73,14 @@ const Dashboard = () => {
     }
   };
 
-  const fetchTokenUsage = async () => {
-    setTokenUsageLoading(true);
+  const fetchKeyUsage = async () => {
+    setKeyUsageLoading(true);
     try {
       const [todayRes, weekRes] = await Promise.all([
-        API.get('/api/user/dashboard/token-usage', {
+        API.get('/api/user/dashboard/key-usage', {
           params: { period: 'today' }
         }),
-        API.get('/api/user/dashboard/token-usage', {
+        API.get('/api/user/dashboard/key-usage', {
           params: { period: '7d' }
         })
       ]);
@@ -89,26 +89,26 @@ const Dashboard = () => {
       const { success: weekSuccess, message: weekMessage, data: weekData } = weekRes.data;
 
       if (todaySuccess) {
-        setTodayTokenUsage(todayData || []);
+        setTodayKeyUsage(todayData || []);
       } else {
         showError(todayMessage);
       }
 
       if (weekSuccess) {
-        setWeekTokenUsage(weekData || []);
+        setWeekKeyUsage(weekData || []);
       } else {
         showError(weekMessage);
       }
     } catch (error) {
       return;
     } finally {
-      setTokenUsageLoading(false);
+      setKeyUsageLoading(false);
     }
   };
 
   useEffect(() => {
     userDashboard();
-    fetchTokenUsage();
+    fetchKeyUsage();
   }, []);
 
   // Dashboard content
@@ -163,9 +163,9 @@ const Dashboard = () => {
             <ModelUsagePieChart
               isLoading={isLoading}
               data={modelUsageData}
-              todayTokenUsage={todayTokenUsage}
-              weekTokenUsage={weekTokenUsage}
-              tokenUsageLoading={tokenUsageLoading}
+              todayKeyUsage={todayKeyUsage}
+              weekKeyUsage={weekKeyUsage}
+              keyUsageLoading={keyUsageLoading}
             />
           </Grid>
         </Grid>

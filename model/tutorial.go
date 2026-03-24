@@ -1,8 +1,8 @@
 package model
 
 import (
-	"errors"
 	"czloapi/common/utils"
+	"errors"
 
 	"gorm.io/gorm"
 )

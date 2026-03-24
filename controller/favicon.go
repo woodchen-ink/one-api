@@ -1,12 +1,12 @@
 package controller
 
 import (
+	"czloapi/common/logger"
 	"embed"
 	"fmt"
 	"github.com/spf13/viper"
 	"io"
 	"net/http"
-	"czloapi/common/logger"
 	"os"
 	"strings"
 	"sync"

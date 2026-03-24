@@ -1,11 +1,11 @@
 package controller
 
 import (
+	"czloapi/common"
+	"czloapi/model"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"czloapi/common"
-	"czloapi/model"
 	"time"
 )
 

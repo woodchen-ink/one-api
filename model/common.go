@@ -1,9 +1,9 @@
 package model
 
 import (
-	"fmt"
 	"czloapi/common"
 	"czloapi/common/config"
+	"fmt"
 	"strings"
 
 	"gorm.io/gorm"

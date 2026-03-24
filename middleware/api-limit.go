@@ -1,9 +1,9 @@
 package middleware
 
 import (
+	"czloapi/model"
 	"fmt"
 	"net/http"
-	"czloapi/model"
 	"time"
 
 	"github.com/gin-gonic/gin"

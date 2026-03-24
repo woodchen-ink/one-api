@@ -1,13 +1,13 @@
 package controller
 
 import (
-	"fmt"
-	"net/http"
 	"czloapi/common"
 	"czloapi/common/config"
 	"czloapi/common/notify"
 	"czloapi/model"
 	"czloapi/types"
+	"fmt"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )

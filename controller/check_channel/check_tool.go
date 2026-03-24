@@ -1,9 +1,9 @@
 package check_channel
 
 import (
+	"czloapi/types"
 	"encoding/json"
 	"fmt"
-	"czloapi/types"
 )
 
 type CheckToolProcess struct {

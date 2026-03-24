@@ -2,16 +2,16 @@ package controller
 
 import (
 	"context"
-	"errors"
-	"github.com/gin-contrib/sessions"
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
-	"net/http"
 	"czloapi/common/config"
 	"czloapi/common/logger"
 	"czloapi/common/oidc"
 	"czloapi/common/utils"
 	"czloapi/model"
+	"errors"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+	"net/http"
 )
 
 func OIDCEndpoint(c *gin.Context) {

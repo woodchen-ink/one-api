@@ -2,10 +2,6 @@ package relay
 
 import (
 	"bytes"
-	"encoding/json"
-	"fmt"
-	"io"
-	"net/http"
 	"czloapi/common"
 	"czloapi/common/config"
 	"czloapi/common/logger"
@@ -14,6 +10,10 @@ import (
 	"czloapi/model"
 	"czloapi/relay/relay_util"
 	"czloapi/types"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
 	"strings"
 	"time"
 

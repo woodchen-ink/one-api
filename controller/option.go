@@ -1,12 +1,12 @@
 package controller
 
 import (
-	"encoding/json"
-	"net/http"
 	"czloapi/common/config"
 	"czloapi/common/utils"
 	"czloapi/model"
 	"czloapi/safty"
+	"encoding/json"
+	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"

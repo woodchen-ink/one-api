@@ -48,9 +48,9 @@ const Playground = () => {
   const chatLinks = getChatLinks(true);
   const [iframeSrc, setIframeSrc] = useState(null);
 
-  const loadTokens = useCallback(async () => {
+  const loadKeys = useCallback(async () => {
     setIsLoading(true);
-    const res = await API.get(`/api/token/playground`);
+    const res = await API.get(`/api/key/playground`);
     const { success, message, data } = res.data;
     if (success) {
       setValue(data);
@@ -78,13 +78,13 @@ const Playground = () => {
   );
 
   useEffect(() => {
-    loadTokens().then(() => {
+    loadKeys().then(() => {
       if (value !== '') {
         handleTabChange(null, 0);
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loadTokens, value]);
+  }, [loadKeys, value]);
 
   if (chatLinks.length === 0 || isLoading || value === '') {
     return (

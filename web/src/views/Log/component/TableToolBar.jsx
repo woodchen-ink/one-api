@@ -25,15 +25,15 @@ export default function TableToolBar({ filterName, handleFilterName, userIsAdmin
         sx={{ width: '100%', '& > *': { flex: 1 } }}
       >
         <FormControl>
-          <InputLabel htmlFor="channel-token_name-label">{t('tableToolBar.tokenName')}</InputLabel>
+          <InputLabel htmlFor="channel-key_name-label">{t('tableToolBar.tokenName')}</InputLabel>
           <OutlinedInput
-            id="token_name"
-            name="token_name"
+            id="key_name"
+            name="key_name"
             sx={{
               minWidth: '100%'
             }}
             label={t('tableToolBar.tokenName')}
-            value={filterName.token_name}
+            value={filterName.key_name}
             onChange={handleFilterName}
             placeholder={t('tableToolBar.tokenName')}
             startAdornment={

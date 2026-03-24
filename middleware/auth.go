@@ -19,20 +19,20 @@ func authHelper(c *gin.Context, minRole int) {
 	id := session.Get("id")
 	status := session.Get("status")
 	if username == nil {
-		accessToken := c.Request.Header.Get("Authorization")
-		if accessToken == "" {
+		accessKey := c.Request.Header.Get("Authorization")
+		if accessKey == "" {
 			token := c.Param("accessToken")
 			if token == "" {
 				c.JSON(http.StatusUnauthorized, gin.H{
 					"success": false,
-					"message": "未登录且未提供 access token",
+					"message": "未登录且未提供 access key",
 				})
 				c.Abort()
 				return
 			}
-			accessToken = fmt.Sprintf("Bearer %s", token)
+			accessKey = fmt.Sprintf("Bearer %s", token)
 		}
-		user := model.ValidateAccessToken(accessToken)
+		user := model.ValidateAccessKey(accessKey)
 		if user != nil && user.Username != "" {
 			username = user.Username
 			role = user.Role
@@ -41,7 +41,7 @@ func authHelper(c *gin.Context, minRole int) {
 		} else {
 			c.JSON(http.StatusOK, gin.H{
 				"success": false,
-				"message": "access token 无效",
+				"message": "access key 无效",
 			})
 			c.Abort()
 			return
@@ -122,31 +122,31 @@ func tokenAuth(c *gin.Context, key string) {
 
 	parts := strings.Split(key, "#")
 	key = parts[0]
-	token, err := model.ValidateUserToken(key)
+	credential, err := model.ValidateUserKey(key)
 	if err != nil {
 		abortWithMessage(c, http.StatusUnauthorized, err.Error())
 		return
 	}
 
-	c.Set("id", token.UserId)
-	c.Set("token_id", token.Id)
-	c.Set("token_name", token.Name)
-	c.Set("token_group", token.Group)
-	backupGroups := model.MergeTokenFallbackGroups(token.Group, token.BackupGroup, token.Setting.Data().FallbackGroups)
+	c.Set("id", credential.UserId)
+	c.Set("key_id", credential.Id)
+	c.Set("key_name", credential.Name)
+	c.Set("key_group", credential.Group)
+	backupGroups := model.MergeTokenFallbackGroups(credential.Group, credential.BackupGroup, credential.Setting.Data().FallbackGroups)
 	if len(backupGroups) > 0 {
-		c.Set("token_backup_group", backupGroups[0])
+		c.Set("key_backup_group", backupGroups[0])
 	} else {
-		c.Set("token_backup_group", "")
+		c.Set("key_backup_group", "")
 	}
-	c.Set("token_backup_groups", backupGroups)
-	c.Set("token_unlimited_quota", token.UnlimitedQuota)
-	c.Set("token_setting", utils.GetPointer(token.Setting.Data()))
+	c.Set("key_backup_groups", backupGroups)
+	c.Set("key_unlimited_quota", credential.UnlimitedQuota)
+	c.Set("key_setting", utils.GetPointer(credential.Setting.Data()))
 	if err := checkLimitIP(c); err != nil {
 		abortWithMessage(c, http.StatusForbidden, err.Error())
 		return
 	}
 	if len(parts) > 1 {
-		if model.IsAdmin(token.UserId) {
+		if model.IsAdmin(credential.UserId) {
 			if strings.HasPrefix(parts[1], "!") {
 				channelId := utils.String2Int(parts[1][1:])
 				c.Set("skip_channel_ids", []int{channelId})
@@ -170,11 +170,11 @@ func tokenAuth(c *gin.Context, key string) {
 }
 
 func checkLimitIP(c *gin.Context) (error error) {
-	tokenSetting, exists := c.Get("token_setting")
+	keySetting, exists := c.Get("key_setting")
 	if !exists {
 		return nil
 	}
-	setting, ok := tokenSetting.(*model.TokenSetting)
+	setting, ok := keySetting.(*model.KeySetting)
 	if !ok || setting == nil {
 		return nil
 	}

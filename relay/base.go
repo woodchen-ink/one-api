@@ -1,10 +1,10 @@
 package relay
 
 import (
-	"encoding/json"
 	"czloapi/model"
 	"czloapi/relay/relay_util"
 	"czloapi/types"
+	"encoding/json"
 	"strings"
 	"time"
 
@@ -143,20 +143,20 @@ func (r *relayBase) SetHeartbeat(isStream bool) *relay_util.Heartbeat {
 		return nil
 	}
 
-	setting, exists := r.c.Get("token_setting")
+	setting, exists := r.c.Get("key_setting")
 	if !exists {
 		return nil
 	}
 
-	tokenSetting, ok := setting.(*model.TokenSetting)
-	if !ok || !tokenSetting.Heartbeat.Enabled {
+	keySetting, ok := setting.(*model.KeySetting)
+	if !ok || !keySetting.Heartbeat.Enabled {
 		return nil
 	}
 
 	r.heartbeat = relay_util.NewHeartbeat(
 		isStream,
 		relay_util.HeartbeatConfig{
-			TimeoutSeconds:  tokenSetting.Heartbeat.TimeoutSeconds,
+			TimeoutSeconds:  keySetting.Heartbeat.TimeoutSeconds,
 			IntervalSeconds: 5, // 5s 发送一次心跳
 		},
 		r.c,

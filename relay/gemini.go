@@ -1,9 +1,6 @@
 package relay
 
 import (
-	"encoding/json"
-	"errors"
-	"net/http"
 	"czloapi/common"
 	"czloapi/common/config"
 	"czloapi/common/requester"
@@ -11,6 +8,9 @@ import (
 	"czloapi/providers/gemini"
 	"czloapi/safty"
 	"czloapi/types"
+	"encoding/json"
+	"errors"
+	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"

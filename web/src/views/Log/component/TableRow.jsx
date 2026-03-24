@@ -146,11 +146,11 @@ function LogTableRow({ item, userIsAdmin, userGroup, columnVisibility }) {
             )}
           </TableCell>
         )}
-        {columnVisibility.token_name && (
+        {columnVisibility.key_name && (
           <TableCell sx={{ p: '10px 8px', minWidth: 140 }}>
-            {item.token_name && (
-              <Label color="default" variant="soft" copyText={item.token_name}>
-                {item.token_name}
+            {item.key_name && (
+              <Label color="default" variant="soft" copyText={item.key_name}>
+                {item.key_name}
               </Label>
             )}
           </TableCell>

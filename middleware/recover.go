@@ -1,10 +1,10 @@
 package middleware
 
 import (
-	"fmt"
-	"net/http"
 	"czloapi/common/logger"
 	"czloapi/metrics"
+	"fmt"
+	"net/http"
 	"runtime/debug"
 
 	"github.com/gin-gonic/gin"

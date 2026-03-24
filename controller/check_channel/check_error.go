@@ -1,8 +1,8 @@
 package check_channel
 
 import (
-	"fmt"
 	"czloapi/types"
+	"fmt"
 	"strings"
 )
 

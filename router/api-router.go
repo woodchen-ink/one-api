@@ -74,7 +74,7 @@ func SetApiRouter(router *gin.Engine) {
 			selfRoute.Use(middleware.UserAuth())
 			{
 				selfRoute.GET("/dashboard", controller.GetUserDashboard)
-				selfRoute.GET("/dashboard/token-usage", controller.GetUserTokenUsage)
+				selfRoute.GET("/dashboard/key-usage", controller.GetUserKeyUsage)
 				selfRoute.GET("/dashboard/rate", controller.GetRateRealtime)
 				selfRoute.GET("/dashboard/uptimekuma/status-page", controller.UptimeKumaStatusPage)
 				selfRoute.GET("/dashboard/uptimekuma/status-page/heartbeat", controller.UptimeKumaStatusPageHeartbeat)
@@ -84,7 +84,7 @@ func SetApiRouter(router *gin.Engine) {
 				selfRoute.PUT("/self", controller.UpdateSelf)
 				selfRoute.POST("/unbind", controller.Unbind)
 				// selfRoute.DELETE("/self", controller.DeleteSelf)
-				selfRoute.GET("/token", controller.GenerateAccessToken)
+				selfRoute.GET("/key", controller.GenerateAccessKey)
 				// selfRoute.GET("/aff", controller.GetAffCode)
 				selfRoute.POST("/topup", controller.TopUp)
 				selfRoute.GET("/payment", controller.GetUserPaymentList)
@@ -214,21 +214,21 @@ func SetApiRouter(router *gin.Engine) {
 
 		}
 
-		tokenRoute := apiRouter.Group("/token")
-		tokenRoute.Use(middleware.UserAuth())
+		keyRoute := apiRouter.Group("/key")
+		keyRoute.Use(middleware.UserAuth())
 		{
-			tokenRoute.GET("/playground", controller.GetPlaygroundToken)
-			tokenRoute.GET("/", controller.GetUserTokensList)
-			tokenRoute.GET("/:id", controller.GetToken)
-			tokenRoute.POST("/", controller.AddToken)
-			tokenRoute.PUT("/", controller.UpdateToken)
-			tokenRoute.DELETE("/:id", controller.DeleteToken)
+			keyRoute.GET("/playground", controller.GetPlaygroundKey)
+			keyRoute.GET("/", controller.GetUserKeysList)
+			keyRoute.GET("/:id", controller.GetKey)
+			keyRoute.POST("/", controller.AddKey)
+			keyRoute.PUT("/", controller.UpdateKey)
+			keyRoute.DELETE("/:id", controller.DeleteKey)
 		}
-		tokenAdminRoute := apiRouter.Group("/token")
-		tokenAdminRoute.Use(middleware.AdminAuth())
+		keyAdminRoute := apiRouter.Group("/key")
+		keyAdminRoute.Use(middleware.AdminAuth())
 		{
-			tokenAdminRoute.GET("/admin/search", controller.GetTokensListByAdmin)
-			tokenAdminRoute.PUT("/admin", controller.UpdateTokenByAdmin)
+			keyAdminRoute.GET("/admin/search", controller.GetKeysListByAdmin)
+			keyAdminRoute.PUT("/admin", controller.UpdateKeyByAdmin)
 		}
 		redemptionRoute := apiRouter.Group("/redemption")
 		redemptionRoute.Use(middleware.AdminAuth())

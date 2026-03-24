@@ -1,13 +1,13 @@
 package router
 
 import (
+	"czloapi/controller"
+	"czloapi/middleware"
 	"embed"
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"czloapi/controller"
-	"czloapi/middleware"
 	"strings"
 )
 

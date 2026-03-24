@@ -363,10 +363,10 @@ const MySubscription = () => {
     fetchSubscriptions();
   };
 
-  const handleCreateToken = (groupSymbol, planName) => {
-    navigate('/panel/token', {
+  const handleCreateKey = (groupSymbol, planName) => {
+    navigate('/panel/key', {
       state: {
-        openCreateToken: true,
+        openCreateKey: true,
         presetGroup: groupSymbol,
         presetPlanName: planName
       }
@@ -482,7 +482,7 @@ const MySubscription = () => {
                       <Button
                         variant="contained"
                         size="small"
-                        onClick={() => handleCreateToken(sub.group_symbol, sub.plan_name)}
+                        onClick={() => handleCreateKey(sub.group_symbol, sub.plan_name)}
                         startIcon={<Icon icon="solar:key-minimalistic-square-3-linear" width={18} />}
                         sx={{
                           flex: 1,

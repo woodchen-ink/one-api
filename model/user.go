@@ -31,8 +31,8 @@ type User struct {
 	GitHubIdNew      int            `json:"github_id_new" gorm:"column:github_id_new;index"`
 	TelegramId       int64          `json:"telegram_id" gorm:"bigint,column:telegram_id;default:0;"`
 	CZLConnectId     int            `json:"czlconnect_id" gorm:"column:czlconnect_id;index"`
-	VerificationCode string         `json:"verification_code" gorm:"-:all"`                                    // this field is only for Email verification, don't save it to database!
-	AccessToken      string         `json:"access_token" gorm:"type:char(32);column:access_token;uniqueIndex"` // this token is for system management
+	VerificationCode string         `json:"verification_code" gorm:"-:all"`                                // this field is only for Email verification, don't save it to database!
+	AccessKey        string         `json:"access_key" gorm:"type:char(32);column:access_key;uniqueIndex"` // this key is for system management
 	Quota            int            `json:"quota" gorm:"type:int;default:0"`
 	UsedQuota        int            `json:"used_quota" gorm:"type:int;default:0;column:used_quota"` // used quota
 	RequestCount     int            `json:"request_count" gorm:"type:int;default:0;"`               // request number
@@ -134,7 +134,7 @@ func (user *User) Insert(inviterId int) error {
 		}
 	}
 	user.Quota = config.QuotaForNewUser
-	user.AccessToken = utils.GetUUID()
+	user.AccessKey = utils.GetUUID()
 	user.AffCode = utils.GetRandomString(4)
 	user.CreatedTime = utils.GetTimestamp()
 	if user.Group == "" {
@@ -390,16 +390,20 @@ func IsUserEnabled(userId int) (bool, error) {
 	return user.Status == config.UserStatusEnabled, nil
 }
 
-func ValidateAccessToken(token string) (user *User) {
+func ValidateAccessKey(token string) (user *User) {
 	if token == "" {
 		return nil
 	}
 	token = strings.Replace(token, "Bearer ", "", 1)
 	user = &User{}
-	if DB.Where("access_token = ?", token).First(user).RowsAffected == 1 {
+	if DB.Where("access_key = ?", token).First(user).RowsAffected == 1 {
 		return user
 	}
 	return nil
+}
+
+func ValidateAccessToken(token string) (user *User) {
+	return ValidateAccessKey(token)
 }
 
 func GetUserFields(id int, fields []string) (map[string]interface{}, error) {

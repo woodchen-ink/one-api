@@ -2,10 +2,10 @@ package model
 
 import (
 	"crypto/md5"
+	"czloapi/common/config"
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"czloapi/common/config"
 	"strings"
 	"time"
 )

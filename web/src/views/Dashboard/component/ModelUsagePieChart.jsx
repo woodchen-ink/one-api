@@ -22,7 +22,7 @@ import { gridSpacing } from 'store/constant';
 import { useTranslation } from 'react-i18next';
 import { renderQuota, timestamp2string } from 'utils/common';
 
-const TokenUsageTable = ({ data, isLoading }) => {
+const KeyUsageTable = ({ data, isLoading }) => {
   const { t } = useTranslation();
   const rows = data.slice(0, 8);
 
@@ -54,13 +54,13 @@ const TokenUsageTable = ({ data, isLoading }) => {
             </TableRow>
           ) : (
             rows.map((item) => (
-              <TableRow key={item.token_id} hover>
+              <TableRow key={item.key_id} hover>
                 <TableCell>
                   <Typography variant="body2" fontWeight={600}>
-                    {item.token_name || `#${item.token_id}`}
+                    {item.key_name || `#${item.key_id}`}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    #{item.token_id}
+                    #{item.key_id}
                   </Typography>
                 </TableCell>
                 <TableCell align="right">{item.request_count}</TableCell>
@@ -75,12 +75,12 @@ const TokenUsageTable = ({ data, isLoading }) => {
   );
 };
 
-TokenUsageTable.propTypes = {
+KeyUsageTable.propTypes = {
   data: PropTypes.array,
   isLoading: PropTypes.bool
 };
 
-const ModelUsagePieChart = ({ isLoading, data, todayTokenUsage, weekTokenUsage, tokenUsageLoading }) => {
+const ModelUsagePieChart = ({ isLoading, data, todayKeyUsage, weekKeyUsage, keyUsageLoading }) => {
   const { t } = useTranslation();
   const theme = useTheme();
   const [tab, setTab] = useState(0);
@@ -315,9 +315,9 @@ const ModelUsagePieChart = ({ isLoading, data, todayTokenUsage, weekTokenUsage, 
               </Box>
             )
           ) : tab === 1 ? (
-            <TokenUsageTable data={todayTokenUsage} isLoading={tokenUsageLoading} />
+            <KeyUsageTable data={todayKeyUsage} isLoading={keyUsageLoading} />
           ) : (
-            <TokenUsageTable data={weekTokenUsage} isLoading={tokenUsageLoading} />
+            <KeyUsageTable data={weekKeyUsage} isLoading={keyUsageLoading} />
           )}
         </Grid>
       </Grid>
@@ -328,9 +328,9 @@ const ModelUsagePieChart = ({ isLoading, data, todayTokenUsage, weekTokenUsage, 
 ModelUsagePieChart.propTypes = {
   data: PropTypes.array,
   isLoading: PropTypes.bool,
-  todayTokenUsage: PropTypes.array,
-  tokenUsageLoading: PropTypes.bool,
-  weekTokenUsage: PropTypes.array
+  todayKeyUsage: PropTypes.array,
+  keyUsageLoading: PropTypes.bool,
+  weekKeyUsage: PropTypes.array
 };
 
 export default ModelUsagePieChart;

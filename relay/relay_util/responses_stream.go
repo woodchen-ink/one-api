@@ -1,10 +1,10 @@
 package relay_util
 
 import (
-	"encoding/json"
-	"fmt"
 	"czloapi/common/utils"
 	"czloapi/types"
+	"encoding/json"
+	"fmt"
 
 	"github.com/gin-gonic/gin"
 )

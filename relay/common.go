@@ -67,15 +67,15 @@ func isGeminiRelayPath(path string) bool {
 func checkLimitModel(c *gin.Context, modelName string) (error error) {
 	// 判断modelName是否在token的setting.limits.LimitModelSetting.models[]范围内
 
-	// 从context中获取token设置
-	tokenSetting, exists := c.Get("token_setting")
+	// 从context中获取 key 设置
+	keySetting, exists := c.Get("key_setting")
 	if !exists {
 		// 如果没有token设置，则不进行限制
 		return nil
 	}
 
-	// 类型断言为TokenSetting指针
-	setting, ok := tokenSetting.(*model.TokenSetting)
+	// 类型断言为 KeySetting 指针
+	setting, ok := keySetting.(*model.KeySetting)
 	if !ok || setting == nil {
 		// 类型断言失败或为空，不进行限制
 		return nil
@@ -200,9 +200,9 @@ type GroupManager struct {
 
 // NewGroupManager 创建分组管理器
 func NewGroupManager(c *gin.Context) *GroupManager {
-	backupGroups, _ := utils.GetGinValue[[]string](c, "token_backup_groups")
+	backupGroups, _ := utils.GetGinValue[[]string](c, "key_backup_groups")
 	return &GroupManager{
-		primaryGroup: c.GetString("token_group"),
+		primaryGroup: c.GetString("key_group"),
 		backupGroups: backupGroups,
 		context:      c,
 	}
@@ -232,8 +232,8 @@ func (gm *GroupManager) TryWithGroups(modelName string, filters []model.Channels
 		if err == nil {
 			// 更新上下文中的分组信息
 			gm.context.Set("is_backupGroup", true)
-			gm.context.Set("token_backup_group", backupGroup)
-			gm.context.Set("token_group", backupGroup)
+			gm.context.Set("key_backup_group", backupGroup)
+			gm.context.Set("key_group", backupGroup)
 			if err := gm.setGroupRatio(backupGroup); err != nil {
 				return nil, fmt.Errorf("设置备用分组倍率失败: %v", err)
 			}

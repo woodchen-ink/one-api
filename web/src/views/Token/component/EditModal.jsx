@@ -107,7 +107,7 @@ const originInputs = {
   }
 };
 
-const EditModal = ({ open, tokenId, onCancel, onOk, userGroupOptions, adminMode = false, presetGroup = '', presetPlanName = '' }) => {
+const EditModal = ({ open, keyId, onCancel, onOk, userGroupOptions, adminMode = false, presetGroup = '', presetPlanName = '' }) => {
   const { t } = useTranslation();
   const [inputs, setInputs] = useState(originInputs);
   const [modelOptions, setModelOptions] = useState([]);
@@ -181,15 +181,15 @@ const EditModal = ({ open, tokenId, onCancel, onOk, userGroupOptions, adminMode 
     try {
       if (values.is_edit) {
         // 管理员模式使用管理员专用接口
-        const apiPath = adminMode ? `/api/token/admin` : `/api/token/`;
-        payload.id = parseInt(tokenId);
+        const apiPath = adminMode ? `/api/key/admin` : `/api/key/`;
+        payload.id = parseInt(keyId);
         // 管理员模式下传递 user_id
         if (adminMode && values.user_id) {
           payload.user_id = parseInt(values.user_id);
         }
         res = await API.put(apiPath, payload);
       } else {
-        res = await API.post(`/api/token/`, payload);
+        res = await API.post(`/api/key/`, payload);
       }
       const { success, message } = res.data;
       if (success) {
@@ -214,19 +214,19 @@ const EditModal = ({ open, tokenId, onCancel, onOk, userGroupOptions, adminMode 
     try {
       let res;
       if (adminMode) {
-        // 管理员模式使用搜索接口通过token_id查询
-        res = await API.get(`/api/token/admin/search`, {
-          params: { token_id: tokenId, page: 1, size: 1 }
+        // 管理员模式使用搜索接口通过 key_id 查询
+        res = await API.get(`/api/key/admin/search`, {
+          params: { key_id: keyId, page: 1, size: 1 }
         });
       } else {
-        res = await API.get(`/api/token/${tokenId}`);
+        res = await API.get(`/api/key/${keyId}`);
       }
       const { success, message, data } = res.data;
       if (success) {
         // 管理员搜索接口返回的是分页数据，取第一条
         const tokenData = adminMode ? data.data[0] : data;
         if (!tokenData) {
-          showError('令牌不存在');
+          showError('Key不存在');
           return;
         }
         tokenData.is_edit = true;
@@ -282,7 +282,7 @@ const EditModal = ({ open, tokenId, onCancel, onOk, userGroupOptions, adminMode 
   }, [open, adminMode]);
 
   useEffect(() => {
-    if (tokenId) {
+    if (keyId) {
       loadToken().then();
     } else {
       setInputs({
@@ -291,7 +291,7 @@ const EditModal = ({ open, tokenId, onCancel, onOk, userGroupOptions, adminMode 
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tokenId, adminMode, presetGroup]);
+  }, [keyId, adminMode, presetGroup]);
 
   const sortedUserGroupOptions = useMemo(() => {
     const activeSet = new Set(activeSubscriptionGroups);
@@ -334,7 +334,7 @@ const EditModal = ({ open, tokenId, onCancel, onOk, userGroupOptions, adminMode 
       }}
     >
       <DialogTitle sx={{ m: 0, px: 2.5, py: 2, fontWeight: 700, lineHeight: 1.4, fontSize: '1.05rem' }}>
-        {tokenId ? t('token_index.editToken') : t('token_index.createToken')}
+        {keyId ? t('token_index.editToken') : t('token_index.createToken')}
       </DialogTitle>
       <DialogContent dividers sx={{ px: 2.5, py: 2 }}>
         <Formik initialValues={inputs} enableReinitialize validationSchema={validationSchema} onSubmit={submit}>
@@ -825,7 +825,7 @@ export default EditModal;
 
 EditModal.propTypes = {
   open: PropTypes.bool,
-  tokenId: PropTypes.number,
+  keyId: PropTypes.number,
   onCancel: PropTypes.func,
   onOk: PropTypes.func,
   userGroupOptions: PropTypes.array,

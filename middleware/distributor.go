@@ -18,27 +18,27 @@ func NewGroupDistributor(c *gin.Context) *GroupDistributor {
 	return &GroupDistributor{context: c}
 }
 
-// SetupGroups 设置用户分组和令牌分组
+// SetupGroups 设置用户分组和 Key 分组
 func (gd *GroupDistributor) SetupGroups() error {
 	userId := gd.context.GetInt("id")
 	userGroup, _ := model.CacheGetUserGroup(userId)
 	gd.context.Set("group", userGroup)
 
-	tokenGroup := gd.context.GetString("token_group")
+	keyGroup := gd.context.GetString("key_group")
 	backupGroups := getContextBackupGroups(gd.context)
 
 	// 统一分组优先级逻辑
-	effectiveGroup := gd.determineEffectiveGroup(tokenGroup, backupGroups, userGroup)
-	gd.context.Set("token_group", effectiveGroup)
+	effectiveGroup := gd.determineEffectiveGroup(keyGroup, backupGroups, userGroup)
+	gd.context.Set("key_group", effectiveGroup)
 
 	// 设置分组比例
 	return gd.setGroupRatio(effectiveGroup)
 }
 
 // determineEffectiveGroup 确定有效的分组
-func (gd *GroupDistributor) determineEffectiveGroup(tokenGroup string, backupGroups []string, userGroup string) string {
-	if tokenGroup != "" {
-		return tokenGroup
+func (gd *GroupDistributor) determineEffectiveGroup(keyGroup string, backupGroups []string, userGroup string) string {
+	if keyGroup != "" {
+		return keyGroup
 	}
 	if len(backupGroups) > 0 {
 		return backupGroups[0]
@@ -47,7 +47,7 @@ func (gd *GroupDistributor) determineEffectiveGroup(tokenGroup string, backupGro
 }
 
 func getContextBackupGroups(c *gin.Context) []string {
-	value, ok := c.Get("token_backup_groups")
+	value, ok := c.Get("key_backup_groups")
 	if !ok {
 		return nil
 	}

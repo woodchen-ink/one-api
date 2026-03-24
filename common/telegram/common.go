@@ -2,14 +2,14 @@ package telegram
 
 import (
 	"context"
+	"czloapi/common/config"
+	"czloapi/common/logger"
+	"czloapi/model"
 	"errors"
 	"fmt"
 	"net"
 	"net/http"
 	"net/url"
-	"czloapi/common/config"
-	"czloapi/common/logger"
-	"czloapi/model"
 	"strings"
 	"time"
 

@@ -1,11 +1,6 @@
 package relay
 
 import (
-	"encoding/json"
-	"errors"
-	"fmt"
-	"math"
-	"net/http"
 	"czloapi/common"
 	"czloapi/common/config"
 	"czloapi/common/requester"
@@ -14,6 +9,11 @@ import (
 	providersBase "czloapi/providers/base"
 	"czloapi/safty"
 	"czloapi/types"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"math"
+	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"

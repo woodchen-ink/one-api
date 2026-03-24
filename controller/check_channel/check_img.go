@@ -1,14 +1,14 @@
 package check_channel
 
 import (
-	_ "embed"
-	"fmt"
-	"net/http"
 	"czloapi/common"
 	"czloapi/common/cache"
 	"czloapi/common/config"
 	"czloapi/common/utils"
 	"czloapi/types"
+	_ "embed"
+	"fmt"
+	"net/http"
 	"strings"
 	"time"
 

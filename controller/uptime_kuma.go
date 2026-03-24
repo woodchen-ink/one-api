@@ -1,10 +1,10 @@
 package controller
 
 import (
+	"czloapi/common/config"
 	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
-	"czloapi/common/config"
 	"strconv"
 	"time"
 )

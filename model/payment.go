@@ -1,8 +1,8 @@
 package model
 
 import (
-	"gorm.io/gorm"
 	"czloapi/common/utils"
+	"gorm.io/gorm"
 )
 
 type CurrencyType string

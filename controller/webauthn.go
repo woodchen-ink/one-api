@@ -1,11 +1,11 @@
 package controller
 
 import (
+	"czloapi/common/webauthn"
+	"czloapi/model"
 	"encoding/json"
 	"errors"
 	"net/http"
-	"czloapi/common/webauthn"
-	"czloapi/model"
 	"strconv"
 
 	"github.com/gin-contrib/sessions"

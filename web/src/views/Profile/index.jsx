@@ -221,12 +221,12 @@ export default function Profile() {
     }
   };
 
-  const generateAccessToken = async () => {
+  const generateAccessKey = async () => {
     try {
-      const res = await API.get('/api/user/token');
+      const res = await API.get('/api/user/key');
       const { success, message, data } = res.data;
       if (success) {
-        setInputs((inputs) => ({ ...inputs, access_token: data }));
+        setInputs((inputs) => ({ ...inputs, access_key: data }));
         copy(data, t('profilePage.token'));
       } else {
         showError(message);
@@ -617,17 +617,17 @@ export default function Profile() {
               <Grid xs={12}>
                 <Alert severity="info">{t('profilePage.tokenNotice')}</Alert>
               </Grid>
-              {inputs.access_token && (
+              {inputs.access_key && (
                 <Grid xs={12}>
                   <Alert severity="error">
-                    {t('profilePage.yourTokenIs')} <b>{inputs.access_token}</b> <br />
+                    {t('profilePage.yourTokenIs')} <b>{inputs.access_key}</b> <br />
                     {t('profilePage.keepSafe')}
                   </Alert>
                 </Grid>
               )}
               <Grid xs={12}>
-                <Button variant="contained" onClick={generateAccessToken}>
-                  {inputs.access_token ? t('profilePage.resetToken') : t('profilePage.generateToken')}
+                <Button variant="contained" onClick={generateAccessKey}>
+                  {inputs.access_key ? t('profilePage.resetToken') : t('profilePage.generateToken')}
                 </Button>
               </Grid>
             </Grid>

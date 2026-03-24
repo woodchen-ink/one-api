@@ -1,11 +1,11 @@
 package controller
 
 import (
-	"errors"
-	"net/http"
 	"czloapi/common"
 	"czloapi/common/config"
 	"czloapi/model"
+	"errors"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )

@@ -37,7 +37,7 @@ import { UserContext } from 'contexts/UserContext';
 import { useTheme } from '@mui/material/styles';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-export default function Token() {
+export default function Key() {
   const { t } = useTranslation();
   const theme = useTheme();
   const location = useLocation();
@@ -46,7 +46,7 @@ export default function Token() {
   const [page, setPage] = useState(0);
   const [order, setOrder] = useState('desc');
   const [orderBy, setOrderBy] = useState('id');
-  const [rowsPerPage, setRowsPerPage] = useState(() => getPageSize('token'));
+  const [rowsPerPage, setRowsPerPage] = useState(() => getPageSize('key'));
   const [listCount, setListCount] = useState(0);
   const [searching, setSearching] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState('');
@@ -56,7 +56,7 @@ export default function Token() {
   const [userGroupOptions, setUserGroupOptions] = useState([]);
 
   const [openModal, setOpenModal] = useState(false);
-  const [editTokenId, setEditTokenId] = useState(0);
+  const [editKeyId, setEditKeyId] = useState(0);
   const [presetGroup, setPresetGroup] = useState('');
   const [presetPlanName, setPresetPlanName] = useState('');
   const siteInfo = useSelector((state) => state.siteInfo);
@@ -66,7 +66,7 @@ export default function Token() {
   // 管理员搜索相关状态
   const [adminSearchEnabled, setAdminSearchEnabled] = useState(false);
   const [adminSearchUserId, setAdminSearchUserId] = useState('');
-  const [adminSearchTokenId, setAdminSearchTokenId] = useState('');
+  const [adminSearchKeyId, setAdminSearchKeyId] = useState('');
 
   const handleSort = (event, id) => {
     const isAsc = orderBy === id && order === 'asc';
@@ -84,10 +84,10 @@ export default function Token() {
     const newRowsPerPage = parseInt(event.target.value, 10);
     setPage(0);
     setRowsPerPage(newRowsPerPage);
-    savePageSize('token', newRowsPerPage);
+    savePageSize('key', newRowsPerPage);
   };
 
-  const searchTokens = async (event) => {
+  const searchKeys = async (event) => {
     event.preventDefault();
     const formData = new FormData(event.target);
     setPage(0);
@@ -105,19 +105,19 @@ export default function Token() {
 
         let res;
         // 如果启用了管理员搜索模式且有搜索条件
-        if (adminSearchEnabled && (adminSearchUserId || adminSearchTokenId)) {
-          res = await API.get(`/api/token/admin/search`, {
+        if (adminSearchEnabled && (adminSearchUserId || adminSearchKeyId)) {
+          res = await API.get(`/api/key/admin/search`, {
             params: {
               page: page + 1,
               size: rowsPerPage,
               keyword: keyword,
               order: orderBy,
               user_id: adminSearchUserId ? parseInt(adminSearchUserId, 10) : undefined,
-              token_id: adminSearchTokenId ? parseInt(adminSearchTokenId, 10) : undefined
+              key_id: adminSearchKeyId ? parseInt(adminSearchKeyId, 10) : undefined
             }
           });
         } else {
-          res = await API.get(`/api/token/`, {
+          res = await API.get(`/api/key/`, {
             params: {
               page: page + 1,
               size: rowsPerPage,
@@ -139,7 +139,7 @@ export default function Token() {
       }
       setSearching(false);
     },
-    [adminSearchEnabled, adminSearchTokenId, adminSearchUserId]
+    [adminSearchEnabled, adminSearchKeyId, adminSearchUserId]
   );
 
   // 处理刷新
@@ -166,8 +166,8 @@ export default function Token() {
   }, [userGroup]);
 
   useEffect(() => {
-    if (location.state?.openCreateToken) {
-      setEditTokenId(0);
+    if (location.state?.openCreateKey) {
+      setEditKeyId(0);
       setPresetGroup(location.state.presetGroup || '');
       setPresetPlanName(location.state.presetPlanName || '');
       setOpenModal(true);
@@ -175,8 +175,8 @@ export default function Token() {
     }
   }, [location.pathname, location.state, navigate]);
 
-  const manageToken = async (id, action, value) => {
-    const url = '/api/token/';
+  const manageKey = async (id, action, value) => {
+    const url = '/api/key/';
     let data = { id };
     let res;
     try {
@@ -207,8 +207,8 @@ export default function Token() {
     }
   };
 
-  const handleOpenModal = (tokenId, options = {}) => {
-    setEditTokenId(tokenId);
+  const handleOpenModal = (keyId, options = {}) => {
+    setEditKeyId(keyId);
     setPresetGroup(options.presetGroup || '');
     setPresetPlanName(options.presetPlanName || '');
     setOpenModal(true);
@@ -216,7 +216,7 @@ export default function Token() {
 
   const handleCloseModal = () => {
     setOpenModal(false);
-    setEditTokenId(0);
+    setEditKeyId(0);
     setPresetGroup('');
     setPresetPlanName('');
   };
@@ -311,13 +311,13 @@ export default function Token() {
                 />
               </FormControl>
               <FormControl sx={{ flex: 1 }}>
-                <InputLabel htmlFor="admin-search-token-id">{t('token_index.tokenId')}</InputLabel>
+                <InputLabel htmlFor="admin-search-key-id">{t('token_index.tokenId')}</InputLabel>
                 <OutlinedInput
-                  id="admin-search-token-id"
+                  id="admin-search-key-id"
                   type="number"
-                  value={adminSearchTokenId}
+                  value={adminSearchKeyId}
                   onChange={(e) => {
-                    setAdminSearchTokenId(e.target.value);
+                    setAdminSearchKeyId(e.target.value);
                     setPage(0);
                   }}
                   label={t('token_index.tokenId')}
@@ -334,7 +334,7 @@ export default function Token() {
                 color="secondary"
                 onClick={() => {
                   setAdminSearchUserId('');
-                  setAdminSearchTokenId('');
+                  setAdminSearchKeyId('');
                   setPage(0);
                 }}
                 startIcon={<Icon icon="solar:refresh-bold-duotone" width={18} />}
@@ -347,7 +347,7 @@ export default function Token() {
       )}
 
       <Card>
-        <Box component="form" onSubmit={searchTokens} noValidate>
+        <Box component="form" onSubmit={searchKeys} noValidate>
           <TableToolBar placeholder={t('token_index.searchTokenName')} />
         </Box>
         <Toolbar
@@ -386,7 +386,7 @@ export default function Token() {
                 orderBy={orderBy}
                 onRequestSort={handleSort}
                 headLabel={(() => {
-                  const isAdminSearch = adminSearchEnabled && (adminSearchUserId || adminSearchTokenId);
+                  const isAdminSearch = adminSearchEnabled && (adminSearchUserId || adminSearchKeyId);
                   if (isAdminSearch) {
                     // 管理员搜索模式：合并额度列、合并时间列、新增最近使用
                     return [
@@ -419,11 +419,11 @@ export default function Token() {
                 {tokens.map((row) => (
                   <TokensTableRow
                     item={row}
-                    manageToken={manageToken}
+                    manageToken={manageKey}
                     key={row.id}
                     handleOpenModal={handleOpenModal}
                     userGroup={userGroup}
-                    isAdminSearch={adminSearchEnabled && (adminSearchUserId || adminSearchTokenId)}
+                    isAdminSearch={adminSearchEnabled && (adminSearchUserId || adminSearchKeyId)}
                   />
                 ))}
               </TableBody>
@@ -446,11 +446,11 @@ export default function Token() {
         open={openModal}
         onCancel={handleCloseModal}
         onOk={handleOkModal}
-        tokenId={editTokenId}
+        keyId={editKeyId}
         presetGroup={presetGroup}
         presetPlanName={presetPlanName}
         userGroupOptions={userGroupOptions}
-        adminMode={adminSearchEnabled && (adminSearchUserId || adminSearchTokenId)}
+        adminMode={adminSearchEnabled && (adminSearchUserId || adminSearchKeyId)}
       />
     </>
   );

@@ -18,8 +18,8 @@ type Log struct {
 	Type             int                                `json:"type" gorm:"index:idx_created_at_type"`
 	Content          string                             `json:"content"`
 	Username         string                             `json:"username" gorm:"index:index_username_model_name,priority:2;default:''"`
-	TokenName        string                             `json:"token_name" gorm:"index;default:''"`
-	TokenId          int                                `json:"token_id" gorm:"index;default:0"`
+	KeyName          string                             `json:"key_name" gorm:"column:key_name;index;default:''"`
+	KeyId            int                                `json:"key_id" gorm:"column:key_id;index;default:0"`
 	ModelName        string                             `json:"model_name" gorm:"index;index:index_username_model_name,priority:1;default:''"`
 	Quota            int                                `json:"quota" gorm:"default:0"`
 	PromptTokens     int                                `json:"prompt_tokens" gorm:"default:0"`
@@ -84,18 +84,18 @@ func RecordConsumeLog(
 	ctx context.Context,
 	userId int,
 	channelId int,
-	tokenId int,
+	keyId int,
 	promptTokens int,
 	completionTokens int,
 	modelName string,
-	tokenName string,
+	keyName string,
 	quota int,
 	content string,
 	requestTime int,
 	isStream bool,
 	metadata map[string]any,
 	sourceIp string) {
-	logger.LogInfo(ctx, fmt.Sprintf("record consume log: userId=%d, channelId=%d, promptTokens=%d, completionTokens=%d, modelName=%s, tokenName=%s, quota=%d, content=%s ,sourceIp=%s", userId, channelId, promptTokens, completionTokens, modelName, tokenName, quota, content, sourceIp))
+	logger.LogInfo(ctx, fmt.Sprintf("record consume log: userId=%d, channelId=%d, promptTokens=%d, completionTokens=%d, modelName=%s, keyName=%s, quota=%d, content=%s ,sourceIp=%s", userId, channelId, promptTokens, completionTokens, modelName, keyName, quota, content, sourceIp))
 	if !config.LogConsumeEnabled {
 		return
 	}
@@ -108,10 +108,10 @@ func RecordConsumeLog(
 		CreatedAt:        utils.GetTimestamp(),
 		Type:             LogTypeConsume,
 		Content:          content,
-		TokenId:          tokenId,
+		KeyId:            keyId,
 		PromptTokens:     promptTokens,
 		CompletionTokens: completionTokens,
-		TokenName:        tokenName,
+		KeyName:          keyName,
 		ModelName:        modelName,
 		Quota:            quota,
 		ChannelId:        channelId,
@@ -141,7 +141,7 @@ type LogsListParams struct {
 	EndTimestamp   int64  `form:"end_timestamp"`
 	ModelName      string `form:"model_name"`
 	Username       string `form:"username"`
-	TokenName      string `form:"token_name"`
+	KeyName        string `form:"key_name"`
 	ChannelId      int    `form:"channel_id"`
 	SourceIp       string `form:"source_ip"`
 }
@@ -150,7 +150,7 @@ var allowedLogsOrderFields = map[string]bool{
 	"created_at": true,
 	"channel_id": true,
 	"user_id":    true,
-	"token_name": true,
+	"key_name":   true,
 	"model_name": true,
 	"type":       true,
 	"source_ip":  true,
@@ -173,8 +173,8 @@ func GetLogsList(params *LogsListParams) (*DataResult[Log], error) {
 	if params.Username != "" {
 		tx = tx.Where("username = ?", params.Username)
 	}
-	if params.TokenName != "" {
-		tx = tx.Where("token_name = ?", params.TokenName)
+	if params.KeyName != "" {
+		tx = tx.Where("key_name = ?", params.KeyName)
 	}
 	if params.StartTimestamp != 0 {
 		tx = tx.Where("created_at >= ?", params.StartTimestamp)
@@ -203,8 +203,8 @@ func GetUserLogsList(userId int, params *LogsListParams) (*DataResult[Log], erro
 	if params.ModelName != "" {
 		tx = tx.Where("model_name = ?", params.ModelName)
 	}
-	if params.TokenName != "" {
-		tx = tx.Where("token_name = ?", params.TokenName)
+	if params.KeyName != "" {
+		tx = tx.Where("key_name = ?", params.KeyName)
 	}
 	if params.StartTimestamp != 0 {
 		tx = tx.Where("created_at >= ?", params.StartTimestamp)
@@ -257,13 +257,13 @@ func SearchUserLogs(userId int, keyword string) (logs []*Log, err error) {
 	return logs, err
 }
 
-func SumUsedQuota(startTimestamp int64, endTimestamp int64, modelName string, username string, tokenName string, channel int) (quota int) {
+func SumUsedQuota(startTimestamp int64, endTimestamp int64, modelName string, username string, keyName string, channel int) (quota int) {
 	tx := DB.Table("logs").Select(assembleSumSelectStr("quota"))
 	if username != "" {
 		tx = tx.Where("username = ?", username)
 	}
-	if tokenName != "" {
-		tx = tx.Where("token_name = ?", tokenName)
+	if keyName != "" {
+		tx = tx.Where("key_name = ?", keyName)
 	}
 	if startTimestamp != 0 {
 		tx = tx.Where("created_at >= ?", startTimestamp)
@@ -305,9 +305,9 @@ type LogStatisticGroupChannel struct {
 	Channel string `gorm:"column:channel"`
 }
 
-type TokenUsageStatistic struct {
-	TokenId          int    `json:"token_id" gorm:"column:token_id"`
-	TokenName        string `json:"token_name" gorm:"column:token_name"`
+type KeyUsageStatistic struct {
+	KeyId            int    `json:"key_id" gorm:"column:key_id"`
+	KeyName          string `json:"key_name" gorm:"column:key_name"`
 	RequestCount     int64  `json:"request_count" gorm:"column:request_count"`
 	Quota            int64  `json:"quota" gorm:"column:quota"`
 	PromptTokens     int64  `json:"prompt_tokens" gorm:"column:prompt_tokens"`
@@ -315,27 +315,33 @@ type TokenUsageStatistic struct {
 	LastUsedAt       int64  `json:"last_used_at" gorm:"column:last_used_at"`
 }
 
-func GetUserTokenUsageByPeriod(userId int, startTimestamp int64, endTimestamp int64) (statistics []*TokenUsageStatistic, err error) {
+type TokenUsageStatistic = KeyUsageStatistic
+
+func GetUserKeyUsageByPeriod(userId int, startTimestamp int64, endTimestamp int64) (statistics []*KeyUsageStatistic, err error) {
 	err = DB.Table("logs AS l").
 		Select(`
-			l.token_id,
-			MAX(CASE WHEN t.name IS NOT NULL AND t.name <> '' THEN t.name ELSE l.token_name END) AS token_name,
+			l.key_id,
+			MAX(CASE WHEN k.name IS NOT NULL AND k.name <> '' THEN k.name ELSE l.key_name END) AS key_name,
 			COUNT(1) AS request_count,
 			SUM(l.quota) AS quota,
 			SUM(l.prompt_tokens) AS prompt_tokens,
 			SUM(l.completion_tokens) AS completion_tokens,
 			MAX(l.created_at) AS last_used_at`).
-		Joins("LEFT JOIN tokens AS t ON t.id = l.token_id").
-		Where("l.user_id = ? AND l.type = ? AND l.created_at >= ? AND l.created_at <= ? AND l.token_id > 0",
+		Joins("LEFT JOIN keys AS k ON k.id = l.key_id").
+		Where("l.user_id = ? AND l.type = ? AND l.created_at >= ? AND l.created_at <= ? AND l.key_id > 0",
 			userId,
 			LogTypeConsume,
 			startTimestamp,
 			endTimestamp,
 		).
-		Group("l.token_id").
+		Group("l.key_id").
 		Order("quota DESC").
 		Order("request_count DESC").
-		Order("l.token_id ASC").
+		Order("l.key_id ASC").
 		Scan(&statistics).Error
 	return statistics, err
+}
+
+func GetUserTokenUsageByPeriod(userId int, startTimestamp int64, endTimestamp int64) ([]*KeyUsageStatistic, error) {
+	return GetUserKeyUsageByPeriod(userId, startTimestamp, endTimestamp)
 }

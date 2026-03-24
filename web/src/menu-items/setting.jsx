@@ -155,10 +155,10 @@ const Setting = {
     },
 
     {
-      id: 'token',
+      id: 'key',
       title: 'Key',
       type: 'item',
-      url: '/panel/token',
+      url: '/panel/key',
       icon: icons.IconKey,
       breadcrumbs: false
     },

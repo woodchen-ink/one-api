@@ -1,11 +1,11 @@
 package router
 
 import (
+	"czloapi/common/config"
+	"czloapi/common/logger"
 	"embed"
 	"fmt"
 	"net/http"
-	"czloapi/common/config"
-	"czloapi/common/logger"
 	"strings"
 
 	"github.com/gin-gonic/gin"

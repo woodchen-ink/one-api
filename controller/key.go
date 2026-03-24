@@ -12,7 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetUserTokensList(c *gin.Context) {
+func GetUserKeysList(c *gin.Context) {
 	userId := c.GetInt("id")
 	var params model.GenericParams
 	if err := c.ShouldBindQuery(&params); err != nil {
@@ -20,7 +20,7 @@ func GetUserTokensList(c *gin.Context) {
 		return
 	}
 
-	tokens, err := model.GetUserTokensList(userId, &params)
+	keys, err := model.GetUserKeysList(userId, &params)
 	if err != nil {
 		common.APIRespondWithError(c, http.StatusOK, err)
 		return
@@ -29,19 +29,19 @@ func GetUserTokensList(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "",
-		"data":    tokens,
+		"data":    keys,
 	})
 }
 
-// GetTokensListByAdmin 管理员查询令牌列表（可按用户ID或令牌ID查询）
-func GetTokensListByAdmin(c *gin.Context) {
-	var params model.AdminSearchTokensParams
+// GetKeysListByAdmin 管理员查询 Key 列表（可按用户ID或Key ID查询）
+func GetKeysListByAdmin(c *gin.Context) {
+	var params model.AdminSearchKeysParams
 	if err := c.ShouldBindQuery(&params); err != nil {
 		common.APIRespondWithError(c, http.StatusOK, err)
 		return
 	}
 
-	tokens, err := model.GetTokensListByAdmin(&params)
+	keys, err := model.GetKeysListByAdmin(&params)
 	if err != nil {
 		common.APIRespondWithError(c, http.StatusOK, err)
 		return
@@ -50,11 +50,11 @@ func GetTokensListByAdmin(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "",
-		"data":    tokens,
+		"data":    keys,
 	})
 }
 
-func GetToken(c *gin.Context) {
+func GetKey(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	userId := c.GetInt("id")
 	if err != nil {
@@ -64,7 +64,7 @@ func GetToken(c *gin.Context) {
 		})
 		return
 	}
-	token, err := model.GetTokenByIds(id, userId)
+	key, err := model.GetKeyByIds(id, userId)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -76,18 +76,18 @@ func GetToken(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "",
-		"data":    token,
+		"data":    key,
 	})
 }
 
-func GetPlaygroundToken(c *gin.Context) {
-	tokenName := "sys_playground"
+func GetPlaygroundKey(c *gin.Context) {
+	keyName := "sys_playground"
 	userId := c.GetInt("id")
-	token, err := model.GetTokenByName(tokenName, userId)
+	key, err := model.GetKeyByName(keyName, userId)
 	if err != nil {
-		cleanToken := model.Token{
+		cleanKey := model.Key{
 			UserId: userId,
-			Name:   tokenName,
+			Name:   keyName,
 			// Key:            utils.GenerateKey(),
 			CreatedTime:    utils.GetTimestamp(),
 			AccessedTime:   utils.GetTimestamp(),
@@ -95,7 +95,7 @@ func GetPlaygroundToken(c *gin.Context) {
 			RemainQuota:    0,
 			UnlimitedQuota: true,
 		}
-		err = cleanToken.Insert()
+		err = cleanKey.Insert()
 		if err != nil {
 			c.JSON(http.StatusOK, gin.H{
 				"success": false,
@@ -103,20 +103,20 @@ func GetPlaygroundToken(c *gin.Context) {
 			})
 			return
 		}
-		token = &cleanToken
+		key = &cleanKey
 	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "",
-		"data":    token.Key,
+		"data":    key.Key,
 	})
 }
 
-func AddToken(c *gin.Context) {
+func AddKey(c *gin.Context) {
 	userId := c.GetInt("id")
-	token := model.Token{}
-	err := c.ShouldBindJSON(&token)
+	key := model.Key{}
+	err := c.ShouldBindJSON(&key)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -124,7 +124,7 @@ func AddToken(c *gin.Context) {
 		})
 		return
 	}
-	if len(token.Name) > 30 {
+	if len(key.Name) > 30 {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
 			"message": "Key名称过长",
@@ -132,14 +132,14 @@ func AddToken(c *gin.Context) {
 		return
 	}
 
-	setting := token.Setting.Data()
+	setting := key.Setting.Data()
 	err = validateTokenSetting(&setting)
 	if err != nil {
 		common.APIRespondWithError(c, http.StatusOK, err)
 		return
 	}
 
-	backupGroup, err := normalizeAndValidateTokenGroups(token.Group, token.BackupGroup, &setting, userId, validateTokenGroup)
+	backupGroup, err := normalizeAndValidateTokenGroups(key.Group, key.BackupGroup, &setting, userId, validateTokenGroup)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -148,20 +148,20 @@ func AddToken(c *gin.Context) {
 		return
 	}
 
-	cleanToken := model.Token{
+	cleanKey := model.Key{
 		UserId: userId,
-		Name:   token.Name,
+		Name:   key.Name,
 		// Key:            utils.GenerateKey(),
 		CreatedTime:    utils.GetTimestamp(),
 		AccessedTime:   utils.GetTimestamp(),
-		ExpiredTime:    token.ExpiredTime,
-		RemainQuota:    token.RemainQuota,
-		UnlimitedQuota: token.UnlimitedQuota,
-		Group:          token.Group,
+		ExpiredTime:    key.ExpiredTime,
+		RemainQuota:    key.RemainQuota,
+		UnlimitedQuota: key.UnlimitedQuota,
+		Group:          key.Group,
 		BackupGroup:    backupGroup,
 	}
-	cleanToken.Setting.Set(setting)
-	err = cleanToken.Insert()
+	cleanKey.Setting.Set(setting)
+	err = cleanKey.Insert()
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -175,10 +175,10 @@ func AddToken(c *gin.Context) {
 	})
 }
 
-func DeleteToken(c *gin.Context) {
+func DeleteKey(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	userId := c.GetInt("id")
-	err := model.DeleteTokenById(id, userId)
+	err := model.DeleteKeyById(id, userId)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -192,11 +192,11 @@ func DeleteToken(c *gin.Context) {
 	})
 }
 
-func UpdateToken(c *gin.Context) {
+func UpdateKey(c *gin.Context) {
 	userId := c.GetInt("id")
 	statusOnly := c.Query("status_only")
-	token := model.Token{}
-	err := c.ShouldBindJSON(&token)
+	key := model.Key{}
+	err := c.ShouldBindJSON(&key)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -204,7 +204,7 @@ func UpdateToken(c *gin.Context) {
 		})
 		return
 	}
-	if len(token.Name) > 30 {
+	if len(key.Name) > 30 {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
 			"message": "Key名称过长",
@@ -212,14 +212,14 @@ func UpdateToken(c *gin.Context) {
 		return
 	}
 
-	newSetting := token.Setting.Data()
+	newSetting := key.Setting.Data()
 	err = validateTokenSetting(&newSetting)
 	if err != nil {
 		common.APIRespondWithError(c, http.StatusOK, err)
 		return
 	}
 
-	cleanToken, err := model.GetTokenByIds(token.Id, userId)
+	cleanKey, err := model.GetKeyByIds(key.Id, userId)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -227,15 +227,15 @@ func UpdateToken(c *gin.Context) {
 		})
 		return
 	}
-	if token.Status == config.TokenStatusEnabled {
-		if cleanToken.Status == config.TokenStatusExpired && cleanToken.ExpiredTime <= utils.GetTimestamp() && cleanToken.ExpiredTime != -1 {
+	if key.Status == config.TokenStatusEnabled {
+		if cleanKey.Status == config.TokenStatusExpired && cleanKey.ExpiredTime <= utils.GetTimestamp() && cleanKey.ExpiredTime != -1 {
 			c.JSON(http.StatusOK, gin.H{
 				"success": false,
 				"message": "Key已过期，无法启用，请先修改Key过期时间，或者设置为永不过期",
 			})
 			return
 		}
-		if cleanToken.Status == config.TokenStatusExhausted && cleanToken.RemainQuota <= 0 && !cleanToken.UnlimitedQuota {
+		if cleanKey.Status == config.TokenStatusExhausted && cleanKey.RemainQuota <= 0 && !cleanKey.UnlimitedQuota {
 			c.JSON(http.StatusOK, gin.H{
 				"success": false,
 				"message": "Key可用额度已用尽，无法启用，请先修改Key剩余额度，或者设置为无限额度",
@@ -245,9 +245,9 @@ func UpdateToken(c *gin.Context) {
 	}
 
 	if statusOnly != "" {
-		cleanToken.Status = token.Status
+		cleanKey.Status = key.Status
 	} else {
-		backupGroup, err := normalizeAndValidateTokenGroups(token.Group, token.BackupGroup, &newSetting, userId, validateTokenGroup)
+		backupGroup, err := normalizeAndValidateTokenGroups(key.Group, key.BackupGroup, &newSetting, userId, validateTokenGroup)
 		if err != nil {
 			c.JSON(http.StatusOK, gin.H{
 				"success": false,
@@ -257,15 +257,15 @@ func UpdateToken(c *gin.Context) {
 		}
 
 		// If you add more fields, please also update token.Update()
-		cleanToken.Name = token.Name
-		cleanToken.ExpiredTime = token.ExpiredTime
-		cleanToken.RemainQuota = token.RemainQuota
-		cleanToken.UnlimitedQuota = token.UnlimitedQuota
-		cleanToken.Group = token.Group
-		cleanToken.BackupGroup = backupGroup
-		cleanToken.Setting.Set(newSetting)
+		cleanKey.Name = key.Name
+		cleanKey.ExpiredTime = key.ExpiredTime
+		cleanKey.RemainQuota = key.RemainQuota
+		cleanKey.UnlimitedQuota = key.UnlimitedQuota
+		cleanKey.Group = key.Group
+		cleanKey.BackupGroup = backupGroup
+		cleanKey.Setting.Set(newSetting)
 	}
-	err = cleanToken.Update()
+	err = cleanKey.Update()
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -277,15 +277,15 @@ func UpdateToken(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "",
-		"data":    cleanToken,
+		"data":    cleanKey,
 	})
 }
 
-// UpdateTokenByAdmin 管理员更新任意token（支持转移用户）
-func UpdateTokenByAdmin(c *gin.Context) {
+// UpdateKeyByAdmin 管理员更新任意 Key（支持转移用户）
+func UpdateKeyByAdmin(c *gin.Context) {
 	statusOnly := c.Query("status_only")
-	token := model.Token{}
-	err := c.ShouldBindJSON(&token)
+	key := model.Key{}
+	err := c.ShouldBindJSON(&key)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -293,22 +293,22 @@ func UpdateTokenByAdmin(c *gin.Context) {
 		})
 		return
 	}
-	if len(token.Name) > 30 {
+	if len(key.Name) > 30 {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
-			"message": "令牌名称过长",
+			"message": "Key名称过长",
 		})
 		return
 	}
 
-	newSetting := token.Setting.Data()
+	newSetting := key.Setting.Data()
 	err = validateTokenSetting(&newSetting)
 	if err != nil {
 		common.APIRespondWithError(c, http.StatusOK, err)
 		return
 	}
 
-	cleanToken, err := model.GetTokenById(token.Id)
+	cleanKey, err := model.GetKeyById(key.Id)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -317,26 +317,26 @@ func UpdateTokenByAdmin(c *gin.Context) {
 		return
 	}
 
-	if token.Status == config.TokenStatusEnabled {
-		if cleanToken.Status == config.TokenStatusExpired && cleanToken.ExpiredTime <= utils.GetTimestamp() && cleanToken.ExpiredTime != -1 {
+	if key.Status == config.TokenStatusEnabled {
+		if cleanKey.Status == config.TokenStatusExpired && cleanKey.ExpiredTime <= utils.GetTimestamp() && cleanKey.ExpiredTime != -1 {
 			c.JSON(http.StatusOK, gin.H{
 				"success": false,
-				"message": "令牌已过期，无法启用，请先修改令牌过期时间，或者设置为永不过期",
+				"message": "Key已过期，无法启用，请先修改Key过期时间，或者设置为永不过期",
 			})
 			return
 		}
-		if cleanToken.Status == config.TokenStatusExhausted && cleanToken.RemainQuota <= 0 && !cleanToken.UnlimitedQuota {
+		if cleanKey.Status == config.TokenStatusExhausted && cleanKey.RemainQuota <= 0 && !cleanKey.UnlimitedQuota {
 			c.JSON(http.StatusOK, gin.H{
 				"success": false,
-				"message": "令牌可用额度已用尽，无法启用，请先修改令牌剩余额度，或者设置为无限额度",
+				"message": "Key可用额度已用尽，无法启用，请先修改Key剩余额度，或者设置为无限额度",
 			})
 			return
 		}
 	}
 
-	// 验证目标用户是否存在（如果要转移token）
-	if token.UserId > 0 && token.UserId != cleanToken.UserId {
-		targetUser, err := model.GetUserById(token.UserId, false)
+	// 验证目标用户是否存在（如果要转移 Key）
+	if key.UserId > 0 && key.UserId != cleanKey.UserId {
+		targetUser, err := model.GetUserById(key.UserId, false)
 		if err != nil || targetUser == nil {
 			c.JSON(http.StatusOK, gin.H{
 				"success": false,
@@ -347,15 +347,15 @@ func UpdateTokenByAdmin(c *gin.Context) {
 	}
 
 	// 验证用户组（使用目标用户ID）
-	targetUserId := cleanToken.UserId
-	if token.UserId > 0 {
-		targetUserId = token.UserId
+	targetUserId := cleanKey.UserId
+	if key.UserId > 0 {
+		targetUserId = key.UserId
 	}
 
 	if statusOnly != "" {
-		cleanToken.Status = token.Status
+		cleanKey.Status = key.Status
 	} else {
-		backupGroup, err := normalizeAndValidateTokenGroups(token.Group, token.BackupGroup, &newSetting, targetUserId, validateTokenGroupForUser)
+		backupGroup, err := normalizeAndValidateTokenGroups(key.Group, key.BackupGroup, &newSetting, targetUserId, validateTokenGroupForUser)
 		if err != nil {
 			c.JSON(http.StatusOK, gin.H{
 				"success": false,
@@ -364,21 +364,21 @@ func UpdateTokenByAdmin(c *gin.Context) {
 			return
 		}
 
-		cleanToken.Name = token.Name
-		cleanToken.ExpiredTime = token.ExpiredTime
-		cleanToken.RemainQuota = token.RemainQuota
-		cleanToken.UnlimitedQuota = token.UnlimitedQuota
-		cleanToken.Group = token.Group
-		cleanToken.BackupGroup = backupGroup
-		cleanToken.Setting.Set(newSetting)
+		cleanKey.Name = key.Name
+		cleanKey.ExpiredTime = key.ExpiredTime
+		cleanKey.RemainQuota = key.RemainQuota
+		cleanKey.UnlimitedQuota = key.UnlimitedQuota
+		cleanKey.Group = key.Group
+		cleanKey.BackupGroup = backupGroup
+		cleanKey.Setting.Set(newSetting)
 
-		// 管理员可以转移token给其他用户
-		if token.UserId > 0 {
-			cleanToken.UserId = token.UserId
+		// 管理员可以转移 Key 给其他用户
+		if key.UserId > 0 {
+			cleanKey.UserId = key.UserId
 		}
 	}
 
-	err = cleanToken.UpdateByAdmin()
+	err = cleanKey.UpdateByAdmin()
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -390,7 +390,7 @@ func UpdateTokenByAdmin(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "",
-		"data":    cleanToken,
+		"data":    cleanKey,
 	})
 }
 

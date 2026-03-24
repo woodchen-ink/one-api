@@ -306,21 +306,21 @@ func GetUserDashboard(c *gin.Context) {
 	})
 }
 
-func GetUserTokenUsage(c *gin.Context) {
+func GetUserKeyUsage(c *gin.Context) {
 	id := c.GetInt("id")
 
 	now := time.Now()
 	period := c.DefaultQuery("period", "today")
 	endTimestamp := now.Unix()
 	startTimestamp := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location()).Unix()
-	message := "无法获取今日令牌消耗信息."
+	message := "无法获取今日 Key 消耗信息."
 
 	if period == "7d" {
 		startTimestamp = time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location()).AddDate(0, 0, -6).Unix()
-		message = "无法获取近7天令牌消耗信息."
+		message = "无法获取近7天 Key 消耗信息."
 	}
 
-	statistics, err := model.GetUserTokenUsageByPeriod(id, startTimestamp, endTimestamp)
+	statistics, err := model.GetUserKeyUsageByPeriod(id, startTimestamp, endTimestamp)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -336,7 +336,11 @@ func GetUserTokenUsage(c *gin.Context) {
 	})
 }
 
-func GenerateAccessToken(c *gin.Context) {
+func GetUserTokenUsage(c *gin.Context) {
+	GetUserKeyUsage(c)
+}
+
+func GenerateAccessKey(c *gin.Context) {
 	id := c.GetInt("id")
 	user, err := model.GetUserById(id, true)
 	if err != nil {
@@ -346,9 +350,9 @@ func GenerateAccessToken(c *gin.Context) {
 		})
 		return
 	}
-	user.AccessToken = utils.GetUUID()
+	user.AccessKey = utils.GetUUID()
 
-	if model.DB.Where("access_token = ?", user.AccessToken).First(user).RowsAffected != 0 {
+	if model.DB.Where("access_key = ?", user.AccessKey).First(user).RowsAffected != 0 {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
 			"message": "请重试，系统生成的 UUID 竟然重复了！",
@@ -367,7 +371,7 @@ func GenerateAccessToken(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "",
-		"data":    user.AccessToken,
+		"data":    user.AccessKey,
 	})
 }
 

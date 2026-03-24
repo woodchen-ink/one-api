@@ -2,11 +2,11 @@ package model
 
 import (
 	"context"
-	"fmt"
 	"czloapi/common/cache"
 	"czloapi/common/config"
 	"czloapi/common/logger"
 	"czloapi/common/redis"
+	"fmt"
 	"strconv"
 	"time"
 )
@@ -14,30 +14,36 @@ import (
 var (
 	TokenCacheSeconds           = 0
 	UserGroupCacheKey           = "user_group:%d"
-	UserTokensKey               = "token:%s"
+	UserKeysKey                 = "key:%s"
+	UserTokensKey               = UserKeysKey
 	UsernameCacheKey            = "user_name:%d"
 	UserQuotaCacheKey           = "user_quota:%d"
 	UserEnabledCacheKey         = "user_enabled:%d"
 	UserRealtimeQuotaKey        = "user_realtime_quota:%d"
 	UserRealtimeQuotaExpiration = 24 * time.Hour
 
-	OldUserTokensCacheKey = "old_user_tokens_cache"
+	OldUserKeysCacheKey   = "old_user_keys_cache"
+	OldUserTokensCacheKey = OldUserKeysCacheKey
 )
 
-func CacheGetTokenByKey(key string) (*Token, error) {
+func CacheGetKeyByValue(key string) (*Key, error) {
 	if !config.RedisEnabled {
-		return GetTokenByKey(key)
+		return GetKeyByValue(key)
 	}
 
-	token, err := cache.GetOrSetCache(
-		fmt.Sprintf(UserTokensKey, key),
+	credential, err := cache.GetOrSetCache(
+		fmt.Sprintf(UserKeysKey, key),
 		time.Duration(TokenCacheSeconds)*time.Second,
-		func() (*Token, error) {
-			return GetTokenByKey(key)
+		func() (*Key, error) {
+			return GetKeyByValue(key)
 		},
 		cache.CacheTimeout)
 
-	return token, err
+	return credential, err
+}
+
+func CacheGetTokenByKey(key string) (*Key, error) {
+	return CacheGetKeyByValue(key)
 }
 
 func CacheGetUserGroup(id int) (group string, err error) {

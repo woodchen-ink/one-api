@@ -1,8 +1,8 @@
 package telegram
 
 import (
-	"fmt"
 	"czloapi/model"
+	"fmt"
 	"strings"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
@@ -48,10 +48,10 @@ func commandBindToken(b *gotgbot.Bot, ctx *ext.Context) error {
 	// 去除input前后空格
 	input = strings.TrimSpace(input)
 
-	user := model.ValidateAccessToken(input)
+	user := model.ValidateAccessKey(input)
 	if user == nil {
 		// If the number is not valid, try again!
-		ctx.EffectiveMessage.Reply(b, "Token 错误，请重试", &gotgbot.SendMessageOpts{
+		ctx.EffectiveMessage.Reply(b, "Key 错误，请重试", &gotgbot.SendMessageOpts{
 			ParseMode:   "html",
 			ReplyMarkup: cancelConversationInlineKeyboard(),
 		})

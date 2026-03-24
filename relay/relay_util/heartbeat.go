@@ -2,8 +2,8 @@ package relay_util
 
 import (
 	"context"
-	"net/http"
 	"czloapi/common/requester"
+	"net/http"
 	"sync/atomic"
 	"time"
 

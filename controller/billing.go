@@ -14,17 +14,17 @@ func GetSubscription(c *gin.Context) {
 	var remainQuota int
 	var usedQuota int
 	var err error
-	var token *model.Token
+	var key *model.Key
 	var expiredTime int64
 
-	tokenId := c.GetInt("token_id")
-	token, err = model.GetTokenById(tokenId)
+	keyID := c.GetInt("key_id")
+	key, err = model.GetKeyById(keyID)
 	if err != nil {
 		common.APIRespondWithError(c, http.StatusOK, fmt.Errorf("获取信息失败: %v", err))
 		return
 	}
 
-	if token.UnlimitedQuota {
+	if key.UnlimitedQuota {
 		userId := c.GetInt("id")
 		userData, err := model.GetUserFields(userId, []string{"quota", "used_quota"})
 		if err != nil {
@@ -36,9 +36,9 @@ func GetSubscription(c *gin.Context) {
 		remainQuota = userData["quota"].(int)
 		usedQuota = userData["used_quota"].(int)
 	} else {
-		expiredTime = token.ExpiredTime
-		remainQuota = token.RemainQuota
-		usedQuota = token.UsedQuota
+		expiredTime = key.ExpiredTime
+		remainQuota = key.RemainQuota
+		usedQuota = key.UsedQuota
 	}
 
 	if expiredTime <= 0 {
@@ -62,16 +62,16 @@ func GetSubscription(c *gin.Context) {
 func GetUsage(c *gin.Context) {
 	var quota int
 	var err error
-	var token *model.Token
+	var key *model.Key
 
-	tokenId := c.GetInt("token_id")
-	token, err = model.GetTokenById(tokenId)
+	keyID := c.GetInt("key_id")
+	key, err = model.GetKeyById(keyID)
 	if err != nil {
 		common.APIRespondWithError(c, http.StatusOK, fmt.Errorf("获取信息失败: %v", err))
 		return
 	}
 
-	if token.UnlimitedQuota {
+	if key.UnlimitedQuota {
 		userId := c.GetInt("id")
 		userData, err := model.GetUserFields(userId, []string{"used_quota"})
 		if err != nil {
@@ -82,7 +82,7 @@ func GetUsage(c *gin.Context) {
 
 		quota = userData["used_quota"].(int)
 	} else {
-		quota = token.UsedQuota
+		quota = key.UsedQuota
 	}
 
 	amount := float64(quota) / config.QuotaPerUnit

@@ -49,7 +49,7 @@ func isIgnorableSequenceOwnershipError(err error) bool {
 func autoMigrateModels(includeInvoiceMonth bool) []interface{} {
 	models := []interface{}{
 		&Channel{},
-		&Token{},
+		&Key{},
 		&User{},
 		&Option{},
 		&Redemption{},
@@ -457,8 +457,11 @@ func changeTokenKeyColumnType() *gormigrate.Migration {
 	return &gormigrate.Migration{
 		ID: "202411300001",
 		Migrate: func(tx *gorm.DB) error {
-			// 如果表不存在，说明是新数据库，直接跳过
-			if !tx.Migrator().HasTable("tokens") {
+			tableName := "keys"
+			if !tx.Migrator().HasTable(tableName) {
+				tableName = "tokens"
+			}
+			if !tx.Migrator().HasTable(tableName) {
 				return nil
 			}
 
@@ -467,21 +470,25 @@ func changeTokenKeyColumnType() *gormigrate.Migration {
 
 			switch dialect {
 			case "mysql":
-				err = tx.Exec("ALTER TABLE tokens MODIFY COLUMN `key` varchar(59)").Error
+				err = tx.Exec("ALTER TABLE " + tableName + " MODIFY COLUMN `key` varchar(59)").Error
 			case "postgres":
-				err = tx.Exec("ALTER TABLE tokens ALTER COLUMN key TYPE varchar(59)").Error
+				err = tx.Exec("ALTER TABLE " + tableName + " ALTER COLUMN key TYPE varchar(59)").Error
 			case "sqlite":
 				return nil
 			}
 
 			if err != nil {
-				logger.SysLog("修改 tokens.key 字段类型失败: " + err.Error())
+				logger.SysLog("修改 " + tableName + ".key 字段类型失败: " + err.Error())
 				return err
 			}
 			return nil
 		},
 		Rollback: func(tx *gorm.DB) error {
-			if !tx.Migrator().HasTable("tokens") {
+			tableName := "keys"
+			if !tx.Migrator().HasTable(tableName) {
+				tableName = "tokens"
+			}
+			if !tx.Migrator().HasTable(tableName) {
 				return nil
 			}
 
@@ -490,11 +497,99 @@ func changeTokenKeyColumnType() *gormigrate.Migration {
 
 			switch dialect {
 			case "mysql":
-				err = tx.Exec("ALTER TABLE tokens MODIFY COLUMN `key` char(48)").Error
+				err = tx.Exec("ALTER TABLE " + tableName + " MODIFY COLUMN `key` char(48)").Error
 			case "postgres":
-				err = tx.Exec("ALTER TABLE tokens ALTER COLUMN key TYPE char(48)").Error
+				err = tx.Exec("ALTER TABLE " + tableName + " ALTER COLUMN key TYPE char(48)").Error
 			}
 			return err
+		},
+	}
+}
+
+func renameTokensToKeysSchema() *gormigrate.Migration {
+	return &gormigrate.Migration{
+		ID: "202603240003",
+		Migrate: func(tx *gorm.DB) error {
+			if tx.Migrator().HasTable("tokens") && !tx.Migrator().HasTable("keys") {
+				if err := tx.Migrator().RenameTable("tokens", "keys"); err != nil {
+					return err
+				}
+			}
+
+			if tx.Migrator().HasTable("users") && tx.Migrator().HasColumn("users", "access_token") && !tx.Migrator().HasColumn("users", "access_key") {
+				if err := tx.Migrator().RenameColumn("users", "access_token", "access_key"); err != nil {
+					return err
+				}
+			}
+
+			if tx.Migrator().HasTable("logs") {
+				if tx.Migrator().HasColumn("logs", "token_id") && !tx.Migrator().HasColumn("logs", "key_id") {
+					if err := tx.Migrator().RenameColumn("logs", "token_id", "key_id"); err != nil {
+						return err
+					}
+				}
+				if tx.Migrator().HasColumn("logs", "token_name") && !tx.Migrator().HasColumn("logs", "key_name") {
+					if err := tx.Migrator().RenameColumn("logs", "token_name", "key_name"); err != nil {
+						return err
+					}
+				}
+			}
+
+			if tx.Migrator().HasTable("tasks") && tx.Migrator().HasColumn("tasks", "token_id") && !tx.Migrator().HasColumn("tasks", "key_id") {
+				if err := tx.Migrator().RenameColumn("tasks", "token_id", "key_id"); err != nil {
+					return err
+				}
+			}
+
+			return nil
+		},
+		Rollback: func(tx *gorm.DB) error {
+			if tx.Migrator().HasTable("keys") && !tx.Migrator().HasTable("tokens") {
+				if err := tx.Migrator().RenameTable("keys", "tokens"); err != nil {
+					return err
+				}
+			}
+			return nil
+		},
+	}
+}
+
+func cleanupLegacyKeyIndexes() *gormigrate.Migration {
+	return &gormigrate.Migration{
+		ID: "202603240004",
+		Migrate: func(tx *gorm.DB) error {
+			dropIndexIfExists := func(value interface{}, indexName string) error {
+				if !tx.Migrator().HasIndex(value, indexName) {
+					return nil
+				}
+				return tx.Migrator().DropIndex(value, indexName)
+			}
+
+			if tx.Migrator().HasTable("keys") {
+				if err := dropIndexIfExists("keys", "idx_tokens_key"); err != nil {
+					return err
+				}
+			}
+
+			if tx.Migrator().HasTable("users") {
+				if err := dropIndexIfExists("users", "idx_users_access_token"); err != nil {
+					return err
+				}
+			}
+
+			if tx.Migrator().HasTable("logs") {
+				if err := dropIndexIfExists("logs", "idx_logs_token_id"); err != nil {
+					return err
+				}
+				if err := dropIndexIfExists("logs", "idx_logs_token_name"); err != nil {
+					return err
+				}
+			}
+
+			return nil
+		},
+		Rollback: func(tx *gorm.DB) error {
+			return nil
 		},
 	}
 }
@@ -587,6 +682,8 @@ func migrationBefore(db *gorm.DB) error {
 
 	m := gormigrate.New(db, gormigrate.DefaultOptions, []*gormigrate.Migration{
 		removeKeyIndexMigration(),
+		renameTokensToKeysSchema(),
+		cleanupLegacyKeyIndexes(),
 		changeTokenKeyColumnType(),
 		dropLegacyPricesPrimaryKeyOnPostgres(),
 		repairPostgresSchemaCompatibility(),
@@ -987,7 +1084,7 @@ func applyQuotaScaleMigration(tx *gorm.DB, legacyQuotaPerUnit float64) error {
 		Columns []string
 	}{
 		{Table: "users", Columns: []string{"quota", "used_quota", "aff_quota", "aff_history"}},
-		{Table: "tokens", Columns: []string{"remain_quota", "used_quota"}},
+		{Table: "keys", Columns: []string{"remain_quota", "used_quota"}},
 		{Table: "orders", Columns: []string{"quota"}},
 		{Table: "logs", Columns: []string{"quota"}},
 		{Table: "channels", Columns: []string{"used_quota"}},
@@ -1107,24 +1204,24 @@ func migrateTokenLimitsStructure() *gormigrate.Migration {
 		ID: "202510160002",
 		Migrate: func(tx *gorm.DB) error {
 			// 直接查询原始JSON字符串，避免GORM自动转换
-			type TokenRaw struct {
+			type KeyRaw struct {
 				Id      int    `gorm:"column:id"`
 				Name    string `gorm:"column:name"`
 				Setting string `gorm:"column:setting;type:json"`
 			}
 
-			var tokens []TokenRaw
-			err := tx.Table("tokens").Select("id, name, setting").Find(&tokens).Error
+			var keys []KeyRaw
+			err := tx.Table("keys").Select("id, name, setting").Find(&keys).Error
 			if err != nil {
 				logger.SysLog("查询token列表失败: " + err.Error())
 				return err
 			}
 
 			// 遍历每个 token，转换 limits 结构
-			for _, token := range tokens {
+			for _, key := range keys {
 				// 解析为 map 以便灵活处理
 				var settingMap map[string]interface{}
-				err = json.Unmarshal([]byte(token.Setting), &settingMap)
+				err = json.Unmarshal([]byte(key.Setting), &settingMap)
 				if err != nil || settingMap == nil {
 					// 如果解析失败或为空，跳过
 					continue
@@ -1173,7 +1270,7 @@ func migrateTokenLimitsStructure() *gormigrate.Migration {
 				}
 
 				// 更新数据库
-				err = tx.Model(&Token{}).Where("id = ?", token.Id).Update("setting", datatypes.JSON(newSettingBytes)).Error
+				err = tx.Model(&Key{}).Where("id = ?", key.Id).Update("setting", datatypes.JSON(newSettingBytes)).Error
 				if err != nil {
 					logger.SysLog("更新token setting失败: " + err.Error())
 					continue
@@ -1185,14 +1282,14 @@ func migrateTokenLimitsStructure() *gormigrate.Migration {
 		},
 		Rollback: func(tx *gorm.DB) error {
 			// 回滚：将新结构转回旧结构
-			var tokens []Token
-			err := tx.Find(&tokens).Error
+			var keys []Key
+			err := tx.Find(&keys).Error
 			if err != nil {
 				return err
 			}
 
-			for _, token := range tokens {
-				settingBytes, err := token.Setting.MarshalJSON()
+			for _, key := range keys {
+				settingBytes, err := key.Setting.MarshalJSON()
 				if err != nil {
 					continue
 				}
@@ -1227,7 +1324,7 @@ func migrateTokenLimitsStructure() *gormigrate.Migration {
 					continue
 				}
 
-				tx.Model(&Token{}).Where("id = ?", token.Id).Update("setting", datatypes.JSON(newSettingBytes))
+				tx.Model(&Key{}).Where("id = ?", key.Id).Update("setting", datatypes.JSON(newSettingBytes))
 			}
 
 			return nil
@@ -1235,7 +1332,7 @@ func migrateTokenLimitsStructure() *gormigrate.Migration {
 	}
 }
 
-func addLogTokenID() *gormigrate.Migration {
+func addLogKeyID() *gormigrate.Migration {
 	return &gormigrate.Migration{
 		ID: "202603240001",
 		Migrate: func(tx *gorm.DB) error {
@@ -1243,14 +1340,14 @@ func addLogTokenID() *gormigrate.Migration {
 				return nil
 			}
 
-			if !tx.Migrator().HasColumn(&Log{}, "token_id") {
-				if err := tx.Migrator().AddColumn(&Log{}, "TokenId"); err != nil {
+			if !tx.Migrator().HasColumn(&Log{}, "key_id") {
+				if err := tx.Migrator().AddColumn(&Log{}, "KeyId"); err != nil {
 					return err
 				}
 			}
 
-			if !tx.Migrator().HasIndex(&Log{}, "idx_logs_token_id") {
-				if err := tx.Migrator().CreateIndex(&Log{}, "TokenId"); err != nil {
+			if !tx.Migrator().HasIndex(&Log{}, "idx_logs_key_id") {
+				if err := tx.Migrator().CreateIndex(&Log{}, "KeyId"); err != nil {
 					return err
 				}
 			}
@@ -1329,7 +1426,7 @@ func migrationAfter(db *gorm.DB) error {
 		removeDeprecatedOAuthAuth(),
 		migrateTokenLimitsStructure(),
 		migrateQuotaScaleToMicroUSD(),
-		addLogTokenID(),
+		addLogKeyID(),
 		widenGroupColumns(),
 	})
 	return m.Migrate()

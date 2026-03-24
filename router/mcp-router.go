@@ -1,11 +1,11 @@
 package router
 
 import (
-	"github.com/gin-contrib/gzip"
-	"github.com/gin-gonic/gin"
 	"czloapi/common/logger"
 	"czloapi/mcp"
 	"czloapi/middleware"
+	"github.com/gin-contrib/gzip"
+	"github.com/gin-gonic/gin"
 )
 
 func SetMcpRouter(router *gin.Engine) {

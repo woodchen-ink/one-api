@@ -1,12 +1,12 @@
 package relay
 
 import (
-	"net/http"
 	"czloapi/common"
 	providersBase "czloapi/providers/base"
 	"czloapi/types"
-	"strings"
 	"github.com/gin-gonic/gin"
+	"net/http"
+	"strings"
 )
 
 type relayImageGenerations struct {
