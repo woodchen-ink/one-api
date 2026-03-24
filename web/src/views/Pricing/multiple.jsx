@@ -265,7 +265,6 @@ export default function Multiple({ prices, reloadData, ownedby, noPriceModels })
                 <MenuItem value={50}>50</MenuItem>
               </Select>
             </FormControl>
-
           </Box>
         </Box>
       </Paper>

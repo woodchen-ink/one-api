@@ -141,27 +141,21 @@ const EditModal = ({
   const [selectModel, setSelectModel] = useState([]);
   const [errors, setErrors] = useState({});
 
-  const calculatePrice = useCallback(
-    (price) => {
-      if (price === '') {
-        return 0;
-      }
+  const calculatePrice = useCallback((price) => {
+    if (price === '') {
+      return 0;
+    }
 
-      return Number(new Decimal(price).toFixed(8));
-    },
-    []
-  );
+    return Number(new Decimal(price).toFixed(8));
+  }, []);
 
-  const handleEndAdornment = useCallback(
-    (value) => {
-      if (value === '' || Number(value) === 0) {
-        return 'Free';
-      }
+  const handleEndAdornment = useCallback((value) => {
+    if (value === '' || Number(value) === 0) {
+      return 'Free';
+    }
 
-      return '';
-    },
-    [calculatePrice]
-  );
+    return '';
+  }, []);
 
   const priceStartAdornment = useCallback(() => 'USD / 1M:', []);
 

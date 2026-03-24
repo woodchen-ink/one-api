@@ -169,4 +169,3 @@ func BatchDeletePrices(c *gin.Context) {
 		"message": "",
 	})
 }
-

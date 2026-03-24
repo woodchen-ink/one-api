@@ -249,7 +249,6 @@ const Single = ({ ownedby, prices, reloadData }) => {
                 <MenuItem value={100}>100</MenuItem>
               </Select>
             </FormControl>
-
           </Box>
         </Box>
       </Paper>
