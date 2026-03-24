@@ -140,17 +140,20 @@ func (r *RelayModeResponsesWS) getProvider() bool {
 			return false
 		}
 
+		channel := r.provider.GetChannel()
+
 		responsesWSProvider, ok := r.provider.(providersBase.ResponsesWSInterface)
 		if !ok {
-			r.abortWithMessage("channel not implemented ResponsesWS")
-			return false
+			r.skipChannelIds(channel.Id)
+			logger.LogError(r.c.Request.Context(), fmt.Sprintf("channel #%d(%s) not implemented ResponsesWS, skipping (remain times %d)", channel.Id, channel.Name, i))
+			continue
 		}
-		channel := r.provider.GetChannel()
 
 		// 检查渠道是否启用了 ResponsesWS
 		if !channel.ResponsesWS {
-			r.abortWithMessage("channel ResponsesWS not enabled")
-			return false
+			r.skipChannelIds(channel.Id)
+			logger.LogError(r.c.Request.Context(), fmt.Sprintf("channel #%d(%s) ResponsesWS not enabled, skipping (remain times %d)", channel.Id, channel.Name, i))
+			continue
 		}
 
 		providerConn, messageHandler, apiErr := responsesWSProvider.CreateResponsesWS()
