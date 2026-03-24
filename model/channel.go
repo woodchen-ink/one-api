@@ -115,8 +115,12 @@ func GetChannelsList(params *SearchChannelsParams) (*DataResult[Channel], error)
 	}
 
 	if params.Models != "" {
-		db = db.Where("models LIKE ?", "%"+params.Models+"%")
-		tagDB = tagDB.Where("models LIKE ?", "%"+params.Models+"%")
+		modelValues := splitBatchChannelModels(params.Models)
+		if len(modelValues) > 0 {
+			query, args := buildChannelModelsLikeQuery(modelValues)
+			db = db.Where(query, args...)
+			tagDB = tagDB.Where(query, args...)
+		}
 	}
 
 	if params.Other != "" {
@@ -200,6 +204,75 @@ type BatchChannelsParams struct {
 	Ids   []int  `json:"ids" form:"ids" binding:"required"`
 }
 
+func splitBatchChannelModels(value string) []string {
+	models := make([]string, 0)
+	seen := make(map[string]struct{})
+
+	for _, item := range strings.FieldsFunc(value, func(r rune) bool {
+		switch r {
+		case ',', '，', ';', '；', '\n', '\r':
+			return true
+		default:
+			return false
+		}
+	}) {
+		model := strings.TrimSpace(item)
+		if model == "" {
+			continue
+		}
+		if _, ok := seen[model]; ok {
+			continue
+		}
+		seen[model] = struct{}{}
+		models = append(models, model)
+	}
+
+	return models
+}
+
+func buildChannelModelsLikeQuery(models []string) (string, []interface{}) {
+	if len(models) == 0 {
+		return "", nil
+	}
+
+	conditions := make([]string, 0, len(models))
+	args := make([]interface{}, 0, len(models))
+	for _, model := range models {
+		conditions = append(conditions, "models LIKE ?")
+		args = append(args, "%"+model+"%")
+	}
+
+	return strings.Join(conditions, " OR "), args
+}
+
+func removeChannelModels(source string, targets []string) (string, bool) {
+	models := splitBatchChannelModels(source)
+	if len(models) == 0 || len(targets) == 0 {
+		return source, false
+	}
+
+	targetSet := make(map[string]struct{}, len(targets))
+	for _, target := range targets {
+		targetSet[target] = struct{}{}
+	}
+
+	filtered := make([]string, 0, len(models))
+	changed := false
+	for _, model := range models {
+		if _, ok := targetSet[model]; ok {
+			changed = true
+			continue
+		}
+		filtered = append(filtered, model)
+	}
+
+	if !changed {
+		return source, false
+	}
+
+	return strings.Join(filtered, ","), true
+}
+
 func BatchUpdateChannelsAzureApi(params *BatchChannelsParams) (int64, error) {
 	db := DB.Model(&Channel{}).Where("id IN ?", params.Ids).Update("other", params.Value)
 	if db.Error != nil {
@@ -214,6 +287,10 @@ func BatchUpdateChannelsAzureApi(params *BatchChannelsParams) (int64, error) {
 
 func BatchDelModelChannels(params *BatchChannelsParams) (int64, error) {
 	var count int64
+	modelValues := splitBatchChannelModels(params.Value)
+	if len(modelValues) == 0 {
+		return 0, nil
+	}
 
 	var channels []*Channel
 	err := DB.Select("id, models, "+quotePostgresField("group")).Find(&channels, "id IN ?", params.Ids).Error
@@ -222,16 +299,16 @@ func BatchDelModelChannels(params *BatchChannelsParams) (int64, error) {
 	}
 
 	for _, channel := range channels {
-		modelsSlice := strings.Split(channel.Models, ",")
-		for i, m := range modelsSlice {
-			if m == params.Value {
-				modelsSlice = append(modelsSlice[:i], modelsSlice[i+1:]...)
-				break
-			}
+		updatedModels, changed := removeChannelModels(channel.Models, modelValues)
+		if !changed {
+			continue
 		}
 
-		channel.Models = strings.Join(modelsSlice, ",")
-		channel.UpdateRaw(false)
+		channel.Models = updatedModels
+		err = channel.UpdateRaw(false)
+		if err != nil {
+			return count, err
+		}
 		count++
 	}
 

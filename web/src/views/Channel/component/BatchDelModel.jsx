@@ -7,6 +7,16 @@ import { API } from 'utils/api';
 import { showError, showSuccess } from 'utils/common';
 import { useTranslation } from 'react-i18next';
 
+const parseBatchDeleteModels = (value) =>
+  Array.from(
+    new Set(
+      value
+        .split(/[,，;\n\r]+/)
+        .map((item) => item.trim())
+        .filter(Boolean)
+    )
+  );
+
 const BatchDelModel = () => {
   const [value, setValue] = useState('');
   const [data, setData] = useState([]);
@@ -15,9 +25,16 @@ const BatchDelModel = () => {
   const { t } = useTranslation();
 
   const handleSearch = async () => {
-    const data = await fetchChannelData(0, 100, { models: value }, 'desc', 'id');
+    const models = parseBatchDeleteModels(value);
+    if (models.length === 0) {
+      showError(t('channel_index.batchDeleteModel'));
+      setData([]);
+      setSelected([]);
+      return;
+    }
+
+    const data = await fetchChannelData(0, 100, { models: models.join(',') }, 'desc', 'id');
     if (data) {
-      // 遍历data 逗号分隔models， 检测是否只有一个model 如果是则排除
       const newData = data.data.filter((item) => {
         if (item.models.split(',').length > 1) {
           return true;
@@ -26,6 +43,7 @@ const BatchDelModel = () => {
       });
 
       setData(newData);
+      setSelected([]);
     }
   };
 
@@ -48,19 +66,21 @@ const BatchDelModel = () => {
   };
 
   const handleSubmit = async () => {
-    if (value === '' || selected.length === 0) {
+    const models = parseBatchDeleteModels(value);
+    if (models.length === 0 || selected.length === 0) {
       return;
     }
     setLoadding(true);
     try {
       const res = await API.put(`/api/channel/batch/del_model`, {
         ids: selected,
-        value: value
+        value: models.join(',')
       });
 
       const { success, message, data } = res.data;
       if (success) {
         showSuccess(t('channel_index.batchDeleteSuccess', { count: data }));
+        await handleSearch();
       } else {
         showError(message);
       }
@@ -81,6 +101,9 @@ const BatchDelModel = () => {
           placeholder={t('channel_index.batchDeleteModel')}
           inputProps={{ 'aria-label': t('channel_index.batchDeleteModel') }}
           value={value}
+          multiline
+          minRows={3}
+          helperText={t('channel_index.batchDeleteModelHelper')}
           onChange={(e) => {
             setValue(e.target.value);
           }}
@@ -111,7 +134,7 @@ const BatchDelModel = () => {
               <FormControlLabel
                 key={item.id}
                 control={<Checkbox checked={selected.includes(item.id)} onChange={() => handleSelect(item.id)} />}
-                label={item.name}
+                label={`${item.name} (${item.models})`}
               />
             ))}
           </Grid>

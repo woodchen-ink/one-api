@@ -185,8 +185,9 @@
     "unselectAll": "反全选",
     "replaceValue": "替换值",
     "batchDeleteSuccess": "成功删除 {{count}} 条数据",
-    "batchDeleteTip": "如果渠道只有一个模型的，将不会显示，请手动去列表删除渠道",
-    "batchDeleteModel": "请输入完整模型名称",
+    "batchDeleteTip": "支持使用英文逗号、中文逗号或换行批量输入多个完整模型名。如果渠道只有一个模型，将不会显示，请手动去列表删除渠道。",
+    "batchDeleteModel": "请输入完整模型名称，支持批量粘贴",
+    "batchDeleteModelHelper": "可直接粘贴多个模型名，使用逗号、中文逗号或换行分隔。",
     "AzureApiVersion": "Azure 版本号",
     "batchDelete": "批量删除模型"
   },
