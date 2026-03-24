@@ -231,7 +231,13 @@ const Pricing = () => {
         ownedby={ownedby}
         noPriceModel={noPriceModel}
       />
-      <PriceSyncDialog open={openSyncDialog} onClose={handleCloseSyncDialog} onApplied={handleRefresh} fallbackModelOptions={modelList} />
+      <PriceSyncDialog
+        open={openSyncDialog}
+        onClose={handleCloseSyncDialog}
+        onApplied={handleRefresh}
+        fallbackModelOptions={modelList}
+        currentPrices={prices}
+      />
       <Card>
         <AdminContainer>
           <Box sx={{ width: '100%' }}>

@@ -36,6 +36,118 @@ function getExtraRatioLabel(key) {
   return extraRatiosConfig.find((item) => item.key === key)?.name || key;
 }
 
+function toNumericValue(value) {
+  const numericValue = Number(value);
+  if (!Number.isFinite(numericValue)) {
+    return 0;
+  }
+  return numericValue;
+}
+
+function numbersEqual(left, right) {
+  return Math.abs(toNumericValue(left) - toNumericValue(right)) < 1e-9;
+}
+
+function normalizeExtraRatios(extraRatios) {
+  return Object.entries(extraRatios || {})
+    .map(([key, value]) => [key, toNumericValue(value)])
+    .filter(([, value]) => value > 0)
+    .sort(([leftKey], [rightKey]) => leftKey.localeCompare(rightKey));
+}
+
+function normalizeBillingRules(billingRules) {
+  return (Array.isArray(billingRules) ? billingRules : []).map((rule) => ({
+    name: rule?.name || '',
+    priority: Number(rule?.priority || 0),
+    strategy: rule?.strategy || '',
+    match: {
+      prompt_tokens_gt: Number(rule?.match?.prompt_tokens_gt || 0),
+      prompt_tokens_gte: Number(rule?.match?.prompt_tokens_gte || 0),
+      prompt_tokens_lt: Number(rule?.match?.prompt_tokens_lt || 0),
+      prompt_tokens_lte: Number(rule?.match?.prompt_tokens_lte || 0),
+      request_tokens_gt: Number(rule?.match?.request_tokens_gt || 0),
+      request_tokens_gte: Number(rule?.match?.request_tokens_gte || 0),
+      request_tokens_lt: Number(rule?.match?.request_tokens_lt || 0),
+      request_tokens_lte: Number(rule?.match?.request_tokens_lte || 0)
+    },
+    input: rule?.input == null ? null : toNumericValue(rule.input),
+    output: rule?.output == null ? null : toNumericValue(rule.output),
+    extra_ratios: normalizeExtraRatios(rule?.extra_ratios).map(([key, value]) => `${key}:${value}`)
+  }));
+}
+
+function formatPriceValue(value) {
+  return toNumericValue(value).toString();
+}
+
+function formatExtraRatios(extraRatios) {
+  const entries = normalizeExtraRatios(extraRatios);
+  if (entries.length === 0) {
+    return '无';
+  }
+
+  return entries.map(([key, value]) => `${getExtraRatioLabel(key)} ${formatPriceValue(value)}`).join(' / ');
+}
+
+function getComparisonResult(row, currentPrice) {
+  const model = String(row?.model || '').trim();
+  if (!model) {
+    return {
+      status: 'pending',
+      label: '待选择模型',
+      changedFields: []
+    };
+  }
+
+  if (!currentPrice) {
+    return {
+      status: 'new',
+      label: '新增',
+      changedFields: ['系统中暂无现有价格']
+    };
+  }
+
+  const changedFields = [];
+  if ((row?.type || 'tokens') !== (currentPrice?.type || 'tokens')) {
+    changedFields.push('计费类型');
+  }
+  if (Number(row?.channel_type || 0) !== Number(currentPrice?.channel_type || 0)) {
+    changedFields.push('渠道类型');
+  }
+  if (!numbersEqual(row?.input, currentPrice?.input)) {
+    changedFields.push('输入价');
+  }
+  if (!numbersEqual(row?.output, currentPrice?.output)) {
+    changedFields.push('输出价');
+  }
+
+  const rowExtraRatios = normalizeExtraRatios(row?.extra_ratios);
+  const currentExtraRatios = normalizeExtraRatios(currentPrice?.extra_ratios);
+  if (JSON.stringify(rowExtraRatios) !== JSON.stringify(currentExtraRatios)) {
+    changedFields.push('扩展价格');
+  }
+
+  const rowBillingRules = normalizeBillingRules(row?.billing_rules);
+  const currentBillingRules = normalizeBillingRules(currentPrice?.billing_rules);
+  if (JSON.stringify(rowBillingRules) !== JSON.stringify(currentBillingRules)) {
+    changedFields.push('阶梯规则');
+  }
+
+  if (changedFields.length === 0) {
+    return {
+      status: 'same',
+      label: '无变化',
+      changedFields: []
+    };
+  }
+
+  return {
+    status: 'changed',
+    label: '已变更',
+    changedFields
+  };
+}
+
 function buildRowFromPreview(row) {
   return {
     source_model: row.source_model || '',
@@ -49,7 +161,7 @@ function buildRowFromPreview(row) {
   };
 }
 
-export default function PriceSyncDialog({ open, onClose, onApplied, fallbackModelOptions = [] }) {
+export default function PriceSyncDialog({ open, onClose, onApplied, fallbackModelOptions = [], currentPrices = [] }) {
   const [providers, setProviders] = useState([]);
   const [provider, setProvider] = useState('');
   const [preview, setPreview] = useState(null);
@@ -102,6 +214,57 @@ export default function PriceSyncDialog({ open, onClose, onApplied, fallbackMode
     });
     return Array.from(keySet);
   }, [rows]);
+
+  const currentPriceMap = useMemo(() => {
+    const priceMap = new Map();
+    currentPrices.forEach((price) => {
+      if (price?.model) {
+        priceMap.set(price.model, price);
+      }
+    });
+    return priceMap;
+  }, [currentPrices]);
+
+  const rowsWithComparison = useMemo(
+    () =>
+      rows.map((row) => {
+        const currentPrice = currentPriceMap.get(String(row.model || '').trim()) || null;
+        return {
+          ...row,
+          currentPrice,
+          comparison: getComparisonResult(row, currentPrice)
+        };
+      }),
+    [rows, currentPriceMap]
+  );
+
+  const comparisonSummary = useMemo(() => {
+    return rowsWithComparison.reduce(
+      (summary, row) => {
+        switch (row.comparison.status) {
+          case 'new':
+            summary.newCount += 1;
+            break;
+          case 'changed':
+            summary.changedCount += 1;
+            break;
+          case 'same':
+            summary.sameCount += 1;
+            break;
+          default:
+            summary.pendingCount += 1;
+            break;
+        }
+        return summary;
+      },
+      {
+        newCount: 0,
+        changedCount: 0,
+        sameCount: 0,
+        pendingCount: 0
+      }
+    );
+  }, [rowsWithComparison]);
 
   const resetState = () => {
     setPreview(null);
@@ -266,6 +429,9 @@ export default function PriceSyncDialog({ open, onClose, onApplied, fallbackMode
               已抓取 {rows.length} 行价格草案。
               {preview.provider?.name ? ` 当前渠道：${preview.provider.name}。` : ''}
               请确认目标模型和价格后再提交。
+              {rows.length > 0
+                ? ` 对比结果：新增 ${comparisonSummary.newCount} 行，变更 ${comparisonSummary.changedCount} 行，无变化 ${comparisonSummary.sameCount} 行。`
+                : ''}
             </Alert>
           )}
 
@@ -283,14 +449,26 @@ export default function PriceSyncDialog({ open, onClose, onApplied, fallbackMode
                         {getExtraRatioLabel(key)}
                       </TableCell>
                     ))}
+                    <TableCell sx={{ minWidth: 260 }}>当前配置</TableCell>
+                    <TableCell sx={{ minWidth: 180 }}>对比结果</TableCell>
                     <TableCell align="right" sx={{ minWidth: 80 }}>
                       操作
                     </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {rows.map((row, index) => (
-                    <TableRow key={`${row.source_model}-${index}`} hover>
+                  {rowsWithComparison.map((row, index) => (
+                    <TableRow
+                      key={`${row.source_model}-${index}`}
+                      hover
+                      sx={
+                        row.comparison.status === 'new'
+                          ? { backgroundColor: 'rgba(76, 175, 80, 0.08)' }
+                          : row.comparison.status === 'changed'
+                            ? { backgroundColor: 'rgba(255, 152, 0, 0.08)' }
+                            : undefined
+                      }
+                    >
                       <TableCell>{row.source_model}</TableCell>
                       <TableCell>
                         <Autocomplete
@@ -362,6 +540,53 @@ export default function PriceSyncDialog({ open, onClose, onApplied, fallbackMode
                           />
                         </TableCell>
                       ))}
+                      <TableCell>
+                        {!row.model?.trim() ? (
+                          <Typography variant="body2" color="text.secondary">
+                            选择目标模型后显示
+                          </Typography>
+                        ) : !row.currentPrice ? (
+                          <Typography variant="body2" color="success.main">
+                            系统中暂无该模型价格
+                          </Typography>
+                        ) : (
+                          <Stack spacing={0.5}>
+                            <Typography variant="caption" color="text.secondary">
+                              输入 {formatPriceValue(row.currentPrice.input)} / 输出 {formatPriceValue(row.currentPrice.output)}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              扩展价格：{formatExtraRatios(row.currentPrice.extra_ratios)}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              阶梯规则：{Array.isArray(row.currentPrice.billing_rules) ? row.currentPrice.billing_rules.length : 0} 条
+                            </Typography>
+                          </Stack>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Stack spacing={0.5}>
+                          <Typography
+                            variant="body2"
+                            color={
+                              row.comparison.status === 'new'
+                                ? 'success.main'
+                                : row.comparison.status === 'changed'
+                                  ? 'warning.main'
+                                  : row.comparison.status === 'same'
+                                    ? 'text.primary'
+                                    : 'text.secondary'
+                            }
+                            sx={{ fontWeight: 600 }}
+                          >
+                            {row.comparison.label}
+                          </Typography>
+                          {row.comparison.changedFields.length > 0 && (
+                            <Typography variant="caption" color="text.secondary">
+                              {row.comparison.changedFields.join('、')}
+                            </Typography>
+                          )}
+                        </Stack>
+                      </TableCell>
                       <TableCell align="right">
                         <IconButton color="error" onClick={() => handleDeleteRow(index)} size="small">
                           <Icon icon="mdi:delete-outline" width={18} />
@@ -403,5 +628,6 @@ PriceSyncDialog.propTypes = {
   open: PropTypes.bool,
   onClose: PropTypes.func,
   onApplied: PropTypes.func,
-  fallbackModelOptions: PropTypes.array
+  fallbackModelOptions: PropTypes.array,
+  currentPrices: PropTypes.array
 };
