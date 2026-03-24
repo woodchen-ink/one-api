@@ -9,15 +9,11 @@ import {
   InputBase,
   Paper,
   IconButton,
-  Fade,
   useMediaQuery,
   Avatar,
   ButtonBase,
   Tooltip,
-  Grid,
   Pagination,
-  ToggleButton,
-  ToggleButtonGroup as MuiToggleButtonGroup,
   Table,
   TableBody,
   TableCell,
@@ -33,12 +29,11 @@ import { API } from 'utils/api';
 import { showError, ValueFormatter, copy } from 'utils/common';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
-import ModelCard from './component/ModelCard';
 import ModelDetailModal from './component/ModelDetailModal';
+import BillingRuleDetails, { getExtraRatioDisplayName } from './component/BillingRuleDetails';
 import { MODALITY_OPTIONS } from 'constants/Modality';
 import Label from 'ui-component/Label';
 import { Helmet } from 'react-helmet-async';
-import { extraRatiosConfig } from '../Pricing/component/config';
 
 // ----------------------------------------------------------------------
 export default function ModelPrice() {
@@ -58,7 +53,6 @@ export default function ModelPrice() {
   const [selectedTag, setSelectedTag] = useState('all');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
-  const [viewMode, setViewMode] = useState('card'); // 'card' or 'list'
 
   // 详情对话框状态
   const [detailModalOpen, setDetailModalOpen] = useState(false);
@@ -327,12 +321,6 @@ export default function ModelPrice() {
     setPage(1);
   };
 
-  const handleViewModeChange = (event, newMode) => {
-    if (newMode !== null) {
-      setViewMode(newMode);
-    }
-  };
-
   const handleOwnedByChange = (newValue) => {
     setSelectedOwnedBy(newValue);
   };
@@ -356,7 +344,7 @@ export default function ModelPrice() {
 
   const getIconByName = (name) => {
     if (name === 'all') return null;
-    const owner = ownedby.find((item) => item.name === name);
+    const owner = ownedby?.find((item) => item.name === name);
     return owner?.icon;
   };
 
@@ -367,10 +355,6 @@ export default function ModelPrice() {
     } catch (e) {
       return [];
     }
-  };
-
-  const getExtraRatioName = (key) => {
-    return extraRatiosConfig.find((item) => item.key === key)?.name || key;
   };
 
   const clearSearch = () => {
@@ -403,7 +387,7 @@ export default function ModelPrice() {
             borderRadius: 2
           }}
         >
-          {/* 搜索和单位选择 */}
+          {/* 搜索和单位提示 */}
           <Box
             sx={{
               display: 'flex',
@@ -444,38 +428,23 @@ export default function ModelPrice() {
               )}
             </Paper>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Typography variant="body2" color="text.secondary">
-                USD / 1M
-              </Typography>
-              <MuiToggleButtonGroup
-                value={viewMode}
-                exclusive
-                onChange={handleViewModeChange}
-                aria-label="view mode"
-                size="small"
-                sx={{
-                  backgroundColor:
-                    theme.palette.mode === 'dark' ? alpha(theme.palette.background.paper, 0.6) : theme.palette.background.paper,
-                  '& .MuiToggleButton-root': {
-                    border: `1px solid ${theme.palette.divider}`,
-                    '&.Mui-selected': {
-                      backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                      color: theme.palette.primary.main,
-                      '&:hover': {
-                        backgroundColor: alpha(theme.palette.primary.main, 0.2)
-                      }
-                    }
-                  }
-                }}
-              >
-                <ToggleButton value="card" aria-label="card view">
-                  <Icon icon="eva:grid-outline" width={20} height={20} />
-                </ToggleButton>
-                <ToggleButton value="list" aria-label="list view">
-                  <Icon icon="eva:list-outline" width={20} height={20} />
-                </ToggleButton>
-              </MuiToggleButtonGroup>
+            <Box
+              sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', justifyContent: { xs: 'flex-start', sm: 'flex-end' } }}
+            >
+              {selectedGroup && userGroupMap[selectedGroup] && (
+                <Label color="primary" variant="soft">
+                  {t('modelpricePage.selectedGroupDisplay', {
+                    name: userGroupMap[selectedGroup].name,
+                    ratio: userGroupMap[selectedGroup].ratio
+                  })}
+                </Label>
+              )}
+              <Label color="info" variant="soft">
+                {t('modelpricePage.tokenUnitHint', 'Token 按 USD / 1M')}
+              </Label>
+              <Label color="warning" variant="soft">
+                {t('modelpricePage.timesUnitHint', '按次模型按 USD / 次')}
+              </Label>
             </Box>
           </Box>
 
@@ -926,200 +895,285 @@ export default function ModelPrice() {
           </Box>
         </Card>
 
-        {/* 模型卡片网格 */}
+        {/* 模型列表 */}
         <Box>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            {t('modelpricePage.totalModels', { count: filteredModels.length })}
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap', mb: 2 }}>
+            <Typography variant="body2" color="text.secondary">
+              {t('modelpricePage.totalModels', { count: filteredModels.length })}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {t('modelpricePage.listHint', '列表价格已按当前分组实时换算')}
+            </Typography>
+          </Box>
           {filteredModels.length > 0 ? (
             <>
-              {viewMode === 'card' ? (
-                <Grid container spacing={3}>
-                  {paginatedModels.map((model) => (
-                    <Grid item xs={12} sm={6} md={4} lg={3} key={model.model}>
-                      <ModelCard
-                        model={model.model}
-                        provider={model.provider}
-                        modelInfo={model.modelInfo}
-                        price={model.price}
-                        group={model.group}
-                        hasAccess={model.hasAccess}
-                        extraRatios={model.priceData.selectedGroupExtraRatios}
-                        billingRules={model.priceData.price.billing_rules}
-                        ownedbyIcon={getIconByName(model.provider)}
-                        type={model.type}
-                        formatPrice={formatPrice}
-                        onViewDetail={() => handleViewDetail(model)}
-                      />
-                    </Grid>
-                  ))}
-                </Grid>
-              ) : (
-                <TableContainer component={Paper} sx={{ boxShadow: 'none', border: `1px solid ${theme.palette.divider}` }}>
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>{t('modelpricePage.modelName')}</TableCell>
-                        <TableCell align="center">{t('modelpricePage.type')}</TableCell>
-                        <TableCell align="center">{t('modelpricePage.provider')}</TableCell>
-                        <TableCell align="center">{t('modelpricePage.group')}</TableCell>
-                        <TableCell align="left">{t('modelpricePage.inputPrice')}</TableCell>
-                        <TableCell align="left">{t('modelpricePage.outputPrice')}</TableCell>
-                        <TableCell align="left">{t('modelpricePage.extraRatios')}</TableCell>
-                        <TableCell align="left">分档规则</TableCell>
-                        <TableCell align="center">{t('common.action')}</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {paginatedModels.map((model) => (
-                        <TableRow key={model.model} hover>
-                          <TableCell>
-                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                <Typography variant="body2" fontWeight="bold" sx={{ fontSize: '1rem' }}>
+              <TableContainer
+                component={Paper}
+                sx={{
+                  boxShadow: 'none',
+                  border: `1px solid ${alpha(theme.palette.divider, 0.9)}`,
+                  borderRadius: 3,
+                  background:
+                    theme.palette.mode === 'dark'
+                      ? `linear-gradient(180deg, ${alpha(theme.palette.background.paper, 0.88)} 0%, ${alpha(theme.palette.background.default, 0.72)} 100%)`
+                      : `linear-gradient(180deg, ${alpha(theme.palette.background.paper, 0.98)} 0%, ${alpha(theme.palette.grey[50], 0.9)} 100%)`,
+                  overflowX: 'auto'
+                }}
+              >
+                <Table
+                  size="small"
+                  sx={{
+                    minWidth: 1180,
+                    borderCollapse: 'separate',
+                    borderSpacing: '0 10px',
+                    px: 1
+                  }}
+                >
+                  <TableHead>
+                    <TableRow>
+                      <TableCell sx={{ borderBottom: 'none', color: 'text.secondary', fontWeight: 700 }}>
+                        {t('modelpricePage.modelName')}
+                      </TableCell>
+                      <TableCell sx={{ borderBottom: 'none', color: 'text.secondary', fontWeight: 700 }}>
+                        {t('modelpricePage.provider')}
+                      </TableCell>
+                      <TableCell sx={{ borderBottom: 'none', color: 'text.secondary', fontWeight: 700 }}>
+                        {t('modelpricePage.price')}
+                      </TableCell>
+                      <TableCell sx={{ borderBottom: 'none', color: 'text.secondary', fontWeight: 700 }}>
+                        {t('modelpricePage.extraRatios')}
+                      </TableCell>
+                      <TableCell sx={{ borderBottom: 'none', color: 'text.secondary', fontWeight: 700 }}>
+                        {t('modelpricePage.billingRules', '分档价格')}
+                      </TableCell>
+                      <TableCell align="center" sx={{ borderBottom: 'none', color: 'text.secondary', fontWeight: 700 }}>
+                        {t('common.action')}
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {paginatedModels.map((model) => {
+                      const tags = getTags(model.modelInfo?.tags);
+                      const isHot = tags.some((tag) => tag.toLowerCase() === 'hot');
+                      const visibleTags = tags.filter((tag) => tag.toLowerCase() !== 'hot');
+
+                      return (
+                        <TableRow
+                          key={model.model}
+                          hover
+                          sx={{
+                            '& .MuiTableCell-root': {
+                              borderTop: `1px solid ${alpha(theme.palette.divider, 0.8)}`,
+                              borderBottom: `1px solid ${alpha(theme.palette.divider, 0.8)}`,
+                              backgroundColor:
+                                theme.palette.mode === 'dark'
+                                  ? alpha(theme.palette.background.paper, 0.72)
+                                  : alpha(theme.palette.background.paper, 0.95),
+                              py: 2
+                            },
+                            '& .MuiTableCell-root:first-of-type': {
+                              borderLeft: `1px solid ${alpha(theme.palette.divider, 0.8)}`,
+                              borderTopLeftRadius: 16,
+                              borderBottomLeftRadius: 16,
+                              pl: 2.5
+                            },
+                            '& .MuiTableCell-root:last-of-type': {
+                              borderRight: `1px solid ${alpha(theme.palette.divider, 0.8)}`,
+                              borderTopRightRadius: 16,
+                              borderBottomRightRadius: 16,
+                              pr: 2
+                            },
+                            '&:hover .MuiTableCell-root': {
+                              backgroundColor:
+                                theme.palette.mode === 'dark'
+                                  ? alpha(theme.palette.primary.main, 0.12)
+                                  : alpha(theme.palette.primary.main, 0.05)
+                            }
+                          }}
+                        >
+                          <TableCell sx={{ width: '30%' }}>
+                            <Stack spacing={1.2}>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
+                                <Typography variant="subtitle1" sx={{ fontWeight: 700, lineHeight: 1.3 }}>
                                   {model.model}
                                 </Typography>
                                 <IconButton
                                   size="small"
-                                  onClick={() => {
-                                    copy(model.model, t('modelpricePage.modelName'));
-                                  }}
-                                  sx={{ opacity: 0.6, '&:hover': { opacity: 1 } }}
+                                  onClick={() => copy(model.model, t('modelpricePage.modelName'))}
+                                  sx={{ color: 'text.secondary', p: 0.5 }}
                                 >
                                   <Icon icon="eva:copy-outline" width={16} height={16} />
                                 </IconButton>
-                                {getTags(model.modelInfo?.tags).some((t) => t.toLowerCase() === 'hot') && (
-                                  <Label variant="soft" color="error" startIcon={<Icon icon="mdi:fire" />} sx={{ ml: 0.5 }}>
+                                {isHot && (
+                                  <Label variant="soft" color="error" startIcon={<Icon icon="mdi:fire" />}>
                                     HOT
                                   </Label>
                                 )}
                               </Box>
-                              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                                {getTags(model.modelInfo?.tags).map(
-                                  (tag) =>
-                                    tag.toLowerCase() !== 'hot' && (
-                                      <Label key={tag} variant="soft" color="default">
-                                        {tag}
-                                      </Label>
-                                    )
-                                )}
+
+                              {model.modelInfo?.description && (
+                                <Typography
+                                  variant="body2"
+                                  color="text.secondary"
+                                  sx={{
+                                    display: '-webkit-box',
+                                    WebkitLineClamp: 2,
+                                    WebkitBoxOrient: 'vertical',
+                                    overflow: 'hidden',
+                                    lineHeight: 1.6
+                                  }}
+                                >
+                                  {model.modelInfo.description}
+                                </Typography>
+                              )}
+
+                              {visibleTags.length > 0 && (
+                                <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
+                                  {visibleTags.map((tag) => (
+                                    <Label key={tag} variant="soft" color="default">
+                                      {tag}
+                                    </Label>
+                                  ))}
+                                </Stack>
+                              )}
+                            </Stack>
+                          </TableCell>
+
+                          <TableCell sx={{ width: '18%' }}>
+                            <Stack spacing={1}>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Avatar
+                                  src={getIconByName(model.provider)}
+                                  alt={model.provider}
+                                  sx={{
+                                    width: 30,
+                                    height: 30,
+                                    backgroundColor: theme.palette.mode === 'dark' ? '#fff' : theme.palette.background.paper,
+                                    '.MuiAvatar-img': {
+                                      objectFit: 'contain',
+                                      p: '4px'
+                                    }
+                                  }}
+                                >
+                                  {model.provider?.charAt(0).toUpperCase()}
+                                </Avatar>
+                                <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                  {model.provider}
+                                </Typography>
                               </Box>
-                            </Box>
-                          </TableCell>
-                          <TableCell align="center">
-                            <Box
-                              sx={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                px: 1,
-                                py: 0.5,
-                                borderRadius: 1,
-                                backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                                color: theme.palette.primary.main,
-                                fontSize: '0.75rem',
-                                fontWeight: 600
-                              }}
-                            >
-                              {model.type === 'tokens' ? t('modelpricePage.tokens') : t('modelpricePage.times')}
-                            </Box>
-                          </TableCell>
-                          <TableCell align="center">
-                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-                              <Avatar
-                                src={getIconByName(model.provider)}
-                                alt={model.provider}
-                                sx={{
-                                  width: 24,
-                                  height: 24,
-                                  backgroundColor: '#fff',
-                                  '& .MuiAvatar-img': {
-                                    objectFit: 'contain',
-                                    padding: '2px'
-                                  }
-                                }}
-                              />
-                              <Typography variant="body2">{model.provider}</Typography>
-                            </Box>
-                          </TableCell>
-                          <TableCell align="center">
-                            {model.hasAccess ? (
-                              <Stack direction="row" spacing={0.5} justifyContent="center" alignItems="center">
+
+                              <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
                                 <Label color="primary" variant="soft">
-                                  {model.priceData.selectedGroupName}
+                                  {model.type === 'tokens' ? t('modelpricePage.tokens') : t('modelpricePage.times')}
                                 </Label>
-                                <Label color={model.priceData.selectedGroupRatio > 1 ? 'warning' : 'info'} variant="soft">
-                                  x{model.priceData.selectedGroupRatio}
-                                </Label>
+                                {model.hasAccess ? (
+                                  <>
+                                    <Label color="info" variant="soft">
+                                      {model.priceData.selectedGroupName}
+                                    </Label>
+                                    <Label color={model.priceData.selectedGroupRatio > 1 ? 'warning' : 'info'} variant="outlined">
+                                      x{model.priceData.selectedGroupRatio}
+                                    </Label>
+                                  </>
+                                ) : (
+                                  <Label color="default" variant="outlined">
+                                    {t('modelpricePage.noneGroup')}
+                                  </Label>
+                                )}
+                              </Stack>
+                            </Stack>
+                          </TableCell>
+
+                          <TableCell sx={{ width: '16%' }}>
+                            {model.hasAccess ? (
+                              <Stack spacing={1}>
+                                <Box
+                                  sx={{
+                                    p: 1.25,
+                                    borderRadius: 2,
+                                    border: `1px solid ${alpha(theme.palette.success.main, 0.18)}`,
+                                    backgroundColor: alpha(theme.palette.success.main, 0.08)
+                                  }}
+                                >
+                                  <Typography variant="caption" color="text.secondary">
+                                    {model.type === 'times' ? t('modelpricePage.timesPrice') : t('modelpricePage.inputPrice')}
+                                  </Typography>
+                                  <Typography variant="body2" sx={{ fontWeight: 700, color: theme.palette.success.main }}>
+                                    {formatPrice(model.price.input, model.type)}
+                                  </Typography>
+                                </Box>
+                                {model.type !== 'times' && (
+                                  <Box
+                                    sx={{
+                                      p: 1.25,
+                                      borderRadius: 2,
+                                      border: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`,
+                                      backgroundColor: alpha(theme.palette.warning.main, 0.08)
+                                    }}
+                                  >
+                                    <Typography variant="caption" color="text.secondary">
+                                      {t('modelpricePage.outputPrice')}
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ fontWeight: 700, color: theme.palette.warning.main }}>
+                                      {formatPrice(model.price.output, model.type)}
+                                    </Typography>
+                                  </Box>
+                                )}
                               </Stack>
                             ) : (
-                              <Label color="default" variant="outlined">
-                                {t('modelpricePage.noneGroup')}
-                              </Label>
-                            )}
-                          </TableCell>
-                          <TableCell align="left">
-                            {model.hasAccess ? (
-                              <Label color="success" variant="outlined">
-                                {formatPrice(model.price.input, model.type === 'tokens' ? 'tokens' : 'times')}
-                              </Label>
-                            ) : (
                               <Typography variant="body2" color="text.secondary">
                                 {t('modelpricePage.noneGroup')}
                               </Typography>
                             )}
                           </TableCell>
-                          <TableCell align="left">
-                            {model.hasAccess ? (
-                              <Label color="warning" variant="outlined">
-                                {formatPrice(model.price.output, model.type === 'tokens' ? 'tokens' : 'times')}
-                              </Label>
-                            ) : (
-                              <Typography variant="body2" color="text.secondary">
-                                {t('modelpricePage.noneGroup')}
-                              </Typography>
-                            )}
-                          </TableCell>
-                          <TableCell align="left">
+
+                          <TableCell sx={{ width: '16%' }}>
                             {model.hasAccess && model.priceData.selectedGroupExtraRatios ? (
-                              <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
+                              <Stack direction="row" spacing={0.75} flexWrap="wrap" useFlexGap>
                                 {Object.entries(model.priceData.selectedGroupExtraRatios).map(([key, value]) => (
                                   <Label key={key} color="default" variant="soft" sx={{ maxWidth: 220 }}>
-                                    {`${getExtraRatioName(key)}: ${formatPrice(value, 'tokens')}`}
+                                    {`${getExtraRatioDisplayName(key)}: ${formatPrice(value, 'tokens')}`}
                                   </Label>
                                 ))}
                               </Stack>
                             ) : (
                               <Typography variant="body2" color="text.secondary">
-                                {model.hasAccess ? '-' : t('modelpricePage.noneGroup')}
+                                {model.hasAccess ? t('modelpricePage.noExtraRatios') : t('modelpricePage.noneGroup')}
                               </Typography>
                             )}
                           </TableCell>
-                          <TableCell align="left">
-                            {model.priceData.price.billing_rules?.length > 0 ? (
-                              <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
-                                {model.priceData.price.billing_rules.map((rule, index) => (
-                                  <Label key={`${rule.name || 'rule'}-${index}`} color="info" variant="soft">
-                                    {rule.name || `Rule ${index + 1}`}
-                                  </Label>
-                                ))}
-                              </Stack>
-                            ) : (
-                              <Typography variant="body2" color="text.secondary">
-                                -
-                              </Typography>
-                            )}
+
+                          <TableCell sx={{ width: '28%' }}>
+                            <BillingRuleDetails
+                              rules={model.priceData.price.billing_rules}
+                              priceType={model.type}
+                              groupRatio={model.priceData.selectedGroupRatio}
+                              formatPrice={formatPrice}
+                              compact
+                            />
                           </TableCell>
-                          <TableCell align="center">
-                            <IconButton onClick={() => handleViewDetail(model)} size="small">
-                              <Icon icon="eva:eye-outline" width={20} height={20} />
-                            </IconButton>
+
+                          <TableCell align="center" sx={{ width: '8%' }}>
+                            <Tooltip title={t('modelpricePage.viewDetail')}>
+                              <IconButton
+                                onClick={() => handleViewDetail(model)}
+                                size="small"
+                                sx={{
+                                  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                                  backgroundColor: alpha(theme.palette.primary.main, 0.08),
+                                  color: theme.palette.primary.main
+                                }}
+                              >
+                                <Icon icon="eva:eye-outline" width={20} height={20} />
+                              </IconButton>
+                            </Tooltip>
                           </TableCell>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              )}
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </TableContainer>
 
               <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mt: 4, gap: 2, flexWrap: 'wrap' }}>
                 <Pagination

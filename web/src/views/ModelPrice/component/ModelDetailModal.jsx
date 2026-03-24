@@ -24,28 +24,13 @@ import Label from 'ui-component/Label';
 import { MODALITY_OPTIONS } from 'constants/Modality';
 import { copy } from 'utils/common';
 import { useTranslation } from 'react-i18next';
-import { extraRatiosConfig } from '../../Pricing/component/config';
-import { hasBillingRules, summarizeBillingRule } from '../../Pricing/component/billingRules';
+import BillingRuleDetails, { getExtraRatioDisplayName } from './BillingRuleDetails';
 
 // ----------------------------------------------------------------------
 
 export default function ModelDetailModal({ open, onClose, model, provider, modelInfo, priceData, ownedbyIcon, formatPrice }) {
   const theme = useTheme();
   const { t } = useTranslation();
-  const extraPriceNames = {
-    cached_tokens: '缓存价格',
-    cached_write_tokens: '缓存写入价格',
-    cached_write_5m_tokens: '缓存写入价格(5m)',
-    cached_write_1h_tokens: '缓存写入价格(1h)',
-    cached_read_tokens: '缓存读取价格',
-    input_audio_tokens: '音频输入价格',
-    output_audio_tokens: '音频输出价格',
-    reasoning_tokens: '推理价格',
-    input_text_tokens: '输入文本价格',
-    output_text_tokens: '输出文本价格',
-    input_image_tokens: '输入图片价格',
-    output_image_tokens: '输出图片价格'
-  };
   if (!model) return null;
   // 解析模态和标签
   const getModalities = (modalitiesStr) => {
@@ -353,7 +338,7 @@ export default function ModelDetailModal({ open, onClose, model, provider, model
               {Object.entries(priceData.selectedGroupExtraRatios).map(([key, value]) => (
                 <Stack key={key} direction="row" alignItems="center" spacing={2}>
                   <Typography variant="body2" color="text.secondary" sx={{ minWidth: 80 }}>
-                    {extraRatiosConfig.find((item) => item.key === key)?.name || extraPriceNames[key] || key}:
+                    {getExtraRatioDisplayName(key)}:
                   </Typography>
                   <Typography variant="body2" sx={{ fontWeight: 500 }}>
                     {formatPrice(value, 'tokens')}
@@ -364,26 +349,20 @@ export default function ModelDetailModal({ open, onClose, model, provider, model
           </Box>
         )}
 
-        {hasBillingRules(priceData?.price?.billing_rules) && (
+        {Array.isArray(priceData?.price?.billing_rules) && priceData.price.billing_rules.length > 0 && (
           <Box sx={{ mt: 3 }}>
             <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
               <Icon icon="mdi:source-branch" width={20} height={20} />
               <Typography variant="h5" sx={{ fontWeight: 600 }}>
-                分档计费规则
+                {t('modelpricePage.billingRules', '分档价格')}
               </Typography>
             </Stack>
-            <Stack spacing={1}>
-              {priceData.price.billing_rules.map((rule, index) => (
-                <Stack key={`${rule.name || 'rule'}-${index}`} direction="row" alignItems="center" spacing={2}>
-                  <Label color="info" variant="soft">
-                    {rule.name || `Rule ${index + 1}`}
-                  </Label>
-                  <Typography variant="body2" color="text.secondary">
-                    {summarizeBillingRule(rule) || rule.strategy}
-                  </Typography>
-                </Stack>
-              ))}
-            </Stack>
+            <BillingRuleDetails
+              rules={priceData.price.billing_rules}
+              priceType={priceData?.price?.type}
+              groupRatio={priceData?.selectedGroupRatio}
+              formatPrice={formatPrice}
+            />
           </Box>
         )}
       </DialogContent>

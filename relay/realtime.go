@@ -1,8 +1,6 @@
 package relay
 
 import (
-	"fmt"
-	"net/http"
 	"czloapi/common"
 	"czloapi/common/config"
 	"czloapi/common/logger"
@@ -12,6 +10,8 @@ import (
 	providersBase "czloapi/providers/base"
 	"czloapi/relay/relay_util"
 	"czloapi/types"
+	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -60,6 +60,8 @@ func ChatRealtime(c *gin.Context) {
 		return
 	}
 
+	c.Set("log_request_mode", "realtime_ws")
+	c.Set("log_request_transport", "wss")
 	relay.quota = relay_util.NewQuota(relay.getContext(), relay.getModelName(), 0)
 
 	relay.usage = &types.UsageEvent{}

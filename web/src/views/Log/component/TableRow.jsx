@@ -127,7 +127,7 @@ function LogTableRow({ item, userIsAdmin, userGroup, columnVisibility }) {
           <TableCell sx={{ p: '10px 8px', minWidth: 140 }}>
             {item?.metadata?.is_backup_group ? (
               // 显示分组重定向：原始分组 → 备份分组
-              <Stack direction="row" spacing={1} alignItems="center">
+              <Stack direction="row" spacing={1} alignItems="center" justifyContent="center">
                 <Label color="default" variant="soft">
                   {userGroup[item.metadata.group_name]?.name || '跟随用户'}
                 </Label>
@@ -157,7 +157,7 @@ function LogTableRow({ item, userIsAdmin, userGroup, columnVisibility }) {
         )}
         {columnVisibility.type && <TableCell sx={{ p: '10px 8px', minWidth: 110 }}>{renderType(item.type, LogType, t)}</TableCell>}
         {columnVisibility.model_name && (
-          <TableCell sx={{ p: '10px 8px', minWidth: 150 }}>{viewModelName(item.model_name, item.is_stream)}</TableCell>
+          <TableCell sx={{ p: '10px 8px', minWidth: 150 }}>{viewModelName(item.model_name, item.is_stream, item.metadata, t)}</TableCell>
         )}
         {columnVisibility.reasoning && (
           <TableCell sx={{ p: '10px 8px', minWidth: 110 }}>{viewReasoning(item?.metadata?.reasoning, t)}</TableCell>
@@ -211,14 +211,33 @@ export default memo(LogTableRow, (prevProps, nextProps) => {
   );
 });
 
-function viewModelName(model_name, isStream) {
+function viewModelName(model_name, isStream, metadata, t) {
   if (!model_name) {
     return '';
   }
 
+  const requestMode = metadata?.request_mode;
+  const requestTransport = metadata?.request_transport;
+  let modeLabel = '';
+  let modeIcon = '';
+
   if (isStream) {
+    modeLabel = t('logPage.requestMode.stream');
+    modeIcon = 'mdi:transit-connection-variant';
+  } else if (requestMode === 'responses_ws') {
+    modeLabel = t('logPage.requestMode.responsesWss');
+    modeIcon = 'mdi:websocket';
+  } else if (requestMode === 'realtime_ws') {
+    modeLabel = t('logPage.requestMode.realtimeWss');
+    modeIcon = 'mdi:websocket';
+  } else if (requestTransport === 'wss') {
+    modeLabel = t('logPage.requestMode.wss');
+    modeIcon = 'mdi:websocket';
+  }
+
+  if (modeLabel) {
     return (
-      <Tooltip title="Stream" placement="top" arrow>
+      <Tooltip title={modeLabel} placement="top" arrow>
         <Box sx={{ position: 'relative', display: 'inline-flex' }}>
           <Label color="primary" variant="outlined" copyText={model_name}>
             {model_name}
@@ -240,7 +259,7 @@ function viewModelName(model_name, isStream) {
               bgcolor: 'primary.contrastText'
             }}
           >
-            <Icon icon="ph:waves-bold" width={12} />
+            <Icon icon={modeIcon} width={10} />
           </Box>
         </Box>
       </Tooltip>
@@ -605,30 +624,6 @@ function viewQuota(item, t) {
           </Typography>
         </Box>
       ))}
-
-      {/* {(metadata?.input_price != null || metadata?.output_price != null) && (
-        <Stack spacing={0.5}>
-          <MetadataTypography>{`输入单价 $${formatUSD(metadata.input_price || 0)} / 1M Token`}</MetadataTypography>
-          <MetadataTypography>{`输出单价 $${formatUSD(metadata.output_price || 0)} / 1M Token`}</MetadataTypography>
-        </Stack>
-      )}
-
-      {(metadata?.billing_breakdown || []).filter((detail) => !['input', 'output', 'request'].includes(detail.metric)).length > 0 && (
-        <Stack spacing={0.5}>
-          {(metadata?.billing_breakdown || [])
-            .filter((detail) => !['input', 'output', 'request'].includes(detail.metric))
-            .filter((detail, index, arr) => arr.findIndex((item) => item.metric === detail.metric) === index)
-            .map((detail) => (
-              <MetadataTypography key={`unit-price-${detail.metric}`}>
-                {`${formatBillingMetricLabel(detail.metric)} 单价 $${formatUSD(detail.unit_price || 0)} / 1M Token`}
-              </MetadataTypography>
-            ))}
-        </Stack>
-      )} */}
-
-      {/* {metadata?.billing_context && (
-        <MetadataTypography>{`Prompt=${metadata.billing_context.prompt_tokens || 0} / Request=${metadata.billing_context.request_tokens || 0}`}</MetadataTypography>
-      )} */}
 
       {(userRatio != null || groupRatio != null || billingBreakdown.length > 0) && (
         <Stack spacing={0.5}>

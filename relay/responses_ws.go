@@ -64,6 +64,8 @@ func ResponsesWS(c *gin.Context) {
 		return
 	}
 
+	c.Set("log_request_mode", "responses_ws")
+	c.Set("log_request_transport", "wss")
 	relay.quota = relay_util.NewQuota(relay.getContext(), relay.getModelName(), 0)
 	relay.usage = &types.UsageEvent{}
 

@@ -114,6 +114,7 @@ The provider system implements a plugin-based architecture in `providers/`:
   - Gemini can be called via `/v1beta/models/:model` and `/v1/models/:model`.
 - The default homepage highlights the currently enabled native routes for quick onboarding.
 - Support for streaming responses and WebSocket connections
+- WebSocket quota logs can carry `metadata.request_mode` / `metadata.request_transport` so the log page can distinguish `responses v2 wss` and other WS traffic from normal requests
 
 #### Frontend React Structure
 - `web/src/` - React application source

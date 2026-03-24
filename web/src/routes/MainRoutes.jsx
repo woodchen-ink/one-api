@@ -114,6 +114,10 @@ const MainRoutes = {
       element: <ModelPrice />
     },
     {
+      path: 'price',
+      element: <ModelPrice />
+    },
+    {
       path: 'playground',
       element: <Playground />
     },

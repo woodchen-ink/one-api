@@ -42,6 +42,8 @@ type Quota struct {
 	firstResponseTime time.Time
 	extraBillingData  map[string]ExtraBillingData
 	requestPath       string
+	requestMode       string
+	requestTransport  string
 	userAgent         string
 	reasoningMetadata *types.LogReasoningMetadata
 }
@@ -54,15 +56,17 @@ func NewQuota(c *gin.Context, modelName string, promptTokens int, billingContext
 	}
 
 	quota := &Quota{
-		modelName:      modelName,
-		promptTokens:   promptTokens,
-		billingContext: billingContext,
-		userId:         c.GetInt("id"),
-		channelId:      c.GetInt("channel_id"),
-		tokenId:        c.GetInt("token_id"),
-		unlimitedQuota: c.GetBool("token_unlimited_quota"),
-		HandelStatus:   false,
-		isBackupGroup:  isBackupGroup,
+		modelName:        modelName,
+		promptTokens:     promptTokens,
+		billingContext:   billingContext,
+		userId:           c.GetInt("id"),
+		channelId:        c.GetInt("channel_id"),
+		tokenId:          c.GetInt("token_id"),
+		unlimitedQuota:   c.GetBool("token_unlimited_quota"),
+		HandelStatus:     false,
+		isBackupGroup:    isBackupGroup,
+		requestMode:      c.GetString("log_request_mode"),
+		requestTransport: c.GetString("log_request_transport"),
 	}
 
 	if reasoningMetadata, ok := utils.GetGinValue[*types.LogReasoningMetadata](c, types.LogReasoningMetadataContextKey); ok && reasoningMetadata != nil {
@@ -429,6 +433,12 @@ func (q *Quota) GetLogMeta(usage *types.Usage, requestPath ...string) map[string
 
 	if len(requestPath) > 0 && requestPath[0] != "" {
 		meta["request_path"] = requestPath[0]
+	}
+	if q.requestMode != "" {
+		meta["request_mode"] = q.requestMode
+	}
+	if q.requestTransport != "" {
+		meta["request_transport"] = q.requestTransport
 	}
 	if q.userAgent != "" {
 		meta["user_agent"] = q.userAgent
