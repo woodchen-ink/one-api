@@ -468,10 +468,11 @@ func (q *Quota) getTotalQuotaWithResolution(
 		resolution = q.billingResolution
 	}
 
+	cacheAdjustedPromptTokens := getCacheAdjustedPromptTokens(promptTokens, extraTokens)
+
 	if q.price.Type == model.TimesPriceType {
 		quota = q.getFlatPriceQuota(resolution.Input)
 	} else {
-		cacheAdjustedPromptTokens := getCacheAdjustedPromptTokens(promptTokens, extraTokens)
 		quota += q.getTokenPriceQuota(cacheAdjustedPromptTokens, resolution.Input)
 		quota += q.getTokenPriceQuota(completionTokens, resolution.Output)
 		for key, value := range extraTokens {
@@ -491,7 +492,7 @@ func (q *Quota) getTotalQuotaWithResolution(
 		quota += int(math.Ceil(float64(extraBillingQuota) * q.groupRatio))
 	}
 
-	totalChargeableTokens := getCacheAdjustedPromptTokens(promptTokens, extraTokens) + completionTokens
+	totalChargeableTokens := cacheAdjustedPromptTokens + completionTokens
 	for _, value := range extraTokens {
 		totalChargeableTokens += value
 	}
