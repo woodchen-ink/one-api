@@ -1264,6 +1264,54 @@ func addLogTokenID() *gormigrate.Migration {
 	}
 }
 
+func widenGroupColumns() *gormigrate.Migration {
+	return &gormigrate.Migration{
+		ID: "202603240002",
+		Migrate: func(tx *gorm.DB) error {
+			dialect := tx.Dialector.Name()
+
+			if tx.Migrator().HasTable("channels") {
+				var err error
+				switch dialect {
+				case "mysql":
+					err = tx.Exec("ALTER TABLE channels MODIFY COLUMN `group` varchar(1024) DEFAULT 'default'").Error
+				case "postgres":
+					err = tx.Exec(`ALTER TABLE "channels" ALTER COLUMN "group" TYPE varchar(1024)`).Error
+					if err == nil {
+						err = tx.Exec(`ALTER TABLE "channels" ALTER COLUMN "group" SET DEFAULT 'default'`).Error
+					}
+				}
+				if err != nil {
+					logger.SysLog("扩容 channels.group 字段失败: " + err.Error())
+					return err
+				}
+			}
+
+			if tx.Migrator().HasTable("users") {
+				var err error
+				switch dialect {
+				case "mysql":
+					err = tx.Exec("ALTER TABLE users MODIFY COLUMN `group` varchar(50) DEFAULT 'default'").Error
+				case "postgres":
+					err = tx.Exec(`ALTER TABLE "users" ALTER COLUMN "group" TYPE varchar(50)`).Error
+					if err == nil {
+						err = tx.Exec(`ALTER TABLE "users" ALTER COLUMN "group" SET DEFAULT 'default'`).Error
+					}
+				}
+				if err != nil {
+					logger.SysLog("调整 users.group 字段失败: " + err.Error())
+					return err
+				}
+			}
+
+			return nil
+		},
+		Rollback: func(tx *gorm.DB) error {
+			return nil
+		},
+	}
+}
+
 func migrationAfter(db *gorm.DB) error {
 	// 从库不执行
 	if !config.IsMasterNode {
@@ -1283,6 +1331,7 @@ func migrationAfter(db *gorm.DB) error {
 		migrateTokenLimitsStructure(),
 		migrateQuotaScaleToMicroUSD(),
 		addLogTokenID(),
+		widenGroupColumns(),
 	})
 	return m.Migrate()
 }

@@ -13,9 +13,10 @@ type WSRequester struct {
 	WSClient *websocket.Dialer
 }
 
-func NewWSRequester(proxyAddr string) *WSRequester {
+func NewWSRequester(proxyAddr string, enableCompression ...bool) *WSRequester {
+	compress := len(enableCompression) > 0 && enableCompression[0]
 	return &WSRequester{
-		WSClient: GetWSClient(proxyAddr),
+		WSClient: GetWSClient(proxyAddr, compress),
 	}
 }
 

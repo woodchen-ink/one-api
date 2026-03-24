@@ -13,9 +13,10 @@ import (
 	"golang.org/x/net/proxy"
 )
 
-func GetWSClient(proxyAddr string) *websocket.Dialer {
+func GetWSClient(proxyAddr string, enableCompression ...bool) *websocket.Dialer {
 	dialer := &websocket.Dialer{
-		HandshakeTimeout: time.Duration(utils.GetOrDefault("connect_timeout", 5)) * time.Second,
+		HandshakeTimeout:  time.Duration(utils.GetOrDefault("connect_timeout", 5)) * time.Second,
+		EnableCompression: len(enableCompression) > 0 && enableCompression[0],
 	}
 
 	if proxyAddr != "" {

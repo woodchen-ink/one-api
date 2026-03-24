@@ -33,6 +33,7 @@ var responsesWSUpgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
 		return true
 	},
+	EnableCompression: true,
 }
 
 func ResponsesWS(c *gin.Context) {

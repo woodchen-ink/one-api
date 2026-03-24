@@ -2,10 +2,10 @@ package model
 
 import (
 	"crypto/md5"
-	"encoding/hex"
 	"czloapi/common/config"
 	"czloapi/common/logger"
 	"czloapi/common/utils"
+	"encoding/hex"
 	"slices"
 	"strings"
 
@@ -28,7 +28,7 @@ type Channel struct {
 	Balance            float64 `json:"balance"` // in USD
 	BalanceUpdatedTime int64   `json:"balance_updated_time" gorm:"bigint"`
 	Models             string  `json:"models" form:"models"`
-	Group              string  `json:"group" form:"group" gorm:"type:varchar(32);default:'default'"`
+	Group              string  `json:"group" form:"group" gorm:"type:varchar(1024);default:'default'"`
 	Tag                string  `json:"tag" form:"tag" gorm:"type:varchar(32);default:''"`
 	UsedQuota          int64   `json:"used_quota" gorm:"bigint;default:0"`
 	ModelMapping       *string `json:"model_mapping" gorm:"type:text"`

@@ -674,6 +674,26 @@ func (u *ResponsesUsage) ToOpenAIUsage() *Usage {
 	return usage
 }
 
+func (u *ResponsesUsage) ToUsageEvent() *UsageEvent {
+	event := &UsageEvent{
+		InputTokens:  u.InputTokens,
+		OutputTokens: u.OutputTokens,
+		TotalTokens:  u.TotalTokens,
+	}
+
+	if u.InputTokensDetails != nil {
+		event.InputTokenDetails.CachedTokens = u.InputTokensDetails.CachedTokens
+		event.InputTokenDetails.TextTokens = u.InputTokensDetails.TextTokens
+		event.InputTokenDetails.ImageTokens = u.InputTokensDetails.ImageTokens
+	}
+
+	if u.OutputTokensDetails != nil {
+		event.OutputTokenDetails.ReasoningTokens = u.OutputTokensDetails.ReasoningTokens
+	}
+
+	return event
+}
+
 func (u *Usage) ToResponsesUsage() *ResponsesUsage {
 	responsesUsage := &ResponsesUsage{
 		InputTokens:  u.PromptTokens,

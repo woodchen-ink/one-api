@@ -11,6 +11,11 @@ const (
 	EventTypeResponseDone   = "response.done"
 	EventTypeSessionCreated = "session.created"
 	EventTypeError          = "error"
+
+	// Responses API 终端事件类型
+	EventTypeResponseCompleted  = "response.completed"
+	EventTypeResponseIncomplete = "response.incomplete"
+	EventTypeResponseFailed     = "response.failed"
 )
 
 type Event struct {

@@ -37,8 +37,14 @@ func (p *OpenAIProvider) CreateResponsesWS() (*websocket.Conn, requester.Message
 	} else {
 		httpHeaders.Set("Authorization", fmt.Sprintf("Bearer %s", p.Channel.Key))
 	}
+	// 透传客户端的 OpenAI-Beta 头，由客户端决定协议版本
+	if p.Context != nil && p.Context.Request != nil {
+		if beta := p.Context.GetHeader("OpenAI-Beta"); beta != "" {
+			httpHeaders.Set("OpenAI-Beta", beta)
+		}
+	}
 
-	wsRequester := requester.NewWSRequester(*p.Channel.Proxy)
+	wsRequester := requester.NewWSRequester(*p.Channel.Proxy, true)
 
 	wsConn, err := wsRequester.NewRequest(fullRequestURL, httpHeaders)
 	if err != nil {
@@ -54,27 +60,36 @@ func (p *OpenAIProvider) HandleResponsesWSMessage(source requester.MessageSource
 		return true, nil, nil, nil
 	}
 
-	// 确保消息类型为文本
+	// 二进制消息直接透传
 	if messageType != websocket.TextMessage {
 		return true, nil, nil, nil
 	}
 
-	// 解析事件
-	var event types.Event
-	if err := json.Unmarshal(message, &event); err != nil {
+	// 使用轻量解析提取 type 字段，避免完整反序列化
+	var envelope struct {
+		Type     string `json:"type"`
+		Response *struct {
+			Usage *types.ResponsesUsage `json:"usage,omitempty"`
+		} `json:"response,omitempty"`
+		Error *types.EventError `json:"error,omitempty"`
+	}
+	if err := json.Unmarshal(message, &envelope); err != nil {
 		return true, nil, nil, types.NewErrorEvent("", "json_unmarshal_failed", "invalid_event", err.Error())
 	}
 
 	// 处理错误事件
-	if event.IsError() {
-		logger.SysError("responses ws event error: " + event.Error())
-		return false, nil, nil, &event
+	if envelope.Type == types.EventTypeError {
+		logger.SysError("responses ws event error: " + string(message))
+		return false, nil, nil, types.NewErrorEvent("", "upstream_error", "upstream_error", string(message))
 	}
 
-	// 处理响应完成事件，提取 usage
-	if event.Type == types.EventTypeResponseDone {
-		if event.Response != nil && event.Response.Usage != nil {
-			return true, event.Response.Usage, nil, nil
+	// 处理终端事件，提取 usage
+	// Responses API 使用 response.completed (不是 Realtime API 的 response.done)
+	switch envelope.Type {
+	case types.EventTypeResponseCompleted, types.EventTypeResponseIncomplete, types.EventTypeResponseFailed:
+		if envelope.Response != nil && envelope.Response.Usage != nil {
+			usage := envelope.Response.Usage.ToUsageEvent()
+			return true, usage, nil, nil
 		}
 	}
 
