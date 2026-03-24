@@ -189,3 +189,104 @@ func TestQuotaGetTotalQuotaDoesNotDoubleChargeCachedPromptTokens(t *testing.T) {
 		assert.Equal(t, 400, breakdown[2].Quantity)
 	}
 }
+
+func TestQuotaDoesNotDoubleChargeAudioTokens(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	recorder := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(recorder)
+	c.Set("group_ratio", 1.0)
+
+	extraRatios := datatypes.NewJSONType(map[string]float64{
+		config.UsageExtraInputAudio:  40,
+		config.UsageExtraOutputAudio: 20,
+	})
+	model.PricingInstance = &model.Pricing{Prices: map[string]*model.Price{
+		"gpt-4o-audio-preview": {
+			Model:       "gpt-4o-audio-preview",
+			Type:        model.TokensPriceType,
+			ChannelType: 1,
+			Input:       2.5,
+			Output:      10,
+			ExtraRatios: &extraRatios,
+		},
+	}}
+
+	quota := NewQuota(c, "gpt-4o-audio-preview", 0)
+	usage := &types.Usage{
+		PromptTokens:     1000,
+		CompletionTokens: 800,
+		TotalTokens:      1800,
+		PromptTokensDetails: types.PromptTokensDetails{
+			AudioTokens: 300,
+		},
+		CompletionTokensDetails: types.CompletionTokensDetails{
+			AudioTokens: 200,
+		},
+	}
+
+	// 输入: (1000-300)*2.5 = 1750, 输入音频: 300*40 = 12000
+	// 输出: (800-200)*10 = 6000, 输出音频: 200*20 = 4000
+	// 总计: 1750 + 12000 + 6000 + 4000 = 23750
+	assert.Equal(t, 23750, quota.GetTotalQuotaByUsage(usage))
+
+	meta := quota.GetLogMeta(usage)
+	breakdown, ok := meta["billing_breakdown"].([]BillingBreakdownItem)
+	if assert.True(t, ok) && assert.Len(t, breakdown, 4) {
+		breakdownMap := make(map[string]BillingBreakdownItem)
+		for _, item := range breakdown {
+			breakdownMap[item.Metric] = item
+		}
+		assert.Equal(t, 700, breakdownMap["input"].Quantity)
+		assert.Equal(t, 600, breakdownMap["output"].Quantity)
+		assert.Equal(t, 300, breakdownMap[config.UsageExtraInputAudio].Quantity)
+		assert.Equal(t, 200, breakdownMap[config.UsageExtraOutputAudio].Quantity)
+	}
+}
+
+func TestQuotaDoesNotDoubleChargeReasoningTokens(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	recorder := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(recorder)
+	c.Set("group_ratio", 1.0)
+
+	extraRatios := datatypes.NewJSONType(map[string]float64{
+		config.UsageExtraReasoning: 5.833,
+	})
+	model.PricingInstance = &model.Pricing{Prices: map[string]*model.Price{
+		"test-reasoning": {
+			Model:       "test-reasoning",
+			Type:        model.TokensPriceType,
+			ChannelType: 1,
+			Input:       2,
+			Output:      8,
+			ExtraRatios: &extraRatios,
+		},
+	}}
+
+	quota := NewQuota(c, "test-reasoning", 0)
+	usage := &types.Usage{
+		PromptTokens:     500,
+		CompletionTokens: 1000,
+		TotalTokens:      1500,
+		CompletionTokensDetails: types.CompletionTokensDetails{
+			ReasoningTokens: 600,
+		},
+	}
+
+	// 输入: 500*2 = 1000
+	// 输出: (1000-600)*8 = 3200, 推理: 600*5.833 = 3500 (向上取整)
+	// 总计: 1000 + 3200 + 3500 = 7700
+	assert.Equal(t, 7700, quota.GetTotalQuotaByUsage(usage))
+
+	meta := quota.GetLogMeta(usage)
+	breakdown, ok := meta["billing_breakdown"].([]BillingBreakdownItem)
+	if assert.True(t, ok) && assert.Len(t, breakdown, 3) {
+		breakdownMap := make(map[string]BillingBreakdownItem)
+		for _, item := range breakdown {
+			breakdownMap[item.Metric] = item
+		}
+		assert.Equal(t, 500, breakdownMap["input"].Quantity)
+		assert.Equal(t, 400, breakdownMap["output"].Quantity)
+		assert.Equal(t, 600, breakdownMap[config.UsageExtraReasoning].Quantity)
+	}
+}

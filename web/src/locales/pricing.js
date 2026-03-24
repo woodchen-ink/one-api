@@ -28,9 +28,7 @@ export const pricingTranslations = {
     'common.actions': '操作',
     'common.edit': '编辑',
     'common.delete': '删除',
-    'common.total': '总记录数',
-    'pricing_edit.locked': '已锁定',
-    'pricing_edit.unlocked': '未锁定'
+    'common.total': '总记录数'
   },
   en: {
     'pricing_edit.unknown': 'Unknown',
@@ -61,8 +59,6 @@ export const pricingTranslations = {
     'common.actions': 'Actions',
     'common.edit': 'Edit',
     'common.delete': 'Delete',
-    'common.total': 'Total',
-    'pricing_edit.locked': 'Locked',
-    'pricing_edit.unlocked': 'Unlocked'
+    'common.total': 'Total'
   }
 };

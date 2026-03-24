@@ -40,7 +40,6 @@ const Single = ({ ownedby, prices, reloadData }) => {
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(getPageSize('pricing', 24));
   const [channelFilter, setChannelFilter] = useState('all');
-  const [lockFilter, setLockFilter] = useState('all');
 
   // 删除确认对话框
   const handleDeleteClick = (row) => {
@@ -128,15 +127,9 @@ const Single = ({ ownedby, prices, reloadData }) => {
         channelMatch = row.channel_type === channelFilter;
       }
 
-      // 锁定状态过滤
-      let lockMatch = true;
-      if (lockFilter !== 'all') {
-        lockMatch = row.locked === (lockFilter === 'locked');
-      }
-
-      return searchMatch && typeMatch && channelMatch && lockMatch;
+      return searchMatch && typeMatch && channelMatch;
     });
-  }, [rows, searchTerm, filterType, channelFilter, lockFilter, ownedby]);
+  }, [rows, searchTerm, filterType, channelFilter, ownedby]);
 
   const paginatedRows = useMemo(() => {
     const startIndex = (page - 1) * rowsPerPage;
@@ -171,7 +164,7 @@ const Single = ({ ownedby, prices, reloadData }) => {
   // 当搜索词变化时重置到第一页
   useEffect(() => {
     setPage(1);
-  }, [searchTerm, filterType, lockFilter]);
+  }, [searchTerm, filterType, channelFilter]);
 
   return (
     <Box sx={{ width: '100%' }}>
@@ -245,15 +238,6 @@ const Single = ({ ownedby, prices, reloadData }) => {
                     {channel.label}
                   </MenuItem>
                 ))}
-              </Select>
-            </FormControl>
-
-            <FormControl size="small" sx={{ minWidth: 120 }}>
-              <InputLabel>{t('pricing_edit.locked_title')}</InputLabel>
-              <Select value={lockFilter} onChange={(e) => setLockFilter(e.target.value)} label={t('pricing_edit.locked_title')}>
-                <MenuItem value="all">{t('modelpricePage.all')}</MenuItem>
-                <MenuItem value="locked">{t('pricing_edit.locked')}</MenuItem>
-                <MenuItem value="unlocked">{t('pricing_edit.unlocked')}</MenuItem>
               </Select>
             </FormControl>
 
@@ -386,7 +370,7 @@ const Single = ({ ownedby, prices, reloadData }) => {
         >
           <Icon icon="mdi:file-search-outline" width={48} height={48} color={alpha(theme.palette.text.secondary, 0.4)} />
           <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
-            {searchTerm || filterType !== 'all' || lockFilter !== 'all' ? t('common.noSearchResults') : t('common.noDataAvailable')}
+            {searchTerm || filterType !== 'all' || channelFilter !== 'all' ? t('common.noSearchResults') : t('common.noDataAvailable')}
           </Typography>
         </Paper>
       )}

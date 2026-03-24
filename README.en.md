@@ -37,7 +37,7 @@ _This project is based on [czloapi](https://github.com/songquanpeng/czloapi) and
 
 **For the sake of simplicity, after this project, except for updating the model list built into the program when adding a new supplier, the model list built into the program will not be updated under normal circumstances.**
 
-If you find that a new model is missing, please update the newly added model in `Backend-Model Price-Update Price`
+If you find that a new model is missing, please add the corresponding pricing entry manually in `Backend-Model Price`
 
 [Demo Site](https://one-hub.xiao5.info/)
 [Documentation](https://one-hub-doc.vercel.app/)
@@ -62,7 +62,6 @@ If you find that a new model is missing, please update the newly added model in 
 - Support for models charged per use
 - Support for model wildcards
 - Support for starting the program using a configuration file
-- Support model price update
 - Support automatic acquisition of supplier models
 - Support chat only. If there is an incoming `function call` parameter after opening, the channel will be skipped.
 - Support payment

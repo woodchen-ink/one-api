@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types';
 import React, { useMemo } from 'react';
 import { Box, Typography, Chip, IconButton, alpha, useTheme, Tooltip, TableRow, TableCell, Stack } from '@mui/material';
-import LockIcon from '@mui/icons-material/Lock';
 import { Icon } from '@iconify/react';
 import { useTranslation } from 'react-i18next';
 import { ValueFormatter } from 'utils/common';
@@ -88,7 +87,6 @@ const PriceCard = ({ price, onEdit, onDelete, ownedby }) => {
   };
 
   const channelColor = getChannelColor();
-  const isLocked = price.locked;
   const hasHighlight = price.id % 8 === 0;
 
   // 根据计费类型获取对应颜色
@@ -146,34 +144,19 @@ const PriceCard = ({ price, onEdit, onDelete, ownedby }) => {
           cursor: 'default'
         }}
       >
-        <Stack direction="row" alignItems="center" spacing={0.5}>
-          <Typography
-            variant="body2"
-            fontWeight={600}
-            sx={{
-              maxWidth: '85%',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap'
-            }}
-            title={price.model}
-          >
-            {price.model}
-          </Typography>
-
-          {isLocked && (
-            <Tooltip title={t('pricing_edit.locked')} arrow>
-              <LockIcon
-                fontSize="small"
-                sx={{
-                  fontSize: '0.85rem',
-                  ml: 0.5,
-                  color: theme.palette.warning.main
-                }}
-              />
-            </Tooltip>
-          )}
-        </Stack>
+        <Typography
+          variant="body2"
+          fontWeight={600}
+          sx={{
+            maxWidth: '85%',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap'
+          }}
+          title={price.model}
+        >
+          {price.model}
+        </Typography>
 
         <Stack direction="row" spacing={0.5} mt={0.5}>
           <Chip

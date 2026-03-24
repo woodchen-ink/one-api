@@ -274,24 +274,53 @@ type BillingBreakdownItem struct {
 	Quota     int     `json:"quota"`
 }
 
-func getCacheAdjustedPromptTokens(promptTokens int, extraTokens map[string]int) int {
-	if promptTokens <= 0 || len(extraTokens) == 0 {
-		return promptTokens
+// getAdjustedBaseTokens subtracts subset extra tokens from a base token count
+// to prevent double billing. OpenAI's prompt_tokens/completion_tokens already
+// include their respective detail breakdowns (audio, image, cache, reasoning)
+// as subsets, so we must remove them before billing at the base rate.
+func getAdjustedBaseTokens(baseTokens int, extraTokens map[string]int, subsetKeys []string) int {
+	if baseTokens <= 0 || len(extraTokens) == 0 {
+		return baseTokens
 	}
 
-	cacheTokens := extraTokens[config.UsageExtraCache] +
-		extraTokens[config.UsageExtraCachedWrite] +
-		extraTokens[config.UsageExtraCachedRead]
-	if cacheTokens <= 0 {
-		return promptTokens
+	subsetTotal := 0
+	for _, key := range subsetKeys {
+		subsetTotal += extraTokens[key]
+	}
+	if subsetTotal <= 0 {
+		return baseTokens
 	}
 
-	adjustedPromptTokens := promptTokens - cacheTokens
-	if adjustedPromptTokens < 0 {
+	adjusted := baseTokens - subsetTotal
+	if adjusted < 0 {
 		return 0
 	}
 
-	return adjustedPromptTokens
+	return adjusted
+}
+
+// inputSubsetKeys are extra token categories included in prompt_tokens
+var inputSubsetKeys = []string{
+	config.UsageExtraCache,
+	config.UsageExtraCachedWrite,
+	config.UsageExtraCachedRead,
+	config.UsageExtraInputAudio,
+	config.UsageExtraInputImageTokens,
+}
+
+// outputSubsetKeys are extra token categories included in completion_tokens
+var outputSubsetKeys = []string{
+	config.UsageExtraOutputAudio,
+	config.UsageExtraOutputImageTokens,
+	config.UsageExtraReasoning,
+}
+
+func getAdjustedPromptTokens(promptTokens int, extraTokens map[string]int) int {
+	return getAdjustedBaseTokens(promptTokens, extraTokens, inputSubsetKeys)
+}
+
+func getAdjustedCompletionTokens(completionTokens int, extraTokens map[string]int) int {
+	return getAdjustedBaseTokens(completionTokens, extraTokens, outputSubsetKeys)
 }
 
 func (q *Quota) getUsageBillingContext(usage *types.Usage) model.BillingContext {
@@ -345,8 +374,8 @@ func (q *Quota) buildBillingBreakdown(usage *types.Usage, resolution *model.Bill
 		})
 	} else {
 		extraTokens := usage.GetExtraTokens()
-		appendTokenItem("input", getCacheAdjustedPromptTokens(usage.PromptTokens, extraTokens), resolution.Input)
-		appendTokenItem("output", usage.CompletionTokens, resolution.Output)
+		appendTokenItem("input", getAdjustedPromptTokens(usage.PromptTokens, extraTokens), resolution.Input)
+		appendTokenItem("output", getAdjustedCompletionTokens(usage.CompletionTokens, extraTokens), resolution.Output)
 
 		for key, value := range extraTokens {
 			appendTokenItem(key, value, resolution.GetExtraPrice(key))
@@ -468,13 +497,14 @@ func (q *Quota) getTotalQuotaWithResolution(
 		resolution = q.billingResolution
 	}
 
-	cacheAdjustedPromptTokens := getCacheAdjustedPromptTokens(promptTokens, extraTokens)
+	adjustedPromptTokens := getAdjustedPromptTokens(promptTokens, extraTokens)
+	adjustedCompletionTokens := getAdjustedCompletionTokens(completionTokens, extraTokens)
 
 	if q.price.Type == model.TimesPriceType {
 		quota = q.getFlatPriceQuota(resolution.Input)
 	} else {
-		quota += q.getTokenPriceQuota(cacheAdjustedPromptTokens, resolution.Input)
-		quota += q.getTokenPriceQuota(completionTokens, resolution.Output)
+		quota += q.getTokenPriceQuota(adjustedPromptTokens, resolution.Input)
+		quota += q.getTokenPriceQuota(adjustedCompletionTokens, resolution.Output)
 		for key, value := range extraTokens {
 			quota += q.getTokenPriceQuota(value, resolution.GetExtraPrice(key))
 		}
@@ -492,7 +522,7 @@ func (q *Quota) getTotalQuotaWithResolution(
 		quota += int(math.Ceil(float64(extraBillingQuota) * q.groupRatio))
 	}
 
-	totalChargeableTokens := cacheAdjustedPromptTokens + completionTokens
+	totalChargeableTokens := adjustedPromptTokens + adjustedCompletionTokens
 	for _, value := range extraTokens {
 		totalChargeableTokens += value
 	}

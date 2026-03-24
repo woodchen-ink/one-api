@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import { IconButton, TableCell, TableRow, Tooltip, Typography, Stack, Chip, Box, alpha, useTheme } from '@mui/material';
-import LockIcon from '@mui/icons-material/Lock';
 import { Icon } from '@iconify/react';
 import { useTranslation } from 'react-i18next';
 import { ValueFormatter } from 'utils/common';
@@ -119,7 +118,7 @@ const PricesTableRow = ({ item, onEdit, onDelete, ownedby }) => {
         transition: 'background-color 0.15s ease'
       }}
     >
-      {/* 类型与锁定状态 */}
+      {/* 类型与渠道 */}
       <TableCell width="20%" align="left" sx={{ pl: 2 }}>
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
@@ -137,18 +136,6 @@ const PricesTableRow = ({ item, onEdit, onDelete, ownedby }) => {
                 minWidth: 60
               }}
             />
-
-            {item.locked && (
-              <Tooltip title={t('pricing_edit.locked')} arrow>
-                <LockIcon
-                  fontSize="small"
-                  sx={{
-                    color: theme.palette.warning.main,
-                    fontSize: '1rem'
-                  }}
-                />
-              </Tooltip>
-            )}
           </Box>
 
           <Chip

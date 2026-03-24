@@ -4,7 +4,6 @@ import { Formik } from 'formik';
 import { useTheme } from '@mui/material/styles';
 import { useCallback, useEffect, useState } from 'react';
 import {
-  Alert,
   Autocomplete,
   Button,
   Checkbox,
@@ -33,7 +32,6 @@ import { priceType } from './util';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import { useTranslation } from 'react-i18next';
-import ToggleButtonGroup from 'ui-component/ToggleButton';
 import Decimal from 'decimal.js';
 import { ExtraRatiosSelector } from './ExtraRatiosSelector';
 import BillingRulesEditor from './BillingRulesEditor';
@@ -109,7 +107,6 @@ const multipleOriginInputs = {
   channel_type: 1,
   input: 0,
   output: 0,
-  locked: false,
   models: [],
   extra_ratios: {},
   billing_rules: []
@@ -122,7 +119,6 @@ const singleOriginInputs = {
   channel_type: 1,
   input: 0,
   output: 0,
-  locked: false,
   extra_ratios: {},
   billing_rules: []
 };
@@ -155,11 +151,6 @@ const EditModal = ({
     },
     []
   );
-
-  const lockedOptions = [
-    { value: true, label: t('pricing_edit.locked') },
-    { value: false, label: t('pricing_edit.unlocked') }
-  ];
 
   const handleEndAdornment = useCallback(
     (value) => {
@@ -238,7 +229,6 @@ const EditModal = ({
           channel_type: values.channel_type,
           input: calculatedInput,
           output: calculatedOutput,
-          locked: values.locked,
           extra_ratios: values.extra_ratios,
           billing_rules: values.billing_rules
         }
@@ -268,18 +258,11 @@ const EditModal = ({
   const handleChange = (event) => {
     if (!singleMode) return; // 单一模式专用
 
-    const { name, value, checked } = event.target;
-
-    let finalValue;
-    if (name === 'input' || name === 'output') {
-      finalValue = value;
-    } else {
-      finalValue = name === 'locked' ? checked : value;
-    }
+    const { name, value } = event.target;
 
     setInputs((prev) => ({
       ...prev,
-      [name]: finalValue
+      [name]: value
     }));
 
     if (errors[name]) {
@@ -489,45 +472,6 @@ const EditModal = ({
     );
   };
 
-  // 渲染锁定切换按钮组
-  const renderLockedToggle = (formProps) => {
-    const { handleChange: formikHandleChange, values = {} } = formProps || {};
-
-    // 在单模式下，我们需要使用不同的处理方式
-    const handleLockChange = (event, newLocked) => {
-      if (singleMode) {
-        // 在单模式下，直接更新inputs状态
-        handleChange({
-          target: {
-            name: 'locked',
-            checked: newLocked
-          }
-        });
-      } else {
-        // 在多模式下，使用Formik的handleChange
-        formikHandleChange({
-          target: {
-            name: 'locked',
-            value: newLocked
-          }
-        });
-      }
-    };
-
-    return (
-      <FormControl fullWidth sx={{ ...theme.typography.otherInput }}>
-        <Stack direction="row" spacing={2}>
-          <ToggleButtonGroup
-            value={singleMode ? inputs.locked : values?.locked}
-            onChange={handleLockChange}
-            options={lockedOptions}
-            aria-label="locked toggle"
-          />
-        </Stack>
-      </FormControl>
-    );
-  };
-
   // 渲染额外比率选择器
   const renderExtraRatioSelector = (formProps) => {
     const { setFieldValue, values = {} } = formProps || {};
@@ -704,9 +648,6 @@ const EditModal = ({
               {inputs.type === 'tokens' && renderOutputField()}
             </Stack>
 
-            {renderLockedToggle()}
-            <Alert severity="warning">{t('pricing_edit.lockedTip')}</Alert>
-
             {renderExtraRatioSelector()}
             {renderBillingRulesEditor()}
 
@@ -730,8 +671,6 @@ const EditModal = ({
                   {formProps.values.type === 'tokens' && renderOutputField(formProps)}
                 </Stack>
                 {renderModelSelector(formProps)}
-                {renderLockedToggle(formProps)}
-                <Alert severity="warning">{t('pricing_edit.lockedTip')}</Alert>
                 {renderExtraRatioSelector(formProps)}
                 {renderBillingRulesEditor(formProps)}
                 {renderActions(formProps)}

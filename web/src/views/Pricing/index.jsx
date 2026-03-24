@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import { Tabs, Tab, Box, Card, Alert, Stack, Button, Typography, ButtonGroup } from '@mui/material';
+import { Tabs, Tab, Box, Card, Alert, Stack, Button, ButtonGroup } from '@mui/material';
 import { Icon } from '@iconify/react';
 import Single from './single';
 import Multiple from './multiple';
@@ -8,7 +8,6 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import AdminContainer from 'ui-component/AdminContainer';
 import { API } from 'utils/api';
 import { showError } from 'utils/common';
-import { CheckUpdates } from './component/CheckUpdates';
 import EditeModal from './component/EditModal';
 import { useTranslation } from 'react-i18next';
 
@@ -39,7 +38,6 @@ const Pricing = () => {
   const { t } = useTranslation();
   const [ownedby, setOwnedby] = useState([]);
   const [modelList, setModelList] = useState([]);
-  const [openModal, setOpenModal] = useState(false);
   const [openaddModal, setOpenaddModal] = useState(false);
   const [errPrices, setErrPrices] = useState('');
   const [prices, setPrices] = useState([]);
@@ -68,12 +66,6 @@ const Pricing = () => {
     fetchPrices();
   };
 
-  const handleOkModal = (status) => {
-    if (status === true) {
-      reloadData();
-      setOpenModal(false);
-    }
-  };
   const [editPricesItem, setEditPricesItem] = useState(null);
 
   // 处理刷新
@@ -192,13 +184,6 @@ const Pricing = () => {
         <Button onClick={handleRefresh} startIcon={<Icon icon="solar:refresh-bold-duotone" />}>
           {t('pricingPage.refreshButton')}
         </Button>
-        <Button
-          onClick={() => {
-            setOpenModal(true);
-          }}
-        >
-          {t('pricingPage.updatePricesButton')}
-        </Button>
       </ButtonGroup>
       <Alert severity="info">
         当前价格配置为直接美元计费。
@@ -267,14 +252,6 @@ const Pricing = () => {
           </Box>
         </AdminContainer>
       </Card>
-      <CheckUpdates
-        open={openModal}
-        onCancel={() => {
-          setOpenModal(false);
-        }}
-        row={prices}
-        onOk={handleOkModal}
-      />
     </Stack>
   );
 };

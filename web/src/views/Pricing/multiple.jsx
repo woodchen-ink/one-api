@@ -48,7 +48,6 @@ export default function Multiple({ prices, reloadData, ownedby, noPriceModels })
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(getPageSize('pricing_multiple', 10));
   const [channelFilter, setChannelFilter] = useState('all');
-  const [lockFilter, setLockFilter] = useState('all');
 
   // 处理刷新
   const handleRefresh = async () => {
@@ -85,10 +84,9 @@ export default function Multiple({ prices, reloadData, ownedby, noPriceModels })
 
   useEffect(() => {
     const grouped = prices.reduce((acc, item, index) => {
-      // 需要保证 extra_ratios 和 locked 字段也相同才能合并
       const extraRatiosStr = item.extra_ratios ? JSON.stringify(item.extra_ratios) : '';
       const billingRulesStr = item.billing_rules ? JSON.stringify(item.billing_rules) : '';
-      const key = `${item.type}-${item.channel_type}-${item.input}-${item.output}-${extraRatiosStr}-${billingRulesStr}-${item.locked}`;
+      const key = `${item.type}-${item.channel_type}-${item.input}-${item.output}-${extraRatiosStr}-${billingRulesStr}`;
 
       if (!acc[key]) {
         acc[key] = {
@@ -155,15 +153,9 @@ export default function Multiple({ prices, reloadData, ownedby, noPriceModels })
         channelMatch = row.channel_type === channelFilter;
       }
 
-      // 锁定状态过滤
-      let lockMatch = true;
-      if (lockFilter !== 'all') {
-        lockMatch = row.locked === (lockFilter === 'locked');
-      }
-
-      return searchMatch && typeMatch && channelMatch && lockMatch;
+      return searchMatch && typeMatch && channelMatch;
     });
-  }, [rows, searchTerm, filterType, channelFilter, lockFilter, ownedby]);
+  }, [rows, searchTerm, filterType, channelFilter, ownedby]);
 
   const paginatedRows = useMemo(() => {
     const startIndex = (page - 1) * rowsPerPage;
@@ -188,7 +180,7 @@ export default function Multiple({ prices, reloadData, ownedby, noPriceModels })
   // 当搜索词变化时重置到第一页
   useEffect(() => {
     setPage(1);
-  }, [searchTerm, filterType, lockFilter]);
+  }, [searchTerm, filterType, channelFilter]);
 
   return (
     <>
@@ -262,15 +254,6 @@ export default function Multiple({ prices, reloadData, ownedby, noPriceModels })
                     {channel.label}
                   </MenuItem>
                 ))}
-              </Select>
-            </FormControl>
-
-            <FormControl size="small" sx={{ minWidth: 120 }}>
-              <InputLabel>{t('pricing_edit.locked_title')}</InputLabel>
-              <Select value={lockFilter} onChange={(e) => setLockFilter(e.target.value)} label={t('pricing_edit.locked_title')}>
-                <MenuItem value="all">{t('modelpricePage.all')}</MenuItem>
-                <MenuItem value="locked">{t('pricing_edit.locked')}</MenuItem>
-                <MenuItem value="unlocked">{t('pricing_edit.unlocked')}</MenuItem>
               </Select>
             </FormControl>
 

@@ -439,7 +439,18 @@ const detailTooltipSlotProps = {
 function viewTokens(item, t, totalInputTokens, totalOutputTokens, tokenDetails) {
   const { prompt_tokens, completion_tokens } = item;
   const detailMetrics = (tokenDetails || [])
-    .filter((detail) => ['cached_tokens', 'cached_write_tokens', 'cached_read_tokens', 'reasoning_tokens'].includes(detail.key))
+    .filter((detail) =>
+      [
+        'cached_tokens',
+        'cached_write_tokens',
+        'cached_read_tokens',
+        'reasoning_tokens',
+        'input_audio_tokens',
+        'output_audio_tokens',
+        'input_image_tokens',
+        'output_image_tokens'
+      ].includes(detail.key)
+    )
     .map((detail) => ({
       ...detail,
       shortLabel: getTokenShortLabel(detail.key)
@@ -848,7 +859,11 @@ function getTokenShortLabel(key) {
     cached_tokens: 'Cache',
     cached_write_tokens: 'Cache Write',
     cached_read_tokens: 'Cache Read',
-    reasoning_tokens: 'Reasoning'
+    reasoning_tokens: 'Reasoning',
+    input_audio_tokens: 'Audio In',
+    output_audio_tokens: 'Audio Out',
+    input_image_tokens: 'Image In',
+    output_image_tokens: 'Image Out'
   };
 
   return labels[key] || key;
