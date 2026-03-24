@@ -270,14 +270,22 @@ func SetApiRouter(router *gin.Engine) {
 			noticeRoute.PUT("/", controller.UpdateNotice)
 			noticeRoute.DELETE("/:id", controller.DeleteNotice)
 		}
-		logRoute := apiRouter.Group("/log")
-		logRoute.GET("/", middleware.AdminAuth(), controller.GetLogsList)
-		logRoute.DELETE("/", middleware.AdminAuth(), controller.DeleteHistoryLogs)
-		logRoute.GET("/stat", middleware.AdminAuth(), controller.GetLogsStat)
-		logRoute.GET("/self/stat", middleware.UserAuth(), controller.GetLogsSelfStat)
-		// logRoute.GET("/search", middleware.AdminAuth(), controller.SearchAllLogs)
-		logRoute.GET("/self", middleware.UserAuth(), controller.GetUserLogsList)
-		// logRoute.GET("/self/search", middleware.UserAuth(), controller.SearchUserLogs)
+		adminLogRoute := apiRouter.Group("/admin/log")
+		adminLogRoute.Use(middleware.AdminAuth())
+		{
+			adminLogRoute.GET("/", controller.GetAdminLogsList)
+			adminLogRoute.DELETE("/", controller.DeleteHistoryLogs)
+			adminLogRoute.GET("/stat", controller.GetAdminLogsStat)
+			// adminLogRoute.GET("/search", controller.SearchAllLogs)
+		}
+
+		userLogRoute := apiRouter.Group("/user/log")
+		userLogRoute.Use(middleware.UserAuth())
+		{
+			userLogRoute.GET("/", controller.GetUserLogsList)
+			userLogRoute.GET("/stat", controller.GetUserLogsStat)
+			// userLogRoute.GET("/search", controller.SearchUserLogs)
+		}
 		groupRoute := apiRouter.Group("/group")
 		groupRoute.Use(middleware.AdminAuth())
 		{

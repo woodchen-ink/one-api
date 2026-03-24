@@ -185,7 +185,7 @@ export default function Log({ adminMode = false }) {
         if (orderBy) {
           orderBy = order === 'desc' ? '-' + orderBy : orderBy;
         }
-        const url = canViewAdminLogs ? '/api/log/' : '/api/log/self/';
+        const url = canViewAdminLogs ? '/api/admin/log/' : '/api/user/log/';
         if (!canViewAdminLogs) {
           delete keyword.username;
           delete keyword.channel_id;

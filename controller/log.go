@@ -2,14 +2,15 @@ package controller
 
 import (
 	"net/http"
+	"strconv"
+
 	"czloapi/common"
 	"czloapi/model"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
-func GetLogsList(c *gin.Context) {
+func GetAdminLogsList(c *gin.Context) {
 	var params model.LogsListParams
 	if err := c.ShouldBindQuery(&params); err != nil {
 		common.APIRespondWithError(c, http.StatusOK, err)
@@ -42,6 +43,9 @@ func GetUserLogsList(c *gin.Context) {
 		common.APIRespondWithError(c, http.StatusOK, err)
 		return
 	}
+
+	model.SanitizeUserLogs(logs)
+
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "",
@@ -49,7 +53,7 @@ func GetUserLogsList(c *gin.Context) {
 	})
 }
 
-func GetLogsStat(c *gin.Context) {
+func GetAdminLogsStat(c *gin.Context) {
 	// logType, _ := strconv.Atoi(c.Query("type"))
 	startTimestamp, _ := strconv.ParseInt(c.Query("start_timestamp"), 10, 64)
 	endTimestamp, _ := strconv.ParseInt(c.Query("end_timestamp"), 10, 64)
@@ -69,7 +73,7 @@ func GetLogsStat(c *gin.Context) {
 	})
 }
 
-func GetLogsSelfStat(c *gin.Context) {
+func GetUserLogsStat(c *gin.Context) {
 	username := c.GetString("username")
 	// logType, _ := strconv.Atoi(c.Query("type"))
 	startTimestamp, _ := strconv.ParseInt(c.Query("start_timestamp"), 10, 64)

@@ -195,7 +195,7 @@ func GetLogsList(params *LogsListParams) (*DataResult[Log], error) {
 func GetUserLogsList(userId int, params *LogsListParams) (*DataResult[Log], error) {
 	var logs []*Log
 
-	tx := DB.Where("user_id = ?", userId).Omit("id", "source_ip")
+	tx := DB.Where("user_id = ?", userId).Omit("source_ip", "user_id", "username", "channel_id")
 
 	if params.LogType != LogTypeUnknown {
 		tx = tx.Where("type = ?", params.LogType)
@@ -214,6 +214,37 @@ func GetUserLogsList(userId int, params *LogsListParams) (*DataResult[Log], erro
 	}
 
 	return PaginateAndOrder[Log](tx, &params.PaginationParams, &logs, allowedLogsOrderFields)
+}
+
+func SanitizeUserLogs(result *DataResult[Log]) {
+	if result == nil || result.Data == nil {
+		return
+	}
+
+	for _, logItem := range *result.Data {
+		if logItem == nil {
+			continue
+		}
+
+		logItem.UserId = 0
+		logItem.Username = ""
+		logItem.ChannelId = 0
+		logItem.SourceIp = ""
+		logItem.Channel = nil
+
+		if logItem.Metadata.Data() == nil {
+			continue
+		}
+
+		sanitizedMetadata := make(map[string]any, len(logItem.Metadata.Data()))
+		for key, value := range logItem.Metadata.Data() {
+			if key == "user_agent" {
+				continue
+			}
+			sanitizedMetadata[key] = value
+		}
+		logItem.Metadata = datatypes.NewJSONType(sanitizedMetadata)
+	}
 }
 
 func SearchAllLogs(keyword string) (logs []*Log, err error) {
