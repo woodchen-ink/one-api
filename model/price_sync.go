@@ -7,8 +7,6 @@ import (
 	"sort"
 	"strings"
 
-	"czloapi/common/logger"
-
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
@@ -248,17 +246,6 @@ func GetAllKnownModelNames() []string {
 		for modelName := range modelMap {
 			modelsMap[modelName] = true
 		}
-	}
-
-	modelInfos, err := GetAllModelInfo()
-	if err == nil {
-		for _, info := range modelInfos {
-			if strings.TrimSpace(info.Model) != "" {
-				modelsMap[info.Model] = true
-			}
-		}
-	} else {
-		logger.SysError("failed to load model info for price sync: " + err.Error())
 	}
 
 	models := make([]string, 0, len(modelsMap))

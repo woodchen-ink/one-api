@@ -88,7 +88,6 @@ type Price struct {
 
 	ExtraRatios  *datatypes.JSONType[map[string]float64] `json:"extra_ratios,omitempty" gorm:"type:json"`
 	BillingRules *datatypes.JSONType[[]BillingRule]      `json:"billing_rules,omitempty" gorm:"type:json"`
-	ModelInfo    *ModelInfoResponse                      `json:"model_info,omitempty" gorm:"-"`
 }
 
 func GetAllPrices() ([]*Price, error) {

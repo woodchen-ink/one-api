@@ -21,7 +21,6 @@ const Playground = Loadable(lazy(() => import('views/Playground')));
 const Payment = Loadable(lazy(() => import('views/Payment')));
 const UserGroup = Loadable(lazy(() => import('views/UserGroup')));
 const ModelOwnedby = Loadable(lazy(() => import('views/ModelOwnedby')));
-const ModelInfo = Loadable(lazy(() => import('views/ModelInfo')));
 const ModelMapping = Loadable(lazy(() => import('views/ModelMapping')));
 const Invoice = Loadable(lazy(() => import('views/Invoice')));
 const InvoiceDetail = Loadable(lazy(() => import('views/Invoice/detail')));
@@ -132,10 +131,6 @@ const MainRoutes = {
     {
       path: 'model_ownedby',
       element: <ModelOwnedby />
-    },
-    {
-      path: 'model_info',
-      element: <ModelInfo />
     },
     {
       path: 'model_mapping',
