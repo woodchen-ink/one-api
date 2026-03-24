@@ -121,6 +121,10 @@ func (i *PromptTokensDetails) Merge(other *PromptTokensDetails) {
 	i.AudioTokens += other.AudioTokens
 	i.CachedTokens += other.CachedTokens
 	i.TextTokens += other.TextTokens
+	i.ImageTokens += other.ImageTokens
+	i.CachedTokensInternal += other.CachedTokensInternal
+	i.CachedWriteTokens += other.CachedWriteTokens
+	i.CachedReadTokens += other.CachedReadTokens
 }
 
 func (o *CompletionTokensDetails) Merge(other *CompletionTokensDetails) {
@@ -130,6 +134,10 @@ func (o *CompletionTokensDetails) Merge(other *CompletionTokensDetails) {
 
 	o.AudioTokens += other.AudioTokens
 	o.TextTokens += other.TextTokens
+	o.ReasoningTokens += other.ReasoningTokens
+	o.AcceptedPredictionTokens += other.AcceptedPredictionTokens
+	o.RejectedPredictionTokens += other.RejectedPredictionTokens
+	o.ImageTokens += other.ImageTokens
 }
 
 type OpenAIError struct {
