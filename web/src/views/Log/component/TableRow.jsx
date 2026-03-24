@@ -223,16 +223,16 @@ function viewModelName(model_name, isStream, metadata, t) {
 
   if (isStream) {
     modeLabel = t('logPage.requestMode.stream');
-    modeIcon = 'mdi:transit-connection-variant';
+    modeIcon = 'material-symbols:arrow-right-alt-rounded';
   } else if (requestMode === 'responses_ws') {
     modeLabel = t('logPage.requestMode.responsesWss');
-    modeIcon = 'mdi:websocket';
+    modeIcon = 'material-symbols:compare-arrows-rounded';
   } else if (requestMode === 'realtime_ws') {
     modeLabel = t('logPage.requestMode.realtimeWss');
-    modeIcon = 'mdi:websocket';
+    modeIcon = 'material-symbols:compare-arrows-rounded';
   } else if (requestTransport === 'wss') {
     modeLabel = t('logPage.requestMode.wss');
-    modeIcon = 'mdi:websocket';
+    modeIcon = 'material-symbols:compare-arrows-rounded';
   }
 
   if (modeLabel) {
@@ -245,21 +245,22 @@ function viewModelName(model_name, isStream, metadata, t) {
           <Box
             sx={{
               position: 'absolute',
-              top: -4,
-              right: -6,
-              width: 14,
-              height: 14,
+              top: -5,
+              right: -7,
+              width: 16,
+              height: 16,
               borderRadius: '50%',
               border: '2px solid',
               borderColor: 'primary.main',
-              color: 'primary.main',
+              color: 'primary.contrastText',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              bgcolor: 'primary.contrastText'
+              bgcolor: 'primary.main',
+              boxShadow: (theme) => theme.shadows[1]
             }}
           >
-            <Icon icon={modeIcon} width={10} />
+            <Icon icon={modeIcon} width={12} />
           </Box>
         </Box>
       </Tooltip>
