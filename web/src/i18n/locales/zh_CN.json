@@ -716,6 +716,8 @@
     "output_audio_tokens": "音频输出倍率",
     "cached_tokens": "缓存倍率",
     "cached_write_tokens": "缓存写入倍率",
+    "cached_write_5m_tokens": "5m缓存写入倍率",
+    "cached_write_1h_tokens": "1h缓存写入倍率",
     "cached_read_tokens": "缓存读取倍率",
     "reasoning_tokens": "推理倍率",
     "input_text_tokens": "输入文本倍率",

@@ -1,8 +1,8 @@
 package claude
 
 import (
-	"encoding/json"
 	"czloapi/types"
+	"encoding/json"
 )
 
 const (
@@ -119,6 +119,7 @@ type Message struct {
 type ClaudeRequest struct {
 	Model         string      `json:"model,omitempty"`
 	System        any         `json:"system,omitempty"`
+	CacheControl  any         `json:"cache_control,omitempty"`
 	Messages      []Message   `json:"messages"`
 	MaxTokens     int         `json:"max_tokens"`
 	StopSequences []string    `json:"stop_sequences,omitempty"`
@@ -155,13 +156,18 @@ type Tools struct {
 }
 
 type Usage struct {
-	InputTokens              int `json:"input_tokens,omitempty"`
-	OutputTokens             int `json:"output_tokens,omitempty"`
-	CacheCreationInputTokens int `json:"cache_creation_input_tokens,omitempty"`
-	CacheReadInputTokens     int `json:"cache_read_input_tokens,omitempty"`
-	CacheCreation            any `json:"cache_creation,omitempty"`
+	InputTokens              int                 `json:"input_tokens,omitempty"`
+	OutputTokens             int                 `json:"output_tokens,omitempty"`
+	CacheCreationInputTokens int                 `json:"cache_creation_input_tokens,omitempty"`
+	CacheReadInputTokens     int                 `json:"cache_read_input_tokens,omitempty"`
+	CacheCreation            *CacheCreationUsage `json:"cache_creation,omitempty"`
 
 	ServerToolUse *ServerToolUse `json:"server_tool_use,omitempty"`
+}
+
+type CacheCreationUsage struct {
+	Ephemeral5mInputTokens int `json:"ephemeral_5m_input_tokens,omitempty"`
+	Ephemeral1hInputTokens int `json:"ephemeral_1h_input_tokens,omitempty"`
 }
 
 type ServerToolUse struct {

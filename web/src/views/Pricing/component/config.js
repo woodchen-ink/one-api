@@ -13,7 +13,23 @@ const extraRatiosConfig = [
     isPrompt: true,
     channelTypes: [14],
     channels: 'Anthropic Claude',
-    description: '适用于 Claude Prompt Caching 的首次写入成本。'
+    description: '兼容旧版 Claude Prompt Caching 写入成本字段。'
+  },
+  {
+    name: '缓存写入价格(5m)',
+    key: 'cached_write_5m_tokens',
+    isPrompt: true,
+    channelTypes: [14],
+    channels: 'Anthropic Claude',
+    description: '适用于 Claude Prompt Caching 5 分钟 TTL 的首次写入成本。'
+  },
+  {
+    name: '缓存写入价格(1h)',
+    key: 'cached_write_1h_tokens',
+    isPrompt: true,
+    channelTypes: [14],
+    channels: 'Anthropic Claude',
+    description: '适用于 Claude Prompt Caching 1 小时 TTL 的首次写入成本。'
   },
   {
     name: '缓存读取价格',

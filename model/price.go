@@ -16,8 +16,10 @@ const (
 	legacyTokenRateToUSDPerMillion = 2.0
 	legacyTimesRateToUSD           = 1.0 / 500.0
 
-	DefaultCachedWriteRatio = 1.25
-	DefaultCachedReadRatio  = 0.1
+	DefaultCachedWriteRatio   = 1.25
+	DefaultCachedWrite5mRatio = 1.25
+	DefaultCachedWrite1hRatio = 2.0
+	DefaultCachedReadRatio    = 0.1
 )
 
 func LegacyTokenPriceToUSDPerMillion(price float64) float64 {
@@ -43,6 +45,8 @@ func LegacyTimesPriceToUSD(price float64) float64 {
 var ExtraKeyUsesInputPrice = map[string]bool{
 	config.UsageExtraCache:             true,
 	config.UsageExtraCachedWrite:       true,
+	config.UsageExtraCachedWrite5m:     true,
+	config.UsageExtraCachedWrite1h:     true,
 	config.UsageExtraCachedRead:        true,
 	config.UsageExtraInputAudio:        true,
 	config.UsageExtraOutputAudio:       false,
@@ -64,8 +68,10 @@ func GetExtraPriceUsesInputPrice(key string) bool {
 
 var defaultExtraPriceFactor = map[string]float64{
 	config.UsageExtraCache:            1,
-	config.UsageExtraCachedWrite:      1.25,
-	config.UsageExtraCachedRead:       0.1,
+	config.UsageExtraCachedWrite:      DefaultCachedWriteRatio,
+	config.UsageExtraCachedWrite5m:    DefaultCachedWrite5mRatio,
+	config.UsageExtraCachedWrite1h:    DefaultCachedWrite1hRatio,
+	config.UsageExtraCachedRead:       DefaultCachedReadRatio,
 	config.UsageExtraInputAudio:       1,
 	config.UsageExtraOutputAudio:      1,
 	config.UsageExtraReasoning:        1,
@@ -236,124 +242,6 @@ func GetDefaultPrice() []*Price {
 		"gpt-4-0125-preview":     {[]float64{5, 15}, config.ChannelTypeOpenAI},
 		"gpt-4-turbo-preview":    {[]float64{5, 15}, config.ChannelTypeOpenAI},
 		"gpt-4-vision-preview":   {[]float64{5, 15}, config.ChannelTypeOpenAI},
-		// $0.005 / 1K tokens	$0.015 / 1K tokens
-		"gpt-4o": {[]float64{2.5, 7.5}, config.ChannelTypeOpenAI},
-		// 	$0.0005 / 1K tokens	$0.0015 / 1K tokens
-		"gpt-3.5-turbo":      {[]float64{0.25, 0.75}, config.ChannelTypeOpenAI},
-		"gpt-3.5-turbo-0125": {[]float64{0.25, 0.75}, config.ChannelTypeOpenAI},
-		// 	$0.0015 / 1K tokens	$0.002 / 1K tokens
-		"gpt-3.5-turbo-0301":     {[]float64{0.75, 1}, config.ChannelTypeOpenAI},
-		"gpt-3.5-turbo-0613":     {[]float64{0.75, 1}, config.ChannelTypeOpenAI},
-		"gpt-3.5-turbo-instruct": {[]float64{0.75, 1}, config.ChannelTypeOpenAI},
-		// 	$0.003 / 1K tokens	$0.004 / 1K tokens
-		"gpt-3.5-turbo-16k":      {[]float64{1.5, 2}, config.ChannelTypeOpenAI},
-		"gpt-3.5-turbo-16k-0613": {[]float64{1.5, 2}, config.ChannelTypeOpenAI},
-		// 	$0.001 / 1K tokens	$0.002 / 1K tokens
-		"gpt-3.5-turbo-1106": {[]float64{0.5, 1}, config.ChannelTypeOpenAI},
-		// 	$0.0020 / 1K tokens
-		"davinci-002": {[]float64{1, 1}, config.ChannelTypeOpenAI},
-		// 	$0.0004 / 1K tokens
-		"babbage-002": {[]float64{0.2, 0.2}, config.ChannelTypeOpenAI},
-		// $0.006 / minute -> $0.006 / 150 words -> $0.006 / 200 tokens -> $0.03 / 1k tokens
-		"whisper-1": {[]float64{15, 15}, config.ChannelTypeOpenAI},
-		// $0.015 / 1K characters
-		"tts-1":      {[]float64{7.5, 7.5}, config.ChannelTypeOpenAI},
-		"tts-1-1106": {[]float64{7.5, 7.5}, config.ChannelTypeOpenAI},
-		// $0.030 / 1K characters
-		"tts-1-hd":               {[]float64{15, 15}, config.ChannelTypeOpenAI},
-		"tts-1-hd-1106":          {[]float64{15, 15}, config.ChannelTypeOpenAI},
-		"text-embedding-ada-002": {[]float64{0.05, 0.05}, config.ChannelTypeOpenAI},
-		// 	$0.00002 / 1K tokens
-		"text-embedding-3-small": {[]float64{0.01, 0.01}, config.ChannelTypeOpenAI},
-		// 	$0.00013 / 1K tokens
-		"text-embedding-3-large": {[]float64{0.065, 0.065}, config.ChannelTypeOpenAI},
-		"text-moderation-stable": {[]float64{0.1, 0.1}, config.ChannelTypeOpenAI},
-		"text-moderation-latest": {[]float64{0.1, 0.1}, config.ChannelTypeOpenAI},
-		// $0.016 - $0.020 / image
-		"dall-e-2": {[]float64{8, 8}, config.ChannelTypeOpenAI},
-		// $0.040 - $0.120 / image
-		"dall-e-3": {[]float64{20, 20}, config.ChannelTypeOpenAI},
-
-		// $0.80/million tokens $2.40/million tokens
-		"claude-instant-1.2": {[]float64{0.4, 1.2}, config.ChannelTypeAnthropic},
-		// $8.00/million tokens $24.00/million tokens
-		"claude-2.0": {[]float64{4, 12}, config.ChannelTypeAnthropic},
-		"claude-2.1": {[]float64{4, 12}, config.ChannelTypeAnthropic},
-		// $15 / M $75 / M
-		"claude-3-opus-20240229": {[]float64{7.5, 22.5}, config.ChannelTypeAnthropic},
-		//  $3 / M $15 / M
-		"claude-3-sonnet-20240229": {[]float64{1.3, 3.9}, config.ChannelTypeAnthropic},
-		//  $0.25 / M $1.25 / M  0.00025$ / 1k tokens 0.00125$ / 1k tokens
-		"claude-3-haiku-20240307": {[]float64{0.125, 0.625}, config.ChannelTypeAnthropic},
-
-		// $0.50 / 1 million tokens  $1.50 / 1 million tokens
-		// 0.0005$ / 1k tokens 0.0015$ / 1k tokens
-		"gemini-pro":        {[]float64{0.25, 0.75}, config.ChannelTypeGemini},
-		"gemini-pro-vision": {[]float64{0.25, 0.75}, config.ChannelTypeGemini},
-		"gemini-1.0-pro":    {[]float64{0.25, 0.75}, config.ChannelTypeGemini},
-		// $7 / 1 million tokens  $21 / 1 million tokens
-		"gemini-1.5-pro":          {[]float64{1.75, 5.25}, config.ChannelTypeGemini},
-		"gemini-1.5-pro-latest":   {[]float64{1.75, 5.25}, config.ChannelTypeGemini},
-		"gemini-1.5-flash":        {[]float64{0.175, 0.265}, config.ChannelTypeGemini},
-		"gemini-1.5-flash-latest": {[]float64{0.175, 0.265}, config.ChannelTypeGemini},
-		"gemini-ultra":            {[]float64{1, 1}, config.ChannelTypeGemini},
-
-		// ￥0.005 / 1k tokens
-		"glm-3-turbo": {[]float64{0.3572, 0.3572}, config.ChannelTypeZhipu},
-		// ￥0.1 / 1k tokens
-		"glm-4":  {[]float64{7.143, 7.143}, config.ChannelTypeZhipu},
-		"glm-4v": {[]float64{7.143, 7.143}, config.ChannelTypeZhipu},
-		// ￥0.0005 / 1k tokens
-		"embedding-2": {[]float64{0.0357, 0.0357}, config.ChannelTypeZhipu},
-		// ￥0.25 / 1张图片
-		"cogview-3": {[]float64{17.8571, 17.8571}, config.ChannelTypeZhipu},
-
-		// ￥0.008 / 1k tokens
-		"qwen-turbo": {[]float64{0.5715, 0.5715}, config.ChannelTypeAli},
-		// ￥0.02 / 1k tokens
-		"qwen-plus":   {[]float64{1.4286, 1.4286}, config.ChannelTypeAli},
-		"qwen-vl-max": {[]float64{1.4286, 1.4286}, config.ChannelTypeAli},
-		// 0.12元/1,000tokens
-		"qwen-max":             {[]float64{8.5714, 8.5714}, config.ChannelTypeAli},
-		"qwen-max-longcontext": {[]float64{8.5714, 8.5714}, config.ChannelTypeAli},
-		// 0.008元/1,000tokens
-		"qwen-vl-plus": {[]float64{0.5715, 0.5715}, config.ChannelTypeAli},
-		// ￥0.0007 / 1k tokens
-		"text-embedding-v1": {[]float64{0.05, 0.05}, config.ChannelTypeAli},
-
-		"abab5.5s-chat": {[]float64{0.3572, 0.3572}, config.ChannelTypeMiniMax},   // ¥0.005 / 1k tokens
-		"abab5.5-chat":  {[]float64{1.0714, 1.0714}, config.ChannelTypeMiniMax},   // ¥0.015 / 1k tokens
-		"abab6-chat":    {[]float64{14.2857, 14.2857}, config.ChannelTypeMiniMax}, // ¥0.2 / 1k tokens
-		"embo-01":       {[]float64{0.0357, 0.0357}, config.ChannelTypeMiniMax},   // ¥0.0005 / 1k tokens
-
-		"deepseek-coder": {[]float64{0.75, 0.75}, config.ChannelTypeDeepseek}, // 暂定 $0.0015 / 1K tokens
-		"deepseek-chat":  {[]float64{0.75, 0.75}, config.ChannelTypeDeepseek}, // 暂定 $0.0015 / 1K tokens
-
-		"moonshot-v1-8k":   {[]float64{0.8572, 0.8572}, config.ChannelTypeMoonshot}, // ¥0.012 / 1K tokens
-		"moonshot-v1-32k":  {[]float64{1.7143, 1.7143}, config.ChannelTypeMoonshot}, // ¥0.024 / 1K tokens
-		"moonshot-v1-128k": {[]float64{4.2857, 4.2857}, config.ChannelTypeMoonshot}, // ¥0.06 / 1K tokens
-
-		// $0.70/$0.80 /1M Tokens 0.0007$ / 1k tokens
-		"llama2-70b-4096": {[]float64{0.35, 0.4}, config.ChannelTypeGroq},
-		// $0.10/$0.10 /1M Tokens 0.0001$ / 1k tokens
-		"llama2-7b-2048": {[]float64{0.05, 0.05}, config.ChannelTypeGroq},
-		"gemma-7b-it":    {[]float64{0.05, 0.05}, config.ChannelTypeGroq},
-		// $0.27/$0.27 /1M Tokens 0.00027$ / 1k tokens
-		"mixtral-8x7b-32768": {[]float64{0.135, 0.135}, config.ChannelTypeGroq},
-
-		"@cf/stabilityai/stable-diffusion-xl-base-1.0": {[]float64{0, 0}, config.ChannelTypeCloudflareAI},
-		"@cf/lykon/dreamshaper-8-lcm":                  {[]float64{0, 0}, config.ChannelTypeCloudflareAI},
-		"@cf/bytedance/stable-diffusion-xl-lightning":  {[]float64{0, 0}, config.ChannelTypeCloudflareAI},
-		"@cf/qwen/qwen1.5-7b-chat-awq":                 {[]float64{0, 0}, config.ChannelTypeCloudflareAI},
-		"@cf/qwen/qwen1.5-14b-chat-awq":                {[]float64{0, 0}, config.ChannelTypeCloudflareAI},
-		"@hf/thebloke/deepseek-coder-6.7b-base-awq":    {[]float64{0, 0}, config.ChannelTypeCloudflareAI},
-		"@hf/google/gemma-7b-it":                       {[]float64{0, 0}, config.ChannelTypeCloudflareAI},
-		"@hf/thebloke/llama-2-13b-chat-awq":            {[]float64{0, 0}, config.ChannelTypeCloudflareAI},
-		"@cf/openai/whisper":                           {[]float64{0, 0}, config.ChannelTypeCloudflareAI},
-		//$0.50 /1M TOKENS   $1.50/1M TOKENS
-		"command-r": {[]float64{0.25, 0.75}, config.ChannelTypeCohere},
-		//$3 /1M TOKENS   $15/1M TOKENS
-		"command-r-plus": {[]float64{1.5, 7.5}, config.ChannelTypeCohere},
 	}
 
 	var prices []*Price

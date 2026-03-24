@@ -1,9 +1,9 @@
 package types
 
 import (
+	"czloapi/common/config"
 	"encoding/json"
 	"fmt"
-	"czloapi/common/config"
 	"strings"
 )
 
@@ -14,10 +14,10 @@ type Usage struct {
 	PromptTokensDetails     PromptTokensDetails     `json:"prompt_tokens_details"`
 	CompletionTokensDetails CompletionTokensDetails `json:"completion_tokens_details"`
 
-	ExtraTokens      map[string]int          `json:"-"`
-	ExtraBilling     map[string]ExtraBilling `json:"-"`
+	ExtraTokens      map[string]int             `json:"-"`
+	ExtraBilling     map[string]ExtraBilling    `json:"-"`
 	extraBillingKeys map[string]map[string]bool `json:"-"` // dedup: serviceType -> set of dedupeIDs
-	TextBuilder      strings.Builder         `json:"-"`
+	TextBuilder      strings.Builder            `json:"-"`
 }
 
 type ExtraBilling struct {
@@ -48,7 +48,18 @@ func (u *Usage) GetExtraTokens() map[string]int {
 	}
 
 	// 缓存写入
-	if u.PromptTokensDetails.CachedWriteTokens > 0 && u.ExtraTokens[config.UsageExtraCachedWrite] == 0 {
+	if u.PromptTokensDetails.CachedWrite5mTokens > 0 && u.ExtraTokens[config.UsageExtraCachedWrite5m] == 0 {
+		u.ExtraTokens[config.UsageExtraCachedWrite5m] = u.PromptTokensDetails.CachedWrite5mTokens
+	}
+
+	if u.PromptTokensDetails.CachedWrite1hTokens > 0 && u.ExtraTokens[config.UsageExtraCachedWrite1h] == 0 {
+		u.ExtraTokens[config.UsageExtraCachedWrite1h] = u.PromptTokensDetails.CachedWrite1hTokens
+	}
+
+	if u.PromptTokensDetails.CachedWriteTokens > 0 &&
+		u.PromptTokensDetails.CachedWrite5mTokens == 0 &&
+		u.PromptTokensDetails.CachedWrite1hTokens == 0 &&
+		u.ExtraTokens[config.UsageExtraCachedWrite] == 0 {
 		u.ExtraTokens[config.UsageExtraCachedWrite] = u.PromptTokensDetails.CachedWriteTokens
 	}
 
@@ -100,8 +111,10 @@ type PromptTokensDetails struct {
 	ImageTokens          int `json:"image_tokens,omitempty"`
 	CachedTokensInternal int `json:"cached_tokens_internal,omitempty"`
 
-	CachedWriteTokens int `json:"-"`
-	CachedReadTokens  int `json:"-"`
+	CachedWriteTokens   int `json:"-"`
+	CachedWrite5mTokens int `json:"-"`
+	CachedWrite1hTokens int `json:"-"`
+	CachedReadTokens    int `json:"-"`
 }
 
 type CompletionTokensDetails struct {
@@ -124,6 +137,8 @@ func (i *PromptTokensDetails) Merge(other *PromptTokensDetails) {
 	i.ImageTokens += other.ImageTokens
 	i.CachedTokensInternal += other.CachedTokensInternal
 	i.CachedWriteTokens += other.CachedWriteTokens
+	i.CachedWrite5mTokens += other.CachedWrite5mTokens
+	i.CachedWrite1hTokens += other.CachedWrite1hTokens
 	i.CachedReadTokens += other.CachedReadTokens
 }
 

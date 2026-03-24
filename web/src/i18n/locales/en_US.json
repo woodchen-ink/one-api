@@ -552,6 +552,8 @@
     "free": "Free",
     "cached_tokens": "Cache Ratio",
     "cached_write_tokens": "Cache Write Ratio",
+    "cached_write_5m_tokens": "Cache Write Ratio (5m)",
+    "cached_write_1h_tokens": "Cache Write Ratio (1h)",
     "cached_read_tokens": "Cache Read Ratio",
     "reasoning_tokens": "Reasoning Ratio",
     "input_text_tokens": "Input Text Ratio",

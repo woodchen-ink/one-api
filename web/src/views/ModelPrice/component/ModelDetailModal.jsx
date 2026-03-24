@@ -35,6 +35,8 @@ export default function ModelDetailModal({ open, onClose, model, provider, model
   const extraPriceNames = {
     cached_tokens: '缓存价格',
     cached_write_tokens: '缓存写入价格',
+    cached_write_5m_tokens: '缓存写入价格(5m)',
+    cached_write_1h_tokens: '缓存写入价格(1h)',
     cached_read_tokens: '缓存读取价格',
     input_audio_tokens: '音频输入价格',
     output_audio_tokens: '音频输出价格',

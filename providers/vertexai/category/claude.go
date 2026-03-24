@@ -1,13 +1,13 @@
 package category
 
 import (
-	"encoding/json"
-	"net/http"
 	"czloapi/common"
 	"czloapi/common/requester"
 	"czloapi/providers/base"
 	"czloapi/providers/claude"
 	"czloapi/types"
+	"encoding/json"
+	"net/http"
 )
 
 const AnthropicVersion = "vertex-2023-10-16"
@@ -28,6 +28,8 @@ var claudeMap = map[string]string{
 	"claude-sonnet-4-20250514":   "claude-sonnet-4@20250514",
 	"claude-opus-4-20250514":     "claude-opus-4@20250514",
 	"claude-opus-4-1-20250805":   "claude-opus-4-1@20250805",
+	"claude-opus-4-6":            "claude-opus-4-6",
+	"claude-sonnet-4-6":          "claude-sonnet-4-6",
 }
 
 func init() {

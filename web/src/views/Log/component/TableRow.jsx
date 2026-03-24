@@ -443,6 +443,8 @@ function viewTokens(item, t, totalInputTokens, totalOutputTokens, tokenDetails) 
       [
         'cached_tokens',
         'cached_write_tokens',
+        'cached_write_5m_tokens',
+        'cached_write_1h_tokens',
         'cached_read_tokens',
         'reasoning_tokens',
         'input_audio_tokens',
@@ -715,6 +717,8 @@ function formatBillingMetricLabel(metric) {
     output: 'Output',
     cached_tokens: 'Cached Tokens',
     cached_write_tokens: 'Cached Write Tokens',
+    cached_write_5m_tokens: 'Cached Write Tokens (5m)',
+    cached_write_1h_tokens: 'Cached Write Tokens (1h)',
     cached_read_tokens: 'Cached Read Tokens',
     input_audio_tokens: 'Input Audio Tokens',
     output_audio_tokens: 'Output Audio Tokens',
@@ -787,7 +791,11 @@ function calculateTokens(item) {
         cost: detail.cost_usd || 0
       }));
     const cacheMetrics = tokenDetails
-      .filter((detail) => ['cached_tokens', 'cached_write_tokens', 'cached_read_tokens'].includes(detail.key))
+      .filter((detail) =>
+        ['cached_tokens', 'cached_write_tokens', 'cached_write_5m_tokens', 'cached_write_1h_tokens', 'cached_read_tokens'].includes(
+          detail.key
+        )
+      )
       .map((detail) => ({
         ...detail,
         shortLabel: getTokenShortLabel(detail.key)
@@ -814,6 +822,8 @@ function calculateTokens(item) {
     { key: 'output_audio_tokens', label: 'Output Audio Tokens', isInput: false },
     { key: 'cached_tokens', label: 'Cached Tokens', isInput: true },
     { key: 'cached_write_tokens', label: 'Cached Write Tokens', isInput: true },
+    { key: 'cached_write_5m_tokens', label: 'Cached Write Tokens (5m)', isInput: true },
+    { key: 'cached_write_1h_tokens', label: 'Cached Write Tokens (1h)', isInput: true },
     { key: 'cached_read_tokens', label: 'Cached Read Tokens', isInput: true },
     { key: 'reasoning_tokens', label: 'Reasoning Tokens', isInput: false },
     { key: 'input_image_tokens', label: 'Input Image Tokens', isInput: true },
@@ -837,7 +847,11 @@ function calculateTokens(item) {
     })
     .filter(Boolean);
   const cacheMetrics = tokenDetails
-    .filter((detail) => ['cached_tokens', 'cached_write_tokens', 'cached_read_tokens'].includes(detail.key))
+    .filter((detail) =>
+      ['cached_tokens', 'cached_write_tokens', 'cached_write_5m_tokens', 'cached_write_1h_tokens', 'cached_read_tokens'].includes(
+        detail.key
+      )
+    )
     .map((detail) => ({
       ...detail,
       shortLabel: getTokenShortLabel(detail.key)
@@ -858,6 +872,8 @@ function getTokenShortLabel(key) {
   const labels = {
     cached_tokens: 'Cache',
     cached_write_tokens: 'Cache Write',
+    cached_write_5m_tokens: 'Cache Write 5m',
+    cached_write_1h_tokens: 'Cache Write 1h',
     cached_read_tokens: 'Cache Read',
     reasoning_tokens: 'Reasoning',
     input_audio_tokens: 'Audio In',
@@ -875,6 +891,8 @@ function getMetricIcon(key) {
     output: 'material-symbols:output-rounded',
     cached_tokens: 'mdi:database-outline',
     cached_write_tokens: 'mdi:database-arrow-up-outline',
+    cached_write_5m_tokens: 'mdi:database-arrow-up-outline',
+    cached_write_1h_tokens: 'mdi:database-clock-outline',
     cached_read_tokens: 'mdi:database-arrow-down-outline',
     input_audio_tokens: 'mdi:waveform',
     output_audio_tokens: 'mdi:waveform',

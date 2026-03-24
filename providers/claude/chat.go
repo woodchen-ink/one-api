@@ -1,10 +1,6 @@
 package claude
 
 import (
-	"encoding/json"
-	"fmt"
-	"io"
-	"net/http"
 	"czloapi/common"
 	"czloapi/common/config"
 	"czloapi/common/image"
@@ -12,6 +8,10 @@ import (
 	"czloapi/common/utils"
 	"czloapi/providers/base"
 	"czloapi/types"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream"
@@ -120,6 +120,7 @@ func (p *ClaudeProvider) getChatRequest(claudeRequest *ClaudeRequest) (*http.Req
 func ConvertFromChatOpenai(request *types.ChatCompletionRequest) (*ClaudeRequest, *types.OpenAIErrorWithStatusCode) {
 	claudeRequest := ClaudeRequest{
 		Model:         request.Model,
+		CacheControl:  request.CacheControl,
 		Messages:      make([]Message, 0),
 		MaxTokens:     request.MaxTokens,
 		StopSequences: nil,
@@ -142,6 +143,7 @@ func ConvertFromChatOpenai(request *types.ChatCompletionRequest) (*ClaudeRequest
 
 	// 处理 system 字段（支持 cache_control）
 	systemMessage := ""
+	systemBlocks := make([]MessageContent, 0)
 	mgsLen := len(request.Messages) - 1
 	isThink := (request.OneOtherArg == "thinking" || request.Reasoning != nil)
 
@@ -164,7 +166,15 @@ func ConvertFromChatOpenai(request *types.ChatCompletionRequest) (*ClaudeRequest
 		if msg.Role == types.ChatMessageRoleSystem {
 			// 如果没有预设的 system 字段，从 messages 中提取
 			if request.System == nil {
-				systemMessage += msg.StringContent()
+				if msg.CacheControl != nil {
+					systemBlocks = append(systemBlocks, MessageContent{
+						Type:         ContentTypeText,
+						Text:         msg.StringContent(),
+						CacheControl: msg.CacheControl,
+					})
+				} else {
+					systemMessage += msg.StringContent()
+				}
 			}
 			continue
 		}
@@ -178,8 +188,18 @@ func ConvertFromChatOpenai(request *types.ChatCompletionRequest) (*ClaudeRequest
 	}
 
 	// 如果没有预设的 system 字段，且从 messages 中提取到了 system message
-	if request.System == nil && systemMessage != "" {
-		claudeRequest.System = systemMessage
+	if request.System == nil {
+		if len(systemBlocks) > 0 {
+			if systemMessage != "" {
+				systemBlocks = append([]MessageContent{{
+					Type: ContentTypeText,
+					Text: systemMessage,
+				}}, systemBlocks...)
+			}
+			claudeRequest.System = systemBlocks
+		} else if systemMessage != "" {
+			claudeRequest.System = systemMessage
+		}
 	}
 
 	for _, tool := range request.Tools {
@@ -481,12 +501,33 @@ func (h *ClaudeStreamHandler) HandlerStream(rawLine *[]byte, dataChan chan strin
 	switch claudeResponse.Type {
 	case "message_start":
 		h.convertToOpenaiStream(&claudeResponse, dataChan)
-		h.Usage.PromptTokens = claudeResponse.Message.Usage.InputTokens
+		ClaudeUsageToOpenaiUsage(&claudeResponse.Message.Usage, h.Usage)
 
 	case "message_delta":
 		h.convertToOpenaiStream(&claudeResponse, dataChan)
-		h.Usage.CompletionTokens = claudeResponse.Usage.OutputTokens
-		h.Usage.TotalTokens = h.Usage.PromptTokens + h.Usage.CompletionTokens
+		mergedUsage := claudeResponse.Usage
+		if mergedUsage.CacheReadInputTokens == 0 {
+			mergedUsage.CacheReadInputTokens = h.Usage.PromptTokensDetails.CachedReadTokens
+		}
+		if mergedUsage.CacheCreationInputTokens == 0 {
+			mergedUsage.CacheCreationInputTokens = h.Usage.PromptTokensDetails.CachedWriteTokens
+		}
+		if mergedUsage.CacheCreation == nil &&
+			(h.Usage.PromptTokensDetails.CachedWrite5mTokens > 0 || h.Usage.PromptTokensDetails.CachedWrite1hTokens > 0) {
+			mergedUsage.CacheCreation = &CacheCreationUsage{
+				Ephemeral5mInputTokens: h.Usage.PromptTokensDetails.CachedWrite5mTokens,
+				Ephemeral1hInputTokens: h.Usage.PromptTokensDetails.CachedWrite1hTokens,
+			}
+		}
+		mergedUsage.InputTokens = h.Usage.PromptTokens -
+			h.Usage.PromptTokensDetails.CachedReadTokens -
+			h.Usage.PromptTokensDetails.CachedWriteTokens -
+			h.Usage.PromptTokensDetails.CachedWrite5mTokens -
+			h.Usage.PromptTokensDetails.CachedWrite1hTokens
+		if mergedUsage.InputTokens < 0 {
+			mergedUsage.InputTokens = 0
+		}
+		ClaudeUsageToOpenaiUsage(&mergedUsage, h.Usage)
 
 	case "content_block_delta":
 		h.convertToOpenaiStream(&claudeResponse, dataChan)

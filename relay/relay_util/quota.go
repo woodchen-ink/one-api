@@ -303,6 +303,8 @@ func getAdjustedBaseTokens(baseTokens int, extraTokens map[string]int, subsetKey
 var inputSubsetKeys = []string{
 	config.UsageExtraCache,
 	config.UsageExtraCachedWrite,
+	config.UsageExtraCachedWrite5m,
+	config.UsageExtraCachedWrite1h,
 	config.UsageExtraCachedRead,
 	config.UsageExtraInputAudio,
 	config.UsageExtraInputImageTokens,
