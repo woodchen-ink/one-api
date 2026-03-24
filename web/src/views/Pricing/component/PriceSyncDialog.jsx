@@ -44,7 +44,8 @@ function buildRowFromPreview(row) {
     type: row.type || 'tokens',
     input: row.input ?? 0,
     output: row.output ?? 0,
-    extra_ratios: { ...(row.extra_ratios || {}) }
+    extra_ratios: { ...(row.extra_ratios || {}) },
+    billing_rules: Array.isArray(row.billing_rules) ? row.billing_rules : []
   };
 }
 
@@ -181,7 +182,8 @@ export default function PriceSyncDialog({ open, onClose, onApplied, fallbackMode
         type: row.type,
         input: Number(row.input),
         output: Number(row.output),
-        extra_ratios: normalizedExtraRatios
+        extra_ratios: normalizedExtraRatios,
+        billing_rules: Array.isArray(row.billing_rules) ? row.billing_rules : []
       };
     });
 
@@ -213,7 +215,7 @@ export default function PriceSyncDialog({ open, onClose, onApplied, fallbackMode
       <DialogContent dividers>
         <Stack spacing={2}>
           <Alert severity="info">
-            先从官方文档抓取价格草案，再由管理员确认后写入系统。目标模型支持从现有模型列表中选择，也支持手动输入。
+            先从官方文档抓取价格草案，再由管理员确认后写入系统。目标模型支持从现有模型列表中选择，也支持手动输入。若官方价格包含分档计费规则，系统会一并导入。
           </Alert>
 
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems={{ xs: 'stretch', md: 'center' }}>

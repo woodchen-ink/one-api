@@ -19,8 +19,10 @@ type ExtraServicePriceConfig struct {
 
 var defaultExtraServicePrices = ExtraServicePriceConfig{
 	WebSearch: map[string]float64{
-		"standard":  0.01,  // gpt-4o, gpt-4.1 系列: $10/1k calls
-		"reasoning": 0.025, // gpt-5+, o-series reasoning 模型: $25/1k calls
+		"standard":               0.01,  // gpt-4o, gpt-4.1 系列: $10/1k calls
+		"reasoning":              0.025, // gpt-5+, o-series reasoning 模型: $25/1k calls
+		"gemini_grounded_prompt": 0.035, // Gemini 2.5 / 非 Gemini 3 grounding: $35/1k grounded prompts
+		"gemini_search_query":    0.014, // Gemini 3 grounding: $14/1k search queries
 	},
 	FileSearch: 0.0025, // $2.50/1k calls
 	CodeInterpreter: map[string]float64{
@@ -49,6 +51,13 @@ var defaultExtraServicePrices = ExtraServicePriceConfig{
 }
 
 func getWebSearchModelTier(modelName string) string {
+	if strings.HasPrefix(modelName, "gemini-3") {
+		return "gemini_search_query"
+	}
+	if strings.HasPrefix(modelName, "gemini-") {
+		return "gemini_grounded_prompt"
+	}
+
 	// 仅 gpt-4o 和 gpt-4.1 系列享受 standard 价格 ($0.01/call)
 	if strings.HasPrefix(modelName, "gpt-4o") || strings.HasPrefix(modelName, "gpt-4.1") {
 		return "standard"

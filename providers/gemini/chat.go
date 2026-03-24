@@ -9,6 +9,7 @@ import (
 	"czloapi/types"
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
@@ -348,6 +349,7 @@ func ConvertToChatOpenai(provider base.ProviderInterface, response *GeminiChatRe
 
 	usage := provider.GetUsage()
 	*usage = ConvertOpenAIUsage(response.UsageMetadata)
+	applyGeminiExtraBilling(request.Model, response, usage)
 	openaiResponse.Usage = usage
 
 	return
@@ -436,9 +438,34 @@ func (h *GeminiStreamHandler) convertToOpenaiStream(geminiResponse *GeminiChatRe
 	}
 
 	usage := ConvertOpenAIUsage(geminiResponse.UsageMetadata)
+	applyGeminiExtraBilling(h.Request.Model, geminiResponse, &usage)
 
 	usage.TextBuilder = h.Usage.TextBuilder
 	*h.Usage = usage
+}
+
+func applyGeminiExtraBilling(modelName string, response *GeminiChatResponse, usage *types.Usage) {
+	if usage == nil || response == nil || len(response.Candidates) == 0 {
+		return
+	}
+
+	for candidateIndex, candidate := range response.Candidates {
+		if candidate.GroundingMetadata == nil {
+			continue
+		}
+
+		queries := candidate.GroundingMetadata.WebSearchQueries
+		switch {
+		case strings.HasPrefix(modelName, "gemini-3"):
+			for queryIndex, query := range queries {
+				dedupeID := response.ResponseId + ":" + strconv.Itoa(candidateIndex) + ":" + strconv.Itoa(queryIndex) + ":" + query
+				usage.IncExtraBillingOnce(types.APITollTypeWebSearchPreview, "", dedupeID)
+			}
+		case len(queries) > 0:
+			dedupeID := response.ResponseId + ":" + strconv.Itoa(candidateIndex)
+			usage.IncExtraBillingOnce(types.APITollTypeWebSearchPreview, "", dedupeID)
+		}
+	}
 }
 
 const tokenThreshold = 1000000
@@ -511,6 +538,8 @@ func ConvertOpenAIUsage(geminiUsage *GeminiUsageMetadata) types.Usage {
 			usage.PromptTokensDetails.TextTokens = p.TokenCount
 		case "AUDIO":
 			usage.PromptTokensDetails.AudioTokens = p.TokenCount
+		case "IMAGE":
+			usage.PromptTokensDetails.ImageTokens = p.TokenCount
 		}
 	}
 

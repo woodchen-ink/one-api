@@ -30,13 +30,14 @@ type PriceSyncProviderMeta struct {
 }
 
 type PriceSyncDraftRow struct {
-	SourceModel string             `json:"source_model"`
-	Model       string             `json:"model"`
-	ChannelType int                `json:"channel_type"`
-	Type        string             `json:"type"`
-	Input       float64            `json:"input"`
-	Output      float64            `json:"output"`
-	ExtraRatios map[string]float64 `json:"extra_ratios,omitempty"`
+	SourceModel  string             `json:"source_model"`
+	Model        string             `json:"model"`
+	ChannelType  int                `json:"channel_type"`
+	Type         string             `json:"type"`
+	Input        float64            `json:"input"`
+	Output       float64            `json:"output"`
+	ExtraRatios  map[string]float64 `json:"extra_ratios,omitempty"`
+	BillingRules []BillingRule      `json:"billing_rules,omitempty"`
 }
 
 type PriceSyncPreview struct {
@@ -56,6 +57,7 @@ type PriceSyncApplyRequest struct {
 
 var priceSyncProviders = map[string]PriceSyncProvider{
 	"claude": newClaudePriceSyncProvider(),
+	"gemini": newGeminiPriceSyncProvider(),
 }
 
 func GetPriceSyncProviders() []PriceSyncProviderMeta {
@@ -169,6 +171,10 @@ func ApplyPriceSync(_ context.Context, request *PriceSyncApplyRequest) error {
 			extraRatios := datatypes.NewJSONType(clonePriceSyncExtraRatios(row.ExtraRatios))
 			price.ExtraRatios = &extraRatios
 		}
+		if len(row.BillingRules) > 0 {
+			billingRules := datatypes.NewJSONType(clonePriceSyncBillingRules(row.BillingRules))
+			price.BillingRules = &billingRules
+		}
 		if err = price.ValidateBillingRules(); err != nil {
 			return fmt.Errorf("invalid pricing row %s: %w", modelName, err)
 		}
@@ -231,6 +237,36 @@ func clonePriceSyncExtraRatios(source map[string]float64) map[string]float64 {
 		cloned[key] = value
 	}
 	return cloned
+}
+
+func clonePriceSyncBillingRules(source []BillingRule) []BillingRule {
+	if len(source) == 0 {
+		return nil
+	}
+
+	cloned := make([]BillingRule, len(source))
+	for index, rule := range source {
+		cloned[index] = BillingRule{
+			Name:        rule.Name,
+			Priority:    rule.Priority,
+			Strategy:    rule.Strategy,
+			Match:       rule.Match,
+			Input:       cloneFloat64Pointer(rule.Input),
+			Output:      cloneFloat64Pointer(rule.Output),
+			ExtraRatios: clonePriceSyncExtraRatios(rule.ExtraRatios),
+		}
+	}
+
+	return cloned
+}
+
+func cloneFloat64Pointer(value *float64) *float64 {
+	if value == nil {
+		return nil
+	}
+
+	cloned := *value
+	return &cloned
 }
 
 func GetAllKnownModelNames() []string {

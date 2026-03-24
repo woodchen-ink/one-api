@@ -31,6 +31,8 @@ func TestGetWebSearchModelTier(t *testing.T) {
 		{"o3", "reasoning"},
 		{"o3-mini", "reasoning"},
 		{"o4-mini", "reasoning"},
+		{"gemini-2.5-flash", "gemini_grounded_prompt"},
+		{"gemini-3.1-pro-preview", "gemini_search_query"},
 		{"some-future-model", "reasoning"},
 	}
 
@@ -48,6 +50,10 @@ func TestGetDefaultExtraServicePriceWebSearch(t *testing.T) {
 	assert.Equal(t, 0.025, getDefaultExtraServicePrice("web_search_preview", "gpt-5", ""))
 	// o3 → reasoning → $0.025
 	assert.Equal(t, 0.025, getDefaultExtraServicePrice("web_search_preview", "o3", ""))
+	// gemini-2.5 → grounded prompt → $0.035
+	assert.Equal(t, 0.035, getDefaultExtraServicePrice("web_search_preview", "gemini-2.5-flash", ""))
+	// gemini-3 → search query → $0.014
+	assert.Equal(t, 0.014, getDefaultExtraServicePrice("web_search_preview", "gemini-3.1-pro-preview", ""))
 }
 
 func TestGetDefaultExtraServicePriceCodeInterpreter(t *testing.T) {
