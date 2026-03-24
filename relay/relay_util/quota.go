@@ -274,6 +274,26 @@ type BillingBreakdownItem struct {
 	Quota     int     `json:"quota"`
 }
 
+func getCacheAdjustedPromptTokens(promptTokens int, extraTokens map[string]int) int {
+	if promptTokens <= 0 || len(extraTokens) == 0 {
+		return promptTokens
+	}
+
+	cacheTokens := extraTokens[config.UsageExtraCache] +
+		extraTokens[config.UsageExtraCachedWrite] +
+		extraTokens[config.UsageExtraCachedRead]
+	if cacheTokens <= 0 {
+		return promptTokens
+	}
+
+	adjustedPromptTokens := promptTokens - cacheTokens
+	if adjustedPromptTokens < 0 {
+		return 0
+	}
+
+	return adjustedPromptTokens
+}
+
 func (q *Quota) getUsageBillingContext(usage *types.Usage) model.BillingContext {
 	if usage == nil {
 		return q.billingContext
@@ -324,10 +344,11 @@ func (q *Quota) buildBillingBreakdown(usage *types.Usage, resolution *model.Bill
 			Quota:     q.getFlatPriceQuota(resolution.Input),
 		})
 	} else {
-		appendTokenItem("input", usage.PromptTokens, resolution.Input)
+		extraTokens := usage.GetExtraTokens()
+		appendTokenItem("input", getCacheAdjustedPromptTokens(usage.PromptTokens, extraTokens), resolution.Input)
 		appendTokenItem("output", usage.CompletionTokens, resolution.Output)
 
-		for key, value := range usage.GetExtraTokens() {
+		for key, value := range extraTokens {
 			appendTokenItem(key, value, resolution.GetExtraPrice(key))
 		}
 	}
@@ -450,7 +471,8 @@ func (q *Quota) getTotalQuotaWithResolution(
 	if q.price.Type == model.TimesPriceType {
 		quota = q.getFlatPriceQuota(resolution.Input)
 	} else {
-		quota += q.getTokenPriceQuota(promptTokens, resolution.Input)
+		cacheAdjustedPromptTokens := getCacheAdjustedPromptTokens(promptTokens, extraTokens)
+		quota += q.getTokenPriceQuota(cacheAdjustedPromptTokens, resolution.Input)
 		quota += q.getTokenPriceQuota(completionTokens, resolution.Output)
 		for key, value := range extraTokens {
 			quota += q.getTokenPriceQuota(value, resolution.GetExtraPrice(key))
@@ -469,7 +491,7 @@ func (q *Quota) getTotalQuotaWithResolution(
 		quota += int(math.Ceil(float64(extraBillingQuota) * q.groupRatio))
 	}
 
-	totalChargeableTokens := promptTokens + completionTokens
+	totalChargeableTokens := getCacheAdjustedPromptTokens(promptTokens, extraTokens) + completionTokens
 	for _, value := range extraTokens {
 		totalChargeableTokens += value
 	}

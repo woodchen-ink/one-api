@@ -106,6 +106,7 @@ The provider system implements a plugin-based architecture in `providers/`:
   - Token prices use USD per 1M tokens.
   - `extra_ratios` now carries direct USD prices for extra token categories rather than relative multipliers.
   - Group ratio remains the only billing multiplier applied at runtime.
+  - Cache token categories (`cached_tokens`, `cached_write_tokens`, `cached_read_tokens`) are billed as a split of prompt tokens; when upstream `prompt_tokens` already includes cache usage, subtract the cache portion from base input billing to avoid double charging.
 - Claude and Gemini native routes support root-path aliases for client compatibility.
   - Claude can be called via `/v1/messages`.
   - Gemini can be called via `/v1beta/models/:model` and `/v1/models/:model`.

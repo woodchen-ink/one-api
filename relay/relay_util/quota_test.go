@@ -80,7 +80,7 @@ func TestQuotaGetTotalQuotaUsesDirectUSDPerMillion(t *testing.T) {
 		},
 	}
 
-	assert.Equal(t, 2600000, quota.GetTotalQuotaByUsage(usage))
+	assert.Equal(t, 2400000, quota.GetTotalQuotaByUsage(usage))
 }
 
 func TestQuotaGetLogMetaIncludesBillingRulesAndBreakdown(t *testing.T) {
@@ -144,5 +144,48 @@ func TestQuotaGetLogMetaIncludesBillingRulesAndBreakdown(t *testing.T) {
 		assert.Equal(t, 250000, breakdown[0].Quantity)
 		assert.Equal(t, "output", breakdown[1].Metric)
 		assert.Equal(t, 100000, breakdown[1].Quantity)
+	}
+}
+
+func TestQuotaGetTotalQuotaDoesNotDoubleChargeCachedPromptTokens(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	recorder := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(recorder)
+	c.Set("group_ratio", 1.0)
+
+	extraRatios := datatypes.NewJSONType(map[string]float64{
+		config.UsageExtraCache: 0.5,
+	})
+	model.PricingInstance = &model.Pricing{Prices: map[string]*model.Price{
+		"test-model": {
+			Model:       "test-model",
+			Type:        model.TokensPriceType,
+			ChannelType: 1,
+			Input:       2,
+			Output:      8,
+			ExtraRatios: &extraRatios,
+		},
+	}}
+
+	quota := NewQuota(c, "test-model", 0)
+	usage := &types.Usage{
+		PromptTokens:     1000,
+		CompletionTokens: 500,
+		TotalTokens:      1500,
+		PromptTokensDetails: types.PromptTokensDetails{
+			CachedTokens: 400,
+		},
+	}
+
+	// 非缓存输入 600 * 2 + 缓存输入 400 * 0.5 + 输出 500 * 8 = 5400
+	assert.Equal(t, 5400, quota.GetTotalQuotaByUsage(usage))
+
+	meta := quota.GetLogMeta(usage)
+	breakdown, ok := meta["billing_breakdown"].([]BillingBreakdownItem)
+	if assert.True(t, ok) && assert.Len(t, breakdown, 3) {
+		assert.Equal(t, "input", breakdown[0].Metric)
+		assert.Equal(t, 600, breakdown[0].Quantity)
+		assert.Equal(t, config.UsageExtraCache, breakdown[2].Metric)
+		assert.Equal(t, 400, breakdown[2].Quantity)
 	}
 }
