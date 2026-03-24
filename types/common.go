@@ -14,9 +14,10 @@ type Usage struct {
 	PromptTokensDetails     PromptTokensDetails     `json:"prompt_tokens_details"`
 	CompletionTokensDetails CompletionTokensDetails `json:"completion_tokens_details"`
 
-	ExtraTokens  map[string]int          `json:"-"`
-	ExtraBilling map[string]ExtraBilling `json:"-"`
-	TextBuilder  strings.Builder         `json:"-"`
+	ExtraTokens      map[string]int          `json:"-"`
+	ExtraBilling     map[string]ExtraBilling `json:"-"`
+	extraBillingKeys map[string]map[string]bool `json:"-"` // dedup: serviceType -> set of dedupeIDs
+	TextBuilder      strings.Builder         `json:"-"`
 }
 
 type ExtraBilling struct {
@@ -179,4 +180,21 @@ func (u *Usage) IncExtraBilling(key string, bType string) {
 	billing := u.ExtraBilling[key]
 	billing.CallCount++
 	u.ExtraBilling[key] = billing
+}
+
+// IncExtraBillingOnce 按 dedupeID 去重计费，同一 dedupeID 只计费一次。
+// 用于 container session 等按 session 计费的场景。
+func (u *Usage) IncExtraBillingOnce(key string, bType string, dedupeID string) {
+	if u.extraBillingKeys == nil {
+		u.extraBillingKeys = make(map[string]map[string]bool)
+	}
+	if u.extraBillingKeys[key] == nil {
+		u.extraBillingKeys[key] = make(map[string]bool)
+	}
+
+	if dedupeID != "" && u.extraBillingKeys[key][dedupeID] {
+		return // 已计费，跳过
+	}
+	u.extraBillingKeys[key][dedupeID] = true
+	u.IncExtraBilling(key, bType)
 }

@@ -96,6 +96,9 @@ func (h *OpenAIResponsesStreamHandler) HandlerResponsesStream(rawLine *[]byte, d
 						h.searchType = tool.SearchContextSize
 					}
 				}
+				if tool.Type == "code_interpreter" {
+					h.containerMemoryLimit = getContainerMemoryLimit(openaiResponse.Response.Tools)
+				}
 			}
 		}
 	case "response.output_text.delta":
@@ -112,7 +115,10 @@ func (h *OpenAIResponsesStreamHandler) HandlerResponsesStream(rawLine *[]byte, d
 				}
 				h.Usage.IncExtraBilling(types.APITollTypeWebSearchPreview, h.searchType)
 			case types.InputTypeCodeInterpreterCall:
-				h.Usage.IncExtraBilling(types.APITollTypeCodeInterpreter, "")
+				if h.containerMemoryLimit == "" {
+					h.containerMemoryLimit = "1g"
+				}
+				h.Usage.IncExtraBillingOnce(types.APITollTypeCodeInterpreter, h.containerMemoryLimit, openaiResponse.Item.ContainerID)
 			case types.InputTypeFileSearchCall:
 				h.Usage.IncExtraBilling(types.APITollTypeFileSearch, "")
 			}
@@ -133,6 +139,8 @@ func getResponsesExtraBilling(response *types.OpenAIResponsesResponses, usage *t
 		return
 	}
 
+	containerMemoryLimit := getContainerMemoryLimit(response.Tools)
+
 	if len(response.Output) > 0 {
 		for _, output := range response.Output {
 			switch output.Type {
@@ -149,7 +157,7 @@ func getResponsesExtraBilling(response *types.OpenAIResponsesResponses, usage *t
 				}
 				usage.IncExtraBilling(types.APITollTypeWebSearchPreview, searchType)
 			case types.InputTypeCodeInterpreterCall:
-				usage.IncExtraBilling(types.APITollTypeCodeInterpreter, "")
+				usage.IncExtraBillingOnce(types.APITollTypeCodeInterpreter, containerMemoryLimit, output.ContainerID)
 			case types.InputTypeFileSearchCall:
 				usage.IncExtraBilling(types.APITollTypeFileSearch, "")
 			case types.InputTypeImageGenerationCall:
@@ -158,4 +166,24 @@ func getResponsesExtraBilling(response *types.OpenAIResponsesResponses, usage *t
 			}
 		}
 	}
+}
+
+// getContainerMemoryLimit 从 tools 配置中提取 code_interpreter 的 memory_limit
+func getContainerMemoryLimit(tools []types.ResponsesTools) string {
+	for _, tool := range tools {
+		if tool.Type != "code_interpreter" {
+			continue
+		}
+		if tool.Container == nil {
+			return "1g"
+		}
+		// Container 可能是 {"type":"auto","memory_limit":"4g",...} 的 map
+		if containerMap, ok := tool.Container.(map[string]any); ok {
+			if ml, ok := containerMap["memory_limit"].(string); ok && ml != "" {
+				return ml
+			}
+		}
+		return "1g"
+	}
+	return "1g"
 }

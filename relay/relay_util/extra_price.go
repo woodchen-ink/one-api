@@ -8,22 +8,27 @@ import (
 // 暂时先放这里，简单处理
 type ExtraServicePriceConfig struct {
 	// Web Search 价格配置
-	WebSearch map[string]float64 `json:"web_search"` // tier -> price
+	WebSearch map[string]float64 `json:"web_search"` // tier -> price per call
 	// File Search 价格
 	FileSearch float64 `json:"file_search"`
-	// Code Interpreter 价格
-	CodeInterpreter float64 `json:"code_interpreter"`
+	// Code Interpreter / Container 价格 (按 memory_limit 阶梯)
+	CodeInterpreter map[string]float64 `json:"code_interpreter"` // memory_limit -> price per container session
 
 	ImageGeneration map[string]map[string]float64 `json:"image_generation"`
 }
 
 var defaultExtraServicePrices = ExtraServicePriceConfig{
 	WebSearch: map[string]float64{
-		"high_tier": 0.025,
-		"standard":  0.01,
+		"standard":  0.01,  // gpt-4o, gpt-4.1 系列: $10/1k calls
+		"reasoning": 0.025, // gpt-5+, o-series reasoning 模型: $25/1k calls
 	},
-	FileSearch:      0.0025,
-	CodeInterpreter: 0.03,
+	FileSearch: 0.0025, // $2.50/1k calls
+	CodeInterpreter: map[string]float64{
+		"1g":  0.03,
+		"4g":  0.12,
+		"16g": 0.48,
+		"64g": 1.92,
+	},
 	ImageGeneration: map[string]map[string]float64{
 		"low": {
 			"1024x1024": 0.011,
@@ -43,24 +48,30 @@ var defaultExtraServicePrices = ExtraServicePriceConfig{
 	},
 }
 
-func getModelTier(modelName string) string {
-	// 高级模型：gpt-4.1, gpt-4o(包含 mini)
-	if strings.HasPrefix(modelName, "gpt-4.1") || strings.HasPrefix(modelName, "gpt-4o") {
-		return "high_tier"
+func getWebSearchModelTier(modelName string) string {
+	// 仅 gpt-4o 和 gpt-4.1 系列享受 standard 价格 ($0.01/call)
+	if strings.HasPrefix(modelName, "gpt-4o") || strings.HasPrefix(modelName, "gpt-4.1") {
+		return "standard"
 	}
-	return "standard"
+	// 其他所有模型（含 gpt-5+、reasoning 模型及未来新模型）使用 reasoning 价格 ($0.025/call)
+	return "reasoning"
 }
 
 // 获取默认的额外服务价格
 func getDefaultExtraServicePrice(serviceType, modelName, extraType string) float64 {
 	switch serviceType {
 	case types.APITollTypeWebSearchPreview:
-		tier := getModelTier(modelName)
+		tier := getWebSearchModelTier(modelName)
 		return defaultExtraServicePrices.WebSearch[tier]
 	case types.APITollTypeFileSearch:
 		return defaultExtraServicePrices.FileSearch
 	case types.APITollTypeCodeInterpreter:
-		return defaultExtraServicePrices.CodeInterpreter
+		memoryLimit := strings.ToLower(extraType)
+		if price, ok := defaultExtraServicePrices.CodeInterpreter[memoryLimit]; ok {
+			return price
+		}
+		// 默认 1g
+		return defaultExtraServicePrices.CodeInterpreter["1g"]
 
 	case types.APITollTypeImageGeneration:
 		if extraType == "" {
@@ -79,14 +90,11 @@ func getDefaultExtraServicePrice(serviceType, modelName, extraType string) float
 		}
 
 		if _, ok := defaultExtraServicePrices.ImageGeneration[quality]; !ok {
-			// 如果 quality 不在预设的价格表中，返回 0
 			return 0
 		}
 		if price, ok := defaultExtraServicePrices.ImageGeneration[quality][size]; ok {
-			// 如果 size 在预设的价格表中，返回对应的价格
 			return price
 		}
-		// 如果 size 不在预设的价格表中，返回 0
 		return 0
 	default:
 		return 0

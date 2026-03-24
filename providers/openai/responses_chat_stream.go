@@ -18,8 +18,9 @@ type OpenAIResponsesStreamHandler struct {
 	MessageID string
 	CreatedAt any
 
-	searchType string
-	toolIndex  int
+	searchType           string
+	containerMemoryLimit string
+	toolIndex            int
 
 	toolCallIndexByID         map[string]int
 	toolCallNameByID          map[string]string
@@ -133,7 +134,10 @@ func (h *OpenAIResponsesStreamHandler) HandlerChatStream(rawLine *[]byte, dataCh
 				}
 				h.Usage.IncExtraBilling(types.APITollTypeWebSearchPreview, h.searchType)
 			case types.InputTypeCodeInterpreterCall:
-				h.Usage.IncExtraBilling(types.APITollTypeCodeInterpreter, "")
+				if h.containerMemoryLimit == "" {
+					h.containerMemoryLimit = "1g"
+				}
+				h.Usage.IncExtraBillingOnce(types.APITollTypeCodeInterpreter, h.containerMemoryLimit, openaiResponse.Item.ContainerID)
 			case types.InputTypeFileSearchCall:
 				h.Usage.IncExtraBilling(types.APITollTypeFileSearch, "")
 			case types.InputTypeFunctionCall:
@@ -248,12 +252,14 @@ func (h *OpenAIResponsesStreamHandler) updateSearchType(response *types.OpenAIRe
 	}
 
 	for _, tool := range response.Tools {
-		if tool.Type != types.APITollTypeWebSearchPreview {
-			continue
+		if tool.Type == types.APITollTypeWebSearchPreview {
+			h.searchType = "medium"
+			if tool.SearchContextSize != "" {
+				h.searchType = tool.SearchContextSize
+			}
 		}
-		h.searchType = "medium"
-		if tool.SearchContextSize != "" {
-			h.searchType = tool.SearchContextSize
+		if tool.Type == "code_interpreter" {
+			h.containerMemoryLimit = getContainerMemoryLimit(response.Tools)
 		}
 	}
 }

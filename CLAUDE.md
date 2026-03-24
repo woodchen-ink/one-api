@@ -166,3 +166,6 @@ The provider system implements a plugin-based architecture in `providers/`:
 - Docker support with multi-stage builds
 - Version information embedded at build time with Git metadata
 - Build artifacts organized in `_output/` directory
+
+### Known Billing Gaps
+- **Vector Store storage** ($0.10/GB/day): `/v1/vector_stores` 端点直接透传给上游，storage 费用由 OpenAI 按账号收取，网关不做计费。如需避免漏收，考虑禁用该端点透传或实现存储用量追踪。
