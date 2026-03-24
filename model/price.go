@@ -2,7 +2,6 @@ package model
 
 import (
 	"czloapi/common/config"
-	"encoding/json"
 
 	"github.com/shopspring/decimal"
 	"gorm.io/datatypes"
@@ -217,94 +216,12 @@ func (price *Price) Delete() error {
 	return DB.Where("model = ?", price.Model).Delete(&Price{}).Error
 }
 
-type ModelType struct {
-	Ratio []float64
-	Type  int
-}
-
-// Legacy default table uses historical "rate" values.
-// It is converted to direct USD prices when loading defaults.
+// Built-in default pricing has been retired.
+// Prices should be maintained explicitly in the database.
 func GetDefaultPrice() []*Price {
-	ModelTypes := map[string]ModelType{
-		// 	$0.03 / 1K tokens	$0.06 / 1K tokens
-		"gpt-4":      {[]float64{15, 30}, config.ChannelTypeOpenAI},
-		"gpt-4-0314": {[]float64{15, 30}, config.ChannelTypeOpenAI},
-		"gpt-4-0613": {[]float64{15, 30}, config.ChannelTypeOpenAI},
-		// 	$0.06 / 1K tokens	$0.12 / 1K tokens
-		"gpt-4-32k":      {[]float64{30, 60}, config.ChannelTypeOpenAI},
-		"gpt-4-32k-0314": {[]float64{30, 60}, config.ChannelTypeOpenAI},
-		"gpt-4-32k-0613": {[]float64{30, 60}, config.ChannelTypeOpenAI},
-		// 	$0.01 / 1K tokens	$0.03 / 1K tokens
-		"gpt-4-preview":          {[]float64{5, 15}, config.ChannelTypeOpenAI},
-		"gpt-4-turbo":            {[]float64{5, 15}, config.ChannelTypeOpenAI},
-		"gpt-4-turbo-2024-04-09": {[]float64{5, 15}, config.ChannelTypeOpenAI},
-		"gpt-4-1106-preview":     {[]float64{5, 15}, config.ChannelTypeOpenAI},
-		"gpt-4-0125-preview":     {[]float64{5, 15}, config.ChannelTypeOpenAI},
-		"gpt-4-turbo-preview":    {[]float64{5, 15}, config.ChannelTypeOpenAI},
-		"gpt-4-vision-preview":   {[]float64{5, 15}, config.ChannelTypeOpenAI},
-	}
-
-	var prices []*Price
-
-	for model, modelType := range ModelTypes {
-		prices = append(prices, &Price{
-			Model:       model,
-			Type:        TokensPriceType,
-			ChannelType: modelType.Type,
-			Input:       LegacyTokenPriceToUSDPerMillion(modelType.Ratio[0]),
-			Output:      LegacyTokenPriceToUSDPerMillion(modelType.Ratio[1]),
-		})
-	}
-
-	return prices
+	return []*Price{}
 }
 
 func GetDefaultExtraRatio() string {
-	legacyExtraRatios := map[string]map[string]float64{
-		"gpt-4o-audio-preview":                    {"input_audio_tokens": 40, "output_audio_tokens": 20},
-		"gpt-4o-audio-preview-2024-10-01":         {"input_audio_tokens": 40, "output_audio_tokens": 20},
-		"gpt-4o-audio-preview-2024-12-17":         {"input_audio_tokens": 16, "output_audio_tokens": 8},
-		"gpt-4o-mini-audio-preview":               {"input_audio_tokens": 67, "output_audio_tokens": 34},
-		"gpt-4o-mini-audio-preview-2024-12-17":    {"input_audio_tokens": 67, "output_audio_tokens": 34},
-		"gpt-4o-realtime-preview":                 {"input_audio_tokens": 20, "output_audio_tokens": 10},
-		"gpt-4o-realtime-preview-2024-10-01":      {"input_audio_tokens": 20, "output_audio_tokens": 10},
-		"gpt-4o-realtime-preview-2024-12-17":      {"input_audio_tokens": 8, "output_audio_tokens": 4},
-		"gpt-4o-mini-realtime-preview":            {"input_audio_tokens": 17, "output_audio_tokens": 8.4},
-		"gpt-4o-mini-realtime-preview-2024-12-17": {"input_audio_tokens": 17, "output_audio_tokens": 8.4},
-		"gemini-2.5-flash-preview-04-17":          {"reasoning_tokens": 5.833},
-		"gpt-image-1":                             {"input_text_tokens": 0.5},
-	}
-
-	defaultPrices := GetDefaultPrice()
-	priceMap := make(map[string]*Price, len(defaultPrices))
-	for _, price := range defaultPrices {
-		priceMap[price.Model] = price
-	}
-
-	extraPrices := make(map[string]map[string]float64, len(legacyExtraRatios))
-	for modelName, extraRatios := range legacyExtraRatios {
-		price, ok := priceMap[modelName]
-		if !ok {
-			continue
-		}
-
-		modelExtraPrices := make(map[string]float64, len(extraRatios))
-		for key, ratio := range extraRatios {
-			basePrice := price.GetOutput()
-			if GetExtraPriceUsesInputPrice(key) {
-				basePrice = price.GetInput()
-			}
-			modelExtraPrices[key] = decimal.NewFromFloat(basePrice).
-				Mul(decimal.NewFromFloat(ratio)).
-				InexactFloat64()
-		}
-		extraPrices[modelName] = modelExtraPrices
-	}
-
-	data, err := json.Marshal(extraPrices)
-	if err != nil {
-		return "{}"
-	}
-
-	return string(data)
+	return "{}"
 }

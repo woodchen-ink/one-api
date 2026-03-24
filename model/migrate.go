@@ -780,13 +780,13 @@ func addExtraRatios() *gormigrate.Migration {
 		Migrate: func(tx *gorm.DB) error {
 			extraTokenPriceJson := ""
 			extraRatios := make(map[string]map[string]float64)
-			// 先查询数据库中是否存在extra_ratios
-			option, err := GetOption("ExtraTokenPriceJson")
-			if err == nil {
-				extraTokenPriceJson = option.Value
 
+			// Only migrate explicitly configured extra ratios.
+			option, err := GetOption("ExtraTokenPriceJson")
+			if err == nil && option.Value != "" {
+				extraTokenPriceJson = option.Value
 			} else {
-				extraTokenPriceJson = GetDefaultExtraRatio()
+				return nil
 			}
 
 			err = json.Unmarshal([]byte(extraTokenPriceJson), &extraRatios)

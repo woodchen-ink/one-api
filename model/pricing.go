@@ -42,15 +42,7 @@ func NewPricing() {
 		return
 	}
 
-	if len(PricingInstance.Prices) == 0 {
-		logger.SysLog("Seeding default pricing")
-		prices := GetDefaultPrice()
-		if err := PricingInstance.SyncPriceWithoutOverwrite(prices); err != nil {
-			logger.SysError("Failed to seed default pricing:" + err.Error())
-			return
-		}
-		logger.SysLog("Pricing initialized")
-	}
+	logger.SysLog("Pricing initialized")
 }
 
 // initializes the Pricing instance
