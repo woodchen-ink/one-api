@@ -216,14 +216,13 @@ func ConvertFromChatOpenai(request *types.ChatCompletionRequest) (*ClaudeRequest
 		claudeRequest.ToolChoice = ConvertToolChoice(toolType, toolFunc)
 	}
 
-	if claudeRequest.MaxTokens == 0 {
-		claudeRequest.MaxTokens = config.ClaudeSettingsInstance.GetDefaultMaxTokens(request.Model)
+	if claudeRequest.MaxTokens <= 0 {
+		return nil, common.StringErrorWrapper("max_tokens is required for Claude requests", "max_tokens_required", http.StatusBadRequest)
 	}
 
-	// 如果是3-7 默认开启thinking
 	if request.OneOtherArg == "thinking" || request.Reasoning != nil {
 		var opErr *types.OpenAIErrorWithStatusCode
-		claudeRequest.MaxTokens, claudeRequest.Thinking, opErr = getThinking(claudeRequest.MaxTokens, request.Reasoning)
+		claudeRequest.Thinking, opErr = getThinking(claudeRequest.MaxTokens, request.OneOtherArg, request.Reasoning)
 
 		if opErr != nil {
 			return nil, opErr
@@ -235,15 +234,22 @@ func ConvertFromChatOpenai(request *types.ChatCompletionRequest) (*ClaudeRequest
 	return &claudeRequest, nil
 }
 
-func getThinking(maxTokens int, reasoning *types.ChatReasoning) (newMaxtokens int, thinking *Thinking, err *types.OpenAIErrorWithStatusCode) {
-	newMaxtokens = maxTokens
+func getThinking(maxTokens int, otherArg string, reasoning *types.ChatReasoning) (thinking *Thinking, err *types.OpenAIErrorWithStatusCode) {
+	if reasoning == nil || (reasoning.MaxTokens == 0 && reasoning.Effort == "") {
+		if otherArg == "thinking" {
+			err = common.StringErrorWrapper("model#thinking is no longer supported; please provide reasoning.max_tokens or reasoning.effort", "thinking_not_supported", http.StatusBadRequest)
+			return
+		}
+
+		err = common.StringErrorWrapper("reasoning.max_tokens or reasoning.effort is required for Claude thinking", "reasoning_required", http.StatusBadRequest)
+		return
+	}
+
 	thinking = &Thinking{
 		Type: "enabled",
 	}
 
-	if reasoning == nil || (reasoning.MaxTokens == 0 && reasoning.Effort == "") {
-		thinking.BudgetTokens = int(float64(maxTokens) * config.ClaudeSettingsInstance.BudgetTokensPercentage)
-	} else if reasoning.MaxTokens > 0 {
+	if reasoning.MaxTokens > 0 {
 		if reasoning.MaxTokens < 1024 {
 			err = common.StringErrorWrapper("budget_token must be greater than 1024", "budget_tokens_too_small", http.StatusBadRequest)
 			return
@@ -270,8 +276,9 @@ func getThinking(maxTokens int, reasoning *types.ChatReasoning) (newMaxtokens in
 		thinking.BudgetTokens = 1024
 	}
 
-	if newMaxtokens <= thinking.BudgetTokens {
-		newMaxtokens = 1280
+	if maxTokens <= thinking.BudgetTokens {
+		err = common.StringErrorWrapper(fmt.Sprintf("max_tokens must be greater than thinking.budget_tokens, max_tokens: %d, budget_tokens: %d", maxTokens, thinking.BudgetTokens), "max_tokens_too_small", http.StatusBadRequest)
+		return
 	}
 
 	return

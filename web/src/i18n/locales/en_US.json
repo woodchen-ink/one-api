@@ -1022,17 +1022,6 @@
           "placeholder": "Enter keywords, one per line"
         },
         "save": "Save Settings"
-      },
-      "claudeSettings": {
-        "budgetTokensPercentage": {
-          "label": "Default thinking token percentage",
-          "placeholder": "Please enter the default thinking token percentage."
-        },
-        "defaultMaxTokens": {
-          "label": "Default MaxToken quantity",
-          "placeholder": "Please enter the default MaxToken quantity in JSON format, where \"default\" represents the default value. For example: {\"default\": 1000, \"claude-3-7-sonnet-latest\": 128000}"
-        },
-        "save": "Save Claude's settings"
       }
     },
     "otherSettings": {
