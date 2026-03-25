@@ -119,10 +119,7 @@ function getTypeBackground(type, isDark) {
 export default function ChannelTableRow({ item, manageChannel, onRefresh, groupOptions, modelOptions, prices }) {
   const { t } = useTranslation();
   const theme = useTheme();
-  const popover = usePopover();
   const confirmDelete = useBoolean();
-  const check = useBoolean();
-  const updateBalanceOption = useBoolean();
 
   const [openTest, setOpenTest] = useState(false);
   // const [openDelete, setOpenDelete] = useState(false);
@@ -314,6 +311,21 @@ export default function ChannelTableRow({ item, manageChannel, onRefresh, groupO
   const handleOpenStatistics = (channelItem) => {
     setStatisticsChannel(channelItem);
     setStatisticsOpen(true);
+  };
+
+  const handleCopyChannel = (channelItem = null) => {
+    const targetChannel = channelItem || item;
+    manageChannel(targetChannel.id, 'copy');
+  };
+
+  const handleCheckChannel = (channelItem = null) => {
+    setCurrentTestingChannel(channelItem);
+    setOpenCheck(true);
+  };
+
+  const handleDeleteChannel = (channelItem = null) => {
+    setCurrentTestingChannel(channelItem);
+    confirmDelete.onTrue();
   };
 
   const updateChannelBalance = async () => {
@@ -581,15 +593,34 @@ export default function ChannelTableRow({ item, manageChannel, onRefresh, groupO
               </IconButton>
             )}
 
+            {!item.tag && (
+              <Tooltip title={t('token_index.copy')} placement="top" arrow>
+                <IconButton size="small" onClick={() => handleCopyChannel()} sx={{ color: 'primary.main' }}>
+                  <Icon icon="solar:copy-bold-duotone" />
+                </IconButton>
+              </Tooltip>
+            )}
+
+            {!item.tag && (
+              <Tooltip title={t('channel_row.check')} placement="top" arrow>
+                <IconButton size="small" onClick={() => handleCheckChannel()} sx={{ color: 'warning.main' }}>
+                  <Icon icon="solar:checklist-minimalistic-bold" />
+                </IconButton>
+              </Tooltip>
+            )}
+
             <Tooltip title={t('common.edit')} placement="top" arrow>
               <IconButton onClick={quickEdit.onTrue} size="small">
                 <Icon icon="solar:pen-bold" />
               </IconButton>
             </Tooltip>
+
             {!item.tag && (
-              <IconButton onClick={popover.onOpen} size="small">
-                <Icon icon="eva:more-vertical-fill" />
-              </IconButton>
+              <Tooltip title={t('common.delete')} placement="top" arrow>
+                <IconButton size="small" onClick={() => handleDeleteChannel()} sx={{ color: 'error.main' }}>
+                  <Icon icon="solar:trash-bin-trash-bold-duotone" />
+                </IconButton>
+              </Tooltip>
             )}
 
             {item.tag && (
@@ -602,88 +633,6 @@ export default function ChannelTableRow({ item, manageChannel, onRefresh, groupO
           </Stack>
         </TableCell>
       </TableRow>
-
-      <Popover
-        open={popover.open}
-        anchorEl={popover.anchorEl}
-        onClose={() => {
-          popover.onClose();
-          // 如果在关闭后没有进一步操作，重置当前渠道
-          if (!check.value && !confirmDelete.value && !updateBalanceOption.value) {
-            setCurrentTestingChannel(null);
-          }
-        }}
-        anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-        PaperProps={{
-          sx: { minWidth: 140 }
-        }}
-      >
-        <MenuItem
-          onClick={() => {
-            const targetChannel = currentTestingChannel || item;
-            handleOpenStatistics(targetChannel);
-            popover.onClose();
-          }}
-        >
-          <Icon icon="solar:chart-square-bold-duotone" style={{ marginRight: '16px' }} />
-          使用统计
-        </MenuItem>
-
-        <MenuItem
-          onClick={() => {
-            popover.onClose();
-            manageChannel(currentTestingChannel ? currentTestingChannel.id : item.id, 'copy');
-          }}
-        >
-          <Icon icon="solar:copy-bold-duotone" style={{ marginRight: '16px' }} />
-          {t('token_index.copy')}
-        </MenuItem>
-        <MenuItem
-          onClick={() => {
-            setOpenCheck(true);
-            popover.onClose();
-          }}
-        >
-          <Icon icon="solar:checklist-minimalistic-bold" style={{ marginRight: '16px' }} />
-          {t('channel_row.check')}
-        </MenuItem>
-
-        {CHANNEL_OPTIONS[currentTestingChannel ? currentTestingChannel?.type : item.type]?.url && (
-          <MenuItem
-            onClick={() => {
-              popover.onClose();
-              window.open(CHANNEL_OPTIONS[currentTestingChannel ? currentTestingChannel?.type : item.type].url);
-            }}
-          >
-            <Icon icon="solar:global-line-duotone" style={{ marginRight: '16px' }} />
-            {t('channel_row.channelWeb')}
-          </MenuItem>
-        )}
-
-        {currentTestingChannel && (
-          <MenuItem
-            onClick={() => {
-              popover.onClose();
-              manageChannel(currentTestingChannel.id, 'delete_tag', '');
-            }}
-            sx={{ color: 'error.main' }}
-          >
-            <Icon icon="solar:trash-bin-trash-bold-duotone" style={{ marginRight: '16px' }} />
-            {t('channel_row.delTag')}
-          </MenuItem>
-        )}
-        <MenuItem
-          onClick={() => {
-            popover.onClose();
-            confirmDelete.onTrue();
-          }}
-          sx={{ color: 'error.main' }}
-        >
-          <Icon icon="solar:trash-bin-trash-bold-duotone" style={{ marginRight: '16px' }} />
-          {t('common.delete')}
-        </MenuItem>
-      </Popover>
 
       <StyledMenu
         id="test-model-menu"
@@ -1108,6 +1057,16 @@ export default function ChannelTableRow({ item, manageChannel, onRefresh, groupO
                                     </TableCell>
                                     <TableCell align="center">
                                       <Stack direction="row" spacing={1} justifyContent="center">
+                                        <Tooltip title="使用统计" placement="top">
+                                          <IconButton
+                                            size="small"
+                                            sx={{ p: 0.5, color: 'secondary.main' }}
+                                            onClick={() => handleOpenStatistics(channel)}
+                                          >
+                                            <Icon icon="solar:chart-square-bold-duotone" width={18} height={18} />
+                                          </IconButton>
+                                        </Tooltip>
+
                                         <Tooltip title={t('channel_row.testModels')} placement="top">
                                           <IconButton
                                             size="small"
@@ -1121,6 +1080,26 @@ export default function ChannelTableRow({ item, manageChannel, onRefresh, groupO
                                             }}
                                           >
                                             <Icon icon="mdi:speedometer" width={18} height={18} />
+                                          </IconButton>
+                                        </Tooltip>
+
+                                        <Tooltip title={t('token_index.copy')} placement="top">
+                                          <IconButton
+                                            size="small"
+                                            sx={{ p: 0.5, color: 'primary.main' }}
+                                            onClick={() => handleCopyChannel(channel)}
+                                          >
+                                            <Icon icon="solar:copy-bold-duotone" width={18} height={18} />
+                                          </IconButton>
+                                        </Tooltip>
+
+                                        <Tooltip title={t('channel_row.check')} placement="top">
+                                          <IconButton
+                                            size="small"
+                                            sx={{ p: 0.5, color: 'warning.main' }}
+                                            onClick={() => handleCheckChannel(channel)}
+                                          >
+                                            <Icon icon="solar:checklist-minimalistic-bold" width={18} height={18} />
                                           </IconButton>
                                         </Tooltip>
 
@@ -1138,20 +1117,27 @@ export default function ChannelTableRow({ item, manageChannel, onRefresh, groupO
                                           </IconButton>
                                         </Tooltip>
 
-                                        <Tooltip title={t('channel_index.actions')} placement="top">
+                                        <Tooltip title={t('common.delete')} placement="top">
                                           <IconButton
                                             size="small"
-                                            sx={{ p: 0.5 }}
-                                            onClick={(event) => {
-                                              // 设置当前操作的渠道
-                                              setCurrentTestingChannel(channel);
-                                              // 打开更多操作菜单
-                                              popover.onOpen(event);
-                                            }}
+                                            sx={{ p: 0.5, color: 'error.main' }}
+                                            onClick={() => handleDeleteChannel(channel)}
                                           >
-                                            <Icon icon="eva:more-vertical-fill" width={18} height={18} />
+                                            <Icon icon="solar:trash-bin-trash-bold-duotone" width={18} height={18} />
                                           </IconButton>
                                         </Tooltip>
+
+                                        {channel.tag && (
+                                          <Tooltip title={t('channel_row.delTag')} placement="top">
+                                            <IconButton
+                                              size="small"
+                                              sx={{ p: 0.5, color: 'warning.main' }}
+                                              onClick={() => manageChannel(channel.id, 'delete_tag', '')}
+                                            >
+                                              <Icon icon="mdi:tag-remove" width={18} height={18} />
+                                            </IconButton>
+                                          </Tooltip>
+                                        )}
                                       </Stack>
                                     </TableCell>
                                   </TableRow>
