@@ -801,25 +801,6 @@ export default function Overview() {
 
   return (
     <Stack spacing={3}>
-      <Box
-        sx={{
-          borderRadius: 4,
-          px: { xs: 2.5, md: 3 },
-          py: 3,
-          background: (theme) =>
-            theme.palette.mode === 'dark'
-              ? `linear-gradient(135deg, ${alpha('#1D2088', 0.2)}, ${alpha(theme.palette.background.paper, 0.98)})`
-              : `linear-gradient(135deg, ${alpha('#D9E6F5', 0.9)}, ${alpha('#F6F7F8', 0.96)})`
-        }}
-      >
-        <Typography variant="h2" sx={{ fontSize: { xs: '1.8rem', md: '2.2rem' }, mb: 0.75 }}>
-          分析
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          用更快的时间选择和 Tab 切换查看模型、渠道、端点的使用分布与趋势。
-        </Typography>
-      </Box>
-
       <Grid container spacing={2}>
         {summaryCards.map((item) => (
           <Grid item xs={12} sm={6} lg={3} key={item.title}>
