@@ -21,6 +21,7 @@ import {
   Divider,
   Grid,
   IconButton,
+  LinearProgress,
   Stack,
   Table,
   TableBody,
@@ -106,6 +107,16 @@ function buildDailySeries(statistics) {
   return { dates, quotaData, requestData, tokenData };
 }
 
+function truncateLabel(value, max = 34) {
+  if (!value) {
+    return '-';
+  }
+  if (value.length <= max) {
+    return value;
+  }
+  return `${value.slice(0, max - 1)}…`;
+}
+
 function getStatusLabel(status) {
   switch (status) {
     case 1:
@@ -164,12 +175,91 @@ function MetricCard({ title, value, subValue, icon, color = 'primary' }) {
   );
 }
 
+function RankedListCard({ title, icon, items, totalBase, emptyText, color, formatter, secondaryFormatter }) {
+  return (
+    <Card variant="outlined" sx={{ borderRadius: 2, p: 2, height: '100%' }}>
+      <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
+        <Box
+          sx={{
+            width: 34,
+            height: 34,
+            borderRadius: 1.5,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: color,
+            bgcolor: (theme) => alpha(color, theme.palette.mode === 'dark' ? 0.24 : 0.12)
+          }}
+        >
+          <Icon icon={icon} width={18} />
+        </Box>
+        <Typography variant="h4">{title}</Typography>
+      </Stack>
+
+      {items.length === 0 ? (
+        <Box sx={{ minHeight: 180, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Typography color="text.secondary">{emptyText}</Typography>
+        </Box>
+      ) : (
+        <Stack spacing={1.5}>
+          {items.map((item, index) => {
+            const denominator = Math.max(Number(totalBase || 0), 1);
+            const percent = Math.min((Number(item.request_count || 0) / denominator) * 100, 100);
+
+            return (
+              <Box key={`${title}-${item.model_name || item.endpoint || index}`}>
+                <Stack direction="row" justifyContent="space-between" spacing={2} sx={{ mb: 0.5 }}>
+                  <Tooltip title={item.model_name || item.endpoint || '-'}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                      {truncateLabel(item.model_name || item.endpoint)}
+                    </Typography>
+                  </Tooltip>
+                  <Typography variant="body2" sx={{ whiteSpace: 'nowrap', fontWeight: 700 }}>
+                    {formatter(item)}
+                  </Typography>
+                </Stack>
+                <LinearProgress
+                  variant="determinate"
+                  value={percent}
+                  sx={{
+                    height: 8,
+                    borderRadius: 999,
+                    bgcolor: (theme) => alpha(theme.palette.text.primary, theme.palette.mode === 'dark' ? 0.12 : 0.08),
+                    '& .MuiLinearProgress-bar': {
+                      borderRadius: 999,
+                      background: `linear-gradient(90deg, ${alpha(color, 0.65)}, ${color})`
+                    }
+                  }}
+                />
+                <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+                  {secondaryFormatter(item)}
+                </Typography>
+              </Box>
+            );
+          })}
+        </Stack>
+      )}
+    </Card>
+  );
+}
+
 MetricCard.propTypes = {
   title: PropTypes.string,
   value: PropTypes.node,
   subValue: PropTypes.node,
   icon: PropTypes.string,
   color: PropTypes.string
+};
+
+RankedListCard.propTypes = {
+  title: PropTypes.string,
+  icon: PropTypes.string,
+  items: PropTypes.array,
+  totalBase: PropTypes.number,
+  emptyText: PropTypes.string,
+  color: PropTypes.string,
+  formatter: PropTypes.func,
+  secondaryFormatter: PropTypes.func
 };
 
 export default function ChannelStatisticsDialog({ open, onClose, channel }) {
@@ -245,6 +335,15 @@ export default function ChannelStatisticsDialog({ open, onClose, channel }) {
     (a, b) => Number(b.RequestCount || b.request_count || 0) - Number(a.RequestCount || a.request_count || 0)
   )[0];
   const topModels = [...(statistics.models || [])].sort((a, b) => Number(b.quota || 0) - Number(a.quota || 0)).slice(0, 8);
+  const requestEndpoints = statistics.request_endpoints || [];
+  const upstreamEndpoints = statistics.upstream_endpoints || [];
+  const coldPalette = {
+    quota: theme.palette.mode === 'dark' ? '#7B90BF' : '#1B2152',
+    request: theme.palette.mode === 'dark' ? '#7E9FA1' : '#5E7E80',
+    model: theme.palette.mode === 'dark' ? '#7B90BF' : '#4B669A',
+    endpoint: theme.palette.mode === 'dark' ? '#95A0AE' : '#687280',
+    upstream: theme.palette.mode === 'dark' ? '#908095' : '#756B80'
+  };
 
   const trendOptions = {
     chart: {
@@ -253,12 +352,38 @@ export default function ChannelStatisticsDialog({ open, onClose, channel }) {
       background: 'transparent'
     },
     stroke: {
-      width: [3, 3],
+      width: [3, 2.5],
       curve: 'smooth'
     },
-    colors: [theme.palette.primary.main, theme.palette.warning.main],
+    fill: {
+      type: ['gradient', 'solid'],
+      gradient: {
+        shadeIntensity: 0,
+        opacityFrom: 0.28,
+        opacityTo: 0.02,
+        stops: [0, 100]
+      }
+    },
+    colors: [coldPalette.quota, coldPalette.request],
+    markers: {
+      size: 0,
+      hover: {
+        size: 5
+      }
+    },
     xaxis: {
-      categories: chartSeries.dates.map((date) => dayjs(date).format('MM-DD'))
+      categories: chartSeries.dates.map((date) => dayjs(date).format('MM-DD')),
+      labels: {
+        style: {
+          colors: alpha(theme.palette.text.secondary, 0.9)
+        }
+      },
+      axisBorder: {
+        show: false
+      },
+      axisTicks: {
+        show: false
+      }
     },
     yaxis: [
       {
@@ -269,17 +394,28 @@ export default function ChannelStatisticsDialog({ open, onClose, channel }) {
       },
       {
         opposite: true,
-        title: { text: '请求' }
+        title: { text: '请求' },
+        labels: {
+          formatter: (value) => renderNumber(Number(value || 0))
+        }
       }
     ],
     legend: {
-      position: 'top'
+      position: 'top',
+      horizontalAlign: 'left',
+      labels: {
+        colors: theme.palette.text.primary
+      }
     },
     grid: {
-      borderColor: alpha(theme.palette.text.primary, 0.08)
+      borderColor: alpha(theme.palette.text.primary, 0.08),
+      strokeDashArray: 4
     },
     tooltip: {
-      theme: theme.palette.mode
+      theme: theme.palette.mode,
+      x: {
+        formatter: (_, { dataPointIndex }) => chartSeries.dates[dataPointIndex] || ''
+      }
     }
   };
 
@@ -295,43 +431,6 @@ export default function ChannelStatisticsDialog({ open, onClose, channel }) {
       data: chartSeries.requestData
     }
   ];
-
-  const donutOptions = {
-    chart: {
-      type: 'donut',
-      background: 'transparent'
-    },
-    labels: topModels.map((item) => item.model_name),
-    legend: {
-      position: 'bottom'
-    },
-    stroke: {
-      colors: [theme.palette.background.paper]
-    },
-    tooltip: {
-      theme: theme.palette.mode,
-      y: {
-        formatter: (value) => `${renderNumber(value)} 次`
-      }
-    },
-    plotOptions: {
-      pie: {
-        donut: {
-          size: '62%',
-          labels: {
-            show: true,
-            total: {
-              show: true,
-              label: '总请求',
-              formatter: () => renderNumber(summary.request_count || 0)
-            }
-          }
-        }
-      }
-    }
-  };
-
-  const donutSeries = topModels.map((item) => item.request_count);
 
   const metricCards = [
     {
@@ -446,15 +545,13 @@ export default function ChannelStatisticsDialog({ open, onClose, channel }) {
             </Grid>
 
             <Grid container spacing={2}>
-              <Grid item xs={12} lg={8}>
+              <Grid item xs={12}>
                 <Card variant="outlined" sx={{ borderRadius: 2, p: 2, height: '100%' }}>
                   <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
                     <Typography variant="h4">费用与请求趋势</Typography>
-                    <Tooltip title="展示当前周期的每日费用和请求数变化">
-                      <IconButton size="small">
-                        <Icon icon="solar:question-circle-line-duotone" width={18} />
-                      </IconButton>
-                    </Tooltip>
+                    <Typography variant="body2" color="text.secondary">
+                      冷静配色版
+                    </Typography>
                   </Stack>
                   {chartSeries.dates.length > 0 ? (
                     <ReactApexChart options={trendOptions} series={trendData} type="line" height={340} />
@@ -466,19 +563,50 @@ export default function ChannelStatisticsDialog({ open, onClose, channel }) {
                 </Card>
               </Grid>
 
-              <Grid item xs={12} lg={4}>
-                <Card variant="outlined" sx={{ borderRadius: 2, p: 2, height: '100%' }}>
-                  <Typography variant="h4" sx={{ mb: 2 }}>
-                    模型请求分布
-                  </Typography>
-                  {donutSeries.length > 0 ? (
-                    <ReactApexChart options={donutOptions} series={donutSeries} type="donut" height={340} />
-                  ) : (
-                    <Box sx={{ minHeight: 340, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Typography color="text.secondary">最近没有模型请求</Typography>
-                    </Box>
-                  )}
-                </Card>
+              <Grid item xs={12} md={4}>
+                <RankedListCard
+                  title="模型请求分布"
+                  icon="solar:pie-chart-2-line-duotone"
+                  items={topModels}
+                  totalBase={Number(summary.request_count || 0)}
+                  emptyText="最近没有模型请求"
+                  color={coldPalette.model}
+                  formatter={(item) => `${renderNumber(item.request_count || 0)} 次`}
+                  secondaryFormatter={(item) =>
+                    `占比 ${((Number(item.request_count || 0) / Math.max(Number(summary.request_count || 1), 1)) * 100).toFixed(1)}% · ${formatQuota(
+                      item.quota || 0,
+                      4
+                    )}`
+                  }
+                />
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <RankedListCard
+                  title="入口端点"
+                  icon="solar:login-3-line-duotone"
+                  items={requestEndpoints}
+                  totalBase={Number(summary.request_count || 0)}
+                  emptyText="最近没有入口端点数据"
+                  color={coldPalette.endpoint}
+                  formatter={(item) => `${renderNumber(item.request_count || 0)} 次`}
+                  secondaryFormatter={(item) =>
+                    `费用 ${formatQuota(item.quota || 0, 4)} · 最近 ${item.last_used_at ? dayjs.unix(item.last_used_at).format('MM-DD HH:mm') : '-'}`
+                  }
+                />
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <RankedListCard
+                  title="上游端点"
+                  icon="solar:server-path-line-duotone"
+                  items={upstreamEndpoints}
+                  totalBase={Number(summary.request_count || 0)}
+                  emptyText="最近没有上游端点数据"
+                  color={coldPalette.upstream}
+                  formatter={(item) => `${renderNumber(item.request_count || 0)} 次`}
+                  secondaryFormatter={(item) =>
+                    `费用 ${formatQuota(item.quota || 0, 4)} · 平均 ${formatAverageLatency(item.request_time || 0, item.request_count || 0)}`
+                  }
+                />
               </Grid>
             </Grid>
 

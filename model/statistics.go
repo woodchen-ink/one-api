@@ -88,6 +88,8 @@ func GetChannelExpensesStatisticsByPeriod(startTime, endTime, groupType string, 
             GROUP BY date, model_owned_by.name
             ORDER BY date, model_owned_by.name`
 
+	} else if groupType == "request_path" || groupType == "upstream_path" {
+		return GetEndpointStatisticsByPeriod(parseDateToUnix(startTime), parseDateToUnixEnd(endTime), groupType, userID)
 	} else {
 		sql = baseSelect + `
             MAX(channels.name) as channel
@@ -105,6 +107,22 @@ func GetChannelExpensesStatisticsByPeriod(startTime, endTime, groupType string, 
 	}
 
 	return LogStatistics, nil
+}
+
+func parseDateToUnix(date string) int64 {
+	t, err := time.Parse("2006-01-02", date)
+	if err != nil {
+		return 0
+	}
+	return t.Unix()
+}
+
+func parseDateToUnixEnd(date string) int64 {
+	t, err := time.Parse("2006-01-02", date)
+	if err != nil {
+		return 0
+	}
+	return t.Add(24*time.Hour - time.Second).Unix()
 }
 
 type StatisticsUpdateType int

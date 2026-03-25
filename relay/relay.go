@@ -7,6 +7,7 @@ import (
 	"czloapi/providers/azure"
 	"czloapi/providers/openai"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -21,6 +22,7 @@ func RelayOnly(c *gin.Context) {
 	}
 
 	channel := provider.GetChannel()
+	c.Set("channel_type", channel.Type)
 	if channel.Type != config.ChannelTypeOpenAI && channel.Type != config.ChannelTypeAzure {
 		common.AbortWithMessage(c, http.StatusServiceUnavailable, "provider must be of type azureopenai or openai")
 		return
@@ -97,10 +99,19 @@ func RelayOnly(c *gin.Context) {
 		requestTime,
 		false,
 		map[string]any{
-			"request_path": path,
-			"user_agent":   c.Request.UserAgent(),
+			"request_path":  path,
+			"upstream_path": getUpstreamPathOnly(url),
+			"user_agent":    c.Request.UserAgent(),
 		},
 		common.GetClientIP(c),
 	)
 
+}
+
+func getUpstreamPathOnly(rawURL string) string {
+	parsedURL, err := url.Parse(rawURL)
+	if err != nil {
+		return ""
+	}
+	return parsedURL.Path
 }

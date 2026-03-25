@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Grid } from '@mui/material';
 import DataCard from 'ui-component/cards/DataCard';
 import { gridSpacing } from 'store/constant';
@@ -11,6 +11,7 @@ export default function Overview() {
   const [userLoading, setUserLoading] = useState(true);
   const [channelLoading, setChannelLoading] = useState(true);
   const [rechargeLoading, setRechargeLoading] = useState(true);
+  const [endpointLoading, setEndpointLoading] = useState(true);
   const [userStatistics, setUserStatistics] = useState({});
 
   const [channelStatistics, setChannelStatistics] = useState({
@@ -25,6 +26,10 @@ export default function Overview() {
     Redemption: 0,
     Oder: 0,
     OderContent: ''
+  });
+  const [endpointStatistics, setEndpointStatistics] = useState({
+    entry: [],
+    upstream: []
   });
 
   const userStatisticsData = (data) => {
@@ -86,7 +91,14 @@ export default function Overview() {
     setRechargeStatistics(rechargeData);
   };
 
-  const statisticsData = useCallback(async () => {
+  const endpointStatisticsData = (data) => {
+    setEndpointStatistics({
+      entry: data?.entry || [],
+      upstream: data?.upstream || []
+    });
+  };
+
+  const statisticsData = async () => {
     try {
       const res = await API.get('/api/analytics/statistics');
       const { success, message, data } = res.data;
@@ -102,24 +114,29 @@ export default function Overview() {
         if (data.redemption_statistic || data.order_statistics) {
           rechargeStatisticsData(data?.redemption_statistic, data?.order_statistics);
         }
+        if (data.endpoint_statistics) {
+          endpointStatisticsData(data.endpoint_statistics);
+        }
         setUserLoading(false);
         setChannelLoading(false);
         setRechargeLoading(false);
+        setEndpointLoading(false);
       } else {
         showError(message);
       }
     } catch (error) {
       console.log(error);
     }
-  }, []);
+  };
 
   useEffect(() => {
     statisticsData();
-  }, [statisticsData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <Grid container spacing={gridSpacing}>
-      <Grid item lg={3} xs={12}>
+      <Grid item lg={2} xs={12}>
         <DataCard
           isLoading={userLoading}
           title={t('analytics_index.totalUserSpending')}
@@ -127,7 +144,7 @@ export default function Overview() {
           subContent={t('analytics_index.totalUserBalance') + '：' + (userStatistics?.total_quota || '0')}
         />
       </Grid>
-      <Grid item lg={3} xs={12}>
+      <Grid item lg={2} xs={12}>
         <DataCard
           isLoading={userLoading}
           title={t('analytics_index.totalUsers')}
@@ -140,7 +157,7 @@ export default function Overview() {
           }
         />
       </Grid>
-      <Grid item lg={3} xs={12}>
+      <Grid item lg={2} xs={12}>
         <DataCard
           isLoading={channelLoading}
           title={t('analytics_index.channelCount')}
@@ -154,7 +171,7 @@ export default function Overview() {
           }
         />
       </Grid>
-      <Grid item lg={3} xs={12}>
+      <Grid item lg={2} xs={12}>
         <DataCard
           isLoading={rechargeLoading}
           title={'充值统计'}
@@ -162,6 +179,32 @@ export default function Overview() {
           subContent={
             <>
               兑换码: {rechargeStatistics.Redemption} <br /> 订单: {rechargeStatistics.Oder} / {rechargeStatistics.OderContent}
+            </>
+          }
+        />
+      </Grid>
+      <Grid item lg={2} xs={12}>
+        <DataCard
+          isLoading={endpointLoading}
+          title={'入口端点'}
+          content={endpointStatistics.entry?.[0]?.request_count || '0'}
+          subContent={
+            <>
+              Top1: {endpointStatistics.entry?.[0]?.endpoint || '暂无'} <br />
+              Top2: {endpointStatistics.entry?.[1]?.endpoint || '暂无'}
+            </>
+          }
+        />
+      </Grid>
+      <Grid item lg={2} xs={12}>
+        <DataCard
+          isLoading={endpointLoading}
+          title={'上游端点'}
+          content={endpointStatistics.upstream?.[0]?.request_count || '0'}
+          subContent={
+            <>
+              Top1: {endpointStatistics.upstream?.[0]?.endpoint || '暂无'} <br />
+              Top2: {endpointStatistics.upstream?.[1]?.endpoint || '暂无'}
             </>
           }
         />

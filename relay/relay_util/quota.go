@@ -5,6 +5,7 @@ import (
 	"errors"
 	"math"
 	"net/http"
+	"strings"
 	"time"
 
 	"czloapi/common"
@@ -42,10 +43,12 @@ type Quota struct {
 	firstResponseTime time.Time
 	extraBillingData  map[string]ExtraBillingData
 	requestPath       string
+	upstreamPath      string
 	requestMode       string
 	requestTransport  string
 	userAgent         string
 	reasoningMetadata *types.LogReasoningMetadata
+	channelType       int
 }
 
 func NewQuota(c *gin.Context, modelName string, promptTokens int, billingContexts ...model.BillingContext) *Quota {
@@ -65,6 +68,7 @@ func NewQuota(c *gin.Context, modelName string, promptTokens int, billingContext
 		unlimitedQuota:   c.GetBool("key_unlimited_quota"),
 		HandelStatus:     false,
 		isBackupGroup:    isBackupGroup,
+		channelType:      c.GetInt("channel_type"),
 		requestMode:      c.GetString("log_request_mode"),
 		requestTransport: c.GetString("log_request_transport"),
 	}
@@ -251,6 +255,10 @@ func (q *Quota) Consume(c *gin.Context, usage *types.Usage, isStream bool) {
 	keyName := c.GetString("key_name")
 	q.startTime = c.GetTime("requestStartTime")
 	q.requestPath = c.Request.URL.Path
+	q.upstreamPath = c.GetString("upstream_request_path")
+	if q.upstreamPath == "" {
+		q.upstreamPath = inferUpstreamPath(q.channelType, q.requestPath, q.modelName, isStream)
+	}
 	q.userAgent = c.Request.UserAgent()
 
 	go func(ctx context.Context) {
@@ -434,6 +442,9 @@ func (q *Quota) GetLogMeta(usage *types.Usage, requestPath ...string) map[string
 	if len(requestPath) > 0 && requestPath[0] != "" {
 		meta["request_path"] = requestPath[0]
 	}
+	if q.upstreamPath != "" {
+		meta["upstream_path"] = q.upstreamPath
+	}
 	if q.requestMode != "" {
 		meta["request_mode"] = q.requestMode
 	}
@@ -467,6 +478,53 @@ func (q *Quota) GetLogMeta(usage *types.Usage, requestPath ...string) map[string
 	}
 
 	return meta
+}
+
+func inferUpstreamPath(channelType int, requestPath, modelName string, isStream bool) string {
+	if requestPath == "" {
+		return ""
+	}
+
+	if strings.HasPrefix(requestPath, "/v1beta/models/") || strings.HasPrefix(requestPath, "/v1/models/") || strings.HasPrefix(requestPath, "/v1/messages") {
+		return requestPath
+	}
+
+	switch channelType {
+	case config.ChannelTypeAnthropic:
+		if strings.HasPrefix(requestPath, "/v1/chat/completions") || strings.HasPrefix(requestPath, "/v1/responses") {
+			return "/v1/messages"
+		}
+	case config.ChannelTypeGemini:
+		switch {
+		case strings.HasPrefix(requestPath, "/v1/chat/completions"), strings.HasPrefix(requestPath, "/v1/responses"):
+			action := "generateContent"
+			if isStream {
+				action = "streamGenerateContent"
+			}
+			return "/v1beta/models/" + modelName + ":" + action
+		case strings.HasPrefix(requestPath, "/v1/embeddings"):
+			return "/v1beta/models/" + modelName + ":embedContent"
+		case strings.HasPrefix(requestPath, "/v1/images/generations"):
+			return "/v1beta/models/" + modelName + ":predict"
+		}
+	case config.ChannelTypeVertexAI:
+		switch {
+		case strings.HasPrefix(requestPath, "/v1/chat/completions"), strings.HasPrefix(requestPath, "/v1/responses"):
+			return "vertexai:" + modelName + ":generateContent"
+		case strings.HasPrefix(requestPath, "/v1/embeddings"):
+			return "vertexai:" + modelName + ":predict"
+		case strings.HasPrefix(requestPath, "/v1/messages"):
+			return "vertexai:" + modelName + ":rawPredict"
+		}
+	case config.ChannelTypeBedrock:
+		if strings.HasPrefix(requestPath, "/v1/chat/completions") || strings.HasPrefix(requestPath, "/v1/messages") {
+			return "bedrock:" + modelName + ":invoke"
+		}
+	case config.ChannelTypeAzure, config.ChannelTypeAzureV1:
+		return "azure:" + requestPath
+	}
+
+	return requestPath
 }
 
 func (q *Quota) getRequestTime() int {

@@ -64,6 +64,7 @@ func (r *relayBase) setProvider(modelName string) error {
 	}
 	r.provider = provider
 	r.modelName = modelName
+	r.c.Set("channel_type", provider.GetChannel().Type)
 
 	r.provider.SetOtherArg(r.otherArg)
 	enrichLogReasoningMetadata(r.c, r.originalModel, provider.GetChannel().Type)

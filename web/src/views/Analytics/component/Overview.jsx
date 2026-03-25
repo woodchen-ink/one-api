@@ -91,9 +91,11 @@ export default function Overview() {
 
             <Grid item xs={12} sm={6}>
               <Select value={groupType} onChange={(e) => setGroupType(e.target.value)} fullWidth>
-                <MenuItem value="model_type">Model Type</MenuItem>
-                <MenuItem value="model">Model</MenuItem>
-                <MenuItem value="channel">Channel</MenuItem>
+                <MenuItem value="model_type">模型厂商</MenuItem>
+                <MenuItem value="model">模型</MenuItem>
+                <MenuItem value="channel">渠道</MenuItem>
+                <MenuItem value="request_path">入口端点</MenuItem>
+                <MenuItem value="upstream_path">上游端点</MenuItem>
               </Select>
             </Grid>
 

@@ -37,13 +37,15 @@ type ChannelUsageModelStatistic struct {
 }
 
 type ChannelUsageStatistics struct {
-	Channel   ChannelUsageChannelInfo       `json:"channel"`
-	Days      int                           `json:"days"`
-	StartDate string                        `json:"start_date"`
-	EndDate   string                        `json:"end_date"`
-	Summary   ChannelUsageSummary           `json:"summary"`
-	Daily     []*LogStatistic               `json:"daily"`
-	Models    []*ChannelUsageModelStatistic `json:"models"`
+	Channel           ChannelUsageChannelInfo       `json:"channel"`
+	Days              int                           `json:"days"`
+	StartDate         string                        `json:"start_date"`
+	EndDate           string                        `json:"end_date"`
+	Summary           ChannelUsageSummary           `json:"summary"`
+	Daily             []*LogStatistic               `json:"daily"`
+	Models            []*ChannelUsageModelStatistic `json:"models"`
+	RequestEndpoints  []*EndpointUsageStatistic     `json:"request_endpoints"`
+	UpstreamEndpoints []*EndpointUsageStatistic     `json:"upstream_endpoints"`
 }
 
 func GetChannelUsageStatistics(channelId int, days int) (*ChannelUsageStatistics, error) {
@@ -76,11 +78,13 @@ func GetChannelUsageStatistics(channelId int, days int) (*ChannelUsageStatistics
 			UsedQuota:    channel.UsedQuota,
 			ResponseTime: channel.ResponseTime,
 		},
-		Days:      days,
-		StartDate: startDateStr,
-		EndDate:   endDateStr,
-		Daily:     make([]*LogStatistic, 0),
-		Models:    make([]*ChannelUsageModelStatistic, 0),
+		Days:              days,
+		StartDate:         startDateStr,
+		EndDate:           endDateStr,
+		Daily:             make([]*LogStatistic, 0),
+		Models:            make([]*ChannelUsageModelStatistic, 0),
+		RequestEndpoints:  make([]*EndpointUsageStatistic, 0),
+		UpstreamEndpoints: make([]*EndpointUsageStatistic, 0),
 	}
 
 	if err = DB.Table("statistics").
@@ -128,6 +132,19 @@ func GetChannelUsageStatistics(channelId int, days int) (*ChannelUsageStatistics
 		Order("request_count DESC").
 		Order("model_name ASC").
 		Scan(&result.Models).Error; err != nil {
+		return nil, err
+	}
+
+	startTimestamp := startDate.Unix()
+	endTimestamp := endDate.Add(24*time.Hour - time.Second).Unix()
+
+	result.RequestEndpoints, err = GetTopEndpointStatistics(startTimestamp, endTimestamp, channelId, "request_path", 6)
+	if err != nil {
+		return nil, err
+	}
+
+	result.UpstreamEndpoints, err = GetTopEndpointStatistics(startTimestamp, endTimestamp, channelId, "upstream_path", 6)
+	if err != nil {
 		return nil, err
 	}
 
