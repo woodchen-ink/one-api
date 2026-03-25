@@ -72,7 +72,7 @@ func GetEndpointStatisticsByPeriod(startTimestamp, endTimestamp int64, groupType
 	sql := fmt.Sprintf(`
 		SELECT
 			%s AS date,
-			SUM(request_count) AS request_count,
+			COUNT(1) AS request_count,
 			SUM(quota) AS quota,
 			SUM(prompt_tokens) AS prompt_tokens,
 			SUM(completion_tokens) AS completion_tokens,

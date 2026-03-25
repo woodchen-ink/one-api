@@ -416,18 +416,26 @@ function buildSupportChart(type, analyticsData, dateRange, theme) {
   };
 }
 
-function SummaryCard({ icon, title, value, description, color }) {
+function SummaryCard({ icon, title, value, description, color, integrated = false }) {
   return (
     <Card
       variant="outlined"
       sx={{
         height: '100%',
         borderRadius: 3,
-        borderColor: (theme) => alpha(color, theme.palette.mode === 'dark' ? 0.28 : 0.16),
+        borderColor: (theme) =>
+          integrated
+            ? alpha(theme.palette.text.primary, theme.palette.mode === 'dark' ? 0.08 : 0.06)
+            : alpha(color, theme.palette.mode === 'dark' ? 0.28 : 0.16),
         background: (theme) =>
-          theme.palette.mode === 'dark'
-            ? `linear-gradient(135deg, ${alpha(color, 0.14)}, ${alpha(theme.palette.background.paper, 0.98)})`
-            : `linear-gradient(135deg, ${alpha(color, 0.08)}, ${theme.palette.background.paper})`
+          integrated
+            ? theme.palette.mode === 'dark'
+              ? `linear-gradient(180deg, ${alpha(theme.palette.common.white, 0.04)}, ${alpha(theme.palette.background.paper, 0.96)})`
+              : `linear-gradient(180deg, ${alpha(theme.palette.common.white, 0.9)}, ${alpha('#F6F7F8', 0.92)})`
+            : theme.palette.mode === 'dark'
+              ? `linear-gradient(135deg, ${alpha(color, 0.14)}, ${alpha(theme.palette.background.paper, 0.98)})`
+              : `linear-gradient(135deg, ${alpha(color, 0.08)}, ${theme.palette.background.paper})`,
+        boxShadow: integrated ? 'none' : undefined
       }}
     >
       <Stack direction="row" spacing={2} sx={{ p: 2.5 }}>
@@ -466,7 +474,8 @@ SummaryCard.propTypes = {
   title: PropTypes.string,
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   description: PropTypes.string,
-  color: PropTypes.string
+  color: PropTypes.string,
+  integrated: PropTypes.bool
 };
 
 function RankingPanel({ rows, metric, theme }) {
@@ -801,14 +810,6 @@ export default function Overview() {
 
   return (
     <Stack spacing={3}>
-      <Grid container spacing={2}>
-        {summaryCards.map((item) => (
-          <Grid item xs={12} sm={6} lg={3} key={item.title}>
-            <SummaryCard {...item} />
-          </Grid>
-        ))}
-      </Grid>
-
       <Card variant="outlined" sx={{ borderRadius: 3, p: 2.5 }}>
         <Stack spacing={2}>
           <Stack direction={{ xs: 'column', lg: 'row' }} spacing={2} justifyContent="space-between">
@@ -863,6 +864,48 @@ export default function Overview() {
             <Chip label={`当前范围：${dateRange.start.format('YYYY-MM-DD')} 至 ${dateRange.end.format('YYYY-MM-DD')}`} variant="outlined" />
             <Chip label="统计粒度：按日" variant="outlined" />
           </Stack>
+
+          <Box
+            sx={{
+              mt: 0.5,
+              pt: 2,
+              borderTop: 1,
+              borderColor: 'divider'
+            }}
+          >
+            <Stack
+              direction={{ xs: 'column', md: 'row' }}
+              justifyContent="space-between"
+              alignItems={{ xs: 'flex-start', md: 'center' }}
+              spacing={1}
+              sx={{ mb: 2 }}
+            >
+              <Box>
+                <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+                  结果概览
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  当前筛选条件下的核心汇总指标
+                </Typography>
+              </Box>
+              <Chip
+                label={`对象数 ${summary.activeEntities}`}
+                size="small"
+                sx={{
+                  bgcolor: (theme) => alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.18 : 0.08),
+                  color: 'primary.main'
+                }}
+              />
+            </Stack>
+
+            <Grid container spacing={1.5}>
+              {summaryCards.map((item) => (
+                <Grid item xs={12} sm={6} lg={3} key={item.title}>
+                  <SummaryCard {...item} integrated />
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
         </Stack>
       </Card>
 
@@ -872,51 +915,100 @@ export default function Overview() {
             用量分析
           </Typography>
         </Box>
-        <Tabs
-          value={groupType}
-          onChange={(_, value) => setGroupType(value)}
-          variant="scrollable"
-          scrollButtons="auto"
-          sx={{ px: 1.5, borderBottom: 1, borderColor: 'divider' }}
-        >
-          {GROUP_TABS.map((tab) => (
-            <Tab
-              key={tab.value}
-              value={tab.value}
-              label={tab.label}
-              icon={<Icon icon={tab.icon} width={18} />}
-              iconPosition="start"
-              sx={{ minHeight: 56, textTransform: 'none' }}
-            />
-          ))}
-        </Tabs>
+        <Stack spacing={1.5} sx={{ px: 2.5, pb: 2, borderBottom: 1, borderColor: 'divider' }}>
+          <Stack
+            direction={{ xs: 'column', xl: 'row' }}
+            alignItems={{ xs: 'stretch', xl: 'center' }}
+            spacing={{ xs: 1.5, xl: 1 }}
+            sx={{ flexWrap: 'wrap' }}
+          >
+            <Tabs
+              value={groupType}
+              onChange={(_, value) => setGroupType(value)}
+              variant="scrollable"
+              scrollButtons="auto"
+              sx={{
+                minHeight: 56,
+                flexShrink: 0,
+                '& .MuiTab-root': {
+                  minHeight: 56,
+                  textTransform: 'none'
+                }
+              }}
+            >
+              {GROUP_TABS.map((tab) => (
+                <Tab key={tab.value} value={tab.value} label={tab.label} icon={<Icon icon={tab.icon} width={18} />} iconPosition="start" />
+              ))}
+            </Tabs>
 
-        <Stack
-          direction={{ xs: 'column', lg: 'row' }}
-          justifyContent="space-between"
-          spacing={2}
-          sx={{ px: 2.5, py: 2, borderBottom: 1, borderColor: 'divider' }}
-        >
-          <Box>
-            <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-              当前维度：{currentGroupLabel}
-            </Typography>
+            <Box
+              sx={{
+                ml: { xl: 0.5 },
+                px: 0.75,
+                py: 0.5,
+                borderRadius: 2.5,
+                border: 1,
+                borderColor: 'divider',
+                bgcolor: (theme) =>
+                  theme.palette.mode === 'dark' ? alpha(theme.palette.common.white, 0.04) : alpha(theme.palette.common.black, 0.03),
+                boxShadow: (theme) =>
+                  theme.palette.mode === 'dark' ? 'inset 0 0 0 1px rgba(255,255,255,0.03)' : 'inset 0 0 0 1px rgba(16,19,26,0.03)'
+              }}
+            >
+              <Tabs
+                value={metric}
+                onChange={(_, value) => setMetric(value)}
+                variant="scrollable"
+                scrollButtons="auto"
+                sx={{
+                  minHeight: 34,
+                  '& .MuiTabs-indicator': {
+                    display: 'none'
+                  },
+                  '& .MuiTab-root': {
+                    minHeight: 34,
+                    minWidth: 'auto',
+                    px: 1.2,
+                    py: 0.25,
+                    mr: 0.5,
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    fontSize: '0.86rem',
+                    color: 'text.secondary',
+                    transition: 'all 0.18s ease'
+                  },
+                  '& .MuiTab-root:hover': {
+                    bgcolor: (theme) => alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.14 : 0.08),
+                    color: 'text.primary'
+                  },
+                  '& .Mui-selected': {
+                    bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#7B90BF' : '#1B2152'),
+                    color: '#F6F7F8 !important',
+                    boxShadow: (theme) =>
+                      theme.palette.mode === 'dark' ? '0 6px 16px rgba(123, 144, 191, 0.28)' : '0 6px 16px rgba(27, 33, 82, 0.22)'
+                  }
+                }}
+              >
+                {METRIC_TABS.map((tab) => (
+                  <Tab
+                    key={tab.value}
+                    value={tab.value}
+                    label={tab.label}
+                    icon={<Icon icon={tab.icon} width={16} />}
+                    iconPosition="start"
+                  />
+                ))}
+              </Tabs>
+            </Box>
+          </Stack>
+
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={1} alignItems={{ xs: 'flex-start', md: 'center' }}>
+            <Chip label={`当前维度：${currentGroupLabel}`} variant="outlined" />
+            <Chip label={`当前指标：${METRIC_TABS.find((item) => item.value === metric)?.label || 'Token'}`} variant="outlined" />
             <Typography variant="body2" color="text.secondary">
               指标切换会同步更新排行和趋势图。
             </Typography>
-          </Box>
-          <Tabs value={metric} onChange={(_, value) => setMetric(value)} variant="scrollable" scrollButtons="auto">
-            {METRIC_TABS.map((tab) => (
-              <Tab
-                key={tab.value}
-                value={tab.value}
-                label={tab.label}
-                icon={<Icon icon={tab.icon} width={18} />}
-                iconPosition="start"
-                sx={{ minHeight: 44, textTransform: 'none' }}
-              />
-            ))}
-          </Tabs>
+          </Stack>
         </Stack>
 
         <Box sx={{ p: 2.5 }}>
