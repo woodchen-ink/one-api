@@ -549,9 +549,6 @@ export default function ChannelStatisticsDialog({ open, onClose, channel }) {
                 <Card variant="outlined" sx={{ borderRadius: 2, p: 2, height: '100%' }}>
                   <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
                     <Typography variant="h4">费用与请求趋势</Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      冷静配色版
-                    </Typography>
                   </Stack>
                   {chartSeries.dates.length > 0 ? (
                     <ReactApexChart options={trendOptions} series={trendData} type="line" height={340} />
