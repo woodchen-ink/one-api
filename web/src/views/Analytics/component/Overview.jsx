@@ -1,179 +1,120 @@
-import { useState, useEffect } from 'react';
-import { Grid, Typography, Divider, Box, TextField, Button, Select, MenuItem } from '@mui/material';
-import { gridSpacing } from 'store/constant';
-import DateRangePicker from 'ui-component/DateRangePicker';
-import ApexCharts from 'ui-component/chart/ApexCharts';
-import { showError, calculateQuota } from 'utils/common';
+import PropTypes from 'prop-types';
+import { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
+import ReactApexChart from 'react-apexcharts';
+
 import { API } from 'utils/api';
-import { generateBarChartOptions, renderChartNumber } from 'utils/chart';
-import { useTranslation } from 'react-i18next';
+import { calculateQuota, renderNumber, showError } from 'utils/common';
+import DateRangePicker from 'ui-component/DateRangePicker';
 
-export default function Overview() {
-  const { t } = useTranslation();
-  const [channelLoading, setChannelLoading] = useState(true);
-  const [redemptionLoading, setRedemptionLoading] = useState(true);
-  const [usersLoading, setUsersLoading] = useState(true);
-  const [channelData, setChannelData] = useState([]);
-  const [redemptionData, setRedemptionData] = useState([]);
-  const [orderData, setOrderData] = useState([]);
-  const [orderLoading, setOrderLoading] = useState(true);
-  const [usersData, setUsersData] = useState([]);
-  const [dateRange, setDateRange] = useState({ start: dayjs().subtract(6, 'day').startOf('day'), end: dayjs().endOf('day') });
+import { alpha, useTheme } from '@mui/material/styles';
+import {
+  Box,
+  Button,
+  Card,
+  Chip,
+  CircularProgress,
+  Divider,
+  Grid,
+  LinearProgress,
+  Stack,
+  Tab,
+  Tabs,
+  TextField,
+  Typography
+} from '@mui/material';
+import { Icon } from '@iconify/react';
 
-  const [groupType, setGroupType] = useState('model_type');
-  const [userId, setUserId] = useState(0);
+const GROUP_TABS = [
+  { value: 'model_type', label: '模型厂商', icon: 'solar:buildings-3-line-duotone' },
+  { value: 'model', label: '模型', icon: 'solar:cpu-line-duotone' },
+  { value: 'channel', label: '渠道', icon: 'solar:server-path-line-duotone' },
+  { value: 'request_path', label: '入口端点', icon: 'solar:login-3-line-duotone' },
+  { value: 'upstream_path', label: '上游端点', icon: 'solar:logout-2-line-duotone' }
+];
 
-  const handleSearch = () => {
-    fetchData(dateRange, groupType, userId);
-  };
+const METRIC_TABS = [
+  { value: 'requests', label: '请求', icon: 'solar:chat-round-line-duotone' },
+  { value: 'tokens', label: 'Token', icon: 'solar:database-line-duotone' },
+  { value: 'cost', label: '消费', icon: 'solar:dollar-minimalistic-line-duotone' },
+  { value: 'latency', label: '耗时', icon: 'solar:clock-circle-line-duotone' }
+];
 
-  const handleDateRangeChange = (value) => {
-    setDateRange(value);
-  };
+const OPS_TABS = [
+  { value: 'users', label: '注册趋势' },
+  { value: 'orders', label: '订单充值' },
+  { value: 'redemptions', label: '兑换码' }
+];
 
-  const fetchData = async (date, gType, uId) => {
-    setUsersLoading(true);
-    setChannelLoading(true);
-    setRedemptionLoading(true);
-    setOrderLoading(true);
-    try {
-      const res = await API.get('/api/analytics/period', {
-        params: {
-          start_timestamp: date.start.unix(),
-          end_timestamp: date.end.unix(),
-          group_type: gType,
-          user_id: uId
-        }
-      });
-      const { success, message, data } = res.data;
-      if (success) {
-        if (data) {
-          setUsersData(getUsersData(data?.user_statistics, date));
+const PRESET_OPTIONS = [
+  {
+    value: 'today',
+    label: '今天',
+    getRange: () => ({
+      start: dayjs().startOf('day'),
+      end: dayjs().endOf('day')
+    })
+  },
+  {
+    value: '7d',
+    label: '近7天',
+    getRange: () => ({
+      start: dayjs().subtract(6, 'day').startOf('day'),
+      end: dayjs().endOf('day')
+    })
+  },
+  {
+    value: '30d',
+    label: '近30天',
+    getRange: () => ({
+      start: dayjs().subtract(29, 'day').startOf('day'),
+      end: dayjs().endOf('day')
+    })
+  },
+  {
+    value: 'month',
+    label: '本月',
+    getRange: () => ({
+      start: dayjs().startOf('month'),
+      end: dayjs().endOf('day')
+    })
+  },
+  {
+    value: 'custom',
+    label: '自定义',
+    getRange: () => ({
+      start: dayjs().subtract(6, 'day').startOf('day'),
+      end: dayjs().endOf('day')
+    })
+  }
+];
 
-          setChannelData(getBarChartOptions(data?.channel_statistics, date));
+const EMPTY_ANALYTICS = {
+  channel_statistics: [],
+  user_statistics: [],
+  redemption_statistics: [],
+  order_statistics: []
+};
 
-          setRedemptionData(getRedemptionData(data?.redemption_statistics, date));
+function getPresetRange(preset) {
+  const target = PRESET_OPTIONS.find((item) => item.value === preset) || PRESET_OPTIONS[1];
+  return target.getRange();
+}
 
-          setOrderData(getOrdersData(data?.order_statistics, date));
-        }
-      } else {
-        showError(message);
-      }
-      setUsersLoading(false);
-      setChannelLoading(false);
-      setRedemptionLoading(false);
-      setOrderLoading(false);
-    } catch (error) {
-      console.log(error);
-      return;
-    }
-  };
+function getDateKey(item) {
+  return item?.Date || item?.date || '';
+}
 
-  useEffect(() => {
-    fetchData(dateRange, groupType, userId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  return (
-    <Grid container spacing={gridSpacing}>
-      <Grid item lg={12} xs={12}>
-        <Box sx={{ display: 'flex', gap: 2, m: 3 }}>
-          <Grid container spacing={2} sx={{ mb: 2 }}>
-            <Grid item xs={12} sm={6}>
-              <DateRangePicker
-                defaultValue={dateRange}
-                onChange={handleDateRangeChange}
-                localeText={{ start: '开始时间', end: '结束时间' }}
-                fullWidth
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={6}>
-              <Select value={groupType} onChange={(e) => setGroupType(e.target.value)} fullWidth>
-                <MenuItem value="model_type">模型厂商</MenuItem>
-                <MenuItem value="model">模型</MenuItem>
-                <MenuItem value="channel">渠道</MenuItem>
-                <MenuItem value="request_path">入口端点</MenuItem>
-                <MenuItem value="upstream_path">上游端点</MenuItem>
-              </Select>
-            </Grid>
-
-            <Grid item xs={12} sm={6}>
-              <TextField type="number" label="用户ID" value={userId} onChange={(e) => setUserId(Number(e.target.value))} fullWidth />
-            </Grid>
-
-            <Grid item xs={12} sm={6}>
-              <Button variant="contained" style={{ height: '100%' }} onClick={handleSearch} fullWidth>
-                搜索
-              </Button>
-            </Grid>
-          </Grid>
-        </Box>
-      </Grid>
-      <Grid item xs={12}>
-        <Typography variant="h3">
-          {dateRange.start.format('YYYY-MM-DD')} - {dateRange.end.format('YYYY-MM-DD')}
-        </Typography>
-      </Grid>
-      <Grid item xs={12}>
-        <Divider />
-      </Grid>
-      <Grid item xs={12}>
-        <ApexCharts
-          id="cost"
-          isLoading={channelLoading}
-          chartDatas={channelData?.costs || {}}
-          title={t('analytics_index.consumptionStatistics')}
-          decimal={3}
-        />
-      </Grid>
-      <Grid item xs={12}>
-        <ApexCharts
-          id="token"
-          isLoading={channelLoading}
-          chartDatas={channelData?.tokens || {}}
-          title={t('analytics_index.tokensStatistics')}
-          unit=""
-        />
-      </Grid>
-      {/* <Grid item xs={12}>
-        <ApexCharts
-          id="latency"
-          isLoading={channelLoading}
-          chartDatas={channelData?.latency || {}}
-          title={t('analytics_index.averageLatency')}
-          unit=""
-        />
-      </Grid> */}
-      <Grid item xs={12}>
-        <ApexCharts
-          id="requests"
-          isLoading={channelLoading}
-          chartDatas={channelData?.requests || {}}
-          title={t('analytics_index.requestsCount')}
-          unit=""
-        />
-      </Grid>
-      <Grid item xs={12} md={6}>
-        <ApexCharts isLoading={redemptionLoading} chartDatas={redemptionData} title={t('analytics_index.redemptionStatistics')} />
-      </Grid>
-      <Grid item xs={12} md={6}>
-        <ApexCharts isLoading={usersLoading} chartDatas={usersData} title={t('analytics_index.registrationStatistics')} />
-      </Grid>
-
-      <Grid item xs={12} md={6}>
-        <ApexCharts isLoading={orderLoading} chartDatas={orderData} title="充值" />
-      </Grid>
-    </Grid>
-  );
+function getChannelKey(item) {
+  return item?.Channel || item?.channel || '未知';
 }
 
 function getDates(start, end) {
-  var dates = [];
-  var current = start;
+  const dates = [];
+  let current = start.startOf('day');
+  const last = end.startOf('day');
 
-  while (current.isBefore(end) || current.isSame(end)) {
+  while (current.isBefore(last) || current.isSame(last, 'day')) {
     dates.push(current.format('YYYY-MM-DD'));
     current = current.add(1, 'day');
   }
@@ -181,228 +122,841 @@ function getDates(start, end) {
   return dates;
 }
 
-function calculateDailyData(item, dateMap) {
-  const index = dateMap.get(item.Date);
-  if (index === undefined) return null;
+function getMetricValue(item, metric) {
+  const requestCount = Number(item?.RequestCount || item?.request_count || 0);
+  const quota = Number(item?.Quota || item?.quota || 0);
+  const promptTokens = Number(item?.PromptTokens || item?.prompt_tokens || 0);
+  const completionTokens = Number(item?.CompletionTokens || item?.completion_tokens || 0);
+  const requestTime = Number(item?.RequestTime || item?.request_time || 0);
+
+  switch (metric) {
+    case 'tokens':
+      return promptTokens + completionTokens;
+    case 'cost':
+      return Number(calculateQuota(quota, 6));
+    case 'latency':
+      return requestCount > 0 ? requestTime / requestCount / 1000 : 0;
+    case 'requests':
+    default:
+      return requestCount;
+  }
+}
+
+function formatMetricValue(metric, value) {
+  const number = Number(value || 0);
+
+  switch (metric) {
+    case 'cost':
+      return `$${number.toFixed(4)}`;
+    case 'latency':
+      return `${number.toFixed(2)}s`;
+    case 'tokens':
+      return renderNumber(number);
+    case 'requests':
+    default:
+      return renderNumber(number);
+  }
+}
+
+function getRankingMetricValue(item, metric) {
+  if (metric === 'requests') {
+    return item.requests;
+  }
+  if (metric === 'tokens') {
+    return item.tokens;
+  }
+  if (metric === 'cost') {
+    return item.cost;
+  }
+  return item.latency;
+}
+
+function buildSummaryRows(data) {
+  const summary = {
+    requests: 0,
+    tokens: 0,
+    cost: 0,
+    latency: 0,
+    activeEntities: new Set()
+  };
+
+  data.forEach((item) => {
+    const requestCount = Number(item?.RequestCount || item?.request_count || 0);
+    const quota = Number(item?.Quota || item?.quota || 0);
+    const promptTokens = Number(item?.PromptTokens || item?.prompt_tokens || 0);
+    const completionTokens = Number(item?.CompletionTokens || item?.completion_tokens || 0);
+    const requestTime = Number(item?.RequestTime || item?.request_time || 0);
+
+    summary.requests += requestCount;
+    summary.tokens += promptTokens + completionTokens;
+    summary.cost += Number(calculateQuota(quota, 6));
+    summary.latency += requestTime;
+    summary.activeEntities.add(getChannelKey(item));
+  });
 
   return {
-    name: item.Channel,
-    costs: calculateQuota(item.Quota, 3),
-    tokens: item.PromptTokens + item.CompletionTokens,
-    requests: item.RequestCount,
-    latency: Number(item.RequestTime / 1000 / item.RequestCount).toFixed(3),
-    index: index
+    requests: summary.requests,
+    tokens: summary.tokens,
+    cost: summary.cost,
+    avgLatency: summary.requests > 0 ? summary.latency / summary.requests / 1000 : 0,
+    activeEntities: summary.activeEntities.size
   };
 }
 
-function getBarDataGroup(data, dates) {
-  const dateMap = new Map(dates.map((date, index) => [date, index]));
+function buildRankingRows(data) {
+  const summaryMap = new Map();
 
-  const result = {
-    costs: { total: 0, data: new Map() },
-    tokens: { total: 0, data: new Map() },
-    requests: { total: 0, data: new Map() },
-    latency: { total: 0, data: new Map() }
-  };
-
-  for (const item of data) {
-    const dailyData = calculateDailyData(item, dateMap);
-    if (!dailyData) continue;
-
-    for (let key in result) {
-      if (!result[key].data.has(dailyData.name)) {
-        result[key].data.set(dailyData.name, { name: dailyData.name, data: new Array(dates.length).fill(0) });
-      }
-      const channelDailyData = result[key].data.get(dailyData.name);
-      channelDailyData.data[dailyData.index] = dailyData[key];
-      result[key].total += Number(dailyData[key]);
+  data.forEach((item) => {
+    const key = getChannelKey(item);
+    if (!summaryMap.has(key)) {
+      summaryMap.set(key, {
+        name: key,
+        requests: 0,
+        tokens: 0,
+        cost: 0,
+        requestTime: 0
+      });
     }
-  }
-  return result;
+
+    const target = summaryMap.get(key);
+    const requestCount = Number(item?.RequestCount || item?.request_count || 0);
+    const quota = Number(item?.Quota || item?.quota || 0);
+    const promptTokens = Number(item?.PromptTokens || item?.prompt_tokens || 0);
+    const completionTokens = Number(item?.CompletionTokens || item?.completion_tokens || 0);
+    const requestTime = Number(item?.RequestTime || item?.request_time || 0);
+
+    target.requests += requestCount;
+    target.tokens += promptTokens + completionTokens;
+    target.cost += Number(calculateQuota(quota, 6));
+    target.requestTime += requestTime;
+  });
+
+  return Array.from(summaryMap.values())
+    .map((item) => ({
+      ...item,
+      latency: item.requests > 0 ? item.requestTime / item.requests / 1000 : 0
+    }))
+    .sort((a, b) => b.requests - a.requests);
 }
 
-function getBarChartOptions(data, dateRange) {
-  if (!data) return null;
-
+function buildTrendData(data, dateRange, metric) {
   const dates = getDates(dateRange.start, dateRange.end);
-  const result = getBarDataGroup(data, dates);
+  const rankingRows = buildRankingRows(data);
+  const topNames = rankingRows.slice(0, 5).map((item) => item.name);
+  const seriesMap = new Map();
 
-  let channelData = {};
+  topNames.forEach((name) => {
+    seriesMap.set(name, new Array(dates.length).fill(0));
+  });
+  seriesMap.set('其他', new Array(dates.length).fill(0));
 
-  channelData.costs = generateBarChartOptions(dates, Array.from(result.costs.data.values()), '美元', 3);
-  channelData.costs.options.title.text = '总消费：$' + renderChartNumber(result.costs.total, 3);
+  if (metric === 'latency') {
+    const sums = new Array(dates.length).fill(0);
+    const counts = new Array(dates.length).fill(0);
 
-  channelData.tokens = generateBarChartOptions(dates, Array.from(result.tokens.data.values()), '', 0);
-  channelData.tokens.options.title.text = '总Tokens：' + renderChartNumber(result.tokens.total, 0);
-
-  channelData.requests = generateBarChartOptions(dates, Array.from(result.requests.data.values()), '次', 0);
-  channelData.requests.options.title.text = '总请求数：' + renderChartNumber(result.requests.total, 0);
-
-  // 获取每天所有渠道的平均延迟
-  let latency = Array.from(result.latency.data.values());
-  let sums = [];
-  let counts = [];
-  for (let obj of latency) {
-    for (let i = 0; i < obj.data.length; i++) {
-      let value = parseFloat(obj.data[i]);
-      sums[i] = sums[i] || 0;
-      counts[i] = counts[i] || 0;
-      if (value !== 0) {
-        sums[i] = (sums[i] || 0) + value;
-        counts[i] = (counts[i] || 0) + 1;
+    data.forEach((item) => {
+      const date = getDateKey(item);
+      const index = dates.indexOf(date);
+      if (index === -1) {
+        return;
       }
-    }
+
+      const requestCount = Number(item?.RequestCount || item?.request_count || 0);
+      const requestTime = Number(item?.RequestTime || item?.request_time || 0);
+      sums[index] += requestTime;
+      counts[index] += requestCount;
+    });
+
+    return {
+      categories: dates,
+      series: [
+        {
+          name: '平均耗时',
+          data: sums.map((sum, index) => (counts[index] > 0 ? Number((sum / counts[index] / 1000).toFixed(3)) : 0))
+        }
+      ],
+      stacked: false
+    };
   }
 
-  // 追加latency列表后面
-  latency[latency.length] = {
-    name: '平均延迟',
-    data: sums.map((sum, i) => Number(counts[i] ? sum / counts[i] : 0).toFixed(3))
-  };
+  data.forEach((item) => {
+    const date = getDateKey(item);
+    const index = dates.indexOf(date);
+    if (index === -1) {
+      return;
+    }
 
-  let dashArray = new Array(latency.length - 1).fill(0);
-  dashArray.push(5);
+    const name = getChannelKey(item);
+    const value = getMetricValue(item, metric);
 
-  channelData.latency = generateBarChartOptions(dates, latency, '秒', 3);
-  channelData.latency.type = 'line';
-  channelData.latency.options.chart = {
-    type: 'line',
-    zoom: {
-      enabled: false
-    },
-    background: 'transparent'
-  };
-  channelData.latency.options.stroke = {
-    curve: 'smooth',
-    dashArray: dashArray
-  };
+    if (seriesMap.has(name)) {
+      seriesMap.get(name)[index] += value;
+    } else {
+      seriesMap.get('其他')[index] += value;
+    }
+  });
 
-  return channelData;
+  return {
+    categories: dates,
+    series: Array.from(seriesMap.entries())
+      .filter(([, values]) => values.some((value) => value > 0))
+      .map(([name, values]) => ({
+        name,
+        data: values.map((value) => Number(value.toFixed ? value.toFixed(6) : value))
+      })),
+    stacked: true
+  };
 }
 
-function getRedemptionData(data, dateRange) {
-  if (!data) return null;
-
+function buildSupportChart(type, analyticsData, dateRange, theme) {
   const dates = getDates(dateRange.start, dateRange.end);
-  const result = [
-    {
-      name: '兑换金额($)',
-      type: 'column',
-      data: new Array(dates.length).fill(0)
-    },
-    {
-      name: '独立用户(人)',
-      type: 'line',
-      data: new Array(dates.length).fill(0)
-    }
-  ];
+  let series = [];
+  let yAxisLabel = '';
 
-  for (const item of data) {
-    const index = dates.indexOf(item.date);
-    if (index !== -1) {
-      result[0].data[index] = calculateQuota(item.quota, 3);
-      result[1].data[index] = item.user_count;
-    }
+  if (type === 'users') {
+    const direct = new Array(dates.length).fill(0);
+    const invited = new Array(dates.length).fill(0);
+
+    (analyticsData.user_statistics || []).forEach((item) => {
+      const index = dates.indexOf(item?.date);
+      if (index === -1) {
+        return;
+      }
+      direct[index] = Number(item?.user_count || 0) - Number(item?.inviter_user_count || 0);
+      invited[index] = Number(item?.inviter_user_count || 0);
+    });
+
+    series = [
+      { name: '直接注册', type: 'column', data: direct },
+      { name: '邀请注册', type: 'column', data: invited }
+    ];
+    yAxisLabel = '人数';
   }
 
-  let chartData = {
-    height: 480,
+  if (type === 'orders') {
+    const orderData = new Array(dates.length).fill(0);
+    (analyticsData.order_statistics || []).forEach((item) => {
+      const index = dates.indexOf(item?.date);
+      if (index === -1) {
+        return;
+      }
+      orderData[index] = Number(item?.order_amount || 0);
+    });
+
+    series = [{ name: '订单充值', type: 'area', data: orderData }];
+    yAxisLabel = '金额';
+  }
+
+  if (type === 'redemptions') {
+    const quotaData = new Array(dates.length).fill(0);
+    const userData = new Array(dates.length).fill(0);
+
+    (analyticsData.redemption_statistics || []).forEach((item) => {
+      const index = dates.indexOf(item?.date);
+      if (index === -1) {
+        return;
+      }
+      quotaData[index] = Number(calculateQuota(item?.quota || 0, 6));
+      userData[index] = Number(item?.user_count || 0);
+    });
+
+    series = [
+      { name: '兑换额度', type: 'column', data: quotaData },
+      { name: '独立用户', type: 'line', data: userData }
+    ];
+    yAxisLabel = '额度 / 用户';
+  }
+
+  return {
+    series,
     options: {
       chart: {
         type: 'line',
-        background: 'transparent'
+        background: 'transparent',
+        toolbar: {
+          show: false
+        }
       },
       stroke: {
-        width: [0, 4]
+        width: series.map((item) => (item.type === 'line' ? 3 : 0))
       },
-      dataLabels: {
-        enabled: true,
-        enabledOnSeries: [1]
+      fill: {
+        type: series.map((item) => (item.type === 'area' ? 'gradient' : 'solid')),
+        gradient: {
+          shadeIntensity: 0,
+          opacityFrom: 0.22,
+          opacityTo: 0.04,
+          stops: [0, 100]
+        }
+      },
+      colors: ['#4B669A', '#7E9FA1', '#756B80'],
+      legend: {
+        position: 'top',
+        horizontalAlign: 'left',
+        labels: {
+          colors: theme.palette.text.primary
+        }
       },
       xaxis: {
-        type: 'category',
-        categories: dates
+        categories: dates.map((date) => dayjs(date).format('MM-DD'))
       },
-      yaxis: [
-        {
-          title: {
-            text: '兑换金额($)'
-          }
-        },
-        {
-          opposite: true,
-          title: {
-            text: '独立用户(人)'
-          }
+      yaxis: {
+        title: {
+          text: yAxisLabel
         }
-      ],
+      },
+      grid: {
+        borderColor: alpha(theme.palette.text.primary, 0.08),
+        strokeDashArray: 4
+      },
       tooltip: {
-        theme: 'dark'
+        theme: theme.palette.mode
       }
-    },
-    series: result
+    }
+  };
+}
+
+function SummaryCard({ icon, title, value, description, color }) {
+  return (
+    <Card
+      variant="outlined"
+      sx={{
+        height: '100%',
+        borderRadius: 3,
+        borderColor: (theme) => alpha(color, theme.palette.mode === 'dark' ? 0.28 : 0.16),
+        background: (theme) =>
+          theme.palette.mode === 'dark'
+            ? `linear-gradient(135deg, ${alpha(color, 0.14)}, ${alpha(theme.palette.background.paper, 0.98)})`
+            : `linear-gradient(135deg, ${alpha(color, 0.08)}, ${theme.palette.background.paper})`
+      }}
+    >
+      <Stack direction="row" spacing={2} sx={{ p: 2.5 }}>
+        <Box
+          sx={{
+            width: 44,
+            height: 44,
+            borderRadius: 2,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color,
+            bgcolor: (theme) => alpha(color, theme.palette.mode === 'dark' ? 0.22 : 0.12)
+          }}
+        >
+          <Icon icon={icon} width={22} />
+        </Box>
+        <Box sx={{ minWidth: 0 }}>
+          <Typography variant="body2" color="text.secondary">
+            {title}
+          </Typography>
+          <Typography variant="h2" sx={{ fontSize: '2rem', lineHeight: 1.15, mt: 0.5 }}>
+            {value}
+          </Typography>
+          <Typography variant="caption" color="text.secondary" sx={{ mt: 0.75, display: 'block' }}>
+            {description}
+          </Typography>
+        </Box>
+      </Stack>
+    </Card>
+  );
+}
+
+SummaryCard.propTypes = {
+  icon: PropTypes.string,
+  title: PropTypes.string,
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  description: PropTypes.string,
+  color: PropTypes.string
+};
+
+function RankingPanel({ rows, metric, theme }) {
+  const topRows = rows
+    .map((item) => ({
+      ...item,
+      metricValue: getRankingMetricValue(item, metric)
+    }))
+    .sort((a, b) => b.metricValue - a.metricValue)
+    .slice(0, 8);
+  const maxValue = Math.max(...topRows.map((item) => item.metricValue), 1);
+
+  return (
+    <Card variant="outlined" sx={{ borderRadius: 3, p: 2.5, height: '100%' }}>
+      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+        <Box>
+          <Typography variant="h4">分布排行</Typography>
+          <Typography variant="body2" color="text.secondary">
+            当前维度下的头部对象表现
+          </Typography>
+        </Box>
+        <Chip label={`按${METRIC_TABS.find((item) => item.value === metric)?.label || '请求'}`} size="small" />
+      </Stack>
+
+      {topRows.length === 0 ? (
+        <Box sx={{ minHeight: 360, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Typography color="text.secondary">当前筛选范围没有统计数据</Typography>
+        </Box>
+      ) : (
+        <Stack spacing={1.75}>
+          {topRows.map((item, index) => (
+            <Box key={`${item.name}-${index}`}>
+              <Stack direction="row" justifyContent="space-between" spacing={2} sx={{ mb: 0.75 }}>
+                <Stack direction="row" spacing={1.25} alignItems="center" sx={{ minWidth: 0 }}>
+                  <Chip
+                    label={`#${index + 1}`}
+                    size="small"
+                    sx={{
+                      minWidth: 42,
+                      bgcolor: alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.2 : 0.1),
+                      color: 'primary.main',
+                      fontWeight: 700
+                    }}
+                  />
+                  <Box sx={{ minWidth: 0 }}>
+                    <Typography variant="subtitle2" noWrap sx={{ maxWidth: 260 }}>
+                      {item.name}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      请求 {renderNumber(item.requests)} / Token {renderNumber(item.tokens)} / 费用 ${item.cost.toFixed(4)}
+                    </Typography>
+                  </Box>
+                </Stack>
+                <Typography variant="subtitle2" sx={{ whiteSpace: 'nowrap', fontWeight: 700 }}>
+                  {formatMetricValue(metric, item.metricValue)}
+                </Typography>
+              </Stack>
+              <LinearProgress
+                variant="determinate"
+                value={(item.metricValue / maxValue) * 100}
+                sx={{
+                  height: 8,
+                  borderRadius: 999,
+                  bgcolor: (theme) => alpha(theme.palette.text.primary, theme.palette.mode === 'dark' ? 0.12 : 0.08),
+                  '& .MuiLinearProgress-bar': {
+                    borderRadius: 999,
+                    background: `linear-gradient(90deg, ${alpha('#4B669A', 0.55)}, #1B2152)`
+                  }
+                }}
+              />
+            </Box>
+          ))}
+        </Stack>
+      )}
+    </Card>
+  );
+}
+
+RankingPanel.propTypes = {
+  rows: PropTypes.array,
+  metric: PropTypes.string,
+  theme: PropTypes.object
+};
+
+function TrendPanel({ trendData, metric, theme, title }) {
+  const colorMap = {
+    requests: ['#4B669A', '#7E9FA1', '#756B80', '#95A0AE', '#5E7E80', '#1B2152'],
+    tokens: ['#1B2152', '#4B669A', '#7B90BF', '#95A0AE', '#7E9FA1', '#756B80'],
+    cost: ['#5E7E80', '#7E9FA1', '#4B669A', '#95A0AE', '#756B80', '#1B2152'],
+    latency: ['#756B80']
   };
 
-  return chartData;
+  const isLatency = metric === 'latency';
+  const options = {
+    chart: {
+      type: 'area',
+      stacked: !isLatency,
+      background: 'transparent',
+      toolbar: {
+        show: false
+      }
+    },
+    colors: colorMap[metric],
+    stroke: {
+      curve: 'smooth',
+      width: isLatency ? [3] : trendData.series.map(() => 2.4)
+    },
+    fill: {
+      type: 'gradient',
+      gradient: {
+        shadeIntensity: 0,
+        opacityFrom: isLatency ? 0.22 : 0.16,
+        opacityTo: 0.03,
+        stops: [0, 100]
+      }
+    },
+    markers: {
+      size: isLatency ? 4 : 0
+    },
+    legend: {
+      position: 'top',
+      horizontalAlign: 'left',
+      labels: {
+        colors: theme.palette.text.primary
+      }
+    },
+    xaxis: {
+      categories: trendData.categories.map((date) => dayjs(date).format('MM-DD')),
+      axisBorder: { show: false },
+      axisTicks: { show: false }
+    },
+    yaxis: {
+      labels: {
+        formatter: (value) => formatMetricValue(metric, value)
+      }
+    },
+    grid: {
+      borderColor: alpha(theme.palette.text.primary, 0.08),
+      strokeDashArray: 4
+    },
+    tooltip: {
+      theme: theme.palette.mode,
+      x: {
+        formatter: (_, { dataPointIndex }) => trendData.categories[dataPointIndex] || ''
+      },
+      y: {
+        formatter: (value) => formatMetricValue(metric, value)
+      }
+    }
+  };
+
+  return (
+    <Card variant="outlined" sx={{ borderRadius: 3, p: 2.5, height: '100%' }}>
+      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+        <Box>
+          <Typography variant="h4">{title}</Typography>
+          <Typography variant="body2" color="text.secondary">
+            选中时间范围内的每日聚合趋势
+          </Typography>
+        </Box>
+        <Chip label="按日聚合" size="small" />
+      </Stack>
+
+      {trendData.series.length === 0 ? (
+        <Box sx={{ minHeight: 360, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Typography color="text.secondary">当前筛选范围没有趋势数据</Typography>
+        </Box>
+      ) : (
+        <ReactApexChart options={options} series={trendData.series} type="area" height={360} />
+      )}
+    </Card>
+  );
 }
 
-function getUsersData(data, dateRange) {
-  if (!data) return null;
+TrendPanel.propTypes = {
+  trendData: PropTypes.shape({
+    categories: PropTypes.array,
+    series: PropTypes.array
+  }),
+  metric: PropTypes.string,
+  theme: PropTypes.object,
+  title: PropTypes.string
+};
 
-  const dates = getDates(dateRange.start, dateRange.end);
-  const result = [
+function SupportPanel({ chartData, activeTab, setActiveTab }) {
+  return (
+    <Card variant="outlined" sx={{ borderRadius: 3, overflow: 'hidden' }}>
+      <Stack
+        direction={{ xs: 'column', md: 'row' }}
+        justifyContent="space-between"
+        alignItems={{ xs: 'flex-start', md: 'center' }}
+        spacing={2}
+        sx={{ px: 2.5, pt: 2.5, pb: 1.5 }}
+      >
+        <Box>
+          <Typography variant="h4">运营辅助</Typography>
+          <Typography variant="body2" color="text.secondary">
+            用于补充观察注册、充值和兑换码走势
+          </Typography>
+        </Box>
+        <Tabs value={activeTab} onChange={(_, value) => setActiveTab(value)} variant="scrollable" scrollButtons="auto">
+          {OPS_TABS.map((tab) => (
+            <Tab key={tab.value} value={tab.value} label={tab.label} />
+          ))}
+        </Tabs>
+      </Stack>
+      <Divider />
+      <Box sx={{ p: 2.5 }}>
+        {chartData.series.length === 0 ? (
+          <Box sx={{ minHeight: 320, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Typography color="text.secondary">当前时间范围没有辅助统计数据</Typography>
+          </Box>
+        ) : (
+          <ReactApexChart options={chartData.options} series={chartData.series} type="line" height={320} />
+        )}
+      </Box>
+    </Card>
+  );
+}
+
+SupportPanel.propTypes = {
+  chartData: PropTypes.shape({
+    options: PropTypes.object,
+    series: PropTypes.array
+  }),
+  activeTab: PropTypes.string,
+  setActiveTab: PropTypes.func
+};
+
+export default function Overview() {
+  const theme = useTheme();
+  const [loading, setLoading] = useState(true);
+  const [preset, setPreset] = useState('7d');
+  const [dateRange, setDateRange] = useState(() => getPresetRange('7d'));
+  const [groupType, setGroupType] = useState('model_type');
+  const [metric, setMetric] = useState('tokens');
+  const [opsTab, setOpsTab] = useState('users');
+  const [userIdInput, setUserIdInput] = useState('');
+  const [userId, setUserId] = useState(0);
+  const [analyticsData, setAnalyticsData] = useState(EMPTY_ANALYTICS);
+
+  const fetchData = async (range, currentGroupType, currentUserId) => {
+    setLoading(true);
+    try {
+      const res = await API.get('/api/analytics/period', {
+        params: {
+          start_timestamp: range.start.unix(),
+          end_timestamp: range.end.unix(),
+          group_type: currentGroupType,
+          user_id: currentUserId
+        }
+      });
+      const { success, message, data } = res.data;
+      if (success) {
+        setAnalyticsData({
+          channel_statistics: data?.channel_statistics || [],
+          user_statistics: data?.user_statistics || [],
+          redemption_statistics: data?.redemption_statistics || [],
+          order_statistics: data?.order_statistics || []
+        });
+      } else {
+        showError(message);
+      }
+    } catch (error) {
+      showError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData(dateRange, groupType, userId);
+  }, [dateRange, groupType, userId]);
+
+  const handlePresetChange = (value) => {
+    setPreset(value);
+    if (value !== 'custom') {
+      setDateRange(getPresetRange(value));
+    }
+  };
+
+  const handleApplyFilters = () => {
+    setUserId(Number(userIdInput || 0));
+  };
+
+  const handleResetFilters = () => {
+    setPreset('7d');
+    setDateRange(getPresetRange('7d'));
+    setUserIdInput('');
+    setUserId(0);
+    setGroupType('model_type');
+    setMetric('tokens');
+    setOpsTab('users');
+  };
+
+  const summary = buildSummaryRows(analyticsData.channel_statistics || []);
+  const rankingRows = buildRankingRows(analyticsData.channel_statistics || []);
+  const trendData = buildTrendData(analyticsData.channel_statistics || [], dateRange, metric);
+  const supportChart = buildSupportChart(opsTab, analyticsData, dateRange, theme);
+  const currentGroupLabel = GROUP_TABS.find((item) => item.value === groupType)?.label || '模型厂商';
+
+  const summaryCards = [
     {
-      name: '直接注册',
-      data: new Array(dates.length).fill(0)
+      title: '总请求数',
+      value: renderNumber(summary.requests),
+      description: `${dateRange.start.format('MM-DD')} 至 ${dateRange.end.format('MM-DD')} · 覆盖 ${summary.activeEntities} 个对象`,
+      icon: 'solar:document-text-line-duotone',
+      color: theme.palette.mode === 'dark' ? '#7B90BF' : '#4B669A'
     },
     {
-      name: '邀请注册',
-      data: new Array(dates.length).fill(0)
-    }
-  ];
-
-  let total = 0;
-
-  for (const item of data) {
-    const index = dates.indexOf(item.date);
-    if (index !== -1) {
-      result[0].data[index] = item.user_count - item.inviter_user_count;
-      result[1].data[index] = item.inviter_user_count;
-
-      total += item.user_count;
-    }
-  }
-
-  let chartData = generateBarChartOptions(dates, result, '人', 0);
-  chartData.options.title.text = '总注册人数：' + total;
-
-  return chartData;
-}
-
-function getOrdersData(data, dateRange) {
-  if (!data) return null;
-
-  const dates = getDates(dateRange.start, dateRange.end);
-  const result = [
+      title: '总 Token',
+      value: renderNumber(summary.tokens),
+      description: `当前维度：${currentGroupLabel}`,
+      icon: 'solar:database-line-duotone',
+      color: theme.palette.mode === 'dark' ? '#7E9FA1' : '#5E7E80'
+    },
     {
-      name: '充值',
-      data: new Array(dates.length).fill(0)
+      title: '总消费',
+      value: `$${summary.cost.toFixed(4)}`,
+      description: `用户筛选：${userId > 0 ? `#${userId}` : '全部用户'}`,
+      icon: 'solar:dollar-minimalistic-line-duotone',
+      color: theme.palette.mode === 'dark' ? '#908095' : '#756B80'
+    },
+    {
+      title: '平均耗时',
+      value: `${summary.avgLatency.toFixed(2)}s`,
+      description: '按请求均值计算',
+      icon: 'solar:clock-circle-line-duotone',
+      color: theme.palette.mode === 'dark' ? '#95A0AE' : '#687280'
     }
   ];
 
-  let total = 0;
+  return (
+    <Stack spacing={3}>
+      <Box
+        sx={{
+          borderRadius: 4,
+          px: { xs: 2.5, md: 3 },
+          py: 3,
+          background: (theme) =>
+            theme.palette.mode === 'dark'
+              ? `linear-gradient(135deg, ${alpha('#1D2088', 0.2)}, ${alpha(theme.palette.background.paper, 0.98)})`
+              : `linear-gradient(135deg, ${alpha('#D9E6F5', 0.9)}, ${alpha('#F6F7F8', 0.96)})`
+        }}
+      >
+        <Typography variant="h2" sx={{ fontSize: { xs: '1.8rem', md: '2.2rem' }, mb: 0.75 }}>
+          分析
+        </Typography>
+        <Typography variant="body1" color="text.secondary">
+          用更快的时间选择和 Tab 切换查看模型、渠道、端点的使用分布与趋势。
+        </Typography>
+      </Box>
 
-  for (const item of data) {
-    const index = dates.indexOf(item.date);
-    if (index !== -1) {
-      result[0].data[index] = item.order_amount;
+      <Grid container spacing={2}>
+        {summaryCards.map((item) => (
+          <Grid item xs={12} sm={6} lg={3} key={item.title}>
+            <SummaryCard {...item} />
+          </Grid>
+        ))}
+      </Grid>
 
-      total += item.order_amount;
-    }
-  }
+      <Card variant="outlined" sx={{ borderRadius: 3, p: 2.5 }}>
+        <Stack spacing={2}>
+          <Stack direction={{ xs: 'column', lg: 'row' }} spacing={2} justifyContent="space-between">
+            <Box>
+              <Typography variant="h4">时间与筛选</Typography>
+              <Typography variant="body2" color="text.secondary">
+                预设范围会立即生效，自定义范围支持按需调整。
+              </Typography>
+            </Box>
+            <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+              {PRESET_OPTIONS.map((item) => (
+                <Button
+                  key={item.value}
+                  variant={preset === item.value ? 'contained' : 'outlined'}
+                  color={preset === item.value ? 'primary' : 'inherit'}
+                  onClick={() => handlePresetChange(item.value)}
+                  startIcon={<Icon icon="solar:calendar-line-duotone" />}
+                >
+                  {item.label}
+                </Button>
+              ))}
+            </Stack>
+          </Stack>
 
-  let chartData = generateBarChartOptions(dates, result, 'CNY', 0);
-  chartData.options.title.text = '总充值数：' + total;
+          {preset === 'custom' && (
+            <Box sx={{ maxWidth: 620 }}>
+              <DateRangePicker
+                key={`${dateRange.start.valueOf()}-${dateRange.end.valueOf()}`}
+                defaultValue={dateRange}
+                onChange={(value) => setDateRange(value)}
+                localeText={{ start: '开始时间', end: '结束时间' }}
+                fullWidth
+              />
+            </Box>
+          )}
 
-  return chartData;
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.5} alignItems={{ xs: 'stretch', md: 'center' }}>
+            <TextField
+              label="用户 ID"
+              type="number"
+              value={userIdInput}
+              onChange={(event) => setUserIdInput(event.target.value)}
+              placeholder="留空表示全部用户"
+              sx={{ width: { xs: '100%', md: 220 } }}
+            />
+            <Button variant="contained" onClick={handleApplyFilters}>
+              应用筛选
+            </Button>
+            <Button variant="outlined" onClick={handleResetFilters}>
+              重置
+            </Button>
+            <Chip label={`当前范围：${dateRange.start.format('YYYY-MM-DD')} 至 ${dateRange.end.format('YYYY-MM-DD')}`} variant="outlined" />
+            <Chip label="统计粒度：按日" variant="outlined" />
+          </Stack>
+        </Stack>
+      </Card>
+
+      <Card variant="outlined" sx={{ borderRadius: 3, overflow: 'hidden' }}>
+        <Box sx={{ px: 2.5, pt: 2.5 }}>
+          <Typography variant="h4" sx={{ mb: 1 }}>
+            用量分析
+          </Typography>
+        </Box>
+        <Tabs
+          value={groupType}
+          onChange={(_, value) => setGroupType(value)}
+          variant="scrollable"
+          scrollButtons="auto"
+          sx={{ px: 1.5, borderBottom: 1, borderColor: 'divider' }}
+        >
+          {GROUP_TABS.map((tab) => (
+            <Tab
+              key={tab.value}
+              value={tab.value}
+              label={tab.label}
+              icon={<Icon icon={tab.icon} width={18} />}
+              iconPosition="start"
+              sx={{ minHeight: 56, textTransform: 'none' }}
+            />
+          ))}
+        </Tabs>
+
+        <Stack
+          direction={{ xs: 'column', lg: 'row' }}
+          justifyContent="space-between"
+          spacing={2}
+          sx={{ px: 2.5, py: 2, borderBottom: 1, borderColor: 'divider' }}
+        >
+          <Box>
+            <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+              当前维度：{currentGroupLabel}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              指标切换会同步更新排行和趋势图。
+            </Typography>
+          </Box>
+          <Tabs value={metric} onChange={(_, value) => setMetric(value)} variant="scrollable" scrollButtons="auto">
+            {METRIC_TABS.map((tab) => (
+              <Tab
+                key={tab.value}
+                value={tab.value}
+                label={tab.label}
+                icon={<Icon icon={tab.icon} width={18} />}
+                iconPosition="start"
+                sx={{ minHeight: 44, textTransform: 'none' }}
+              />
+            ))}
+          </Tabs>
+        </Stack>
+
+        <Box sx={{ p: 2.5 }}>
+          {loading ? (
+            <Stack alignItems="center" justifyContent="center" sx={{ py: 14 }}>
+              <CircularProgress />
+            </Stack>
+          ) : (
+            <Grid container spacing={2}>
+              <Grid item xs={12} lg={5}>
+                <RankingPanel rows={rankingRows} metric={metric} theme={theme} />
+              </Grid>
+              <Grid item xs={12} lg={7}>
+                <TrendPanel trendData={trendData} metric={metric} theme={theme} title={`${currentGroupLabel}趋势`} />
+              </Grid>
+            </Grid>
+          )}
+        </Box>
+      </Card>
+
+      <SupportPanel chartData={supportChart} activeTab={opsTab} setActiveTab={setOpsTab} />
+    </Stack>
+  );
 }

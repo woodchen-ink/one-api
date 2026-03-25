@@ -151,6 +151,7 @@ The provider system implements a plugin-based architecture in `providers/`:
 - User dashboard includes a per-token usage panel with tabs for `today` and `7d`, based on `logs.token_id` aggregation; keep log list UI unchanged and do not expose raw token keys
 - Admin channel list now supports per-channel usage statistics in the action column via `/api/channel/:id/statistics`, with 7/30/90-day aggregated views sourced from the `statistics` table plus latest-use time from `logs`
 - Endpoint analytics now aggregate `logs.metadata.request_path` and normalized `logs.metadata.upstream_path`; admin analytics supports endpoint grouping in both summary cards and period charts
+- Admin analytics page now uses quick time presets plus dimension/metric tabs instead of the old select-heavy layout; keep the experience optimized for fast switching between model, channel, and endpoint views
 - Payment processing with multiple gateways
 - Users can review their own recharge orders, including trade numbers and gateway order numbers, from the web console
 - Subscription plans: Admin-defined quota packages bound to user groups
