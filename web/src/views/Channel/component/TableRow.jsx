@@ -53,6 +53,7 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { copy, renderQuota } from 'utils/common';
 import { ChannelCheck } from './ChannelCheck';
 import { PAGE_SIZE_OPTIONS, getPageSize, savePageSize } from 'constants';
+import ChannelStatisticsDialog from './ChannelStatisticsDialog';
 
 const StyledMenu = styled((props) => (
   <Menu
@@ -103,7 +104,6 @@ function statusInfo(t, status) {
       return t('common.unknown');
   }
 }
-import { grey } from '@mui/material/colors';
 import GroupLabel from './GroupLabel';
 
 // 根据渠道类型生成低饱和冷色调背景色
@@ -150,6 +150,8 @@ export default function ChannelTableRow({ item, manageChannel, onRefresh, groupO
 
   const [responseTimeData, setResponseTimeData] = useState({ test_time: item.test_time, response_time: item.response_time });
   const [itemBalance, setItemBalance] = useState(item.balance);
+  const [statisticsOpen, setStatisticsOpen] = useState(false);
+  const [statisticsChannel, setStatisticsChannel] = useState(null);
 
   const [openRow, setOpenRow] = useState(false);
   let modelMap = [];
@@ -307,6 +309,11 @@ export default function ChannelTableRow({ item, manageChannel, onRefresh, groupO
       setResponseTimeData({ test_time: Date.now() / 1000, response_time: time * 1000 });
       showInfo(t('channel_row.modelTestSuccess', { channel: item.name, model: modelName, time: time.toFixed(2) }));
     }
+  };
+
+  const handleOpenStatistics = (channelItem) => {
+    setStatisticsChannel(channelItem);
+    setStatisticsOpen(true);
   };
 
   const updateChannelBalance = async () => {
@@ -554,6 +561,14 @@ export default function ChannelTableRow({ item, manageChannel, onRefresh, groupO
         <TableCell>
           <Stack direction="row" justifyContent="right" alignItems="right" spacing={1}>
             {!item.tag && (
+              <Tooltip title="使用统计" placement="top" arrow>
+                <IconButton size="small" onClick={() => handleOpenStatistics(item)} sx={{ color: 'secondary.main' }}>
+                  <Icon icon="solar:chart-square-bold-duotone" />
+                </IconButton>
+              </Tooltip>
+            )}
+
+            {!item.tag && (
               <IconButton
                 size="small"
                 onClick={handleTestModel}
@@ -604,6 +619,17 @@ export default function ChannelTableRow({ item, manageChannel, onRefresh, groupO
           sx: { minWidth: 140 }
         }}
       >
+        <MenuItem
+          onClick={() => {
+            const targetChannel = currentTestingChannel || item;
+            handleOpenStatistics(targetChannel);
+            popover.onClose();
+          }}
+        >
+          <Icon icon="solar:chart-square-bold-duotone" style={{ marginRight: '16px' }} />
+          使用统计
+        </MenuItem>
+
         <MenuItem
           onClick={() => {
             popover.onClose();
@@ -1210,6 +1236,7 @@ export default function ChannelTableRow({ item, manageChannel, onRefresh, groupO
         </DialogActions>
       </Dialog>
       <ChannelCheck item={currentTestingChannel || item} open={openCheck} onClose={() => setOpenCheck(false)} />
+      <ChannelStatisticsDialog open={statisticsOpen} onClose={() => setStatisticsOpen(false)} channel={statisticsChannel || item} />
 
       <ConfirmDialog
         open={tagDeleteConfirm.value}
