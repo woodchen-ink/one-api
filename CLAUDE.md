@@ -115,6 +115,7 @@ The provider system implements a plugin-based architecture in `providers/`:
   - Cache token categories (`cached_tokens`, `cached_write_tokens`, `cached_read_tokens`) are billed as a split of prompt tokens; when upstream `prompt_tokens` already includes cache usage, subtract the cache portion from base input billing to avoid double charging.
 - Claude and Gemini native routes support root-path aliases for client compatibility.
   - Claude can be called via `/v1/messages`.
+  - `/v1/messages` now supports both Claude-native providers and OpenAI-compatible chat providers; when the channel is not Claude-native, the gateway converts Claude Messages requests to OpenAI chat/completions and converts the response back to Claude format, including SSE event adaptation for streaming.
   - Gemini can be called via `/v1beta/models/:model` and `/v1/models/:model`.
 - The default homepage highlights the currently enabled native routes for quick onboarding.
 - Support for streaming responses and WebSocket connections

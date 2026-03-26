@@ -5,6 +5,7 @@ import (
 	"czloapi/common/config"
 	"czloapi/common/requester"
 	"czloapi/model"
+	providersBase "czloapi/providers/base"
 	"czloapi/providers/claude"
 	"czloapi/safty"
 	"czloapi/types"
@@ -15,26 +16,21 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var AllowChannelType = []int{config.ChannelTypeAnthropic, config.ChannelTypeVertexAI, config.ChannelTypeBedrock}
-
-type relayClaudeOnly struct {
+type relayClaudeMessages struct {
 	relayBase
 	claudeRequest *claude.ClaudeRequest
 }
 
-func NewRelayClaudeOnly(c *gin.Context) *relayClaudeOnly {
-	c.Set("allow_channel_type", AllowChannelType)
-	relay := &relayClaudeOnly{
+func NewRelayClaudeMessages(c *gin.Context) *relayClaudeMessages {
+	return &relayClaudeMessages{
 		relayBase: relayBase{
 			allowHeartbeat: true,
 			c:              c,
 		},
 	}
-
-	return relay
 }
 
-func (r *relayClaudeOnly) setRequest() error {
+func (r *relayClaudeMessages) setRequest() error {
 	r.claudeRequest = &claude.ClaudeRequest{}
 	if err := common.UnmarshalBodyReusable(r.c, r.claudeRequest); err != nil {
 		return err
@@ -44,15 +40,15 @@ func (r *relayClaudeOnly) setRequest() error {
 	return nil
 }
 
-func (r *relayClaudeOnly) getRequest() interface{} {
+func (r *relayClaudeMessages) getRequest() interface{} {
 	return r.claudeRequest
 }
 
-func (r *relayClaudeOnly) IsStream() bool {
+func (r *relayClaudeMessages) IsStream() bool {
 	return r.claudeRequest.Stream
 }
 
-func (r *relayClaudeOnly) getBillingContext(promptTokens int) model.BillingContext {
+func (r *relayClaudeMessages) getBillingContext(promptTokens int) model.BillingContext {
 	requestTokens := promptTokens + r.claudeRequest.MaxTokens
 	if r.claudeRequest.Thinking != nil && r.claudeRequest.Thinking.BudgetTokens > 0 {
 		requestTokens += r.claudeRequest.Thinking.BudgetTokens
@@ -61,27 +57,20 @@ func (r *relayClaudeOnly) getBillingContext(promptTokens int) model.BillingConte
 	return model.NewBillingContext(promptTokens, requestTokens)
 }
 
-func (r *relayClaudeOnly) getPromptTokens() (int, error) {
+func (r *relayClaudeMessages) getPromptTokens() (int, error) {
 	channel := r.provider.GetChannel()
 	return CountTokenMessages(r.claudeRequest, channel.PreCost)
 }
 
-func (r *relayClaudeOnly) send() (err *types.OpenAIErrorWithStatusCode, done bool) {
-	chatProvider, ok := r.provider.(claude.ClaudeChatInterface)
-	if !ok {
-		err = common.StringErrorWrapperLocal("channel not implemented", "channel_error", http.StatusServiceUnavailable)
-		done = true
-		return
-	}
-
+func (r *relayClaudeMessages) send() (err *types.OpenAIErrorWithStatusCode, done bool) {
 	r.claudeRequest.Model = r.modelName
 	// 内容审查
 	if config.EnableSafe {
 		for _, message := range r.claudeRequest.Messages {
 			if message.Content != nil {
-				CheckResult, _ := safty.CheckContent(message.Content)
-				if !CheckResult.IsSafe {
-					err = common.StringErrorWrapperLocal(CheckResult.Reason, CheckResult.Code, http.StatusBadRequest)
+				checkResult, _ := safty.CheckContent(message.Content)
+				if !checkResult.IsSafe {
+					err = common.StringErrorWrapperLocal(checkResult.Reason, checkResult.Code, http.StatusBadRequest)
 					done = true
 					return
 				}
@@ -89,6 +78,21 @@ func (r *relayClaudeOnly) send() (err *types.OpenAIErrorWithStatusCode, done boo
 		}
 	}
 
+	if chatProvider, ok := r.provider.(claude.ClaudeChatInterface); ok {
+		return r.sendClaudeDirect(chatProvider)
+	}
+
+	chatProvider, ok := r.provider.(providersBase.ChatInterface)
+	if !ok {
+		err = common.StringErrorWrapperLocal("channel not implemented", "channel_error", http.StatusServiceUnavailable)
+		done = true
+		return
+	}
+
+	return r.sendOpenAICompatible(chatProvider)
+}
+
+func (r *relayClaudeMessages) sendClaudeDirect(chatProvider claude.ClaudeChatInterface) (err *types.OpenAIErrorWithStatusCode, done bool) {
 	if r.claudeRequest.Stream {
 		var response requester.StreamReaderInterface[string]
 		response, err = chatProvider.CreateClaudeChatStream(r.claudeRequest)
@@ -117,7 +121,6 @@ func (r *relayClaudeOnly) send() (err *types.OpenAIErrorWithStatusCode, done boo
 		}
 
 		openErr := responseJsonClient(r.c, response)
-
 		if openErr != nil {
 			err = openErr
 		}
@@ -129,20 +132,66 @@ func (r *relayClaudeOnly) send() (err *types.OpenAIErrorWithStatusCode, done boo
 	return
 }
 
-func (r *relayClaudeOnly) GetError(err *types.OpenAIErrorWithStatusCode) (int, any) {
+func (r *relayClaudeMessages) sendOpenAICompatible(chatProvider providersBase.ChatInterface) (err *types.OpenAIErrorWithStatusCode, done bool) {
+	chatRequest, err := claude.ConvertClaudeToOpenAIChat(r.claudeRequest)
+	if err != nil {
+		done = true
+		return err, done
+	}
+
+	chatRequest.Model = r.modelName
+
+	if chatRequest.Stream {
+		response, streamErr := chatProvider.CreateChatCompletionStream(chatRequest)
+		if streamErr != nil {
+			return streamErr, true
+		}
+
+		if r.heartbeat != nil {
+			r.heartbeat.Stop()
+		}
+
+		claudeStream := newOpenAIToClaudeStreamWrapper(response, r.provider.GetUsage(), chatRequest.Model)
+		firstResponseTime := responseGeneralStreamClient(r.c, claudeStream, nil)
+		r.SetFirstResponseTime(firstResponseTime)
+		return nil, false
+	}
+
+	response, chatErr := chatProvider.CreateChatCompletion(chatRequest)
+	if chatErr != nil {
+		return chatErr, true
+	}
+
+	claudeResponse, convertErr := claude.ConvertOpenAIChatToClaude(response)
+	if convertErr != nil {
+		done = true
+		return convertErr, done
+	}
+
+	if r.heartbeat != nil {
+		r.heartbeat.Stop()
+	}
+
+	if openErr := responseJsonClient(r.c, claudeResponse); openErr != nil {
+		err = openErr
+		done = true
+	}
+
+	return
+}
+
+func (r *relayClaudeMessages) GetError(err *types.OpenAIErrorWithStatusCode) (int, any) {
 	newErr := FilterOpenAIErr(r.c, err)
-
 	claudeErr := claude.OpenaiErrToClaudeErr(&newErr)
-
 	return newErr.StatusCode, claudeErr.ClaudeError
 }
 
-func (r *relayClaudeOnly) HandleJsonError(err *types.OpenAIErrorWithStatusCode) {
+func (r *relayClaudeMessages) HandleJsonError(err *types.OpenAIErrorWithStatusCode) {
 	statusCode, response := r.GetError(err)
 	r.c.JSON(statusCode, response)
 }
 
-func (r *relayClaudeOnly) HandleStreamError(err *types.OpenAIErrorWithStatusCode) {
+func (r *relayClaudeMessages) HandleStreamError(err *types.OpenAIErrorWithStatusCode) {
 	_, response := r.GetError(err)
 
 	str, jsonErr := json.Marshal(response)
@@ -159,9 +208,7 @@ func CountTokenMessages(request *claude.ClaudeRequest, preCostType int) (int, er
 	}
 
 	tokenEncoder := common.GetTokenEncoder(request.Model)
-
 	tokenNum := 0
-
 	tokensPerMessage := 4
 	var textMsg strings.Builder
 
@@ -177,7 +224,6 @@ func CountTokenMessages(request *claude.ClaudeRequest, preCostType int) (int, er
 				case "text":
 					textMsg.WriteString(content["text"].(string))
 				default:
-					// 不算了  就只算他50吧
 					tokenNum += 50
 				}
 			}
