@@ -29,6 +29,13 @@ type RelayModeResponsesWS struct {
 	usage          *types.UsageEvent
 }
 
+type responsesWSCreateEnvelope struct {
+	Type string `json:"type"`
+
+	Response *types.OpenAIResponsesRequest `json:"response,omitempty"`
+	types.OpenAIResponsesRequest
+}
+
 var responsesWSUpgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
 		return true
@@ -112,20 +119,39 @@ func (r *RelayModeResponsesWS) readModelFromFirstMessage() (string, []byte, erro
 		return "", nil, fmt.Errorf("expected text message, got %d", messageType)
 	}
 
-	// 解析 response.create 事件获取 model
-	var event struct {
-		Type  string `json:"type"`
-		Model string `json:"model"`
-	}
-	if err := json.Unmarshal(message, &event); err != nil {
-		return "", nil, fmt.Errorf("parse message: %w", err)
+	request, err := parseResponsesWSCreateRequest(message)
+	if err != nil {
+		return "", nil, err
 	}
 
-	if event.Model == "" {
-		return "", nil, fmt.Errorf("model not found in message")
+	setLogReasoningMetadata(r.c, extractResponsesReasoningMetadata(request))
+	if len(request.Tools) > 0 {
+		r.c.Set(types.ResponsesWSRequestToolsContextKey, request.Tools)
 	}
 
-	return event.Model, message, nil
+	return request.Model, message, nil
+}
+
+func parseResponsesWSCreateRequest(message []byte) (*types.OpenAIResponsesRequest, error) {
+	var envelope responsesWSCreateEnvelope
+	if err := json.Unmarshal(message, &envelope); err != nil {
+		return nil, fmt.Errorf("parse message: %w", err)
+	}
+
+	if envelope.Type != "" && envelope.Type != "response.create" {
+		return nil, fmt.Errorf("unexpected message type %q", envelope.Type)
+	}
+
+	request := envelope.OpenAIResponsesRequest
+	if request.Model == "" && envelope.Response != nil {
+		request = *envelope.Response
+	}
+
+	if request.Model == "" {
+		return nil, fmt.Errorf("model not found in message")
+	}
+
+	return &request, nil
 }
 
 func (r *RelayModeResponsesWS) abortWithMessage(message string) {

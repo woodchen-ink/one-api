@@ -42,3 +42,18 @@ func TestIncExtraBillingOnceDoesNotAffectOtherKeys(t *testing.T) {
 	assert.Equal(t, 1, u.ExtraBilling["code_interpreter"].CallCount)
 	assert.Equal(t, 2, u.ExtraBilling["web_search_preview"].CallCount)
 }
+
+func TestUsageEventToChatUsagePreservesExtraBilling(t *testing.T) {
+	event := &UsageEvent{}
+
+	event.IncExtraBillingOnce("code_interpreter", "4g", "container-1")
+	event.IncExtraBilling("web_search_preview", "high")
+
+	usage := event.ToChatUsage()
+	if assert.NotNil(t, usage) {
+		assert.Equal(t, 1, usage.ExtraBilling["code_interpreter"].CallCount)
+		assert.Equal(t, "4g", usage.ExtraBilling["code_interpreter"].Type)
+		assert.Equal(t, 1, usage.ExtraBilling["web_search_preview"].CallCount)
+		assert.Equal(t, "high", usage.ExtraBilling["web_search_preview"].Type)
+	}
+}

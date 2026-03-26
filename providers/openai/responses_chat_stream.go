@@ -252,11 +252,8 @@ func (h *OpenAIResponsesStreamHandler) updateSearchType(response *types.OpenAIRe
 	}
 
 	for _, tool := range response.Tools {
-		if tool.Type == types.APITollTypeWebSearchPreview {
-			h.searchType = "medium"
-			if tool.SearchContextSize != "" {
-				h.searchType = tool.SearchContextSize
-			}
+		if isResponsesWebSearchToolType(tool.Type) {
+			h.searchType = getResponsesWebSearchContextSize(response.Tools)
 		}
 		if tool.Type == "code_interpreter" {
 			h.containerMemoryLimit = getContainerMemoryLimit(response.Tools)

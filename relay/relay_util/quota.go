@@ -160,7 +160,7 @@ func (q *Quota) UpdateUserRealtimeQuota(usage *types.UsageEvent, nowUsage *types
 		nowUsage.InputTokens,
 		nowUsage.OutputTokens,
 		nowUsage.GetExtraTokens(),
-		nil,
+		nowUsage.ExtraBilling,
 	)
 
 	cacheQuota, err := model.CacheIncreaseUserRealtimeQuota(q.userId, increaseQuota)

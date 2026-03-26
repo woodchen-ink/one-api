@@ -29,6 +29,9 @@ type OpenAIProvider struct {
 
 	UsageHandler        UsageHandler
 	RequestHandleBefore RequestHandleBefore
+
+	responsesWSTools      []types.ResponsesTools
+	responsesWSBilledKeys map[string]bool
 }
 
 // 创建 OpenAIProvider

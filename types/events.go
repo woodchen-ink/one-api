@@ -16,6 +16,8 @@ const (
 	EventTypeResponseCompleted  = "response.completed"
 	EventTypeResponseIncomplete = "response.incomplete"
 	EventTypeResponseFailed     = "response.failed"
+	EventTypeResponseCanceled   = "response.canceled"
+	EventTypeResponseCancelled  = "response.cancelled"
 )
 
 type Event struct {
@@ -80,7 +82,9 @@ type UsageEvent struct {
 	InputTokenDetails  PromptTokensDetails     `json:"input_token_details,omitempty"`
 	OutputTokenDetails CompletionTokensDetails `json:"output_token_details,omitempty"`
 
-	ExtraTokens map[string]int `json:"-"`
+	ExtraTokens      map[string]int             `json:"-"`
+	ExtraBilling     map[string]ExtraBilling    `json:"-"`
+	extraBillingKeys map[string]map[string]bool `json:"-"`
 }
 
 func (u *UsageEvent) GetExtraTokens() map[string]int {
@@ -133,13 +137,88 @@ func (u *UsageEvent) SetExtraTokens(key string, value int) {
 }
 
 func (u *UsageEvent) ToChatUsage() *Usage {
-	return &Usage{
+	usage := &Usage{
 		PromptTokens:            u.InputTokens,
 		CompletionTokens:        u.OutputTokens,
 		TotalTokens:             u.TotalTokens,
 		PromptTokensDetails:     u.InputTokenDetails,
 		CompletionTokensDetails: u.OutputTokenDetails,
 	}
+
+	if len(u.ExtraTokens) > 0 {
+		usage.ExtraTokens = make(map[string]int, len(u.ExtraTokens))
+		for key, value := range u.ExtraTokens {
+			usage.ExtraTokens[key] = value
+		}
+	}
+
+	if len(u.ExtraBilling) > 0 {
+		usage.ExtraBilling = make(map[string]ExtraBilling, len(u.ExtraBilling))
+		for key, value := range u.ExtraBilling {
+			usage.ExtraBilling[key] = value
+		}
+	}
+
+	return usage
+}
+
+func (u *UsageEvent) IncExtraBilling(key string, bType string) {
+	if u.ExtraBilling == nil {
+		u.ExtraBilling = make(map[string]ExtraBilling)
+	}
+
+	billing := u.ExtraBilling[key]
+	billing.Type = bType
+	billing.CallCount++
+	u.ExtraBilling[key] = billing
+}
+
+func (u *UsageEvent) IncExtraBillingOnce(key string, bType string, dedupeID string) {
+	if u.extraBillingKeys == nil {
+		u.extraBillingKeys = make(map[string]map[string]bool)
+	}
+	if u.extraBillingKeys[key] == nil {
+		u.extraBillingKeys[key] = make(map[string]bool)
+	}
+
+	if dedupeID != "" && u.extraBillingKeys[key][dedupeID] {
+		return
+	}
+	u.extraBillingKeys[key][dedupeID] = true
+	u.IncExtraBilling(key, bType)
+}
+
+func mergeUsageEventExtraTokens(dst map[string]int, src map[string]int) map[string]int {
+	if len(src) == 0 {
+		return dst
+	}
+	if dst == nil {
+		dst = make(map[string]int, len(src))
+	}
+	for key, value := range src {
+		dst[key] += value
+	}
+
+	return dst
+}
+
+func mergeUsageEventExtraBilling(dst map[string]ExtraBilling, src map[string]ExtraBilling) map[string]ExtraBilling {
+	if len(src) == 0 {
+		return dst
+	}
+	if dst == nil {
+		dst = make(map[string]ExtraBilling, len(src))
+	}
+	for key, value := range src {
+		billing := dst[key]
+		if billing.Type == "" {
+			billing.Type = value.Type
+		}
+		billing.CallCount += value.CallCount
+		dst[key] = billing
+	}
+
+	return dst
 }
 
 func (u *UsageEvent) Merge(other *UsageEvent) {
@@ -153,4 +232,6 @@ func (u *UsageEvent) Merge(other *UsageEvent) {
 
 	u.InputTokenDetails.Merge(&other.InputTokenDetails)
 	u.OutputTokenDetails.Merge(&other.OutputTokenDetails)
+	u.ExtraTokens = mergeUsageEventExtraTokens(u.ExtraTokens, other.ExtraTokens)
+	u.ExtraBilling = mergeUsageEventExtraBilling(u.ExtraBilling, other.ExtraBilling)
 }

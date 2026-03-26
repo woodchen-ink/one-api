@@ -1,14 +1,15 @@
 package types
 
 import (
+	"czloapi/common/utils"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"czloapi/common/utils"
 )
 
 const (
 	APITollTypeWebSearchPreview = "web_search_preview"
+	APITollTypeWebSearch        = "web_search"
 	APITollTypeFileSearch       = "file_search"
 	APITollTypeCodeInterpreter  = "code_interpreter"
 	APITollTypeImageGeneration  = "image_generation"

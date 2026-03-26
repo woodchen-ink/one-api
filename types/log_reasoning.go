@@ -1,6 +1,7 @@
 package types
 
 const LogReasoningMetadataContextKey = "log_reasoning_metadata"
+const ResponsesWSRequestToolsContextKey = "responses_ws_request_tools"
 
 const (
 	LogReasoningProviderOpenAI = "openai"

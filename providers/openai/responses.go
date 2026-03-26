@@ -90,11 +90,8 @@ func (h *OpenAIResponsesStreamHandler) HandlerResponsesStream(rawLine *[]byte, d
 	case "response.created":
 		if len(openaiResponse.Response.Tools) > 0 {
 			for _, tool := range openaiResponse.Response.Tools {
-				if tool.Type == types.APITollTypeWebSearchPreview {
-					h.searchType = "medium"
-					if tool.SearchContextSize != "" {
-						h.searchType = tool.SearchContextSize
-					}
+				if isResponsesWebSearchToolType(tool.Type) {
+					h.searchType = getResponsesWebSearchContextSize(openaiResponse.Response.Tools)
 				}
 				if tool.Type == "code_interpreter" {
 					h.containerMemoryLimit = getContainerMemoryLimit(openaiResponse.Response.Tools)
@@ -111,7 +108,7 @@ func (h *OpenAIResponsesStreamHandler) HandlerResponsesStream(rawLine *[]byte, d
 			switch openaiResponse.Item.Type {
 			case types.InputTypeWebSearchCall:
 				if h.searchType == "" {
-					h.searchType = "medium"
+					h.searchType = getResponsesWebSearchContextSize(openaiResponse.Response.Tools)
 				}
 				h.Usage.IncExtraBilling(types.APITollTypeWebSearchPreview, h.searchType)
 			case types.InputTypeCodeInterpreterCall:
@@ -139,31 +136,9 @@ func getResponsesExtraBilling(response *types.OpenAIResponsesResponses, usage *t
 		return
 	}
 
-	containerMemoryLimit := getContainerMemoryLimit(response.Tools)
-
 	if len(response.Output) > 0 {
 		for _, output := range response.Output {
-			switch output.Type {
-			case types.InputTypeWebSearchCall:
-				searchType := "medium"
-				if len(response.Tools) > 0 {
-					for _, tool := range response.Tools {
-						if tool.Type == types.APITollTypeWebSearchPreview {
-							if tool.SearchContextSize != "" {
-								searchType = tool.SearchContextSize
-							}
-						}
-					}
-				}
-				usage.IncExtraBilling(types.APITollTypeWebSearchPreview, searchType)
-			case types.InputTypeCodeInterpreterCall:
-				usage.IncExtraBillingOnce(types.APITollTypeCodeInterpreter, containerMemoryLimit, output.ContainerID)
-			case types.InputTypeFileSearchCall:
-				usage.IncExtraBilling(types.APITollTypeFileSearch, "")
-			case types.InputTypeImageGenerationCall:
-				imageType := buildImageGenerationBillingType(response.Tools, &output)
-				usage.IncExtraBilling(types.APITollTypeImageGeneration, imageType)
-			}
+			applyResponsesOutputExtraBilling(usage, response.Tools, &output)
 		}
 	}
 }
