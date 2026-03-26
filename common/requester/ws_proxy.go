@@ -38,7 +38,7 @@ func NewWSProxy(userConn, supplierConn *websocket.Conn, timeout time.Duration, h
 		timeout:        timeout,
 		handler:        handler,
 		usageHandler:   usageHandler,
-		done:           make(chan struct{}),
+		done:           make(chan struct{}, 2),
 		userClosed:     make(chan struct{}),
 		supplierClosed: make(chan struct{}),
 	}
@@ -69,7 +69,10 @@ func (p *WSProxy) SupplierClosed() <-chan struct{} {
 func (p *WSProxy) transfer(src, dst *websocket.Conn, source MessageSource, closed chan<- struct{}) {
 	defer func() {
 		close(closed)
-		p.done <- struct{}{}
+		select {
+		case p.done <- struct{}{}:
+		default:
+		}
 	}()
 
 	for {

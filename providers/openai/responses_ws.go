@@ -84,9 +84,9 @@ func (p *OpenAIProvider) HandleResponsesWSMessage(source requester.MessageSource
 	}
 
 	// 处理终端事件，提取 usage
-	// Responses API 使用 response.completed (不是 Realtime API 的 response.done)
+	// 兼容 response.done / response.completed 等终态事件，避免不同实现下漏记 usage。
 	switch envelope.Type {
-	case types.EventTypeResponseCompleted, types.EventTypeResponseIncomplete, types.EventTypeResponseFailed:
+	case types.EventTypeResponseDone, types.EventTypeResponseCompleted, types.EventTypeResponseIncomplete, types.EventTypeResponseFailed:
 		if envelope.Response != nil && envelope.Response.Usage != nil {
 			usage := envelope.Response.Usage.ToUsageEvent()
 			return true, usage, nil, nil

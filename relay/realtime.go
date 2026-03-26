@@ -71,15 +71,18 @@ func ChatRealtime(c *gin.Context) {
 	wsProxy.Start()
 
 	go func() {
-		var closedBy string
-		select {
-		case <-wsProxy.UserClosed():
-			closedBy = "user"
-		case <-wsProxy.SupplierClosed():
-			closedBy = "provider"
+		closeOutcome := waitWSClosure(wsProxy.UserClosed(), wsProxy.SupplierClosed(), wsUpstreamDrainTimeout)
+		switch {
+		case closeOutcome.closedBy == "provider":
+			logger.LogInfo(relay.c.Request.Context(), "连接由provider关闭")
+		case closeOutcome.drainedUpstream:
+			logger.LogInfo(relay.c.Request.Context(), fmt.Sprintf("连接由user关闭，已等待上游终态消息最多 %s", wsUpstreamDrainTimeout))
+		case closeOutcome.timedOut:
+			logger.LogInfo(relay.c.Request.Context(), fmt.Sprintf("连接由user关闭，等待上游终态消息超时 %s 后关闭", wsUpstreamDrainTimeout))
+		default:
+			logger.LogInfo(relay.c.Request.Context(), "连接由user关闭")
 		}
 
-		logger.LogInfo(relay.c.Request.Context(), fmt.Sprintf("连接由%s关闭", closedBy))
 		wsProxy.Close()
 		relay.quota.Consume(relay.c, relay.usage.ToChatUsage(), false)
 
