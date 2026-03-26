@@ -106,8 +106,9 @@ func ConvertOpenAIChatToClaude(response *types.ChatCompletionResponse) (*ClaudeR
 	}
 	if reasoning != "" {
 		claudeResponse.Content = append(claudeResponse.Content, ResContent{
-			Type:     ContentTypeThinking,
-			Thinking: reasoning,
+			Type:      ContentTypeThinking,
+			Thinking:  reasoning,
+			Signature: "",
 		})
 	}
 

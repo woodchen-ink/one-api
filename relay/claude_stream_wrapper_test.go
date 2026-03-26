@@ -226,12 +226,17 @@ func TestOpenAIToClaudeStreamWrapperIncludesThinkingPlaceholder(t *testing.T) {
 		}
 	}
 
-	require.GreaterOrEqual(t, len(events), 3)
+	require.GreaterOrEqual(t, len(events), 5)
 
 	var start claude.ClaudeStreamResponse
 	require.NoError(t, unmarshalSSEPayload(events[1], &start))
 	assert.Equal(t, claude.ContentTypeThinking, start.ContentBlock.Type)
 	assert.Equal(t, "", start.ContentBlock.Thinking)
+
+	var signatureDelta claude.ClaudeStreamResponse
+	require.NoError(t, unmarshalSSEPayload(events[3], &signatureDelta))
+	assert.Equal(t, claude.ContentStreamTypeSignatureDelta, signatureDelta.Delta.Type)
+	assert.Equal(t, "", signatureDelta.Delta.Signature)
 }
 
 func unmarshalSSEPayload(raw string, target any) error {

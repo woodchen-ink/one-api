@@ -310,6 +310,14 @@ func (w *openAIToClaudeStreamWrapper) closeThinkingBlock() {
 		return
 	}
 	w.thinkingBlockOpen = false
+	w.emitEvent("content_block_delta", claude.ClaudeStreamResponse{
+		Type:  "content_block_delta",
+		Index: w.thinkingBlockIndex,
+		Delta: claude.Delta{
+			Type:      claude.ContentStreamTypeSignatureDelta,
+			Signature: "",
+		},
+	})
 	w.emitEvent("content_block_stop", claude.ClaudeStreamResponse{
 		Type:  "content_block_stop",
 		Index: w.thinkingBlockIndex,

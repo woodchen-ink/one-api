@@ -159,6 +159,7 @@ func TestConvertOpenAIChatToClaude(t *testing.T) {
 	require.Len(t, claudeResp.Content, 3)
 	assert.Equal(t, ContentTypeThinking, claudeResp.Content[0].Type)
 	assert.Equal(t, "thinking", claudeResp.Content[0].Thinking)
+	assert.Equal(t, "", claudeResp.Content[0].Signature)
 	assert.Equal(t, ContentTypeText, claudeResp.Content[1].Type)
 	assert.Equal(t, "Hello", claudeResp.Content[1].Text)
 	assert.Equal(t, ContentTypeToolUes, claudeResp.Content[2].Type)
