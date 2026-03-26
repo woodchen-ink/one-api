@@ -7,6 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - 前端 管理员界面直接使用中文, 不需要i18n, 用户界面使用i18n.
 - 当需要实现后端新功能或新组件, 先看看`https://github.com/QuantumNous/new-api`这个项目有没有参考实现.
 - 关于openai responeses相关接口, 可以参考`https://github.com/Wei-Shaw/sub2api`项目的实现方式
+- 关于`/v1/messages`转`responses`的实现, 参考`https://github.com/farion1231/cc-switch`这个项目
 - 只要不影响我们计费和转发, 除非兼容老旧客户端, 否则都直接透传, 不做任何处理.
 
 ## Build and Development Commands

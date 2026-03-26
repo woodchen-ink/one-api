@@ -1,6 +1,7 @@
 package claude
 
 import (
+	"encoding/json"
 	"testing"
 
 	"czloapi/types"
@@ -156,6 +157,7 @@ func TestConvertOpenAIChatToClaude(t *testing.T) {
 	assert.Equal(t, "message", claudeResp.Type)
 	assert.Equal(t, types.ChatMessageRoleAssistant, claudeResp.Role)
 	assert.Equal(t, FinishReasonToolUse, claudeResp.StopReason)
+	assert.Nil(t, claudeResp.StopSequence)
 	require.Len(t, claudeResp.Content, 3)
 	assert.Equal(t, ContentTypeThinking, claudeResp.Content[0].Type)
 	assert.Equal(t, "thinking", claudeResp.Content[0].Thinking)
@@ -169,4 +171,8 @@ func TestConvertOpenAIChatToClaude(t *testing.T) {
 	assert.Equal(t, 10, claudeResp.Usage.CacheReadInputTokens)
 	assert.Equal(t, 20, claudeResp.Usage.CacheCreationInputTokens)
 	assert.Equal(t, 40, claudeResp.Usage.OutputTokens)
+
+	body, marshalErr := json.Marshal(claudeResp)
+	require.NoError(t, marshalErr)
+	assert.Contains(t, string(body), `"stop_sequence":null`)
 }

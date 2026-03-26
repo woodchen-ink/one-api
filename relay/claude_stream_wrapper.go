@@ -31,9 +31,6 @@ type openAIToClaudeStreamWrapper struct {
 	textBlockIndex int
 	textBlockOpen  bool
 
-	thinkingBlockIndex int
-	thinkingBlockOpen  bool
-
 	toolBlockIndexByStreamIndex map[int]int
 	toolBlockOrder              []int
 	toolBlockOpen               map[int]bool
@@ -50,7 +47,6 @@ func newOpenAIToClaudeStreamWrapper(source requester.StreamReaderInterface[strin
 		dataChan:                    make(chan string, 16),
 		errChan:                     make(chan error, 2),
 		textBlockIndex:              -1,
-		thinkingBlockIndex:          -1,
 		toolBlockIndexByStreamIndex: make(map[int]int),
 		toolBlockOrder:              make([]int, 0),
 		toolBlockOpen:               make(map[int]bool),
@@ -131,29 +127,11 @@ func (w *openAIToClaudeStreamWrapper) handleChunk(raw string) {
 		}
 
 		delta := choice.Delta
-		if delta.ReasoningContent == "" && delta.Reasoning != "" {
-			delta.ReasoningContent = delta.Reasoning
-		}
-
-		if delta.Role != "" || delta.Content != "" || delta.ReasoningContent != "" || len(delta.ToolCalls) > 0 {
+		if delta.Role != "" || delta.Content != "" || len(delta.ToolCalls) > 0 {
 			w.ensureMessageStart()
 		}
 
-		if delta.ReasoningContent != "" {
-			w.closeTextBlock()
-			w.ensureThinkingBlock()
-			w.emitEvent("content_block_delta", claude.ClaudeStreamResponse{
-				Type:  "content_block_delta",
-				Index: w.thinkingBlockIndex,
-				Delta: claude.Delta{
-					Type:     claude.ContentStreamTypeThinking,
-					Thinking: delta.ReasoningContent,
-				},
-			})
-		}
-
 		if delta.Content != "" {
-			w.closeThinkingBlock()
 			w.ensureTextBlock()
 			w.emitEvent("content_block_delta", claude.ClaudeStreamResponse{
 				Type:  "content_block_delta",
@@ -167,7 +145,6 @@ func (w *openAIToClaudeStreamWrapper) handleChunk(raw string) {
 
 		if len(delta.ToolCalls) > 0 {
 			w.closeTextBlock()
-			w.closeThinkingBlock()
 			for _, toolCall := range delta.ToolCalls {
 				w.handleToolDelta(toolCall)
 			}
@@ -232,25 +209,6 @@ func (w *openAIToClaudeStreamWrapper) ensureTextBlock() {
 	})
 }
 
-func (w *openAIToClaudeStreamWrapper) ensureThinkingBlock() {
-	if w.thinkingBlockOpen {
-		return
-	}
-	w.thinkingBlockOpen = true
-	if w.thinkingBlockIndex < 0 {
-		w.thinkingBlockIndex = w.nextIndex()
-	}
-
-	w.emitEvent("content_block_start", claude.ClaudeStreamResponse{
-		Type:  "content_block_start",
-		Index: w.thinkingBlockIndex,
-		ContentBlock: claude.ContentBlock{
-			Type:     claude.ContentTypeThinking,
-			Thinking: "",
-		},
-	})
-}
-
 func (w *openAIToClaudeStreamWrapper) handleToolDelta(toolCall *types.ChatCompletionToolCalls) {
 	if toolCall == nil || toolCall.Function == nil {
 		return
@@ -305,25 +263,6 @@ func (w *openAIToClaudeStreamWrapper) closeTextBlock() {
 	})
 }
 
-func (w *openAIToClaudeStreamWrapper) closeThinkingBlock() {
-	if !w.thinkingBlockOpen {
-		return
-	}
-	w.thinkingBlockOpen = false
-	w.emitEvent("content_block_delta", claude.ClaudeStreamResponse{
-		Type:  "content_block_delta",
-		Index: w.thinkingBlockIndex,
-		Delta: claude.Delta{
-			Type:      claude.ContentStreamTypeSignatureDelta,
-			Signature: "",
-		},
-	})
-	w.emitEvent("content_block_stop", claude.ClaudeStreamResponse{
-		Type:  "content_block_stop",
-		Index: w.thinkingBlockIndex,
-	})
-}
-
 func (w *openAIToClaudeStreamWrapper) closeToolBlocks() {
 	for _, streamIndex := range w.toolBlockOrder {
 		if !w.toolBlockOpen[streamIndex] {
@@ -344,7 +283,6 @@ func (w *openAIToClaudeStreamWrapper) finish(finishReason string) {
 	w.finished = true
 
 	w.ensureMessageStart()
-	w.closeThinkingBlock()
 	w.closeTextBlock()
 	w.closeToolBlocks()
 

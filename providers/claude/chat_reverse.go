@@ -100,18 +100,6 @@ func ConvertOpenAIChatToClaude(response *types.ChatCompletionResponse) (*ClaudeR
 		claudeResponse.Role = choice.Message.Role
 	}
 
-	reasoning := choice.Message.ReasoningContent
-	if reasoning == "" {
-		reasoning = choice.Message.Reasoning
-	}
-	if reasoning != "" {
-		claudeResponse.Content = append(claudeResponse.Content, ResContent{
-			Type:      ContentTypeThinking,
-			Thinking:  reasoning,
-			Signature: "",
-		})
-	}
-
 	textBlocks, err := convertOpenAIContentToClaudeText(choice.Message.Content)
 	if err != nil {
 		return nil, err

@@ -178,7 +178,9 @@ func TestOpenAIToClaudeStreamWrapper(t *testing.T) {
 	var messageDelta claude.ClaudeStreamResponse
 	require.NoError(t, unmarshalSSEPayload(events[8], &messageDelta))
 	assert.Equal(t, claude.FinishReasonToolUse, messageDelta.Delta.StopReason)
+	assert.Nil(t, messageDelta.Delta.StopSequence)
 	assert.Equal(t, 5, messageDelta.Usage.OutputTokens)
+	assert.Contains(t, events[8], `"stop_sequence":null`)
 }
 
 func TestOpenAIToClaudeStreamWrapperIncludesThinkingPlaceholder(t *testing.T) {

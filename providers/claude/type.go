@@ -180,7 +180,7 @@ type ClaudeResponse struct {
 	Content      []ResContent `json:"content"`
 	Model        string       `json:"model"`
 	StopReason   string       `json:"stop_reason,omitempty"`
-	StopSequence string       `json:"stop_sequence,omitempty"`
+	StopSequence *string      `json:"stop_sequence"`
 	Usage        Usage        `json:"usage,omitempty"`
 	Error        *ClaudeError `json:"error,omitempty"`
 
@@ -188,14 +188,14 @@ type ClaudeResponse struct {
 }
 
 type Delta struct {
-	Type         string `json:"type,omitempty"`
-	Text         string `json:"text,omitempty"`
-	PartialJson  string `json:"partial_json,omitempty"`
-	StopReason   string `json:"stop_reason,omitempty"`
-	StopSequence string `json:"stop_sequence,omitempty"`
-	Thinking     string `json:"thinking,omitempty"`
-	Signature    string `json:"signature,omitempty"`
-	Citations    any    `json:"citations,omitempty"`
+	Type         string  `json:"type,omitempty"`
+	Text         string  `json:"text,omitempty"`
+	PartialJson  string  `json:"partial_json,omitempty"`
+	StopReason   string  `json:"stop_reason,omitempty"`
+	StopSequence *string `json:"stop_sequence"`
+	Thinking     string  `json:"thinking,omitempty"`
+	Signature    string  `json:"signature,omitempty"`
+	Citations    any     `json:"citations,omitempty"`
 }
 
 type ClaudeStreamResponse struct {
