@@ -181,6 +181,59 @@ func TestOpenAIToClaudeStreamWrapper(t *testing.T) {
 	assert.Equal(t, 5, messageDelta.Usage.OutputTokens)
 }
 
+func TestOpenAIToClaudeStreamWrapperIncludesThinkingPlaceholder(t *testing.T) {
+	chunk := types.ChatCompletionStreamResponse{
+		ID:      "chatcmpl_thinking",
+		Object:  "chat.completion.chunk",
+		Created: int64(123),
+		Model:   "gpt-4o",
+		Choices: []types.ChatCompletionStreamChoice{
+			{
+				Index: 0,
+				Delta: types.ChatCompletionStreamChoiceDelta{
+					Role:             "assistant",
+					ReasoningContent: "thinking...",
+				},
+			},
+		},
+	}
+
+	body, err := json.Marshal(chunk)
+	require.NoError(t, err)
+
+	stream := newOpenAIToClaudeStreamWrapper(&fakeStringStream{
+		data: []string{string(body)},
+	}, &types.Usage{}, "gpt-4o")
+
+	dataChan, errChan := stream.Recv()
+
+	var events []string
+	for {
+		select {
+		case item, ok := <-dataChan:
+			if ok {
+				events = append(events, item)
+				continue
+			}
+			dataChan = nil
+		case err := <-errChan:
+			require.True(t, err == io.EOF)
+			errChan = nil
+		}
+
+		if dataChan == nil && errChan == nil {
+			break
+		}
+	}
+
+	require.GreaterOrEqual(t, len(events), 3)
+
+	var start claude.ClaudeStreamResponse
+	require.NoError(t, unmarshalSSEPayload(events[1], &start))
+	assert.Equal(t, claude.ContentTypeThinking, start.ContentBlock.Type)
+	assert.Equal(t, "", start.ContentBlock.Thinking)
+}
+
 func unmarshalSSEPayload(raw string, target any) error {
 	lines := strings.Split(raw, "\n")
 	for _, line := range lines {

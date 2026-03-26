@@ -245,7 +245,8 @@ func (w *openAIToClaudeStreamWrapper) ensureThinkingBlock() {
 		Type:  "content_block_start",
 		Index: w.thinkingBlockIndex,
 		ContentBlock: claude.ContentBlock{
-			Type: claude.ContentTypeThinking,
+			Type:     claude.ContentTypeThinking,
+			Thinking: "",
 		},
 	})
 }
