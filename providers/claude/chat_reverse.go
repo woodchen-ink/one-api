@@ -104,6 +104,12 @@ func ConvertOpenAIChatToClaude(response *types.ChatCompletionResponse) (*ClaudeR
 	if err != nil {
 		return nil, err
 	}
+	if choice.Message.Refusal != "" {
+		textBlocks = append(textBlocks, ResContent{
+			Type: ContentTypeText,
+			Text: choice.Message.Refusal,
+		})
+	}
 	claudeResponse.Content = append(claudeResponse.Content, textBlocks...)
 
 	for _, toolCall := range choice.Message.ToolCalls {
@@ -135,6 +141,12 @@ func ConvertOpenAIChatToClaude(response *types.ChatCompletionResponse) (*ClaudeR
 		}
 	}
 	claudeResponse.StopReason = stopReason
+	if len(claudeResponse.Content) == 0 && len(choice.Message.ToolCalls) == 0 {
+		claudeResponse.Content = append(claudeResponse.Content, ResContent{
+			Type: ContentTypeText,
+			Text: "",
+		})
+	}
 
 	return claudeResponse, nil
 }
@@ -445,10 +457,17 @@ func convertOpenAIContentToClaudeText(content any) ([]ResContent, *types.OpenAIE
 
 	textBlocks := make([]ResContent, 0, len(parts))
 	for _, part := range parts {
-		if part.Type == types.ContentTypeText && part.Text != "" {
+		if (part.Type == types.ContentTypeText || part.Type == "output_text") && part.Text != "" {
 			textBlocks = append(textBlocks, ResContent{
 				Type: ContentTypeText,
 				Text: part.Text,
+			})
+			continue
+		}
+		if part.Type == "refusal" && part.Refusal != "" {
+			textBlocks = append(textBlocks, ResContent{
+				Type: ContentTypeText,
+				Text: part.Refusal,
 			})
 		}
 	}

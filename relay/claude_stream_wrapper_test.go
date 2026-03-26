@@ -183,7 +183,7 @@ func TestOpenAIToClaudeStreamWrapper(t *testing.T) {
 	assert.Contains(t, events[8], `"stop_sequence":null`)
 }
 
-func TestOpenAIToClaudeStreamWrapperIncludesThinkingPlaceholder(t *testing.T) {
+func TestOpenAIToClaudeStreamWrapperIgnoresReasoningOnlyDeltas(t *testing.T) {
 	chunk := types.ChatCompletionStreamResponse{
 		ID:      "chatcmpl_thinking",
 		Object:  "chat.completion.chunk",
@@ -193,7 +193,6 @@ func TestOpenAIToClaudeStreamWrapperIncludesThinkingPlaceholder(t *testing.T) {
 			{
 				Index: 0,
 				Delta: types.ChatCompletionStreamChoiceDelta{
-					Role:             "assistant",
 					ReasoningContent: "thinking...",
 				},
 			},
@@ -228,17 +227,10 @@ func TestOpenAIToClaudeStreamWrapperIncludesThinkingPlaceholder(t *testing.T) {
 		}
 	}
 
-	require.GreaterOrEqual(t, len(events), 5)
-
-	var start claude.ClaudeStreamResponse
-	require.NoError(t, unmarshalSSEPayload(events[1], &start))
-	assert.Equal(t, claude.ContentTypeThinking, start.ContentBlock.Type)
-	assert.Equal(t, "", start.ContentBlock.Thinking)
-
-	var signatureDelta claude.ClaudeStreamResponse
-	require.NoError(t, unmarshalSSEPayload(events[3], &signatureDelta))
-	assert.Equal(t, claude.ContentStreamTypeSignatureDelta, signatureDelta.Delta.Type)
-	assert.Equal(t, "", signatureDelta.Delta.Signature)
+	require.Len(t, events, 3)
+	assert.Contains(t, events[0], "event: message_start")
+	assert.Contains(t, events[1], "event: message_delta")
+	assert.Contains(t, events[2], "event: message_stop")
 }
 
 func unmarshalSSEPayload(raw string, target any) error {

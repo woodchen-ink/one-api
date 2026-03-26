@@ -158,15 +158,12 @@ func TestConvertOpenAIChatToClaude(t *testing.T) {
 	assert.Equal(t, types.ChatMessageRoleAssistant, claudeResp.Role)
 	assert.Equal(t, FinishReasonToolUse, claudeResp.StopReason)
 	assert.Nil(t, claudeResp.StopSequence)
-	require.Len(t, claudeResp.Content, 3)
-	assert.Equal(t, ContentTypeThinking, claudeResp.Content[0].Type)
-	assert.Equal(t, "thinking", claudeResp.Content[0].Thinking)
-	assert.Equal(t, "", claudeResp.Content[0].Signature)
-	assert.Equal(t, ContentTypeText, claudeResp.Content[1].Type)
-	assert.Equal(t, "Hello", claudeResp.Content[1].Text)
-	assert.Equal(t, ContentTypeToolUes, claudeResp.Content[2].Type)
-	assert.Equal(t, "lookup_weather", claudeResp.Content[2].Name)
-	assert.Equal(t, "call_1", claudeResp.Content[2].Id)
+	require.Len(t, claudeResp.Content, 2)
+	assert.Equal(t, ContentTypeText, claudeResp.Content[0].Type)
+	assert.Equal(t, "Hello", claudeResp.Content[0].Text)
+	assert.Equal(t, ContentTypeToolUes, claudeResp.Content[1].Type)
+	assert.Equal(t, "lookup_weather", claudeResp.Content[1].Name)
+	assert.Equal(t, "call_1", claudeResp.Content[1].Id)
 	assert.Equal(t, 90, claudeResp.Usage.InputTokens)
 	assert.Equal(t, 10, claudeResp.Usage.CacheReadInputTokens)
 	assert.Equal(t, 20, claudeResp.Usage.CacheCreationInputTokens)
@@ -175,4 +172,35 @@ func TestConvertOpenAIChatToClaude(t *testing.T) {
 	body, marshalErr := json.Marshal(claudeResp)
 	require.NoError(t, marshalErr)
 	assert.Contains(t, string(body), `"stop_sequence":null`)
+}
+
+func TestConvertOpenAIChatToClaudeSupportsOutputTextAndRefusal(t *testing.T) {
+	resp := &types.ChatCompletionResponse{
+		ID:    "chatcmpl_2",
+		Model: "gpt-5.4",
+		Choices: []types.ChatCompletionChoice{
+			{
+				Index: 0,
+				Message: types.ChatCompletionMessage{
+					Content: []any{
+						map[string]any{
+							"type": "output_text",
+							"text": "Rendered text",
+						},
+						map[string]any{
+							"type":    "refusal",
+							"refusal": "Cannot do that",
+						},
+					},
+				},
+				FinishReason: types.FinishReasonStop,
+			},
+		},
+	}
+
+	claudeResp, err := ConvertOpenAIChatToClaude(resp)
+	require.Nil(t, err)
+	require.Len(t, claudeResp.Content, 2)
+	assert.Equal(t, "Rendered text", claudeResp.Content[0].Text)
+	assert.Equal(t, "Cannot do that", claudeResp.Content[1].Text)
 }
