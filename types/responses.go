@@ -57,25 +57,27 @@ const (
 )
 
 type OpenAIResponsesRequest struct {
-	Input              any              `json:"input,omitempty"`
-	Model              string           `json:"model" binding:"required"`
-	Include            any              `json:"include,omitempty"`
-	Instructions       string           `json:"instructions,omitempty"`
-	MaxOutputTokens    int              `json:"max_output_tokens,omitempty"`
-	MaxToolCalls       *int             `json:"max_tool_calls,omitempty"`
-	ParallelToolCalls  bool             `json:"parallel_tool_calls,omitempty"`
-	PreviousResponseID string           `json:"previous_response_id,omitempty"`
-	Reasoning          *ReasoningEffort `json:"reasoning,omitempty"`
-	Store              *bool            `json:"store,omitempty"` // 是否存储响应结果
-	Stream             bool             `json:"stream,omitempty"`
-	Temperature        *float64         `json:"temperature,omitempty"`
-	Text               *ResponsesText   `json:"text,omitempty"`
-	ToolChoice         any              `json:"tool_choice,omitempty"`
-	Tools              []ResponsesTools `json:"tools,omitempty"`
-	TopLogProbs        any              `json:"top_logprobs,omitempty"` // The number of top log probabilities to return for each token in the response.
-	TopP               *float64         `json:"top_p,omitempty"`
-	Truncation         string           `json:"truncation,omitempty"`
-	User               string           `json:"user,omitempty"`
+	Input                any              `json:"input,omitempty"`
+	Model                string           `json:"model" binding:"required"`
+	Include              any              `json:"include,omitempty"`
+	Instructions         string           `json:"instructions,omitempty"`
+	MaxOutputTokens      int              `json:"max_output_tokens,omitempty"`
+	MaxToolCalls         *int             `json:"max_tool_calls,omitempty"`
+	ParallelToolCalls    bool             `json:"parallel_tool_calls,omitempty"`
+	PreviousResponseID   string           `json:"previous_response_id,omitempty"`
+	Reasoning            *ReasoningEffort `json:"reasoning,omitempty"`
+	Store                *bool            `json:"store,omitempty"` // 是否存储响应结果
+	Stream               bool             `json:"stream,omitempty"`
+	Temperature          *float64         `json:"temperature,omitempty"`
+	Text                 *ResponsesText   `json:"text,omitempty"`
+	ToolChoice           any              `json:"tool_choice,omitempty"`
+	Tools                []ResponsesTools `json:"tools,omitempty"`
+	TopLogProbs          any              `json:"top_logprobs,omitempty"` // The number of top log probabilities to return for each token in the response.
+	TopP                 *float64         `json:"top_p,omitempty"`
+	Truncation           string           `json:"truncation,omitempty"`
+	User                 string           `json:"user,omitempty"`
+	PromptCacheKey       string           `json:"prompt_cache_key,omitempty"`
+	PromptCacheRetention any              `json:"prompt_cache_retention,omitempty"`
 
 	ConvertChat bool `json:"-"`
 }
@@ -465,25 +467,27 @@ type ReasoningEffort struct {
 }
 
 type OpenAIResponsesResponses struct {
-	CreatedAt          any               `json:"created_at,omitempty"`
-	Error              *OpenAIError      `json:"error,omitempty"`
-	ID                 string            `json:"id,omitempty"`
-	IncompleteDetail   *IncompleteDetail `json:"incomplete_details,omitempty"`
-	Instructions       any               `json:"instructions,omitempty"`
-	MaxOutputTokens    int               `json:"max_output_tokens,omitempty"`
-	Model              string            `json:"model"`
-	Object             string            `json:"object"`
-	Output             []ResponsesOutput `json:"output,omitempty"`
-	ParallelToolCalls  bool              `json:"parallel_tool_calls,omitempty"`
-	PreviousResponseID string            `json:"previous_response_id,omitempty"`
-	Reasoning          *ReasoningEffort  `json:"reasoning,omitempty"`
-	Status             string            `json:"status"`
-	Temperature        *float64          `json:"temperature,omitempty"`
-	Text               any               `json:"text,omitempty"`
-	ToolChoice         any               `json:"tool_choice,omitempty"`
-	Tools              []ResponsesTools  `json:"tools,omitempty"`
-	TopP               *float64          `json:"top_p,omitempty"`
-	Truncation         string            `json:"truncation,omitempty"`
+	CreatedAt            any               `json:"created_at,omitempty"`
+	Error                *OpenAIError      `json:"error,omitempty"`
+	ID                   string            `json:"id,omitempty"`
+	IncompleteDetail     *IncompleteDetail `json:"incomplete_details,omitempty"`
+	Instructions         any               `json:"instructions,omitempty"`
+	MaxOutputTokens      int               `json:"max_output_tokens,omitempty"`
+	Model                string            `json:"model"`
+	Object               string            `json:"object"`
+	Output               []ResponsesOutput `json:"output,omitempty"`
+	ParallelToolCalls    bool              `json:"parallel_tool_calls,omitempty"`
+	PreviousResponseID   string            `json:"previous_response_id,omitempty"`
+	Reasoning            *ReasoningEffort  `json:"reasoning,omitempty"`
+	Status               string            `json:"status"`
+	Temperature          *float64          `json:"temperature,omitempty"`
+	Text                 any               `json:"text,omitempty"`
+	ToolChoice           any               `json:"tool_choice,omitempty"`
+	Tools                []ResponsesTools  `json:"tools,omitempty"`
+	TopP                 *float64          `json:"top_p,omitempty"`
+	Truncation           string            `json:"truncation,omitempty"`
+	PromptCacheKey       string            `json:"prompt_cache_key,omitempty"`
+	PromptCacheRetention any               `json:"prompt_cache_retention,omitempty"`
 
 	Usage *ResponsesUsage `json:"usage,omitempty"`
 }

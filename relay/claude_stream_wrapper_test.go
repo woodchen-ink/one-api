@@ -126,7 +126,7 @@ func TestOpenAIToClaudeStreamWrapper(t *testing.T) {
 
 	stream := newOpenAIToClaudeStreamWrapper(&fakeStringStream{data: rawChunks}, &types.Usage{
 		PromptTokens: 10,
-	}, "gpt-4o")
+	}, "gpt-4o", true)
 
 	dataChan, errChan := stream.Recv()
 
@@ -209,7 +209,7 @@ func TestOpenAIToClaudeStreamWrapperEmitsThinkingBlocks(t *testing.T) {
 
 	stream := newOpenAIToClaudeStreamWrapper(&fakeStringStream{
 		data: []string{string(body)},
-	}, &types.Usage{}, "gpt-4o")
+	}, &types.Usage{}, "gpt-4o", false)
 
 	dataChan, errChan := stream.Recv()
 
@@ -250,6 +250,57 @@ func TestOpenAIToClaudeStreamWrapperEmitsThinkingBlocks(t *testing.T) {
 	require.NotNil(t, thinkingDelta.Delta)
 	assert.Equal(t, claude.ContentStreamTypeThinking, thinkingDelta.Delta.Type)
 	assert.Equal(t, "thinking...", thinkingDelta.Delta.Thinking)
+}
+
+func TestOpenAIToClaudeStreamWrapperSkipsUntrustedEstimatedInputTokens(t *testing.T) {
+	chunk := types.ChatCompletionStreamResponse{
+		ID:      "chatcmpl_usage",
+		Object:  "chat.completion.chunk",
+		Created: int64(123),
+		Model:   "gpt-5.4",
+		Choices: []types.ChatCompletionStreamChoice{
+			{
+				Index: 0,
+				Delta: types.ChatCompletionStreamChoiceDelta{
+					Content: "ok",
+				},
+			},
+		},
+	}
+
+	body, err := json.Marshal(chunk)
+	require.NoError(t, err)
+
+	stream := newOpenAIToClaudeStreamWrapper(&fakeStringStream{
+		data: []string{string(body)},
+	}, &types.Usage{PromptTokens: 99}, "gpt-5.4", false)
+
+	dataChan, errChan := stream.Recv()
+
+	var events []string
+	for {
+		select {
+		case item, ok := <-dataChan:
+			if ok {
+				events = append(events, item)
+				continue
+			}
+			dataChan = nil
+		case err := <-errChan:
+			require.True(t, err == io.EOF)
+			errChan = nil
+		}
+
+		if dataChan == nil && errChan == nil {
+			break
+		}
+	}
+
+	require.NotEmpty(t, events)
+	var messageStart claude.ClaudeStreamResponse
+	require.NoError(t, unmarshalSSEPayload(events[0], &messageStart))
+	require.NotNil(t, messageStart.Message)
+	assert.Equal(t, 0, messageStart.Message.Usage.InputTokens)
 }
 
 func unmarshalSSEPayload(raw string, target any) error {

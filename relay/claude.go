@@ -155,7 +155,7 @@ func (r *relayClaudeMessages) sendOpenAICompatible(chatProvider providersBase.Ch
 			r.heartbeat.Stop()
 		}
 
-		claudeStream := newOpenAIToClaudeStreamWrapper(response, r.provider.GetUsage(), chatRequest.Model)
+		claudeStream := newOpenAIToClaudeStreamWrapper(response, r.provider.GetUsage(), chatRequest.Model, true)
 		firstResponseTime := responseGeneralStreamClient(r.c, claudeStream, nil)
 		r.SetFirstResponseTime(firstResponseTime)
 		return nil, false
@@ -193,11 +193,14 @@ func (r *relayClaudeMessages) sendResponsesCompatible(responsesProvider provider
 
 	chatRequest.Model = r.modelName
 	responsesRequest := chatRequest.ToResponsesRequest()
+	responsesRequest.ConvertChat = true
+	if responsesRequest.PromptCacheKey == "" {
+		responsesRequest.PromptCacheKey = claude.BuildClaudePromptCacheKey(r.claudeRequest)
+	}
 	storeFalse := false
 	responsesRequest.Store = &storeFalse
 
 	if r.claudeRequest.Stream {
-		responsesRequest.ConvertChat = true
 		response, streamErr := responsesProvider.CreateResponsesStream(responsesRequest)
 		if streamErr != nil {
 			return streamErr, false
@@ -207,7 +210,7 @@ func (r *relayClaudeMessages) sendResponsesCompatible(responsesProvider provider
 			r.heartbeat.Stop()
 		}
 
-		claudeStream := newOpenAIToClaudeStreamWrapper(response, r.provider.GetUsage(), responsesRequest.Model)
+		claudeStream := newOpenAIToClaudeStreamWrapper(response, r.provider.GetUsage(), responsesRequest.Model, false)
 		firstResponseTime := responseGeneralStreamClient(r.c, claudeStream, nil)
 		r.SetFirstResponseTime(firstResponseTime)
 		return nil, false

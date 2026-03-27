@@ -28,10 +28,8 @@ func ConvertClaudeToOpenAIChat(request *ClaudeRequest) (*types.ChatCompletionReq
 		chatRequest.Stop = request.StopSequences
 	}
 
-	if request.Thinking != nil && request.Thinking.BudgetTokens > 0 {
-		chatRequest.Reasoning = &types.ChatReasoning{
-			MaxTokens: request.Thinking.BudgetTokens,
-		}
+	if reasoning := ResolveClaudeResponseReasoning(request); reasoning != nil {
+		chatRequest.Reasoning = reasoning
 	}
 
 	systemMessages, err := convertClaudeSystemToOpenAIMessages(request.System)

@@ -23,6 +23,8 @@ type openAIToClaudeStreamWrapper struct {
 	dataChan chan string
 	errChan  chan error
 
+	trustEstimatedInputTokens bool
+
 	messageStarted bool
 	messageID      string
 	created        any
@@ -41,13 +43,14 @@ type openAIToClaudeStreamWrapper struct {
 	finished  bool
 }
 
-func newOpenAIToClaudeStreamWrapper(source requester.StreamReaderInterface[string], usage *types.Usage, model string) requester.StreamReaderInterface[string] {
+func newOpenAIToClaudeStreamWrapper(source requester.StreamReaderInterface[string], usage *types.Usage, model string, trustEstimatedInputTokens bool) requester.StreamReaderInterface[string] {
 	return &openAIToClaudeStreamWrapper{
 		source:                      source,
 		usage:                       usage,
 		model:                       model,
 		dataChan:                    make(chan string, 16),
 		errChan:                     make(chan error, 2),
+		trustEstimatedInputTokens:   trustEstimatedInputTokens,
 		thinkingBlockIndex:          -1,
 		textBlockIndex:              -1,
 		toolBlockIndexByStreamIndex: make(map[int]int),
@@ -192,12 +195,14 @@ func (w *openAIToClaudeStreamWrapper) ensureMessageStart() {
 		w.created = utils.GetTimestamp()
 	}
 
-	usage := claude.OpenAIUsageToClaudeUsage(w.currentUsage())
+	usage := claude.OpenAIUsageToClaudeUsage(w.messageStartUsageSource())
 	startUsage := claude.Usage{
-		InputTokens:              usage.InputTokens,
 		CacheCreationInputTokens: usage.CacheCreationInputTokens,
 		CacheReadInputTokens:     usage.CacheReadInputTokens,
 		CacheCreation:            usage.CacheCreation,
+	}
+	if startSource := w.messageStartUsageSource(); startSource != nil {
+		startUsage.InputTokens = usage.InputTokens
 	}
 
 	w.emitEvent("message_start", map[string]any{
@@ -369,6 +374,16 @@ func (w *openAIToClaudeStreamWrapper) currentUsage() *types.Usage {
 		return w.lastUsage
 	}
 	return w.usage
+}
+
+func (w *openAIToClaudeStreamWrapper) messageStartUsageSource() *types.Usage {
+	if w.lastUsage != nil {
+		return w.lastUsage
+	}
+	if w.trustEstimatedInputTokens {
+		return w.usage
+	}
+	return nil
 }
 
 func (w *openAIToClaudeStreamWrapper) emitStreamError(err error) {

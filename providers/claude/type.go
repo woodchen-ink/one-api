@@ -117,19 +117,20 @@ type Message struct {
 }
 
 type ClaudeRequest struct {
-	Model         string      `json:"model,omitempty"`
-	System        any         `json:"system,omitempty"`
-	CacheControl  any         `json:"cache_control,omitempty"`
-	Messages      []Message   `json:"messages"`
-	MaxTokens     int         `json:"max_tokens"`
-	StopSequences []string    `json:"stop_sequences,omitempty"`
-	Temperature   *float64    `json:"temperature,omitempty"`
-	TopP          *float64    `json:"top_p,omitempty"`
-	TopK          *int        `json:"top_k,omitempty"`
-	Tools         []Tools     `json:"tools,omitempty"`
-	ToolChoice    *ToolChoice `json:"tool_choice,omitempty"`
-	Thinking      *Thinking   `json:"thinking,omitempty"`
-	McpServers    any         `json:"mcp_servers,omitempty"`
+	Model         string        `json:"model,omitempty"`
+	System        any           `json:"system,omitempty"`
+	CacheControl  any           `json:"cache_control,omitempty"`
+	Messages      []Message     `json:"messages"`
+	MaxTokens     int           `json:"max_tokens"`
+	StopSequences []string      `json:"stop_sequences,omitempty"`
+	Temperature   *float64      `json:"temperature,omitempty"`
+	TopP          *float64      `json:"top_p,omitempty"`
+	TopK          *int          `json:"top_k,omitempty"`
+	Tools         []Tools       `json:"tools,omitempty"`
+	ToolChoice    *ToolChoice   `json:"tool_choice,omitempty"`
+	Thinking      *Thinking     `json:"thinking,omitempty"`
+	OutputConfig  *OutputConfig `json:"output_config,omitempty"`
+	McpServers    any           `json:"mcp_servers,omitempty"`
 	//ClaudeMetadata    `json:"metadata,omitempty"`
 	Stream bool `json:"stream,omitempty"`
 }
@@ -137,6 +138,10 @@ type ClaudeRequest struct {
 type Thinking struct {
 	Type         string `json:"type,omitempty"`
 	BudgetTokens int    `json:"budget_tokens,omitempty"`
+}
+
+type OutputConfig struct {
+	Effort string `json:"effort,omitempty"`
 }
 type ToolChoice struct {
 	Type                   string `json:"type,omitempty"`

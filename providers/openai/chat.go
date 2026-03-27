@@ -2,13 +2,13 @@ package openai
 
 import (
 	"bytes"
-	"encoding/json"
-	"io"
-	"net/http"
 	"czloapi/common"
 	"czloapi/common/config"
 	"czloapi/common/requester"
 	"czloapi/types"
+	"encoding/json"
+	"io"
+	"net/http"
 	"regexp"
 	"strings"
 )
@@ -218,6 +218,16 @@ func otherProcessing(request *types.ChatCompletionRequest, otherArg string) {
 
 		if request.Model != "gpt-5-chat-latest" {
 			request.Temperature = nil
+		}
+
+		if request.ReasoningEffort == nil && request.Reasoning != nil {
+			effort := request.Reasoning.Effort
+			if effort == "" {
+				effort = types.ReasoningBudgetTokensToEffort(request.Reasoning.MaxTokens)
+			}
+			if effort != "" {
+				request.ReasoningEffort = &effort
+			}
 		}
 
 		if otherArg != "" {

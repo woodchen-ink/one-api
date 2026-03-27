@@ -136,6 +136,27 @@ func TestExtractClaudeReasoningMetadataDefaultLevel(t *testing.T) {
 	}
 }
 
+func TestExtractClaudeReasoningMetadataUsesOutputConfigEffort(t *testing.T) {
+	meta := extractClaudeReasoningMetadata(&claude.ClaudeRequest{
+		OutputConfig: &claude.OutputConfig{
+			Effort: "max",
+		},
+		Thinking: &claude.Thinking{
+			Type:         "enabled",
+			BudgetTokens: 2048,
+		},
+	})
+
+	if assert.NotNil(t, meta) {
+		assert.Equal(t, "xhigh", meta.Level)
+		assert.Equal(t, "max", meta.RawEffort)
+		assert.Equal(t, types.LogReasoningModeEffort, meta.Mode)
+		if assert.NotNil(t, meta.BudgetTokens) {
+			assert.Equal(t, 2048, *meta.BudgetTokens)
+		}
+	}
+}
+
 func TestExtractGeminiReasoningMetadataWithThinkingLevel(t *testing.T) {
 	budget := 2048
 	meta := extractGeminiReasoningMetadata(&gemini.GeminiChatRequest{

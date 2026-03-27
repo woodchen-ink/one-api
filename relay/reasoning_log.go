@@ -128,18 +128,55 @@ func extractResponsesReasoningMetadata(request *types.OpenAIResponsesRequest) *t
 }
 
 func extractClaudeReasoningMetadata(request *claude.ClaudeRequest) *types.LogReasoningMetadata {
-	if request == nil || request.Thinking == nil || request.Thinking.Type != "enabled" {
+	if request == nil {
 		return nil
 	}
 
-	if request.Thinking.BudgetTokens > 0 {
+	outputEffort := ""
+	rawOutputEffort := ""
+	if request.OutputConfig != nil {
+		rawOutputEffort = trimReasoningValue(request.OutputConfig.Effort)
+		outputEffort = claude.NormalizeClaudeOutputConfigEffort(rawOutputEffort)
+	}
+
+	if request.Thinking != nil && request.Thinking.Type == "enabled" {
 		budget := request.Thinking.BudgetTokens
-		meta := newLogReasoningMetadata(types.ReasoningBudgetTokensToEffort(budget), types.LogReasoningModeBudgetTokens, types.LogReasoningProviderClaude, types.LogReasoningViaClaudeNative)
-		meta.BudgetTokens = &budget
+		level := types.ReasoningBudgetTokensToEffort(budget)
+		mode := types.LogReasoningModeToggle
+		if budget > 0 {
+			mode = types.LogReasoningModeBudgetTokens
+		}
+		if outputEffort != "" {
+			level = outputEffort
+			mode = types.LogReasoningModeEffort
+		}
+
+		meta := newLogReasoningMetadata(level, mode, types.LogReasoningProviderClaude, types.LogReasoningViaClaudeNative)
+		if budget > 0 {
+			meta.BudgetTokens = &budget
+		}
+		if rawOutputEffort != "" {
+			meta.RawEffort = rawOutputEffort
+		}
 		return meta
 	}
 
-	return newLogReasoningMetadata("", types.LogReasoningModeToggle, types.LogReasoningProviderClaude, types.LogReasoningViaClaudeNative)
+	if request.Thinking != nil && strings.EqualFold(request.Thinking.Type, "adaptive") {
+		meta := newLogReasoningMetadata("high", types.LogReasoningModeEffort, types.LogReasoningProviderClaude, types.LogReasoningViaClaudeNative)
+		if rawOutputEffort != "" {
+			meta.Level = outputEffort
+			meta.RawEffort = rawOutputEffort
+		}
+		return meta
+	}
+
+	if outputEffort != "" || rawOutputEffort != "" {
+		meta := newLogReasoningMetadata(outputEffort, types.LogReasoningModeEffort, types.LogReasoningProviderClaude, types.LogReasoningViaClaudeNative)
+		meta.RawEffort = rawOutputEffort
+		return meta
+	}
+
+	return nil
 }
 
 func extractGeminiReasoningMetadata(request *gemini.GeminiChatRequest) *types.LogReasoningMetadata {
