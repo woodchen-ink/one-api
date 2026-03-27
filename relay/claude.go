@@ -144,7 +144,7 @@ func (r *relayClaudeMessages) sendOpenAICompatible(chatProvider providersBase.Ch
 	if chatRequest.Stream {
 		response, streamErr := chatProvider.CreateChatCompletionStream(chatRequest)
 		if streamErr != nil {
-			return streamErr, true
+			return streamErr, false
 		}
 
 		if r.heartbeat != nil {
@@ -159,7 +159,7 @@ func (r *relayClaudeMessages) sendOpenAICompatible(chatProvider providersBase.Ch
 
 	response, chatErr := chatProvider.CreateChatCompletion(chatRequest)
 	if chatErr != nil {
-		return chatErr, true
+		return chatErr, false
 	}
 
 	claudeResponse, convertErr := claude.ConvertOpenAIChatToClaude(response)
