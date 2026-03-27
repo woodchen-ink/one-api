@@ -111,6 +111,69 @@ func TestHandlerChatStreamConvertsFunctionCallDeltas(t *testing.T) {
 	assert.Equal(t, types.FinishReasonToolCalls, chunks[3].Choices[0].FinishReason)
 }
 
+func TestHandlerChatStreamPreservesFunctionCallsAfterText(t *testing.T) {
+	handler := newTestResponsesStreamHandler()
+	dataChan := make(chan string, 8)
+	errChan := make(chan error, 1)
+
+	initialArgs := "{\"path\":\"README"
+	sendResponsesStreamEvent(t, handler, dataChan, errChan, types.OpenAIResponsesStreamResponses{
+		Type: "response.created",
+		Response: &types.OpenAIResponsesResponses{
+			ID:        "resp_3",
+			Model:     "gpt-5.4-mini",
+			CreatedAt: int64(789),
+		},
+	})
+	sendResponsesStreamEvent(t, handler, dataChan, errChan, types.OpenAIResponsesStreamResponses{
+		Type:  "response.output_text.delta",
+		Delta: "先检查一下文件。",
+	})
+	sendResponsesStreamEvent(t, handler, dataChan, errChan, types.OpenAIResponsesStreamResponses{
+		Type: "response.output_item.added",
+		Item: &types.ResponsesOutput{
+			Type:      types.InputTypeFunctionCall,
+			ID:        "item_2",
+			CallID:    "call_2",
+			Name:      "read_file",
+			Arguments: &initialArgs,
+		},
+	})
+	sendResponsesStreamEvent(t, handler, dataChan, errChan, types.OpenAIResponsesStreamResponses{
+		Type:   "response.function_call_arguments.delta",
+		ItemID: "item_2",
+		Delta:  ".md\"}",
+	})
+	sendResponsesStreamEvent(t, handler, dataChan, errChan, types.OpenAIResponsesStreamResponses{
+		Type: "response.completed",
+		Response: &types.OpenAIResponsesResponses{
+			ID:        "resp_3",
+			Model:     "gpt-5.4-mini",
+			CreatedAt: int64(789),
+			Status:    types.ResponseStatusCompleted,
+		},
+	})
+
+	chunks := collectChatStreamChunks(t, dataChan, 5)
+	require.Empty(t, errChan)
+
+	assert.Equal(t, "先检查一下文件。", chunks[1].Choices[0].Delta.Content)
+
+	require.Len(t, chunks[2].Choices[0].Delta.ToolCalls, 1)
+	firstToolCall := chunks[2].Choices[0].Delta.ToolCalls[0]
+	assert.Equal(t, "call_2", firstToolCall.Id)
+	assert.Equal(t, "read_file", firstToolCall.Function.Name)
+	assert.Equal(t, initialArgs, firstToolCall.Function.Arguments)
+
+	require.Len(t, chunks[3].Choices[0].Delta.ToolCalls, 1)
+	secondToolCall := chunks[3].Choices[0].Delta.ToolCalls[0]
+	assert.Equal(t, "call_2", secondToolCall.Id)
+	assert.Equal(t, "", secondToolCall.Function.Name)
+	assert.Equal(t, ".md\"}", secondToolCall.Function.Arguments)
+
+	assert.Equal(t, types.FinishReasonToolCalls, chunks[4].Choices[0].FinishReason)
+}
+
 func newTestResponsesStreamHandler() *OpenAIResponsesStreamHandler {
 	return &OpenAIResponsesStreamHandler{
 		Usage:                     &types.Usage{},

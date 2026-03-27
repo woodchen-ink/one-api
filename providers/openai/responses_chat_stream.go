@@ -188,7 +188,7 @@ func (h *OpenAIResponsesStreamHandler) HandlerChatStream(rawLine *[]byte, dataCh
 	case "response.completed":
 		h.updateUsage(openaiResponse.Response)
 		finishReason := types.FinishReasonStop
-		if h.sawToolCall && h.outputTextBuilder.Len() == 0 {
+		if h.sawToolCall {
 			finishReason = types.FinishReasonToolCalls
 		}
 		chatRes.Choices = append(chatRes.Choices, types.ChatCompletionStreamChoice{
@@ -309,7 +309,7 @@ func (h *OpenAIResponsesStreamHandler) updateUsage(response *types.OpenAIRespons
 }
 
 func (h *OpenAIResponsesStreamHandler) buildToolCallChoice(callID string, name string, argsDelta string) (types.ChatCompletionStreamChoice, bool) {
-	if callID == "" || h.outputTextBuilder.Len() > 0 {
+	if callID == "" {
 		return types.ChatCompletionStreamChoice{}, false
 	}
 
