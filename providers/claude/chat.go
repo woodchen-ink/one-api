@@ -508,11 +508,16 @@ func (h *ClaudeStreamHandler) HandlerStream(rawLine *[]byte, dataChan chan strin
 	switch claudeResponse.Type {
 	case "message_start":
 		h.convertToOpenaiStream(&claudeResponse, dataChan)
-		ClaudeUsageToOpenaiUsage(&claudeResponse.Message.Usage, h.Usage)
+		if claudeResponse.Message != nil {
+			ClaudeUsageToOpenaiUsage(&claudeResponse.Message.Usage, h.Usage)
+		}
 
 	case "message_delta":
 		h.convertToOpenaiStream(&claudeResponse, dataChan)
-		mergedUsage := claudeResponse.Usage
+		mergedUsage := Usage{}
+		if claudeResponse.Usage != nil {
+			mergedUsage = *claudeResponse.Usage
+		}
 		if mergedUsage.CacheReadInputTokens == 0 {
 			mergedUsage.CacheReadInputTokens = h.Usage.PromptTokensDetails.CachedReadTokens
 		}
@@ -538,7 +543,9 @@ func (h *ClaudeStreamHandler) HandlerStream(rawLine *[]byte, dataChan chan strin
 
 	case "content_block_delta":
 		h.convertToOpenaiStream(&claudeResponse, dataChan)
-		h.Usage.TextBuilder.WriteString(claudeResponse.Delta.Text)
+		if claudeResponse.Delta != nil {
+			h.Usage.TextBuilder.WriteString(claudeResponse.Delta.Text)
+		}
 	case "content_block_start":
 		h.convertToOpenaiStream(&claudeResponse, dataChan)
 
@@ -548,21 +555,30 @@ func (h *ClaudeStreamHandler) HandlerStream(rawLine *[]byte, dataChan chan strin
 }
 
 func (h *ClaudeStreamHandler) convertToOpenaiStream(claudeResponse *ClaudeStreamResponse, dataChan chan string) {
+	role := ""
+	content := ""
+	if claudeResponse.Message != nil {
+		role = claudeResponse.Message.Role
+	}
+	if claudeResponse.Delta != nil {
+		content = claudeResponse.Delta.Text
+	}
+
 	choice := types.ChatCompletionStreamChoice{
 		Index: claudeResponse.Index,
 		Delta: types.ChatCompletionStreamChoiceDelta{
-			Role:    claudeResponse.Message.Role,
-			Content: claudeResponse.Delta.Text,
+			Role:    role,
+			Content: content,
 		},
 	}
 
-	if claudeResponse.ContentBlock.Text != "" {
+	if claudeResponse.ContentBlock != nil && claudeResponse.ContentBlock.Text != "" {
 		choice.Delta.Content = claudeResponse.ContentBlock.Text
 	}
 
 	var toolCalls []*types.ChatCompletionToolCalls
 
-	if claudeResponse.ContentBlock.Type == ContentTypeToolUes {
+	if claudeResponse.ContentBlock != nil && claudeResponse.ContentBlock.Type == ContentTypeToolUes {
 		toolCalls = append(toolCalls, &types.ChatCompletionToolCalls{
 			Id:   claudeResponse.ContentBlock.Id,
 			Type: types.ChatMessageRoleFunction,
@@ -574,26 +590,37 @@ func (h *ClaudeStreamHandler) convertToOpenaiStream(claudeResponse *ClaudeStream
 		h.StreamTolls = StreamTollsUse
 	}
 
-	switch claudeResponse.Delta.Type {
-	case ContentStreamTypeInputJsonDelta:
-		if claudeResponse.Delta.PartialJson == "" {
-			return
+	if claudeResponse.Delta != nil {
+		switch claudeResponse.Delta.Type {
+		case ContentStreamTypeInputJsonDelta:
+			if claudeResponse.Delta.PartialJson == "" {
+				return
+			}
+			toolCalls = append(toolCalls, &types.ChatCompletionToolCalls{
+				Type: types.ChatMessageRoleFunction,
+				Function: &types.ChatCompletionToolCallsFunction{
+					Arguments: claudeResponse.Delta.PartialJson,
+				},
+			})
+			h.StreamTolls = StreamTollsArg
+		case ContentStreamTypeSignatureDelta:
+			// 加密的不处理
+			choice.Delta.ReasoningContent = "\n"
+		case ContentStreamTypeThinking:
+			choice.Delta.ReasoningContent = claudeResponse.Delta.Thinking
 		}
-		toolCalls = append(toolCalls, &types.ChatCompletionToolCalls{
-			Type: types.ChatMessageRoleFunction,
-			Function: &types.ChatCompletionToolCallsFunction{
-				Arguments: claudeResponse.Delta.PartialJson,
-			},
-		})
-		h.StreamTolls = StreamTollsArg
-	case ContentStreamTypeSignatureDelta:
-		// 加密的不处理
-		choice.Delta.ReasoningContent = "\n"
-	case ContentStreamTypeThinking:
-		choice.Delta.ReasoningContent = claudeResponse.Delta.Thinking
 	}
 
-	if claudeResponse.ContentBlock.Type != ContentTypeToolUes && claudeResponse.Delta.Type != "input_json_delta" && h.StreamTolls != StreamTollsNone {
+	contentBlockType := ""
+	deltaType := ""
+	if claudeResponse.ContentBlock != nil {
+		contentBlockType = claudeResponse.ContentBlock.Type
+	}
+	if claudeResponse.Delta != nil {
+		deltaType = claudeResponse.Delta.Type
+	}
+
+	if contentBlockType != ContentTypeToolUes && deltaType != "input_json_delta" && h.StreamTolls != StreamTollsNone {
 		if h.StreamTolls == StreamTollsUse {
 			toolCalls = append(toolCalls, &types.ChatCompletionToolCalls{
 				Type: types.ChatMessageRoleFunction,
@@ -610,7 +637,11 @@ func (h *ClaudeStreamHandler) convertToOpenaiStream(claudeResponse *ClaudeStream
 		choice.Delta.ToolCalls = toolCalls
 	}
 
-	finishReason := stopReasonClaude2OpenAI(claudeResponse.Delta.StopReason)
+	stopReason := ""
+	if claudeResponse.Delta != nil {
+		stopReason = claudeResponse.Delta.StopReason
+	}
+	finishReason := stopReasonClaude2OpenAI(stopReason)
 	if finishReason != "" {
 		choice.FinishReason = &finishReason
 	}

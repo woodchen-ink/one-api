@@ -2,10 +2,10 @@ package claude
 
 import (
 	"bytes"
-	"encoding/json"
-	"fmt"
 	"czloapi/common/requester"
 	"czloapi/types"
+	"encoding/json"
+	"fmt"
 	"strings"
 )
 
@@ -112,13 +112,19 @@ func (h *ClaudeRelayStreamHandler) HandlerStream(rawLine *[]byte, dataChan chan 
 
 	switch claudeResponse.Type {
 	case "message_start":
-		ClaudeUsageToOpenaiUsage(&claudeResponse.Message.Usage, h.Usage)
-		h.StartUsage = &claudeResponse.Message.Usage
+		if claudeResponse.Message != nil {
+			ClaudeUsageToOpenaiUsage(&claudeResponse.Message.Usage, h.Usage)
+			h.StartUsage = &claudeResponse.Message.Usage
+		}
 	case "message_delta":
-		ClaudeUsageMerge(&claudeResponse.Usage, h.StartUsage)
-		ClaudeUsageToOpenaiUsage(&claudeResponse.Usage, h.Usage)
+		if claudeResponse.Usage != nil {
+			ClaudeUsageMerge(claudeResponse.Usage, h.StartUsage)
+			ClaudeUsageToOpenaiUsage(claudeResponse.Usage, h.Usage)
+		}
 	case "content_block_delta":
-		h.Usage.TextBuilder.WriteString(claudeResponse.Delta.Text)
+		if claudeResponse.Delta != nil {
+			h.Usage.TextBuilder.WriteString(claudeResponse.Delta.Text)
+		}
 	}
 
 	dataChan <- rawStr

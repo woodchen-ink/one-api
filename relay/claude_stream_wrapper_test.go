@@ -163,20 +163,25 @@ func TestOpenAIToClaudeStreamWrapper(t *testing.T) {
 
 	var messageStart claude.ClaudeStreamResponse
 	require.NoError(t, unmarshalSSEPayload(events[0], &messageStart))
+	require.NotNil(t, messageStart.Message)
 	assert.Equal(t, 10, messageStart.Message.Usage.InputTokens)
 
 	var toolStart claude.ClaudeStreamResponse
 	require.NoError(t, unmarshalSSEPayload(events[4], &toolStart))
+	require.NotNil(t, toolStart.ContentBlock)
 	assert.Equal(t, claude.ContentTypeToolUes, toolStart.ContentBlock.Type)
 	assert.Equal(t, "lookup_weather", toolStart.ContentBlock.Name)
 
 	var toolDelta claude.ClaudeStreamResponse
 	require.NoError(t, unmarshalSSEPayload(events[6], &toolDelta))
+	require.NotNil(t, toolDelta.Delta)
 	assert.Equal(t, claude.ContentStreamTypeInputJsonDelta, toolDelta.Delta.Type)
 	assert.Equal(t, "nghai\"}", toolDelta.Delta.PartialJson)
 
 	var messageDelta claude.ClaudeStreamResponse
 	require.NoError(t, unmarshalSSEPayload(events[8], &messageDelta))
+	require.NotNil(t, messageDelta.Delta)
+	require.NotNil(t, messageDelta.Usage)
 	assert.Equal(t, claude.FinishReasonToolUse, messageDelta.Delta.StopReason)
 	assert.Nil(t, messageDelta.Delta.StopSequence)
 	assert.Equal(t, 5, messageDelta.Usage.OutputTokens)

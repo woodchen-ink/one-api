@@ -133,12 +133,12 @@ func (w *openAIToClaudeStreamWrapper) handleChunk(raw string) {
 
 		if delta.Content != "" {
 			w.ensureTextBlock()
-			w.emitEvent("content_block_delta", claude.ClaudeStreamResponse{
-				Type:  "content_block_delta",
-				Index: w.textBlockIndex,
-				Delta: claude.Delta{
-					Type: "text_delta",
-					Text: delta.Content,
+			w.emitEvent("content_block_delta", map[string]any{
+				"type":  "content_block_delta",
+				"index": w.textBlockIndex,
+				"delta": map[string]any{
+					"type": "text_delta",
+					"text": delta.Content,
 				},
 			})
 		}
@@ -177,15 +177,14 @@ func (w *openAIToClaudeStreamWrapper) ensureMessageStart() {
 		CacheCreation:            usage.CacheCreation,
 	}
 
-	w.emitEvent("message_start", claude.ClaudeStreamResponse{
-		Type: "message_start",
-		Message: claude.ClaudeResponse{
-			Id:      w.messageID,
-			Type:    "message",
-			Role:    types.ChatMessageRoleAssistant,
-			Model:   w.model,
-			Content: []claude.ResContent{},
-			Usage:   startUsage,
+	w.emitEvent("message_start", map[string]any{
+		"type": "message_start",
+		"message": map[string]any{
+			"id":    w.messageID,
+			"type":  "message",
+			"role":  types.ChatMessageRoleAssistant,
+			"model": w.model,
+			"usage": startUsage,
 		},
 	})
 }
@@ -199,12 +198,12 @@ func (w *openAIToClaudeStreamWrapper) ensureTextBlock() {
 		w.textBlockIndex = w.nextIndex()
 	}
 
-	w.emitEvent("content_block_start", claude.ClaudeStreamResponse{
-		Type:  "content_block_start",
-		Index: w.textBlockIndex,
-		ContentBlock: claude.ContentBlock{
-			Type: claude.ContentTypeText,
-			Text: "",
+	w.emitEvent("content_block_start", map[string]any{
+		"type":  "content_block_start",
+		"index": w.textBlockIndex,
+		"content_block": map[string]any{
+			"type": claude.ContentTypeText,
+			"text": "",
 		},
 	})
 }
@@ -228,25 +227,25 @@ func (w *openAIToClaudeStreamWrapper) handleToolDelta(toolCall *types.ChatComple
 		if toolID == "" {
 			toolID = fmt.Sprintf("toolu_%s", utils.GetUUID())
 		}
-		w.emitEvent("content_block_start", claude.ClaudeStreamResponse{
-			Type:  "content_block_start",
-			Index: blockIndex,
-			ContentBlock: claude.ContentBlock{
-				Type:  claude.ContentTypeToolUes,
-				Id:    toolID,
-				Name:  toolCall.Function.Name,
-				Input: map[string]any{},
+		w.emitEvent("content_block_start", map[string]any{
+			"type":  "content_block_start",
+			"index": blockIndex,
+			"content_block": map[string]any{
+				"type":  claude.ContentTypeToolUes,
+				"id":    toolID,
+				"name":  toolCall.Function.Name,
+				"input": map[string]any{},
 			},
 		})
 	}
 
 	if toolCall.Function.Arguments != "" {
-		w.emitEvent("content_block_delta", claude.ClaudeStreamResponse{
-			Type:  "content_block_delta",
-			Index: blockIndex,
-			Delta: claude.Delta{
-				Type:        claude.ContentStreamTypeInputJsonDelta,
-				PartialJson: toolCall.Function.Arguments,
+		w.emitEvent("content_block_delta", map[string]any{
+			"type":  "content_block_delta",
+			"index": blockIndex,
+			"delta": map[string]any{
+				"type":         claude.ContentStreamTypeInputJsonDelta,
+				"partial_json": toolCall.Function.Arguments,
 			},
 		})
 	}
@@ -257,9 +256,9 @@ func (w *openAIToClaudeStreamWrapper) closeTextBlock() {
 		return
 	}
 	w.textBlockOpen = false
-	w.emitEvent("content_block_stop", claude.ClaudeStreamResponse{
-		Type:  "content_block_stop",
-		Index: w.textBlockIndex,
+	w.emitEvent("content_block_stop", map[string]any{
+		"type":  "content_block_stop",
+		"index": w.textBlockIndex,
 	})
 }
 
@@ -269,9 +268,9 @@ func (w *openAIToClaudeStreamWrapper) closeToolBlocks() {
 			continue
 		}
 		w.toolBlockOpen[streamIndex] = false
-		w.emitEvent("content_block_stop", claude.ClaudeStreamResponse{
-			Type:  "content_block_stop",
-			Index: w.toolBlockIndexByStreamIndex[streamIndex],
+		w.emitEvent("content_block_stop", map[string]any{
+			"type":  "content_block_stop",
+			"index": w.toolBlockIndexByStreamIndex[streamIndex],
 		})
 	}
 }
@@ -296,17 +295,18 @@ func (w *openAIToClaudeStreamWrapper) finish(finishReason string) {
 	}
 
 	usage := claude.OpenAIUsageToClaudeUsage(w.currentUsage())
-	w.emitEvent("message_delta", claude.ClaudeStreamResponse{
-		Type: "message_delta",
-		Delta: claude.Delta{
-			StopReason: stopReason,
+	w.emitEvent("message_delta", map[string]any{
+		"type": "message_delta",
+		"delta": map[string]any{
+			"stop_reason":   stopReason,
+			"stop_sequence": nil,
 		},
-		Usage: claude.Usage{
-			OutputTokens: usage.OutputTokens,
+		"usage": map[string]any{
+			"output_tokens": usage.OutputTokens,
 		},
 	})
-	w.emitEvent("message_stop", claude.ClaudeStreamResponse{
-		Type: "message_stop",
+	w.emitEvent("message_stop", map[string]any{
+		"type": "message_stop",
 	})
 }
 

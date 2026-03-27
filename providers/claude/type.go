@@ -199,18 +199,18 @@ type Delta struct {
 }
 
 type ClaudeStreamResponse struct {
-	Type         string         `json:"type"`
-	Message      ClaudeResponse `json:"message,omitempty"`
-	Index        int            `json:"index,omitempty"`
-	Delta        Delta          `json:"delta,omitempty"`
-	ContentBlock ContentBlock   `json:"content_block,omitempty"`
-	Usage        Usage          `json:"usage,omitempty"`
-	Error        *ClaudeError   `json:"error,omitempty"`
+	Type         string          `json:"type"`
+	Message      *ClaudeResponse `json:"message,omitempty"`
+	Index        int             `json:"index,omitempty"`
+	Delta        *Delta          `json:"delta,omitempty"`
+	ContentBlock *ContentBlock   `json:"content_block,omitempty"`
+	Usage        *Usage          `json:"usage,omitempty"`
+	Error        *ClaudeError    `json:"error,omitempty"`
 }
 
 type ContentBlock struct {
 	Type      string `json:"type"`
-	Id        string `json:"id"`
+	Id        string `json:"id,omitempty"`
 	Name      string `json:"name,omitempty"`
 	Input     any    `json:"input,omitempty"`
 	Text      string `json:"text,omitempty"`
