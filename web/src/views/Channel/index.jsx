@@ -43,9 +43,9 @@ export async function fetchChannelData(page, rowsPerPage, keyword, order, orderB
   try {
     if (orderBy) {
       orderBy = order === 'desc' ? '-' + orderBy : orderBy;
-      // 按类型排序时，同类型内按优先级降序
+      // 按类型排序时，同类型内按优先级降序，再按 ID 倒序保证顺序稳定
       if (orderBy === 'type' || orderBy === '-type') {
-        orderBy += ',-priority';
+        orderBy += ',-priority,-id';
       }
     }
     const res = await API.get(`/api/channel/`, {
