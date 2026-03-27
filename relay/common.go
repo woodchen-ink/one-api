@@ -501,13 +501,13 @@ func responseStreamClient(c *gin.Context, stream requester.StreamReaderInterface
 	return firstResponseTime, finalErr
 }
 
-func responseGeneralStreamClient(c *gin.Context, stream requester.StreamReaderInterface[string], endHandler StreamEndHandler) (firstResponseTime time.Time) {
+func responseGeneralStreamClient(c *gin.Context, stream requester.StreamReaderInterface[string], endHandler StreamEndHandler) (firstResponseTime time.Time, errWithOP *types.OpenAIErrorWithStatusCode) {
 	requester.SetEventStreamHeaders(c)
 	dataChan, errChan := stream.Recv()
 
 	// 创建一个done channel用于通知处理完成
 	done := make(chan struct{})
-	// var finalErr *types.OpenAIErrorWithStatusCode
+	var finalErr *types.OpenAIErrorWithStatusCode
 
 	defer stream.Close()
 	var isFirstResponse bool
@@ -538,17 +538,13 @@ func responseGeneralStreamClient(c *gin.Context, stream requester.StreamReaderIn
 
 			case err := <-errChan:
 				if !errors.Is(err, io.EOF) {
-					// 处理错误情况
-					select {
-					case <-c.Request.Context().Done():
-						// 客户端已断开，不执行任何操作，直接跳过
-					default:
-						// 客户端正常，发送错误信息
-						fmt.Fprint(c.Writer, err.Error())
-						c.Writer.Flush()
-					}
-
 					logger.LogError(c.Request.Context(), "Stream err:"+err.Error())
+					if !isFirstResponse {
+						finalErr = common.StringErrorWrapper(err.Error(), "stream_error", 900)
+					} else {
+						// 对已开始输出的流，不再向上返回错误，避免触发整体重试。
+						// 此类错误是否已写入客户端由具体 stream wrapper 决定。
+					}
 				} else {
 					// 正常结束，处理endHandler
 					if endHandler != nil {
@@ -573,7 +569,7 @@ func responseGeneralStreamClient(c *gin.Context, stream requester.StreamReaderIn
 	// 等待处理完成
 	<-done
 
-	return firstResponseTime
+	return firstResponseTime, finalErr
 }
 
 func responseMultipart(c *gin.Context, resp *http.Response) *types.OpenAIErrorWithStatusCode {

@@ -118,6 +118,7 @@ The provider system implements a plugin-based architecture in `providers/`:
   - Claude can be called via `/v1/messages`.
   - `/v1/messages` now supports Claude-native providers plus OpenAI-compatible Responses/Chat providers. When the channel is not Claude-native, the fallback order is Claude direct -> OpenAI Responses -> OpenAI chat/completions. The Responses-compatible path preserves Claude `thinking` as OpenAI `reasoning` effort and converts compatible reasoning/tool SSE back to Claude Messages format when available.
   - Claude-compatible requests now also accept `output_config.effort` on the gateway side; when `/v1/messages` is bridged to `/v1/responses`, the gateway maps `output_config.effort` / `thinking.budget_tokens` into OpenAI `reasoning`, and cache-marked Claude prefixes can be turned into a stable `prompt_cache_key` for Responses-compatible upstreams.
+  - For bridged Claude streaming, upstream stream failures that happen before the first SSE payload are now surfaced back to relay retry logic; once bytes have already been sent to the client, the gateway logs the stream error but avoids retrying the whole request.
   - Gemini can be called via `/v1beta/models/:model` and `/v1/models/:model`.
 - The default homepage highlights the currently enabled native routes for quick onboarding.
 - Support for streaming responses and WebSocket connections

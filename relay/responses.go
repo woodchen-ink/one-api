@@ -71,8 +71,12 @@ func (r *relayResponses) send() (err *types.OpenAIErrorWithStatusCode, done bool
 			return ""
 		}
 
-		firstResponseTime := responseGeneralStreamClient(r.c, response, doneStr)
+		firstResponseTime, streamErr := responseGeneralStreamClient(r.c, response, doneStr)
 		r.SetFirstResponseTime(firstResponseTime)
+		if streamErr != nil {
+			err = streamErr
+			return
+		}
 	} else {
 		var response *types.OpenAIResponsesResponses
 		response, err = responsesProvider.CreateResponses(&r.responsesRequest)

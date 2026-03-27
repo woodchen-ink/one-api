@@ -2,16 +2,26 @@ package relay
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
+	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
 
+	commonlogger "czloapi/common/logger"
 	"czloapi/providers/claude"
 	"czloapi/types"
 
+	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 )
+
+func init() {
+	commonlogger.Logger = zap.NewNop()
+}
 
 type fakeStringStream struct {
 	data []string
@@ -34,6 +44,31 @@ func (f *fakeStringStream) Recv() (<-chan string, <-chan error) {
 }
 
 func (f *fakeStringStream) Close() {}
+
+type fakeErrorStringStream struct {
+	data []string
+	err  error
+}
+
+func (f *fakeErrorStringStream) Recv() (<-chan string, <-chan error) {
+	dataChan := make(chan string)
+	errChan := make(chan error, 1)
+
+	go func() {
+		for _, item := range f.data {
+			dataChan <- item
+		}
+		if f.err != nil {
+			errChan <- f.err
+		}
+		close(dataChan)
+		close(errChan)
+	}()
+
+	return dataChan, errChan
+}
+
+func (f *fakeErrorStringStream) Close() {}
 
 func TestOpenAIToClaudeStreamWrapper(t *testing.T) {
 	chunks := []types.ChatCompletionStreamResponse{
@@ -301,6 +336,57 @@ func TestOpenAIToClaudeStreamWrapperSkipsUntrustedEstimatedInputTokens(t *testin
 	require.NoError(t, unmarshalSSEPayload(events[0], &messageStart))
 	require.NotNil(t, messageStart.Message)
 	assert.Equal(t, 0, messageStart.Message.Usage.InputTokens)
+}
+
+func TestOpenAIToClaudeStreamWrapperReturnsPreflightError(t *testing.T) {
+	expectedErr := errors.New("upstream stream broke")
+	stream := newOpenAIToClaudeStreamWrapper(&fakeErrorStringStream{
+		err: expectedErr,
+	}, &types.Usage{}, "gpt-5.4", false)
+
+	dataChan, errChan := stream.Recv()
+
+	select {
+	case data, ok := <-dataChan:
+		if ok {
+			t.Fatalf("expected no data before error, got %q", data)
+		}
+	case err := <-errChan:
+		var streamErr *types.OpenAIErrorWithStatusCode
+		require.ErrorAs(t, err, &streamErr)
+		assert.Contains(t, streamErr.Error(), "upstream stream broke")
+	}
+}
+
+func TestResponseGeneralStreamClientReturnsErrorBeforeFirstChunk(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	c, _ := gin.CreateTestContext(httptest.NewRecorder())
+	c.Request = httptest.NewRequest(http.MethodGet, "/", nil)
+
+	expectedErr := errors.New("pre-first-chunk failure")
+	stream := &fakeErrorStringStream{
+		err: expectedErr,
+	}
+
+	firstResponseTime, streamErr := responseGeneralStreamClient(c, stream, nil)
+	assert.True(t, firstResponseTime.IsZero())
+	require.NotNil(t, streamErr)
+	assert.Contains(t, streamErr.Error(), "pre-first-chunk failure")
+}
+
+func TestResponseGeneralStreamClientSuppressesRetryAfterFirstChunk(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	c, _ := gin.CreateTestContext(httptest.NewRecorder())
+	c.Request = httptest.NewRequest(http.MethodGet, "/", nil)
+
+	stream := &fakeErrorStringStream{
+		data: []string{"event: message_start\ndata: {}\n\n"},
+		err:  errors.New("mid-stream failure"),
+	}
+
+	firstResponseTime, streamErr := responseGeneralStreamClient(c, stream, nil)
+	assert.False(t, firstResponseTime.IsZero())
+	assert.Nil(t, streamErr)
 }
 
 func unmarshalSSEPayload(raw string, target any) error {

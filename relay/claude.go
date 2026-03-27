@@ -111,8 +111,12 @@ func (r *relayClaudeMessages) sendClaudeDirect(chatProvider claude.ClaudeChatInt
 		doneStr := func() string {
 			return ""
 		}
-		firstResponseTime := responseGeneralStreamClient(r.c, response, doneStr)
+		firstResponseTime, streamErr := responseGeneralStreamClient(r.c, response, doneStr)
 		r.SetFirstResponseTime(firstResponseTime)
+		if streamErr != nil {
+			err = streamErr
+			return
+		}
 	} else {
 		var response *claude.ClaudeResponse
 		response, err = chatProvider.CreateClaudeChat(r.claudeRequest)
@@ -156,8 +160,11 @@ func (r *relayClaudeMessages) sendOpenAICompatible(chatProvider providersBase.Ch
 		}
 
 		claudeStream := newOpenAIToClaudeStreamWrapper(response, r.provider.GetUsage(), chatRequest.Model, true)
-		firstResponseTime := responseGeneralStreamClient(r.c, claudeStream, nil)
+		firstResponseTime, streamErr := responseGeneralStreamClient(r.c, claudeStream, nil)
 		r.SetFirstResponseTime(firstResponseTime)
+		if streamErr != nil {
+			return streamErr, false
+		}
 		return nil, false
 	}
 
@@ -211,8 +218,11 @@ func (r *relayClaudeMessages) sendResponsesCompatible(responsesProvider provider
 		}
 
 		claudeStream := newOpenAIToClaudeStreamWrapper(response, r.provider.GetUsage(), responsesRequest.Model, false)
-		firstResponseTime := responseGeneralStreamClient(r.c, claudeStream, nil)
+		firstResponseTime, streamErr := responseGeneralStreamClient(r.c, claudeStream, nil)
 		r.SetFirstResponseTime(firstResponseTime)
+		if streamErr != nil {
+			return streamErr, false
+		}
 		return nil, false
 	}
 

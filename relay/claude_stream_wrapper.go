@@ -41,6 +41,7 @@ type openAIToClaudeStreamWrapper struct {
 
 	lastUsage *types.Usage
 	finished  bool
+	hasOutput bool
 }
 
 func newOpenAIToClaudeStreamWrapper(source requester.StreamReaderInterface[string], usage *types.Usage, model string, trustEstimatedInputTokens bool) requester.StreamReaderInterface[string] {
@@ -92,6 +93,11 @@ func (w *openAIToClaudeStreamWrapper) run() {
 				return
 			}
 
+			if !w.hasOutput {
+				w.errChan <- normalizeClaudeStreamError(err)
+				return
+			}
+
 			w.emitStreamError(err)
 			w.errChan <- io.EOF
 			return
@@ -109,6 +115,11 @@ func (w *openAIToClaudeStreamWrapper) handleChunk(raw string) {
 
 	var chunk types.ChatCompletionStreamResponse
 	if err := json.Unmarshal([]byte(raw), &chunk); err != nil {
+		if !w.hasOutput {
+			w.errChan <- common.ErrorToOpenAIError(err)
+			w.finished = true
+			return
+		}
 		w.emitStreamError(common.ErrorToOpenAIError(err))
 		w.finished = true
 		return
@@ -421,6 +432,7 @@ func (w *openAIToClaudeStreamWrapper) emitEvent(name string, payload any) {
 	if err != nil {
 		return
 	}
+	w.hasOutput = true
 	w.dataChan <- fmt.Sprintf("event: %s\ndata: %s\n\n", name, string(body))
 }
 
@@ -451,4 +463,17 @@ func cloneUsage(usage *types.Usage) *types.Usage {
 
 	cloned := *usage
 	return &cloned
+}
+
+func normalizeClaudeStreamError(err error) error {
+	switch value := err.(type) {
+	case *types.OpenAIErrorWithStatusCode:
+		return value
+	case *types.OpenAIError:
+		return &types.OpenAIErrorWithStatusCode{
+			OpenAIError: *value,
+		}
+	default:
+		return common.ErrorWrapper(err, "stream_error", 900)
+	}
 }

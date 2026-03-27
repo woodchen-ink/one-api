@@ -122,8 +122,12 @@ func (r *relayGeminiOnly) send() (err *types.OpenAIErrorWithStatusCode, done boo
 		doneStr := func() string {
 			return ""
 		}
-		firstResponseTime := responseGeneralStreamClient(r.c, response, doneStr)
+		firstResponseTime, streamErr := responseGeneralStreamClient(r.c, response, doneStr)
 		r.SetFirstResponseTime(firstResponseTime)
+		if streamErr != nil {
+			err = streamErr
+			return
+		}
 	} else {
 		var response *gemini.GeminiChatResponse
 		response, err = chatProvider.CreateGeminiChat(r.geminiRequest)
