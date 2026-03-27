@@ -68,6 +68,17 @@ func extractChatReasoningMetadata(request *types.ChatCompletionRequest, otherArg
 			meta.RawEffort = level
 		}
 
+		if request.Reasoning.MaxTokens > 0 {
+			budget := request.Reasoning.MaxTokens
+			meta.BudgetTokens = &budget
+			if meta.Level == "" {
+				meta.Level = types.ReasoningBudgetTokensToEffort(request.Reasoning.MaxTokens)
+				if meta.Level != "" {
+					meta.Mode = types.LogReasoningModeBudgetTokens
+				}
+			}
+		}
+
 		if request.Reasoning.Summary != nil {
 			meta.Summary = *request.Reasoning.Summary
 		}
@@ -122,8 +133,9 @@ func extractClaudeReasoningMetadata(request *claude.ClaudeRequest) *types.LogRea
 	}
 
 	if request.Thinking.BudgetTokens > 0 {
-		meta := newLogReasoningMetadata("", types.LogReasoningModeBudgetTokens, types.LogReasoningProviderClaude, types.LogReasoningViaClaudeNative)
-		meta.BudgetTokens = &request.Thinking.BudgetTokens
+		budget := request.Thinking.BudgetTokens
+		meta := newLogReasoningMetadata(types.ReasoningBudgetTokensToEffort(budget), types.LogReasoningModeBudgetTokens, types.LogReasoningProviderClaude, types.LogReasoningViaClaudeNative)
+		meta.BudgetTokens = &budget
 		return meta
 	}
 

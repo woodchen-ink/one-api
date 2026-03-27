@@ -82,6 +82,10 @@ func (r *relayClaudeMessages) send() (err *types.OpenAIErrorWithStatusCode, done
 		return r.sendClaudeDirect(chatProvider)
 	}
 
+	if responsesProvider, ok := r.provider.(providersBase.ResponsesInterface); ok && r.provider.GetSupportedResponse() {
+		return r.sendResponsesCompatible(responsesProvider)
+	}
+
 	chatProvider, ok := r.provider.(providersBase.ChatInterface)
 	if !ok {
 		err = common.StringErrorWrapperLocal("channel not implemented", "channel_error", http.StatusServiceUnavailable)
@@ -163,6 +167,58 @@ func (r *relayClaudeMessages) sendOpenAICompatible(chatProvider providersBase.Ch
 	}
 
 	claudeResponse, convertErr := claude.ConvertOpenAIChatToClaude(response)
+	if convertErr != nil {
+		done = true
+		return convertErr, done
+	}
+
+	if r.heartbeat != nil {
+		r.heartbeat.Stop()
+	}
+
+	if openErr := responseJsonClient(r.c, claudeResponse); openErr != nil {
+		err = openErr
+		done = true
+	}
+
+	return
+}
+
+func (r *relayClaudeMessages) sendResponsesCompatible(responsesProvider providersBase.ResponsesInterface) (err *types.OpenAIErrorWithStatusCode, done bool) {
+	chatRequest, err := claude.ConvertClaudeToOpenAIChat(r.claudeRequest)
+	if err != nil {
+		done = true
+		return err, done
+	}
+
+	chatRequest.Model = r.modelName
+	responsesRequest := chatRequest.ToResponsesRequest()
+	storeFalse := false
+	responsesRequest.Store = &storeFalse
+
+	if r.claudeRequest.Stream {
+		responsesRequest.ConvertChat = true
+		response, streamErr := responsesProvider.CreateResponsesStream(responsesRequest)
+		if streamErr != nil {
+			return streamErr, false
+		}
+
+		if r.heartbeat != nil {
+			r.heartbeat.Stop()
+		}
+
+		claudeStream := newOpenAIToClaudeStreamWrapper(response, r.provider.GetUsage(), responsesRequest.Model)
+		firstResponseTime := responseGeneralStreamClient(r.c, claudeStream, nil)
+		r.SetFirstResponseTime(firstResponseTime)
+		return nil, false
+	}
+
+	response, apiErr := responsesProvider.CreateResponses(responsesRequest)
+	if apiErr != nil {
+		return apiErr, false
+	}
+
+	claudeResponse, convertErr := claude.ConvertOpenAIChatToClaude(response.ToChat())
 	if convertErr != nil {
 		done = true
 		return convertErr, done

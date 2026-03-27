@@ -68,20 +68,29 @@ func applyChatReasoningToResponses(res *OpenAIResponsesRequest, request *ChatCom
 		}
 		if request.Reasoning.Effort != "" {
 			res.Reasoning.Effort = &request.Reasoning.Effort
+		} else if effort := ReasoningBudgetTokensToEffort(request.Reasoning.MaxTokens); effort != "" {
+			res.Reasoning.Effort = &effort
 		}
+
+		ensureResponsesReasoningSummary(res.Reasoning)
 	}
 
 	if request.ReasoningEffort != nil {
-		detailed := "detailed"
 		if res.Reasoning == nil {
-			res.Reasoning = &ReasoningEffort{
-				Summary: &detailed,
-			}
-		} else if res.Reasoning.Summary == nil {
-			res.Reasoning.Summary = &detailed
+			res.Reasoning = &ReasoningEffort{}
 		}
 		res.Reasoning.Effort = request.ReasoningEffort
+		ensureResponsesReasoningSummary(res.Reasoning)
 	}
+}
+
+func ensureResponsesReasoningSummary(reasoning *ReasoningEffort) {
+	if reasoning == nil || reasoning.Effort == nil || reasoning.Summary != nil {
+		return
+	}
+
+	detailed := "detailed"
+	reasoning.Summary = &detailed
 }
 
 func applyChatToolsToResponses(res *OpenAIResponsesRequest, request *ChatCompletionRequest) {

@@ -83,8 +83,8 @@ func (h *OpenAIResponsesStreamHandler) HandlerChatStream(rawLine *[]byte, dataCh
 		})
 		needOutput = true
 	case "response.output_text.delta":
-		delta, ok := openaiResponse.Delta.(string)
-		if ok && delta != "" {
+		delta := responsesStringDelta(openaiResponse.Delta)
+		if delta != "" {
 			h.Usage.TextBuilder.WriteString(delta)
 			h.outputTextBuilder.WriteString(delta)
 			chatRes.Choices = append(chatRes.Choices, types.ChatCompletionStreamChoice{
@@ -95,9 +95,9 @@ func (h *OpenAIResponsesStreamHandler) HandlerChatStream(rawLine *[]byte, dataCh
 			})
 			needOutput = true
 		}
-	case "response.reasoning_summary_text.delta":
-		delta, ok := openaiResponse.Delta.(string)
-		if ok && delta != "" {
+	case "response.reasoning_summary_text.delta", "response.reasoning.delta":
+		delta := responsesReasoningDeltaText(&openaiResponse)
+		if delta != "" {
 			h.Usage.TextBuilder.WriteString(delta)
 			chatRes.Choices = append(chatRes.Choices, types.ChatCompletionStreamChoice{
 				Index: 0,
@@ -107,9 +107,22 @@ func (h *OpenAIResponsesStreamHandler) HandlerChatStream(rawLine *[]byte, dataCh
 			})
 			needOutput = true
 		}
+	case "response.refusal.delta":
+		delta := responsesStringDelta(openaiResponse.Delta)
+		if delta != "" {
+			h.Usage.TextBuilder.WriteString(delta)
+			h.outputTextBuilder.WriteString(delta)
+			chatRes.Choices = append(chatRes.Choices, types.ChatCompletionStreamChoice{
+				Index: 0,
+				Delta: types.ChatCompletionStreamChoiceDelta{
+					Content: delta,
+				},
+			})
+			needOutput = true
+		}
 	case "response.function_call_arguments.delta":
-		delta, ok := openaiResponse.Delta.(string)
-		if ok && delta != "" {
+		delta := responsesStringDelta(openaiResponse.Delta)
+		if delta != "" {
 			h.Usage.TextBuilder.WriteString(delta)
 			callID := strings.TrimSpace(openaiResponse.ItemID)
 			if mappedID, exists := h.toolCallCanonicalIDByItem[callID]; exists && mappedID != "" {
@@ -218,6 +231,31 @@ func (h *OpenAIResponsesStreamHandler) HandlerChatStream(rawLine *[]byte, dataCh
 	}
 
 	*rawLine = nil
+}
+
+func responsesStringDelta(delta any) string {
+	if deltaStr, ok := delta.(string); ok {
+		return deltaStr
+	}
+	return ""
+}
+
+func responsesReasoningDeltaText(response *types.OpenAIResponsesStreamResponses) string {
+	if response == nil {
+		return ""
+	}
+
+	if delta := responsesStringDelta(response.Delta); delta != "" {
+		return delta
+	}
+
+	deltaMap, ok := response.Delta.(map[string]any)
+	if !ok {
+		return ""
+	}
+
+	text, _ := deltaMap["text"].(string)
+	return text
 }
 
 func (h *OpenAIResponsesStreamHandler) applyStreamResponseMetadata(response *types.OpenAIResponsesResponses, chatRes *types.ChatCompletionStreamResponse) {

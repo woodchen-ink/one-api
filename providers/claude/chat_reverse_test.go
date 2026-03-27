@@ -158,12 +158,14 @@ func TestConvertOpenAIChatToClaude(t *testing.T) {
 	assert.Equal(t, types.ChatMessageRoleAssistant, claudeResp.Role)
 	assert.Equal(t, FinishReasonToolUse, claudeResp.StopReason)
 	assert.Nil(t, claudeResp.StopSequence)
-	require.Len(t, claudeResp.Content, 2)
-	assert.Equal(t, ContentTypeText, claudeResp.Content[0].Type)
-	assert.Equal(t, "Hello", claudeResp.Content[0].Text)
-	assert.Equal(t, ContentTypeToolUes, claudeResp.Content[1].Type)
-	assert.Equal(t, "lookup_weather", claudeResp.Content[1].Name)
-	assert.Equal(t, "call_1", claudeResp.Content[1].Id)
+	require.Len(t, claudeResp.Content, 3)
+	assert.Equal(t, ContentTypeThinking, claudeResp.Content[0].Type)
+	assert.Equal(t, "thinking", claudeResp.Content[0].Thinking)
+	assert.Equal(t, ContentTypeText, claudeResp.Content[1].Type)
+	assert.Equal(t, "Hello", claudeResp.Content[1].Text)
+	assert.Equal(t, ContentTypeToolUes, claudeResp.Content[2].Type)
+	assert.Equal(t, "lookup_weather", claudeResp.Content[2].Name)
+	assert.Equal(t, "call_1", claudeResp.Content[2].Id)
 	assert.Equal(t, 90, claudeResp.Usage.InputTokens)
 	assert.Equal(t, 10, claudeResp.Usage.CacheReadInputTokens)
 	assert.Equal(t, 20, claudeResp.Usage.CacheCreationInputTokens)
@@ -172,6 +174,7 @@ func TestConvertOpenAIChatToClaude(t *testing.T) {
 	body, marshalErr := json.Marshal(claudeResp)
 	require.NoError(t, marshalErr)
 	assert.Contains(t, string(body), `"stop_sequence":null`)
+	assert.Contains(t, string(body), `"type":"thinking"`)
 }
 
 func TestConvertOpenAIChatToClaudeSupportsOutputTextAndRefusal(t *testing.T) {

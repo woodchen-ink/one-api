@@ -98,11 +98,27 @@ func TestExtractClaudeReasoningMetadata(t *testing.T) {
 	})
 
 	if assert.NotNil(t, meta) {
-		assert.Equal(t, "", meta.Level)
+		assert.Equal(t, "medium", meta.Level)
 		assert.Equal(t, types.LogReasoningModeBudgetTokens, meta.Mode)
 		assert.Equal(t, types.LogReasoningViaClaudeNative, meta.RequestedVia)
 		if assert.NotNil(t, meta.BudgetTokens) {
 			assert.Equal(t, 4096, *meta.BudgetTokens)
+		}
+	}
+}
+
+func TestExtractChatReasoningMetadataFromReasoningBudget(t *testing.T) {
+	meta := extractChatReasoningMetadata(&types.ChatCompletionRequest{
+		Reasoning: &types.ChatReasoning{
+			MaxTokens: 2048,
+		},
+	}, "")
+
+	if assert.NotNil(t, meta) {
+		assert.Equal(t, "low", meta.Level)
+		assert.Equal(t, types.LogReasoningModeBudgetTokens, meta.Mode)
+		if assert.NotNil(t, meta.BudgetTokens) {
+			assert.Equal(t, 2048, *meta.BudgetTokens)
 		}
 	}
 }

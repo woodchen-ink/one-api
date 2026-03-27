@@ -231,6 +231,28 @@ func TestToResponsesRequestReasoningEffortSetsDetailedSummary(t *testing.T) {
 	assert.Equal(t, "detailed", *resReq.Reasoning.Summary)
 }
 
+func TestToResponsesRequestReasoningMaxTokensMapsToEffortAndDetailedSummary(t *testing.T) {
+	req := &ChatCompletionRequest{
+		Model: "gpt-5.2-codex",
+		Reasoning: &ChatReasoning{
+			MaxTokens: 8000,
+		},
+		Messages: []ChatCompletionMessage{
+			{
+				Role:    ChatMessageRoleUser,
+				Content: "hello world",
+			},
+		},
+	}
+
+	resReq := req.ToResponsesRequest()
+	require.NotNil(t, resReq.Reasoning)
+	require.NotNil(t, resReq.Reasoning.Effort)
+	require.NotNil(t, resReq.Reasoning.Summary)
+	assert.Equal(t, "medium", *resReq.Reasoning.Effort)
+	assert.Equal(t, "detailed", *resReq.Reasoning.Summary)
+}
+
 func TestToResponsesRequestLegacyFunctionCallMapsToFunctionToolChoice(t *testing.T) {
 	req := &ChatCompletionRequest{
 		Model:        "gpt-5.2-codex",

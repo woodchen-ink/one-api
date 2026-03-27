@@ -531,6 +531,38 @@ func (m ResponsesOutput) StringContent() string {
 	return ""
 }
 
+func (m ResponsesOutput) GetRefusalString() string {
+	if m.Type != InputTypeMessage {
+		return ""
+	}
+
+	contentList, ok := m.Content.([]any)
+	if !ok {
+		return ""
+	}
+
+	var refusalStr string
+	for _, contentItem := range contentList {
+		contentMap, ok := contentItem.(map[string]any)
+		if !ok {
+			continue
+		}
+
+		if refusal, ok := contentMap["refusal"].(string); ok && refusal != "" {
+			refusalStr += refusal
+			continue
+		}
+
+		if refusalMap, ok := contentMap["refusal"].(map[string]any); ok {
+			if refusal, ok := refusalMap["refusal"].(string); ok && refusal != "" {
+				refusalStr += refusal
+			}
+		}
+	}
+
+	return refusalStr
+}
+
 func (m ResponsesOutput) GetSummaryString() string {
 	if m.Type != InputTypeReasoning {
 		return ""
@@ -844,12 +876,17 @@ func (cc *ChatCompletionResponse) ToResponses(request *OpenAIResponsesRequest) *
 }
 
 func (r *OpenAIResponsesResponses) ToChat() *ChatCompletionResponse {
+	usage := &Usage{}
+	if r.Usage != nil {
+		usage = r.Usage.ToOpenAIUsage()
+	}
+
 	resp := &ChatCompletionResponse{
 		Created: r.CreatedAt,
 		ID:      r.ID,
 		Model:   r.Model,
 		Object:  "chat.completion",
-		Usage:   r.Usage.ToOpenAIUsage(),
+		Usage:   usage,
 		Choices: make([]ChatCompletionChoice, 0),
 	}
 
@@ -863,7 +900,15 @@ func (r *OpenAIResponsesResponses) ToChat() *ChatCompletionResponse {
 	for _, output := range r.Output {
 		switch output.Type {
 		case InputTypeMessage:
-			choice.Message.Content = output.StringContent()
+			if output.Role != "" {
+				choice.Message.Role = output.Role
+			}
+			if text := output.StringContent(); text != "" {
+				choice.Message.Content = text
+			}
+			if refusal := output.GetRefusalString(); refusal != "" {
+				choice.Message.Refusal = refusal
+			}
 		case InputTypeReasoning:
 			choice.Message.ReasoningContent = output.GetSummaryString()
 		case InputTypeFunctionCall:

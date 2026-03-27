@@ -188,7 +188,7 @@ func TestOpenAIToClaudeStreamWrapper(t *testing.T) {
 	assert.Contains(t, events[8], `"stop_sequence":null`)
 }
 
-func TestOpenAIToClaudeStreamWrapperIgnoresReasoningOnlyDeltas(t *testing.T) {
+func TestOpenAIToClaudeStreamWrapperEmitsThinkingBlocks(t *testing.T) {
 	chunk := types.ChatCompletionStreamResponse{
 		ID:      "chatcmpl_thinking",
 		Object:  "chat.completion.chunk",
@@ -232,10 +232,24 @@ func TestOpenAIToClaudeStreamWrapperIgnoresReasoningOnlyDeltas(t *testing.T) {
 		}
 	}
 
-	require.Len(t, events, 3)
+	require.Len(t, events, 6)
 	assert.Contains(t, events[0], "event: message_start")
-	assert.Contains(t, events[1], "event: message_delta")
-	assert.Contains(t, events[2], "event: message_stop")
+	assert.Contains(t, events[1], "event: content_block_start")
+	assert.Contains(t, events[2], "event: content_block_delta")
+	assert.Contains(t, events[3], "event: content_block_stop")
+	assert.Contains(t, events[4], "event: message_delta")
+	assert.Contains(t, events[5], "event: message_stop")
+
+	var thinkingStart claude.ClaudeStreamResponse
+	require.NoError(t, unmarshalSSEPayload(events[1], &thinkingStart))
+	require.NotNil(t, thinkingStart.ContentBlock)
+	assert.Equal(t, claude.ContentTypeThinking, thinkingStart.ContentBlock.Type)
+
+	var thinkingDelta claude.ClaudeStreamResponse
+	require.NoError(t, unmarshalSSEPayload(events[2], &thinkingDelta))
+	require.NotNil(t, thinkingDelta.Delta)
+	assert.Equal(t, claude.ContentStreamTypeThinking, thinkingDelta.Delta.Type)
+	assert.Equal(t, "thinking...", thinkingDelta.Delta.Thinking)
 }
 
 func unmarshalSSEPayload(raw string, target any) error {
