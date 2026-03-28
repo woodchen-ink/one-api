@@ -516,12 +516,27 @@ func GetUsernameById(id int) (username string) {
 type StatisticsUser struct {
 	TotalQuota       int64 `json:"total_quota"`
 	TotalUsedQuota   int64 `json:"total_used_quota"`
+	TotalUsedTokens  int64 `json:"total_used_tokens"`
 	TotalUser        int64 `json:"total_user"`
 	TotalInviterUser int64 `json:"total_inviter_user"`
 }
 
+// GetStatisticsUser returns aggregate user balances, spending, and consumed token totals.
 func GetStatisticsUser() (statisticsUser *StatisticsUser, err error) {
 	err = DB.Model(&User{}).Select("sum(quota) as total_quota, sum(used_quota) as total_used_quota, count(*) as total_user, count(CASE WHEN inviter_id != 0 THEN 1 END) as total_inviter_user").Scan(&statisticsUser).Error
+	if err != nil {
+		return nil, err
+	}
+
+	tokenStats := &StatisticsUser{}
+	err = DB.Model(&Statistics{}).
+		Select("COALESCE(SUM(prompt_tokens), 0) + COALESCE(SUM(completion_tokens), 0) as total_used_tokens").
+		Scan(tokenStats).Error
+	if err != nil {
+		return nil, err
+	}
+
+	statisticsUser.TotalUsedTokens = tokenStats.TotalUsedTokens
 	return statisticsUser, err
 }
 

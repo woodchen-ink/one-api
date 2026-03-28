@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Grid } from '@mui/material';
 import DataCard from 'ui-component/cards/DataCard';
 import { gridSpacing } from 'store/constant';
-import { showError, renderQuota } from 'utils/common';
+import { showError, renderQuota, renderNumber } from 'utils/common';
 import { API } from 'utils/api';
 import { useTranslation } from 'react-i18next';
 
@@ -11,7 +11,6 @@ export default function Overview() {
   const [userLoading, setUserLoading] = useState(true);
   const [channelLoading, setChannelLoading] = useState(true);
   const [rechargeLoading, setRechargeLoading] = useState(true);
-  const [endpointLoading, setEndpointLoading] = useState(true);
   const [userStatistics, setUserStatistics] = useState({});
 
   const [channelStatistics, setChannelStatistics] = useState({
@@ -27,18 +26,17 @@ export default function Overview() {
     Oder: 0,
     OderContent: ''
   });
-  const [endpointStatistics, setEndpointStatistics] = useState({
-    entry: [],
-    upstream: []
-  });
 
+  // userStatisticsData formats user-related summary values for the cards.
   const userStatisticsData = (data) => {
     data.total_quota = renderQuota(data.total_quota);
     data.total_used_quota = renderQuota(data.total_used_quota);
+    data.total_used_tokens = renderNumber(data.total_used_tokens || 0);
     data.total_direct_user = data.total_user - data.total_inviter_user;
     setUserStatistics(data);
   };
 
+  // channelStatisticsData normalizes channel counts grouped by status.
   const channelStatisticsData = (data) => {
     let channelData = channelStatistics;
     channelData.total = 0;
@@ -55,6 +53,7 @@ export default function Overview() {
     setChannelStatistics(channelData);
   };
 
+  // rechargeStatisticsData summarizes recharge totals from redemptions and orders.
   const rechargeStatisticsData = (redemptionData, OrderData) => {
     let rechargeData = rechargeStatistics;
     rechargeData.total = 0;
@@ -91,13 +90,7 @@ export default function Overview() {
     setRechargeStatistics(rechargeData);
   };
 
-  const endpointStatisticsData = (data) => {
-    setEndpointStatistics({
-      entry: data?.entry || [],
-      upstream: data?.upstream || []
-    });
-  };
-
+  // statisticsData fetches the top summary cards data for the analytics dashboard.
   const statisticsData = async () => {
     try {
       const res = await API.get('/api/analytics/statistics');
@@ -114,13 +107,9 @@ export default function Overview() {
         if (data.redemption_statistic || data.order_statistics) {
           rechargeStatisticsData(data?.redemption_statistic, data?.order_statistics);
         }
-        if (data.endpoint_statistics) {
-          endpointStatisticsData(data.endpoint_statistics);
-        }
         setUserLoading(false);
         setChannelLoading(false);
         setRechargeLoading(false);
-        setEndpointLoading(false);
       } else {
         showError(message);
       }
@@ -135,8 +124,8 @@ export default function Overview() {
   }, []);
 
   return (
-    <Grid container spacing={gridSpacing}>
-      <Grid item lg={2} xs={12}>
+    <Grid container spacing={gridSpacing} columns={{ xs: 12, lg: 15 }}>
+      <Grid item xs={12} sm={6} lg={3}>
         <DataCard
           isLoading={userLoading}
           title={t('analytics_index.totalUserSpending')}
@@ -144,7 +133,15 @@ export default function Overview() {
           subContent={t('analytics_index.totalUserBalance') + '：' + (userStatistics?.total_quota || '0')}
         />
       </Grid>
-      <Grid item lg={2} xs={12}>
+      <Grid item xs={12} sm={6} lg={3}>
+        <DataCard
+          isLoading={userLoading}
+          title={t('analytics_index.totalConsumptionTokens')}
+          content={userStatistics?.total_used_tokens || '0'}
+          subContent={t('analytics_index.totalConsumptionTokensHint')}
+        />
+      </Grid>
+      <Grid item xs={12} sm={6} lg={3}>
         <DataCard
           isLoading={userLoading}
           title={t('analytics_index.totalUsers')}
@@ -157,7 +154,7 @@ export default function Overview() {
           }
         />
       </Grid>
-      <Grid item lg={2} xs={12}>
+      <Grid item xs={12} sm={6} lg={3}>
         <DataCard
           isLoading={channelLoading}
           title={t('analytics_index.channelCount')}
@@ -171,7 +168,7 @@ export default function Overview() {
           }
         />
       </Grid>
-      <Grid item lg={2} xs={12}>
+      <Grid item xs={12} sm={6} lg={3}>
         <DataCard
           isLoading={rechargeLoading}
           title={'充值统计'}
@@ -179,32 +176,6 @@ export default function Overview() {
           subContent={
             <>
               兑换码: {rechargeStatistics.Redemption} <br /> 订单: {rechargeStatistics.Oder} / {rechargeStatistics.OderContent}
-            </>
-          }
-        />
-      </Grid>
-      <Grid item lg={2} xs={12}>
-        <DataCard
-          isLoading={endpointLoading}
-          title={'入口端点'}
-          content={endpointStatistics.entry?.[0]?.request_count || '0'}
-          subContent={
-            <>
-              Top1: {endpointStatistics.entry?.[0]?.endpoint || '暂无'} <br />
-              Top2: {endpointStatistics.entry?.[1]?.endpoint || '暂无'}
-            </>
-          }
-        />
-      </Grid>
-      <Grid item lg={2} xs={12}>
-        <DataCard
-          isLoading={endpointLoading}
-          title={'上游端点'}
-          content={endpointStatistics.upstream?.[0]?.request_count || '0'}
-          subContent={
-            <>
-              Top1: {endpointStatistics.upstream?.[0]?.endpoint || '暂无'} <br />
-              Top2: {endpointStatistics.upstream?.[1]?.endpoint || '暂无'}
             </>
           }
         />

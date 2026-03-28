@@ -58,11 +58,13 @@
     "requestsCount": "Requests Count",
     "startTime": "Start Time",
     "testDisabled": "Test Disabled",
-    "tokensStatistics": "Tokens Statistics",
-    "totalUserBalance": "Total User Balance",
-    "totalUserSpending": "Total User Spending",
-    "totalUsers": "Total Users",
-    "unused": "Unused",
+      "tokensStatistics": "Tokens Statistics",
+      "totalUserBalance": "Total User Balance",
+      "totalConsumptionTokens": "Total Consumed Tokens",
+      "totalConsumptionTokensHint": "Total prompt + completion tokens",
+      "totalUserSpending": "Total User Spending",
+      "totalUsers": "Total Users",
+      "unused": "Unused",
     "used": "Used"
   },
   "auth": {

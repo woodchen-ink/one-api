@@ -129,6 +129,8 @@
     "registrationStatistics": "注册统计",
     "totalUserSpending": "用户总消费金额",
     "totalUserBalance": "用户总余额",
+    "totalConsumptionTokens": "总消费 Tokens",
+    "totalConsumptionTokensHint": "累计输入 + 输出 Token",
     "totalUsers": "用户总数",
     "directRegistration": "直接注册",
     "invitationRegistration": "邀请注册",
