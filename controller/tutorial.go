@@ -18,6 +18,13 @@ type tutorialReorderRequest struct {
 	Size int   `json:"size"`
 }
 
+type addTutorialRequest struct {
+	Title   string `json:"title"`
+	Content string `json:"content"`
+	Sort    *int   `json:"sort"`
+	Status  int    `json:"status"`
+}
+
 func GetPublicTutorialList(c *gin.Context) {
 	tutorials, err := model.GetEnabledTutorials()
 	if err != nil {
@@ -74,8 +81,8 @@ func GetTutorial(c *gin.Context) {
 }
 
 func AddTutorial(c *gin.Context) {
-	tutorial := model.Tutorial{}
-	err := c.ShouldBindJSON(&tutorial)
+	req := addTutorialRequest{}
+	err := c.ShouldBindJSON(&req)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -83,12 +90,32 @@ func AddTutorial(c *gin.Context) {
 		})
 		return
 	}
-	if len(tutorial.Title) == 0 {
+	if len(req.Title) == 0 {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
 			"message": "标题不能为空",
 		})
 		return
+	}
+	tutorial := model.Tutorial{
+		Title:   req.Title,
+		Content: req.Content,
+		Status:  req.Status,
+	}
+	if tutorial.Status == 0 {
+		tutorial.Status = 1
+	}
+	if req.Sort != nil {
+		tutorial.Sort = *req.Sort
+	} else {
+		tutorial.Sort, err = model.GetNextTutorialSort()
+		if err != nil {
+			c.JSON(http.StatusOK, gin.H{
+				"success": false,
+				"message": err.Error(),
+			})
+			return
+		}
 	}
 	tutorial.CreatedTime = utils.GetTimestamp()
 	tutorial.UpdatedTime = utils.GetTimestamp()

@@ -173,7 +173,7 @@ The provider system implements a plugin-based architecture in `providers/`:
 - MCP (Model Context Protocol) server integration
 - Safety filtering and content moderation
 - Multi-language support with dynamic language switching
-- Admin 教程管理页固定按 `sort DESC, id ASC` 展示，支持当前页拖拽排序；拖拽会调用 `/api/tutorial/reorder` 批量重写教程 `sort`，搜索结果中禁用拖拽以避免误排
+- Admin 教程管理页固定按 `sort DESC, id ASC` 展示，支持当前页拖拽排序；拖拽会调用 `/api/tutorial/reorder` 批量重写教程 `sort`，搜索结果中禁用拖拽以避免误排；新建教程在未显式传入 `sort` 时默认使用当前最大排序值加一，从而默认置顶
 
 ### Build System
 - Task-based build system (Taskfile.yml) with Make fallback

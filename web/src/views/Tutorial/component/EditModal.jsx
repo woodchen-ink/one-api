@@ -84,14 +84,43 @@ const EditModal = ({ open, tutorialId, onCancel, onOk }) => {
     }
   };
 
+  // loadDefaultSort fetches the next top sort value for newly created tutorials.
+  const loadDefaultSort = async () => {
+    try {
+      const res = await API.get('/api/tutorial/', {
+        params: {
+          page: 1,
+          size: 1,
+          order: '-sort,id'
+        }
+      });
+      const { success, message, data } = res.data;
+      if (success) {
+        const topSort = data?.data?.[0]?.sort || 0;
+        setInputs({
+          ...originInputs,
+          sort: topSort + 1
+        });
+      } else {
+        showError(message);
+        setInputs(originInputs);
+      }
+    } catch (error) {
+      setInputs(originInputs);
+    }
+  };
+
   useEffect(() => {
+    if (!open) {
+      return;
+    }
     if (tutorialId) {
       loadTutorial().then();
     } else {
-      setInputs(originInputs);
+      loadDefaultSort().then();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tutorialId]);
+  }, [tutorialId, open]);
 
   return (
     <Dialog open={open} onClose={onCancel} fullWidth maxWidth={'md'}>

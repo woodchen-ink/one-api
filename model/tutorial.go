@@ -56,6 +56,19 @@ func GetTutorialById(id int) (*Tutorial, error) {
 	return &tutorial, err
 }
 
+// GetNextTutorialSort returns the next sort value that places a new tutorial at the top.
+func GetNextTutorialSort() (int, error) {
+	topTutorial := Tutorial{}
+	err := DB.Order("sort DESC, id ASC").First(&topTutorial).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return 1, nil
+	}
+	if err != nil {
+		return 0, err
+	}
+	return topTutorial.Sort + 1, nil
+}
+
 func (tutorial *Tutorial) Insert() error {
 	return DB.Create(tutorial).Error
 }
