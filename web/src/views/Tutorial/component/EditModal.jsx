@@ -36,15 +36,22 @@ const EditModal = ({ open, tutorialId, onCancel, onOk }) => {
   const theme = useTheme();
   const [inputs, setInputs] = useState(originInputs);
 
+  // submit normalizes tutorial fields before creating or updating the record.
   const submit = async (values, { setErrors, setStatus, setSubmitting }) => {
     setSubmitting(true);
     values = trims(values);
+    const payload = {
+      ...values,
+      sort: Number(values.sort) || 0
+    };
+    delete payload.is_edit;
+
     let res;
     try {
       if (values.is_edit) {
-        res = await API.put(`/api/tutorial/`, { ...values, id: parseInt(tutorialId) });
+        res = await API.put(`/api/tutorial/`, { ...payload, id: parseInt(tutorialId, 10) });
       } else {
-        res = await API.post(`/api/tutorial/`, values);
+        res = await API.post(`/api/tutorial/`, payload);
       }
       const { success, message } = res.data;
       if (success) {
@@ -61,6 +68,7 @@ const EditModal = ({ open, tutorialId, onCancel, onOk }) => {
     }
   };
 
+  // loadTutorial fetches the latest tutorial content when the edit dialog opens.
   const loadTutorial = async () => {
     try {
       let res = await API.get(`/api/tutorial/${tutorialId}`);

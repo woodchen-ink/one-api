@@ -1,14 +1,22 @@
 package controller
 
 import (
-	"czloapi/common"
-	"czloapi/common/utils"
-	"czloapi/model"
+	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+
+	"czloapi/common"
+	"czloapi/common/utils"
+	"czloapi/model"
 )
+
+type tutorialReorderRequest struct {
+	IDs  []int `json:"ids"`
+	Page int   `json:"page"`
+	Size int   `json:"size"`
+}
 
 func GetPublicTutorialList(c *gin.Context) {
 	tutorials, err := model.GetEnabledTutorials()
@@ -86,6 +94,43 @@ func AddTutorial(c *gin.Context) {
 	tutorial.UpdatedTime = utils.GetTimestamp()
 	err = tutorial.Insert()
 	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "",
+	})
+}
+
+// ReorderTutorials persists the drag-and-drop order for the current tutorial page.
+func ReorderTutorials(c *gin.Context) {
+	req := tutorialReorderRequest{}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
+	if len(req.IDs) < 2 {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": errors.New("至少需要两个教程才能重新排序").Error(),
+		})
+		return
+	}
+	if req.Page < 1 || req.Size < 1 {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": errors.New("分页参数无效").Error(),
+		})
+		return
+	}
+	if err := model.ReorderTutorials(req.IDs, req.Page, req.Size); err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
 			"message": err.Error(),

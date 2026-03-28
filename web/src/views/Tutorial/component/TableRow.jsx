@@ -12,7 +12,8 @@ import {
   DialogContentText,
   DialogTitle,
   Button,
-  Stack
+  Stack,
+  Box
 } from '@mui/material';
 
 import TableSwitch from 'ui-component/Switch';
@@ -24,51 +25,81 @@ export default function TutorialTableRow({
   item,
   manageTutorial,
   handleOpenModal,
-  setModalTutorialId,
-  onMoveUp,
-  onMoveDown,
-  isFirst,
-  isLast
+  onDragStart,
+  onDragOver,
+  onDrop,
+  onDragEnd,
+  isDragging,
+  dragDisabled
 }) {
   const [openDelete, setOpenDelete] = useState(false);
   const [statusSwitch, setStatusSwitch] = useState(item.status);
 
+  // handleDeleteOpen shows the confirmation dialog before a destructive action.
   const handleDeleteOpen = () => {
     setOpenDelete(true);
   };
 
+  // handleDeleteClose hides the confirmation dialog without deleting anything.
   const handleDeleteClose = () => {
     setOpenDelete(false);
   };
 
+  // handleStatus toggles tutorial visibility in the docs page.
   const handleStatus = async () => {
     const switchValue = statusSwitch === 1 ? 2 : 1;
-    const { success } = await manageTutorial(item.id, 'status', switchValue);
-    if (success) {
+    const result = await manageTutorial(item.id, 'status', switchValue);
+    if (result?.success) {
       setStatusSwitch(switchValue);
     }
   };
 
+  // handleDelete removes the tutorial after the user confirms the dialog.
   const handleDelete = async () => {
     await manageTutorial(item.id, 'delete', '');
+    setOpenDelete(false);
   };
 
   return (
     <>
-      <TableRow tabIndex={item.id}>
+      <TableRow
+        hover
+        tabIndex={item.id}
+        onDragOver={(event) => onDragOver(event, item.id)}
+        onDrop={onDrop}
+        sx={{
+          opacity: isDragging ? 0.45 : 1,
+          backgroundColor: isDragging ? 'action.hover' : 'inherit',
+          transition: 'background-color 0.2s ease, opacity 0.2s ease'
+        }}
+      >
+        <TableCell align="center" sx={{ width: 72 }}>
+          <Box
+            draggable={!dragDisabled}
+            onDragStart={(event) => onDragStart(event, item.id)}
+            onDragEnd={onDragEnd}
+            sx={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: dragDisabled ? 'text.disabled' : 'text.secondary',
+              cursor: dragDisabled ? 'not-allowed' : 'grab',
+              borderRadius: 1,
+              p: 0.5,
+              '&:hover': {
+                backgroundColor: dragDisabled ? 'transparent' : 'action.hover'
+              },
+              '&:active': {
+                cursor: dragDisabled ? 'not-allowed' : 'grabbing'
+              }
+            }}
+          >
+            <Icon icon="solar:hamburger-menu-line-duotone" width={18} />
+          </Box>
+        </TableCell>
         <TableCell>{item.id}</TableCell>
         <TableCell>{item.title}</TableCell>
-        <TableCell>
-          <Stack direction="row" spacing={0.5} alignItems="center">
-            <span>{item.sort}</span>
-            <IconButton size="small" disabled={isFirst} onClick={() => onMoveUp(item)} sx={{ p: 0.25 }}>
-              <Icon icon="solar:alt-arrow-up-bold-duotone" width={16} />
-            </IconButton>
-            <IconButton size="small" disabled={isLast} onClick={() => onMoveDown(item)} sx={{ p: 0.25 }}>
-              <Icon icon="solar:alt-arrow-down-bold-duotone" width={16} />
-            </IconButton>
-          </Stack>
-        </TableCell>
+        <TableCell>{item.sort}</TableCell>
         <TableCell>
           <TableSwitch id={`switch-${item.id}`} checked={statusSwitch === 1} onChange={handleStatus} />
         </TableCell>
@@ -80,8 +111,7 @@ export default function TutorialTableRow({
                 size="small"
                 color="primary"
                 onClick={() => {
-                  handleOpenModal();
-                  setModalTutorialId(item.id);
+                  handleOpenModal(item.id);
                 }}
               >
                 <Icon icon="solar:pen-bold-duotone" width={18} />
@@ -116,9 +146,10 @@ TutorialTableRow.propTypes = {
   item: PropTypes.object,
   manageTutorial: PropTypes.func,
   handleOpenModal: PropTypes.func,
-  setModalTutorialId: PropTypes.func,
-  onMoveUp: PropTypes.func,
-  onMoveDown: PropTypes.func,
-  isFirst: PropTypes.bool,
-  isLast: PropTypes.bool
+  onDragStart: PropTypes.func,
+  onDragOver: PropTypes.func,
+  onDrop: PropTypes.func,
+  onDragEnd: PropTypes.func,
+  isDragging: PropTypes.bool,
+  dragDisabled: PropTypes.bool
 };

@@ -247,6 +247,7 @@ func SetApiRouter(router *gin.Engine) {
 			tutorialRoute.GET("/", controller.GetTutorialsList)
 			tutorialRoute.GET("/:id", controller.GetTutorial)
 			tutorialRoute.POST("/", controller.AddTutorial)
+			tutorialRoute.PUT("/reorder", controller.ReorderTutorials)
 			tutorialRoute.PUT("/", controller.UpdateTutorial)
 			tutorialRoute.DELETE("/:id", controller.DeleteTutorial)
 		}
