@@ -12,7 +12,7 @@ import ButtonGroup from '@mui/material/ButtonGroup';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
 import Divider from '@mui/material/Divider';
-import { Button, Card, Stack, Container, Typography, Box, Menu, MenuItem, Checkbox, ListItemText, Tabs, Tab } from '@mui/material';
+import { Button, Card, Stack, Typography, Box, Menu, MenuItem, Checkbox, ListItemText, Tabs, Tab } from '@mui/material';
 import LogTableRow from './component/TableRow';
 import KeywordTableHead from 'ui-component/TableHead';
 import TableToolBar from './component/TableToolBar';
@@ -235,38 +235,58 @@ export default function Log({ adminMode = false }) {
   return (
     <>
       <Card>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs
-            value={toolBarValue.log_type}
-            onChange={handleTabsChange}
-            aria-label="basic tabs example"
-            variant="scrollable"
-            scrollButtons="auto"
-            allowScrollButtonsMobile
-            sx={{
-              '& .MuiTabs-indicator': {
-                display: 'none'
-              }
-            }}
-          >
-            {Object.values(LogType).map((option) => {
-              return <Tab key={option.value} label={option.text} value={option.value} />;
-            })}
-          </Tabs>
-        </Box>
         <Box component="form" noValidate>
           <TableToolBar filterName={toolBarValue} handleFilterName={handleToolBarValue} userIsAdmin={canViewAdminLogs} />
         </Box>
         <Toolbar
+          disableGutters
           sx={{
-            textAlign: 'right',
-            height: 50,
+            minHeight: 'auto',
             display: 'flex',
+            flexDirection: { xs: 'column', sm: 'row' },
+            alignItems: { xs: 'stretch', sm: 'center' },
             justifyContent: 'space-between',
-            p: (theme) => theme.spacing(0, 1, 0, 3)
+            gap: 2,
+            px: 3,
+            pb: 2
           }}
         >
-          <Container maxWidth="xl">
+          <Box sx={{ minWidth: 0, flex: 1 }}>
+            <Tabs
+              value={toolBarValue.log_type}
+              onChange={handleTabsChange}
+              aria-label="log type tabs"
+              variant="scrollable"
+              scrollButtons="auto"
+              allowScrollButtonsMobile
+              sx={{
+                minHeight: 40,
+                '& .MuiTabs-indicator': {
+                  display: 'none'
+                },
+                '& .MuiTabs-flexContainer': {
+                  gap: 1
+                },
+                '& .MuiTab-root': {
+                  minHeight: 40,
+                  minWidth: 'auto',
+                  px: 2
+                }
+              }}
+            >
+              {Object.values(LogType).map((option) => {
+                return <Tab key={option.value} label={option.text} value={option.value} />;
+              })}
+            </Tabs>
+          </Box>
+          <Box
+            sx={{
+              flexShrink: 0,
+              display: 'flex',
+              justifyContent: { xs: 'flex-end', sm: 'flex-start' },
+              width: { xs: '100%', sm: 'auto' }
+            }}
+          >
             {matchUpMd ? (
               <ButtonGroup variant="outlined" aria-label="outlined small primary button group">
                 <Button onClick={handleRefresh} size="small" startIcon={<Icon icon="solar:refresh-bold-duotone" width={18} />}>
@@ -300,58 +320,57 @@ export default function Log({ adminMode = false }) {
                 </IconButton>
               </Stack>
             )}
+          </Box>
 
-            <Menu
-              anchorEl={columnMenuAnchor}
-              open={Boolean(columnMenuAnchor)}
-              onClose={handleColumnMenuClose}
-              PaperProps={{
-                style: {
-                  maxHeight: 300,
-                  width: 200
+          <Menu
+            anchorEl={columnMenuAnchor}
+            open={Boolean(columnMenuAnchor)}
+            onClose={handleColumnMenuClose}
+            PaperProps={{
+              style: {
+                maxHeight: 300,
+                width: 200
+              }
+            }}
+          >
+            <MenuItem disabled>
+              <Typography variant="subtitle2">{t('logPage.selectColumns')}</Typography>
+            </MenuItem>
+            <MenuItem onClick={handleSelectAllColumns} dense>
+              <Checkbox
+                checked={Object.values(columnVisibility).every((visible) => visible)}
+                indeterminate={
+                  !Object.values(columnVisibility).every((visible) => visible) && Object.values(columnVisibility).some((visible) => visible)
                 }
-              }}
-            >
-              <MenuItem disabled>
-                <Typography variant="subtitle2">{t('logPage.selectColumns')}</Typography>
-              </MenuItem>
-              <MenuItem onClick={handleSelectAllColumns} dense>
-                <Checkbox
-                  checked={Object.values(columnVisibility).every((visible) => visible)}
-                  indeterminate={
-                    !Object.values(columnVisibility).every((visible) => visible) &&
-                    Object.values(columnVisibility).some((visible) => visible)
-                  }
-                  size="small"
-                />
-                <ListItemText primary={t('logPage.columnSelectAll')} />
-              </MenuItem>
-              {[
-                { id: 'created_at', label: t('logPage.timeLabel') },
-                { id: 'channel_id', label: t('logPage.channelLabel'), adminOnly: true },
-                { id: 'user_id', label: t('logPage.userLabel'), adminOnly: true },
-                { id: 'group', label: t('logPage.groupLabel') },
-                { id: 'key_name', label: t('logPage.tokenLabel') },
-                { id: 'type', label: t('logPage.typeLabel') },
-                { id: 'model_name', label: t('logPage.modelLabel') },
-                { id: 'reasoning', label: t('logPage.reasoningLabel') },
-                { id: 'request_path', label: t('logPage.requestPath') },
-                { id: 'duration', label: t('logPage.durationLabel') },
-                { id: 'tokens', label: t('logPage.tokensLabel') },
-                { id: 'quota', label: t('logPage.quotaLabel') },
-                { id: 'source_ip', label: t('logPage.sourceIp'), adminOnly: true },
-                { id: 'user_agent', label: t('logPage.userAgent'), adminOnly: true }
-              ].map(
-                (column) =>
-                  (!column.adminOnly || canViewAdminLogs) && (
-                    <MenuItem key={column.id} onClick={() => handleColumnVisibilityChange(column.id)} dense>
-                      <Checkbox checked={columnVisibility[column.id] || false} size="small" />
-                      <ListItemText primary={column.label} />
-                    </MenuItem>
-                  )
-              )}
-            </Menu>
-          </Container>
+                size="small"
+              />
+              <ListItemText primary={t('logPage.columnSelectAll')} />
+            </MenuItem>
+            {[
+              { id: 'created_at', label: t('logPage.timeLabel') },
+              { id: 'channel_id', label: t('logPage.channelLabel'), adminOnly: true },
+              { id: 'user_id', label: t('logPage.userLabel'), adminOnly: true },
+              { id: 'group', label: t('logPage.groupLabel') },
+              { id: 'key_name', label: t('logPage.tokenLabel') },
+              { id: 'type', label: t('logPage.typeLabel') },
+              { id: 'model_name', label: t('logPage.modelLabel') },
+              { id: 'reasoning', label: t('logPage.reasoningLabel') },
+              { id: 'request_path', label: t('logPage.requestPath') },
+              { id: 'duration', label: t('logPage.durationLabel') },
+              { id: 'tokens', label: t('logPage.tokensLabel') },
+              { id: 'quota', label: t('logPage.quotaLabel') },
+              { id: 'source_ip', label: t('logPage.sourceIp'), adminOnly: true },
+              { id: 'user_agent', label: t('logPage.userAgent'), adminOnly: true }
+            ].map(
+              (column) =>
+                (!column.adminOnly || canViewAdminLogs) && (
+                  <MenuItem key={column.id} onClick={() => handleColumnVisibilityChange(column.id)} dense>
+                    <Checkbox checked={columnVisibility[column.id] || false} size="small" />
+                    <ListItemText primary={column.label} />
+                  </MenuItem>
+                )
+            )}
+          </Menu>
         </Toolbar>
         {searching && <LinearProgress />}
         <PerfectScrollbar component="div">

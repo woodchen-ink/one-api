@@ -872,14 +872,30 @@ export default function componentStyleOverrides(theme) {
         allowScrollButtonsMobile: true
       },
       styleOverrides: {
+        root: {
+          minHeight: 48
+        },
+        scrollButtons: {
+          width: 32,
+          borderRadius: 8,
+          color: theme.darkTextSecondary,
+          transition: 'all 0.18s ease',
+          '&:hover': {
+            backgroundColor: isDark ? varAlpha(theme.colors?.grey500, 0.14) : varAlpha(theme.colors?.grey900, 0.05),
+            color: theme.darkTextPrimary
+          },
+          '&.Mui-disabled': {
+            opacity: 0.3
+          }
+        },
         flexContainer: {
-          gap: '24px',
+          gap: '8px',
           '@media (min-width:600px)': {
-            gap: '40px'
+            gap: '12px'
           }
         },
         indicator: {
-          backgroundColor: 'currentColor'
+          display: 'none'
         }
       }
     },
@@ -893,14 +909,25 @@ export default function componentStyleOverrides(theme) {
           opacity: 1,
           minWidth: 48,
           minHeight: 48,
-          padding: '8px 0',
+          padding: '8px 12px',
+          borderRadius: 10,
           textTransform: 'none',
           fontSize: '0.875rem',
           fontWeight: 500,
+          lineHeight: 1.3,
           color: theme.darkTextSecondary,
+          transition: 'color 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease',
+          '&:hover': {
+            color: theme.darkTextPrimary,
+            backgroundColor: isDark ? varAlpha(theme.colors?.grey500, 0.14) : varAlpha(theme.colors?.grey900, 0.05)
+          },
           '&.Mui-selected': {
             color: theme.darkTextPrimary,
-            fontWeight: 600
+            fontWeight: 600,
+            backgroundColor: isDark ? varAlpha(theme.colors?.darkSecondaryMain, 0.16) : varAlpha(theme.colors?.primaryDark, 0.08)
+          },
+          '& .MuiSvgIcon-root, & svg': {
+            fontSize: '1rem'
           }
         }
       }
