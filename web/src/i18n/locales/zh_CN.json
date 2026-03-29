@@ -808,7 +808,7 @@
       "user_id": "用户",
       "trade_no": "订单号",
       "gateway_no": "网关订单号",
-      "amount": "充值金额",
+      "amount": "订单金额",
       "fee": "手续费",
       "discount": "优惠金额",
       "order_amount": "实际支付金额",

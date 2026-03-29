@@ -1408,6 +1408,50 @@ func widenGroupColumns() *gormigrate.Migration {
 	}
 }
 
+func addSubscriptionPlanPriceCurrency() *gormigrate.Migration {
+	return &gormigrate.Migration{
+		ID: "202603290001",
+		Migrate: func(tx *gorm.DB) error {
+			if tx.Migrator().HasTable("orders") {
+				switch tx.Dialector.Name() {
+				case "mysql":
+					if err := tx.Exec("ALTER TABLE orders MODIFY COLUMN amount decimal(10,2) DEFAULT 0").Error; err != nil {
+						return err
+					}
+				case "postgres":
+					if err := tx.Exec(`ALTER TABLE "orders" ALTER COLUMN "amount" TYPE numeric(10,2) USING "amount"::numeric(10,2)`).Error; err != nil {
+						return err
+					}
+					if err := tx.Exec(`ALTER TABLE "orders" ALTER COLUMN "amount" SET DEFAULT 0`).Error; err != nil {
+						return err
+					}
+				}
+
+				if tx.Migrator().HasColumn(&Order{}, "amount_currency") {
+					if err := tx.Model(&Order{}).
+						Where("amount_currency = '' OR amount_currency IS NULL").
+						Update("amount_currency", CurrencyTypeUSD).Error; err != nil {
+						return err
+					}
+				}
+			}
+
+			if tx.Migrator().HasTable("subscription_plans") && tx.Migrator().HasColumn(&SubscriptionPlan{}, "price_currency") {
+				if err := tx.Model(&SubscriptionPlan{}).
+					Where("price_currency = '' OR price_currency IS NULL").
+					Update("price_currency", CurrencyTypeUSD).Error; err != nil {
+					return err
+				}
+			}
+
+			return nil
+		},
+		Rollback: func(tx *gorm.DB) error {
+			return nil
+		},
+	}
+}
+
 func migrationAfter(db *gorm.DB) error {
 	// 从库不执行
 	if !config.IsMasterNode {
@@ -1428,6 +1472,7 @@ func migrationAfter(db *gorm.DB) error {
 		migrateQuotaScaleToMicroUSD(),
 		addLogKeyID(),
 		widenGroupColumns(),
+		addSubscriptionPlanPriceCurrency(),
 	})
 	return m.Migrate()
 }

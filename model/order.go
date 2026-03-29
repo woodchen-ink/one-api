@@ -23,7 +23,8 @@ type Order struct {
 	GatewayType        string         `json:"gateway_type" gorm:"-"`
 	TradeNo            string         `json:"trade_no" gorm:"type:varchar(50);uniqueIndex"`
 	GatewayNo          string         `json:"gateway_no" gorm:"type:varchar(100)"`
-	Amount             int            `json:"amount" gorm:"default:0"`
+	Amount             float64        `json:"amount" gorm:"type:decimal(10,2);default:0"`
+	AmountCurrency     CurrencyType   `json:"amount_currency" gorm:"type:varchar(16);default:'USD'"`
 	OrderAmount        float64        `json:"order_amount" gorm:"type:decimal(10,2);default:0"`
 	OrderCurrency      CurrencyType   `json:"order_currency" gorm:"type:varchar(16)"`
 	Quota              int            `json:"quota" gorm:"type:int;default:0"`

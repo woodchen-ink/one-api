@@ -1,6 +1,7 @@
 package model
 
 import (
+	"errors"
 	"strings"
 
 	"gorm.io/gorm"
@@ -13,6 +14,7 @@ type SubscriptionPlan struct {
 	Description    string         `json:"description" gorm:"type:text"`
 	Features       string         `json:"features" gorm:"type:text"`
 	Price          float64        `json:"price" gorm:"type:decimal(10,2);not null"`
+	PriceCurrency  CurrencyType   `json:"price_currency" gorm:"type:varchar(5);not null;default:'USD'"`
 	QuotaAmount    float64        `json:"quota_amount" gorm:"type:decimal(10,2);not null"`
 	DurationType   string         `json:"duration_type" gorm:"type:varchar(10);not null"` // day, week, month
 	DurationCount  int            `json:"duration_count" gorm:"default:1"`
@@ -44,7 +46,9 @@ func (p *SubscriptionPlan) normalize() {
 	p.Name = strings.TrimSpace(p.Name)
 	p.GroupSymbol = strings.TrimSpace(p.GroupSymbol)
 	p.Description = strings.TrimSpace(p.Description)
+	p.Features = strings.TrimSpace(p.Features)
 	p.PaymentProduct = strings.TrimSpace(p.PaymentProduct)
+	p.PriceCurrency = NormalizeCurrencyType(p.PriceCurrency)
 }
 
 func GetSubscriptionPlanList(params *SearchSubscriptionPlanParams) (*DataResult[SubscriptionPlan], error) {
@@ -86,13 +90,19 @@ func GetAvailableSubscriptionPlans() ([]*SubscriptionPlan, error) {
 
 func (p *SubscriptionPlan) Insert() error {
 	p.normalize()
+	if !IsSupportedCurrencyType(p.PriceCurrency) {
+		return errors.New("不支持的套餐售价币种")
+	}
 	return DB.Create(p).Error
 }
 
 func (p *SubscriptionPlan) Update() error {
 	p.normalize()
+	if !IsSupportedCurrencyType(p.PriceCurrency) {
+		return errors.New("不支持的套餐售价币种")
+	}
 	return DB.Model(&SubscriptionPlan{}).Where("id = ?", p.ID).
-		Select("name", "group_symbol", "description", "features", "price", "quota_amount",
+		Select("name", "group_symbol", "description", "features", "price", "price_currency", "quota_amount",
 			"duration_type", "duration_count", "sort", "payment_product", "allow_renewal").
 		Updates(p).Error
 }

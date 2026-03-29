@@ -521,6 +521,33 @@ export function renderQuota(quota, digits = 2) {
   return '$' + calculateQuota(quota, digits);
 }
 
+export function getCurrencySymbol(currency = 'USD') {
+  const normalizedCurrency = String(currency || 'USD').toUpperCase();
+
+  switch (normalizedCurrency) {
+    case 'CNY':
+      return '￥';
+    case 'USD':
+      return '$';
+    default:
+      return '';
+  }
+}
+
+export function formatMoneyByCurrency(value, currency = 'USD', digits = 2) {
+  const normalizedCurrency = String(currency || 'USD').toUpperCase();
+  const amount = Number(value);
+  const safeAmount = Number.isFinite(amount) ? amount : 0;
+  const formatted = new Decimal(safeAmount).toFixed(digits).replace(/(\.\d*?[1-9])0+$|\.0*$/, '$1');
+  const symbol = getCurrencySymbol(normalizedCurrency);
+
+  if (symbol) {
+    return `${symbol}${formatted}`;
+  }
+
+  return `${formatted} ${normalizedCurrency}`.trim();
+}
+
 export function renderQuotaByMoney(money) {
   money = Number(money);
   let quotaPerUnit = localStorage.getItem('quota_per_unit');

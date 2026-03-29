@@ -59,7 +59,11 @@ func CreateOrder(c *gin.Context) {
 		return
 	}
 	// 获取手续费和支付金额
-	discount, fee, payMoney := calculateOrderAmount(paymentService.Payment, orderReq.Amount)
+	discount, fee, payMoney, err := calculateOrderAmount(paymentService.Payment, orderReq.Amount)
+	if err != nil {
+		common.APIRespondWithError(c, http.StatusOK, errors.New("支付金额计算失败，请检查网关币种和汇率配置"))
+		return
+	}
 	// 开始支付
 	tradeNo := utils.GenerateTradeNo()
 	payRequest, err := paymentService.Pay(tradeNo, payMoney, user)
@@ -70,16 +74,17 @@ func CreateOrder(c *gin.Context) {
 
 	// 创建订单
 	order := &model.Order{
-		UserId:        userId,
-		GatewayId:     paymentService.Payment.ID,
-		TradeNo:       tradeNo,
-		Amount:        orderReq.Amount,
-		OrderAmount:   payMoney,
-		OrderCurrency: paymentService.Payment.Currency,
-		Fee:           fee,
-		Discount:      discount,
-		Status:        model.OrderStatusPending,
-		Quota:         orderReq.Amount * int(config.QuotaPerUnit),
+		UserId:         userId,
+		GatewayId:      paymentService.Payment.ID,
+		TradeNo:        tradeNo,
+		Amount:         float64(orderReq.Amount),
+		AmountCurrency: model.CurrencyTypeUSD,
+		OrderAmount:    payMoney,
+		OrderCurrency:  model.NormalizeCurrencyType(paymentService.Payment.Currency),
+		Fee:            fee,
+		Discount:       discount,
+		Status:         model.OrderStatusPending,
+		Quota:          orderReq.Amount * int(config.QuotaPerUnit),
 	}
 
 	err = order.Insert()
@@ -229,10 +234,8 @@ func GetUserOrderList(c *gin.Context) {
 	})
 }
 
-// discountMoney优惠金额 fee手续费，payMoney实付金额
-// discountMoney优惠金额 fee手续费，payMoney实付金额
-func calculateOrderAmount(payment *model.Payment, amount int) (discountMoney, fee, payMoney float64) {
-
+// calculateOrderAmount computes the top-up discount and payable amount, while keeping fee stored in USD.
+func calculateOrderAmount(payment *model.Payment, amount int) (discountMoney, fee, payMoney float64, err error) {
 	// 步骤1: 获取折扣数据
 	discountData := common.RechargeDiscount
 
@@ -255,28 +258,35 @@ func calculateOrderAmount(payment *model.Payment, amount int) (discountMoney, fe
 	}
 
 	// 步骤4: 计算折后价值
-	newMoney := float64(amount) * discount
+	newMoney := utils.Decimal(float64(amount)*discount, 2)
 	oldTotal := float64(amount)
+	feeUSD := 0.0
 
 	// 步骤5: 计算手续费
 	if payment.PercentFee > 0 {
-		fee = utils.Decimal(newMoney*payment.PercentFee, 2) // 折后手续
+		feeUSD = utils.Decimal(newMoney*payment.PercentFee, 2) // 折后手续
 		oldTotal = utils.Decimal(oldTotal*(1+payment.PercentFee), 2)
 	} else if payment.FixedFee > 0 {
-		fee = payment.FixedFee
+		feeUSD = utils.Decimal(payment.FixedFee, 2)
+		oldTotal = utils.Decimal(oldTotal+payment.FixedFee, 2)
 	}
 
 	// 步骤6: 计算实际费用
-	total := utils.Decimal(newMoney+fee, 2)
-	if payment.Currency == model.CurrencyTypeUSD {
-		payMoney = total
-	} else {
-		oldTotal = utils.Decimal(oldTotal*config.PaymentUSDRate, 2)
-		payMoney = utils.Decimal(total*config.PaymentUSDRate, 2)
+	total := utils.Decimal(newMoney+feeUSD, 2)
+	orderCurrency := model.NormalizeCurrencyType(payment.Currency)
+
+	payMoney, err = model.ConvertCurrencyAmount(total, model.CurrencyTypeUSD, orderCurrency)
+	if err != nil {
+		return
+	}
+	oldTotal, err = model.ConvertCurrencyAmount(oldTotal, model.CurrencyTypeUSD, orderCurrency)
+	if err != nil {
+		return
 	}
 
 	// 步骤7: 计算折扣金额
-	discountMoney = oldTotal - payMoney
+	fee = feeUSD
+	discountMoney = utils.Decimal(oldTotal-payMoney, 2)
 
 	return
 }

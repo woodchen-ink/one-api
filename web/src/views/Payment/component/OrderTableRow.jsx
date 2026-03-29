@@ -4,7 +4,7 @@ import { Icon } from '@iconify/react';
 
 import { IconButton, Stack, TableCell, TableRow, Tooltip, Typography } from '@mui/material';
 
-import { copy, timestamp2string } from 'utils/common';
+import { copy, formatMoneyByCurrency, timestamp2string } from 'utils/common';
 import Label from 'ui-component/Label';
 
 const STATUS_COLOR_MAP = {
@@ -93,14 +93,10 @@ export default function OrderTableRow({ item, showGatewayId, showGatewayType, sh
         <TableCell align="center">
           <CopyableCell value={item.gateway_no} tooltip={t('orderlogPage.gatewayNoLabel')} emptyText={t('orderlogPage.emptyGatewayNo')} />
         </TableCell>
-        <TableCell>${item.amount}</TableCell>
-        <TableCell>${item.fee}</TableCell>
-        <TableCell>
-          {item.discount} {item.order_currency}
-        </TableCell>
-        <TableCell>
-          {item.order_amount} {item.order_currency}
-        </TableCell>
+        <TableCell>{formatMoneyByCurrency(item.amount, item.amount_currency || 'USD')}</TableCell>
+        <TableCell>{formatMoneyByCurrency(item.fee, 'USD')}</TableCell>
+        <TableCell>{formatMoneyByCurrency(item.discount, item.order_currency || 'USD')}</TableCell>
+        <TableCell>{formatMoneyByCurrency(item.order_amount, item.order_currency || 'USD')}</TableCell>
         <TableCell>{statusLabel(item.status, t)}</TableCell>
       </TableRow>
     </>

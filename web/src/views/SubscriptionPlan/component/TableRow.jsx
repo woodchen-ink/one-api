@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 import { useState } from 'react';
+import { formatMoneyByCurrency } from 'utils/common';
 
 import {
   Stack,
@@ -48,8 +49,8 @@ export default function SubscriptionPlanTableRow({ item, managePlan, handleOpenM
         <TableCell>{item.id}</TableCell>
         <TableCell>{item.name}</TableCell>
         <TableCell>{item.group_symbol}</TableCell>
-        <TableCell>${item.price}</TableCell>
-        <TableCell>${item.quota_amount}</TableCell>
+        <TableCell>{formatMoneyByCurrency(item.price, item.price_currency || 'USD')}</TableCell>
+        <TableCell>{formatMoneyByCurrency(item.quota_amount, 'USD')}</TableCell>
         <TableCell>
           {item.duration_count} {durationTypeLabel(item.duration_type)}
         </TableCell>

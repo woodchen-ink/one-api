@@ -58,13 +58,13 @@
     "requestsCount": "Requests Count",
     "startTime": "Start Time",
     "testDisabled": "Test Disabled",
-      "tokensStatistics": "Tokens Statistics",
-      "totalUserBalance": "Total User Balance",
-      "totalConsumptionTokens": "Total Consumed Tokens",
-      "totalConsumptionTokensHint": "Total prompt + completion tokens",
-      "totalUserSpending": "Total User Spending",
-      "totalUsers": "Total Users",
-      "unused": "Unused",
+    "tokensStatistics": "Tokens Statistics",
+    "totalUserBalance": "Total User Balance",
+    "totalConsumptionTokens": "Total Consumed Tokens",
+    "totalConsumptionTokensHint": "Total prompt + completion tokens",
+    "totalUserSpending": "Total User Spending",
+    "totalUsers": "Total Users",
+    "unused": "Unused",
     "used": "Used"
   },
   "auth": {
@@ -655,7 +655,7 @@
       "admin_assign_subscription": "Admin Assignment"
     },
     "tableHeaders": {
-      "amount": "Recharge Amount",
+      "amount": "Order Amount",
       "created_at": "Time",
       "order_type": "Order Type",
       "discount": "Discount Amount",

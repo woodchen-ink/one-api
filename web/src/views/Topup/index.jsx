@@ -27,7 +27,7 @@ import RedemptionCard from './component/RedemptionCard';
 import TopupCard from './component/TopupCard';
 import { useTranslation } from 'react-i18next';
 import { API } from 'utils/api';
-import { showError } from 'utils/common';
+import { formatMoneyByCurrency, showError } from 'utils/common';
 
 const PlanCard = styled(Card)(({ theme }) => ({
   border: `1px solid ${theme.palette.divider}`,
@@ -175,7 +175,7 @@ const SubscriptionPlans = () => {
                   </Stack>
 
                   <Typography variant="h3" sx={{ fontWeight: 800, mb: 1.5, color: theme.palette.primary.main }}>
-                    ${plan.price}
+                    {formatMoneyByCurrency(plan.price, plan.price_currency || 'USD')}
                   </Typography>
 
                   {plan.description && (
@@ -188,7 +188,7 @@ const SubscriptionPlans = () => {
                     <Stack direction="row" alignItems="center" spacing={1}>
                       <Icon icon="solar:wallet-money-linear" width={16} color={theme.palette.text.secondary} />
                       <Typography variant="body2" color="text.secondary">
-                        {t('subscription.quotaAmount')}: ${plan.quota_amount}
+                        {t('subscription.quotaAmount')}: {formatMoneyByCurrency(plan.quota_amount, 'USD')}
                       </Typography>
                     </Stack>
 

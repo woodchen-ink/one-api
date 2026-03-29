@@ -1,7 +1,13 @@
 package model
 
 import (
+	"errors"
+	"fmt"
+	"strings"
+
+	"czloapi/common/config"
 	"czloapi/common/utils"
+
 	"gorm.io/gorm"
 )
 
@@ -11,6 +17,50 @@ const (
 	CurrencyTypeUSD CurrencyType = "USD"
 	CurrencyTypeCNY CurrencyType = "CNY"
 )
+
+// NormalizeCurrencyType normalizes currency input and falls back to USD for empty values.
+func NormalizeCurrencyType(currency CurrencyType) CurrencyType {
+	normalized := CurrencyType(strings.ToUpper(strings.TrimSpace(string(currency))))
+	if normalized == "" {
+		return CurrencyTypeUSD
+	}
+	return normalized
+}
+
+// IsSupportedCurrencyType checks whether the currency is supported by the payment system.
+func IsSupportedCurrencyType(currency CurrencyType) bool {
+	switch NormalizeCurrencyType(currency) {
+	case CurrencyTypeUSD, CurrencyTypeCNY:
+		return true
+	default:
+		return false
+	}
+}
+
+// ConvertCurrencyAmount converts an amount between supported currencies using the configured USD rate.
+func ConvertCurrencyAmount(amount float64, from CurrencyType, to CurrencyType) (float64, error) {
+	fromCurrency := NormalizeCurrencyType(from)
+	toCurrency := NormalizeCurrencyType(to)
+
+	if !IsSupportedCurrencyType(fromCurrency) || !IsSupportedCurrencyType(toCurrency) {
+		return 0, fmt.Errorf("unsupported currency conversion: %s -> %s", fromCurrency, toCurrency)
+	}
+	if fromCurrency == toCurrency {
+		return utils.Decimal(amount, 2), nil
+	}
+	if config.PaymentUSDRate <= 0 {
+		return 0, errors.New("支付美元汇率未配置")
+	}
+
+	switch {
+	case fromCurrency == CurrencyTypeUSD && toCurrency == CurrencyTypeCNY:
+		return utils.Decimal(amount*config.PaymentUSDRate, 2), nil
+	case fromCurrency == CurrencyTypeCNY && toCurrency == CurrencyTypeUSD:
+		return utils.Decimal(amount/config.PaymentUSDRate, 2), nil
+	default:
+		return 0, fmt.Errorf("unsupported currency conversion: %s -> %s", fromCurrency, toCurrency)
+	}
+}
 
 type Payment struct {
 	ID           int            `json:"id"`

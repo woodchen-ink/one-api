@@ -159,8 +159,9 @@ The provider system implements a plugin-based architecture in `providers/`:
 - Payment processing with multiple gateways
 - Users can review their own recharge orders, including trade numbers and gateway order numbers, from the web console
 - Subscription plans: Admin-defined quota packages bound to user groups
-  - `model/subscription_plan.go` - Plan definitions (name, group, price, quota, duration)
+  - `model/subscription_plan.go` - Plan definitions (name, group, price, price currency, quota, duration)
   - `model/user_subscription.go` - User subscription instances and quota consumption
+  - Plan sale price supports both `USD` and `CNY`; included quota remains measured in USD
   - Subscription quota is independent of user balance, measured in USD
   - Multiple subscriptions can stack; earliest-expiring consumed first
   - Cron job in `cron/main.go` expires subscriptions every minute

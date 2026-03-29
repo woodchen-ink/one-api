@@ -23,11 +23,17 @@ import {
 import { showSuccess, showError, trims } from 'utils/common';
 import { API } from 'utils/api';
 
+const PLAN_CURRENCY_OPTIONS = [
+  { value: 'USD', label: '美元' },
+  { value: 'CNY', label: '人民币' }
+];
+
 const validationSchema = Yup.object().shape({
   is_edit: Yup.boolean(),
   name: Yup.string().required('套餐名称不能为空'),
   group_symbol: Yup.string().required('绑定分组不能为空'),
   price: Yup.number().required('价格不能为空').min(0, '价格不能为负数'),
+  price_currency: Yup.string().oneOf(['USD', 'CNY']).required('请选择售价币种'),
   quota_amount: Yup.number().required('配额不能为空').min(0, '配额不能为负数'),
   duration_type: Yup.string().oneOf(['day', 'week', 'month']).required(),
   duration_count: Yup.number().min(1, '数量至少为1').required()
@@ -40,6 +46,7 @@ const originInputs = {
   description: '',
   features: '',
   price: 0,
+  price_currency: 'USD',
   quota_amount: 0,
   duration_type: 'month',
   duration_count: 1,
@@ -93,8 +100,12 @@ const EditModal = ({ open, planId, onCancel, onOk }) => {
       let res = await API.get(`/api/subscription_plan/${planId}`);
       const { success, message, data } = res.data;
       if (success) {
-        data.is_edit = true;
-        setInputs(data);
+        setInputs({
+          ...originInputs,
+          ...data,
+          is_edit: true,
+          price_currency: data.price_currency || 'USD'
+        });
       } else {
         showError(message);
       }
@@ -187,10 +198,10 @@ const EditModal = ({ open, planId, onCancel, onOk }) => {
               </FormControl>
 
               <FormControl fullWidth error={Boolean(touched.price && errors.price)} sx={{ ...theme.typography.otherInput }}>
-                <InputLabel htmlFor="plan-price-label">价格 ($)</InputLabel>
+                <InputLabel htmlFor="plan-price-label">套餐售价</InputLabel>
                 <OutlinedInput
                   id="plan-price-label"
-                  label="价格 ($)"
+                  label="套餐售价"
                   type="number"
                   value={values.price}
                   name="price"
@@ -200,15 +211,42 @@ const EditModal = ({ open, planId, onCancel, onOk }) => {
                 {touched.price && errors.price ? (
                   <FormHelperText error>{errors.price}</FormHelperText>
                 ) : (
-                  <FormHelperText>套餐售价，单位美元，实际支付按支付渠道币种转换</FormHelperText>
+                  <FormHelperText>套餐标价金额，实际支付会按所选支付网关币种自动换算</FormHelperText>
+                )}
+              </FormControl>
+
+              <FormControl
+                fullWidth
+                error={Boolean(touched.price_currency && errors.price_currency)}
+                sx={{ ...theme.typography.otherInput }}
+              >
+                <InputLabel htmlFor="plan-price-currency-label">售价币种</InputLabel>
+                <Select
+                  id="plan-price-currency-label"
+                  label="售价币种"
+                  value={values.price_currency || 'USD'}
+                  name="price_currency"
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                >
+                  {PLAN_CURRENCY_OPTIONS.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+                {touched.price_currency && errors.price_currency ? (
+                  <FormHelperText error>{errors.price_currency}</FormHelperText>
+                ) : (
+                  <FormHelperText>支持美元或人民币；套餐配额仍固定按 USD 结算</FormHelperText>
                 )}
               </FormControl>
 
               <FormControl fullWidth error={Boolean(touched.quota_amount && errors.quota_amount)} sx={{ ...theme.typography.otherInput }}>
-                <InputLabel htmlFor="plan-quota-amount-label">配额额度 ($)</InputLabel>
+                <InputLabel htmlFor="plan-quota-amount-label">配额额度 (USD)</InputLabel>
                 <OutlinedInput
                   id="plan-quota-amount-label"
-                  label="配额额度 ($)"
+                  label="配额额度 (USD)"
                   type="number"
                   value={values.quota_amount}
                   name="quota_amount"
@@ -218,7 +256,7 @@ const EditModal = ({ open, planId, onCancel, onOk }) => {
                 {touched.quota_amount && errors.quota_amount ? (
                   <FormHelperText error>{errors.quota_amount}</FormHelperText>
                 ) : (
-                  <FormHelperText>套餐包含的配额，单位美元，按 API 调用实际消耗扣减</FormHelperText>
+                  <FormHelperText>套餐包含的配额，单位 USD，按 API 调用实际消耗扣减</FormHelperText>
                 )}
               </FormControl>
 

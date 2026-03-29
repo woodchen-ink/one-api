@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"czloapi/common"
-	"czloapi/common/config"
 	"czloapi/common/logger"
 	"czloapi/common/utils"
 	"czloapi/model"
@@ -29,6 +28,38 @@ type PurchaseSubscriptionRequest struct {
 type PurchaseSubscriptionResponse struct {
 	TradeNo string `json:"trade_no"`
 	*paymentTypes.PayRequest
+}
+
+// calculateSubscriptionOrderAmount computes the payable amount in the gateway currency while keeping fee stored in USD.
+func calculateSubscriptionOrderAmount(plan *model.SubscriptionPlan, payment *model.Payment) (fee, payMoney float64, err error) {
+	orderCurrency := model.NormalizeCurrencyType(payment.Currency)
+	priceCurrency := model.NormalizeCurrencyType(plan.PriceCurrency)
+
+	baseAmount, err := model.ConvertCurrencyAmount(plan.Price, priceCurrency, orderCurrency)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	feeInOrderCurrency := 0.0
+	if payment.PercentFee > 0 {
+		baseAmountUSD, convertErr := model.ConvertCurrencyAmount(plan.Price, priceCurrency, model.CurrencyTypeUSD)
+		if convertErr != nil {
+			return 0, 0, convertErr
+		}
+		fee = utils.Decimal(baseAmountUSD*payment.PercentFee, 2)
+	} else if payment.FixedFee > 0 {
+		fee = utils.Decimal(payment.FixedFee, 2)
+	}
+
+	if fee > 0 {
+		feeInOrderCurrency, err = model.ConvertCurrencyAmount(fee, model.CurrencyTypeUSD, orderCurrency)
+		if err != nil {
+			return 0, 0, err
+		}
+	}
+
+	payMoney = utils.Decimal(baseAmount+feeInOrderCurrency, 2)
+	return fee, payMoney, nil
 }
 
 func purchaseSubscription(c *gin.Context, req PurchaseSubscriptionRequest) {
@@ -57,17 +88,10 @@ func purchaseSubscription(c *gin.Context, req PurchaseSubscriptionRequest) {
 	}
 
 	// 计算支付金额（套餐价格固定，不走充值折扣）
-	payMoney := plan.Price
-	var fee float64
-	if paymentService.Payment.PercentFee > 0 {
-		fee = utils.Decimal(payMoney*paymentService.Payment.PercentFee, 2)
-	} else if paymentService.Payment.FixedFee > 0 {
-		fee = paymentService.Payment.FixedFee
-	}
-	payMoney = utils.Decimal(payMoney+fee, 2)
-
-	if paymentService.Payment.Currency != model.CurrencyTypeUSD {
-		payMoney = utils.Decimal(payMoney*config.PaymentUSDRate, 2)
+	fee, payMoney, err := calculateSubscriptionOrderAmount(plan, paymentService.Payment)
+	if err != nil {
+		common.APIRespondWithError(c, http.StatusOK, errors.New("套餐支付金额计算失败，请检查币种与汇率配置"))
+		return
 	}
 
 	// 发起支付
@@ -83,9 +107,10 @@ func purchaseSubscription(c *gin.Context, req PurchaseSubscriptionRequest) {
 		UserId:             userId,
 		GatewayId:          paymentService.Payment.ID,
 		TradeNo:            tradeNo,
-		Amount:             int(plan.Price),
+		Amount:             plan.Price,
+		AmountCurrency:     model.NormalizeCurrencyType(plan.PriceCurrency),
 		OrderAmount:        payMoney,
-		OrderCurrency:      paymentService.Payment.Currency,
+		OrderCurrency:      model.NormalizeCurrencyType(paymentService.Payment.Currency),
 		Fee:                fee,
 		Discount:           0,
 		Status:             model.OrderStatusPending,
@@ -265,6 +290,7 @@ func AdminAssignSubscription(c *gin.Context) {
 	expireTime := model.CalculateExpireTime(plan.DurationType, plan.DurationCount)
 	tradeNo := utils.GenerateTradeNo()
 	now := time.Now().Unix()
+	planCurrency := model.NormalizeCurrencyType(plan.PriceCurrency)
 
 	err = model.DB.Transaction(func(tx *gorm.DB) error {
 		order := &model.Order{
@@ -272,9 +298,10 @@ func AdminAssignSubscription(c *gin.Context) {
 			GatewayId:          0,
 			TradeNo:            tradeNo,
 			GatewayNo:          "",
-			Amount:             0,
+			Amount:             plan.Price,
+			AmountCurrency:     planCurrency,
 			OrderAmount:        0,
-			OrderCurrency:      model.CurrencyTypeUSD,
+			OrderCurrency:      planCurrency,
 			Quota:              0,
 			Fee:                0,
 			Discount:           0,
