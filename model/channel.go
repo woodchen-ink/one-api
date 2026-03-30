@@ -36,6 +36,7 @@ type Channel struct {
 	CustomParameter    *string `json:"custom_parameter" gorm:"type:varchar(1024);default:''"`
 	Priority           *int64  `json:"priority" gorm:"bigint;default:0"`
 	Proxy              *string `json:"proxy" gorm:"type:varchar(255);default:''"`
+	ProxyPoolID        *int    `json:"proxy_pool_id" form:"proxy_pool_id" gorm:"column:proxy_pool_id"`
 	TestModel          string  `json:"test_model" form:"test_model" gorm:"type:varchar(50);default:''"`
 	OnlyChat           bool    `json:"only_chat" form:"only_chat" gorm:"default:false"`
 	PreCost            int     `json:"pre_cost" form:"pre_cost" gorm:"default:1"`
@@ -47,6 +48,7 @@ type Channel struct {
 	DisabledStream *datatypes.JSONSlice[string] `json:"disabled_stream,omitempty" gorm:"type:json"`
 
 	Plugin    *datatypes.JSONType[PluginType] `json:"plugin" form:"plugin" gorm:"type:json"`
+	ProxyPool *IPProxy                        `json:"proxy_pool,omitempty" gorm:"foreignKey:ProxyPoolID;references:Id;-:migration"`
 	DeletedAt gorm.DeletedAt                  `json:"-" gorm:"index"`
 }
 
@@ -88,7 +90,7 @@ type SearchChannelsParams struct {
 func GetChannelsList(params *SearchChannelsParams) (*DataResult[Channel], error) {
 	var channels []*Channel
 
-	db := DB.Omit("key")
+	db := DB.Omit("key").Preload("ProxyPool")
 	tagDB := DB.Model(&Channel{}).Select("Max(id) as id").Where("tag != ''").Group("tag")
 
 	if params.Type != 0 {
@@ -162,20 +164,20 @@ func GetChannelsList(params *SearchChannelsParams) (*DataResult[Channel], error)
 
 func GetAllChannels() ([]*Channel, error) {
 	var channels []*Channel
-	err := DB.Order("id desc").Find(&channels).Error
+	err := DB.Preload("ProxyPool").Order("id desc").Find(&channels).Error
 	return channels, err
 }
 
 func GetChannelById(id int) (*Channel, error) {
 	channel := Channel{Id: id}
-	err := DB.First(&channel, "id = ?", id).Error
+	err := DB.Preload("ProxyPool").First(&channel, "id = ?", id).Error
 
 	return &channel, err
 }
 
 func GetChannelsByTag(tag string) ([]*Channel, error) {
 	var channels []*Channel
-	err := DB.Where("tag = ?", tag).Find(&channels).Error
+	err := DB.Preload("ProxyPool").Where("tag = ?", tag).Find(&channels).Error
 	return channels, err
 }
 
@@ -319,17 +321,51 @@ func BatchDelModelChannels(params *BatchChannelsParams) (int64, error) {
 	return count, nil
 }
 
-func (c *Channel) SetProxy() {
-	if c.Proxy == nil {
-		return
+// NormalizeProxyConfig 统一清洗渠道上的代理配置字段。
+func (c *Channel) NormalizeProxyConfig() error {
+	c.ProxyPoolID = NormalizeChannelProxyPoolID(c.ProxyPoolID)
+	if c.Proxy != nil {
+		proxyAddr := strings.TrimSpace(*c.Proxy)
+		c.Proxy = &proxyAddr
 	}
 
-	if strings.Contains(*c.Proxy, "%s") {
+	return EnsureIPProxyExists(c.ProxyPoolID)
+}
+
+// SetProxy 将渠道上的代理池配置解析成实际代理地址，供后续请求直接使用。
+func (c *Channel) SetProxy() error {
+	proxyValue := ""
+	if c.Proxy != nil {
+		proxyValue = *c.Proxy
+	}
+
+	resolvedProxy, err := ResolveChannelProxy(proxyValue, c.ProxyPoolID, c.ProxyPool)
+	if err != nil {
+		return err
+	}
+
+	if resolvedProxy == "" {
+		if c.Proxy == nil {
+			c.Proxy = &resolvedProxy
+		} else {
+			*c.Proxy = ""
+		}
+		return nil
+	}
+
+	if strings.Contains(resolvedProxy, "%s") {
 		md5Str := md5.Sum([]byte(c.Key))
 		idStr := hex.EncodeToString(md5Str[:])
-		*c.Proxy = strings.Replace(*c.Proxy, "%s", idStr, 1)
+		resolvedProxy = strings.Replace(resolvedProxy, "%s", idStr, 1)
 	}
 
+	if c.Proxy == nil {
+		c.Proxy = &resolvedProxy
+	} else {
+		*c.Proxy = resolvedProxy
+	}
+
+	return nil
 }
 
 func (channel *Channel) GetPriority() int64 {

@@ -249,7 +249,7 @@ var ChannelGroup = ChannelsChooser{}
 
 func (cc *ChannelsChooser) Load() {
 	var channels []*Channel
-	DB.Where("status = ?", config.ChannelStatusEnabled).Find(&channels)
+	DB.Preload("ProxyPool").Where("status = ?", config.ChannelStatusEnabled).Find(&channels)
 
 	newGroup := make(map[string]map[string][][]int)
 	newChannels := make(map[int]*ChannelChoice)
@@ -268,7 +268,10 @@ func (cc *ChannelsChooser) Load() {
 			continue
 		}
 
-		channel.SetProxy()
+		if err := channel.SetProxy(); err != nil {
+			logger.SysError(fmt.Sprintf("failed to resolve proxy for channel #%d: %s", channel.Id, err.Error()))
+			continue
+		}
 		if *channel.Weight == 0 {
 			channel.Weight = &config.DefaultChannelWeight
 		}

@@ -83,6 +83,7 @@ export default function ChannelList() {
   const [refreshFlag, setRefreshFlag] = useState(false);
   const [tags, setTags] = useState([]);
   const [modelOptions, setModelOptions] = useState([]);
+  const [proxyOptions, setProxyOptions] = useState([]);
 
   const confirm = useBoolean();
   const [confirmTitle, setConfirmTitle] = useState('');
@@ -385,6 +386,21 @@ export default function ChannelList() {
     }
   };
 
+  const fetchProxyPools = async () => {
+    try {
+      const res = await API.get('/api/ip_proxy/');
+      const { success, message, data } = res.data;
+      if (success) {
+        const options = [...(data || [])].sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'));
+        setProxyOptions(options);
+      } else {
+        showError(message);
+      }
+    } catch (error) {
+      showError(error.message);
+    }
+  };
+
   useEffect(() => {
     fetchData(page, rowsPerPage, searchKeyword, order, orderBy);
   }, [page, rowsPerPage, searchKeyword, order, orderBy, refreshFlag]);
@@ -393,6 +409,7 @@ export default function ChannelList() {
     fetchGroups().then();
     fetchTags().then();
     fetchModels().then();
+    fetchProxyPools().then();
     fetchPrices().then();
   }, [fetchPrices]);
 
@@ -493,6 +510,7 @@ export default function ChannelList() {
                 { id: 'group', label: t('channel_index.group'), disableSort: true },
                 { id: 'type', label: t('channel_index.type'), disableSort: false },
                 { id: 'status', label: t('channel_index.status'), disableSort: false },
+                { id: 'proxy_pool', label: '代理名称', disableSort: true },
                 { id: 'response_time', label: t('channel_index.responseTime'), disableSort: false },
                 // { id: 'balance', label: '余额', disableSort: false },
                 { id: 'used', label: t('channel_index.usedBalance'), disableSort: true },
@@ -513,6 +531,7 @@ export default function ChannelList() {
                   onRefresh={handleRefresh}
                   modelOptions={modelOptions}
                   prices={prices}
+                  proxyOptions={proxyOptions}
                 />
               ))}
             </TableBody>
@@ -538,6 +557,7 @@ export default function ChannelList() {
         groupOptions={groupOptions}
         modelOptions={modelOptions}
         prices={prices}
+        proxyOptions={proxyOptions}
       />
       <BatchModal open={openBatchModal} setOpen={setOpenBatchModal} />
 

@@ -8,6 +8,7 @@ const icons = {
   IconUserScan: () => <Icon width={20} icon="solar:user-id-bold-duotone" />,
   IconReceipt2: () => <Icon width={20} icon="solar:document-bold-duotone" />,
   IconSettingsCog: () => <Icon width={20} icon="solar:settings-bold-duotone" />,
+  IconProxy: () => <Icon width={20} icon="mdi:server-network" />,
   IconCoin: () => <Icon width={20} icon="solar:dollar-minimalistic-bold-duotone" />,
   IconBrandPaypal: () => <Icon width={20} icon="solar:wallet-money-bold-duotone" />,
   IconCoins: () => <Icon width={20} icon="solar:hand-money-bold-duotone" />,
@@ -40,6 +41,15 @@ const Setting = {
       type: 'item',
       url: '/panel/channel',
       icon: icons.IconSitemap,
+      breadcrumbs: false,
+      isAdmin: true
+    },
+    {
+      id: 'ip_proxy',
+      title: 'IP代理池',
+      type: 'item',
+      url: '/panel/ip_proxy',
+      icon: icons.IconProxy,
       breadcrumbs: false,
       isAdmin: true
     },

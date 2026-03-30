@@ -48,6 +48,7 @@ func isIgnorableSequenceOwnershipError(err error) bool {
 
 func autoMigrateModels(includeInvoiceMonth bool) []interface{} {
 	models := []interface{}{
+		&IPProxy{},
 		&Channel{},
 		&Key{},
 		&User{},

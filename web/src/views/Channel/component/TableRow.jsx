@@ -116,7 +116,7 @@ function getTypeBackground(type, isDark) {
   return `hsla(${hue}, 25%, 92%, 0.6)`;
 }
 
-export default function ChannelTableRow({ item, manageChannel, onRefresh, groupOptions, modelOptions, prices }) {
+export default function ChannelTableRow({ item, manageChannel, onRefresh, groupOptions, modelOptions, prices, proxyOptions = [] }) {
   const { t } = useTranslation();
   const theme = useTheme();
   const confirmDelete = useBoolean();
@@ -443,6 +443,14 @@ export default function ChannelTableRow({ item, manageChannel, onRefresh, groupO
                 </IconButton>
               </Tooltip>
             </Stack>
+          )}
+        </TableCell>
+
+        <TableCell sx={{ minWidth: 140, textAlign: 'center' }}>
+          {!item.tag && (
+            <Typography variant="body2" sx={{ color: item.proxy || item.proxy_pool?.name ? 'text.primary' : 'text.secondary' }}>
+              {item.proxy ? '手动代理' : item.proxy_pool?.name || '直连'}
+            </Typography>
           )}
         </TableCell>
 
@@ -787,6 +795,41 @@ export default function ChannelTableRow({ item, manageChannel, onRefresh, groupO
                       <Icon icon="mdi:web" sx={{ mr: 0.5 }} /> {t('channel_row.proxy')}
                     </Typography>
                     <Typography variant="body2">{item.proxy}</Typography>
+                  </Box>
+                </Grid>
+              )}
+
+              {item.proxy_pool && (
+                <Grid item xs={12}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: '10px',
+                      m: 1,
+                      px: 1,
+                      py: 0.5,
+                      bgcolor: 'background.neutral',
+                      borderRadius: 1,
+                      alignItems: 'center'
+                    }}
+                  >
+                    <Typography
+                      variant="body1"
+                      component="div"
+                      sx={{
+                        fontWeight: 600,
+                        color: 'text.secondary',
+                        display: 'flex',
+                        alignItems: 'center'
+                      }}
+                    >
+                      <Icon icon="mdi:server-network" sx={{ mr: 0.5 }} /> IP代理池
+                    </Typography>
+                    <Label variant="soft" color="info" sx={{ fontSize: '0.75rem' }}>
+                      {item.proxy_pool.name}
+                    </Label>
+                    <Typography variant="body2">{item.proxy_pool.proxy}</Typography>
                   </Box>
                 </Grid>
               )}
@@ -1304,6 +1347,7 @@ export default function ChannelTableRow({ item, manageChannel, onRefresh, groupO
         isTag={!!item.tag}
         modelOptions={modelOptions}
         prices={prices}
+        proxyOptions={proxyOptions}
       />
 
       <Popover
@@ -1466,7 +1510,8 @@ ChannelTableRow.propTypes = {
   onRefresh: PropTypes.func,
   groupOptions: PropTypes.array,
   modelOptions: PropTypes.array,
-  prices: PropTypes.array
+  prices: PropTypes.array,
+  proxyOptions: PropTypes.array
 };
 
 function renderBalance(type, balance) {

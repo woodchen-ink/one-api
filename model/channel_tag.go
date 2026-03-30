@@ -22,7 +22,7 @@ type ChannelTag struct {
 
 func GetChannelsTagList(tag string) ([]*Channel, error) {
 	var channels []*Channel
-	err := DB.Model(&Channel{}).Where("tag = ?", tag).Find(&channels).Error
+	err := DB.Model(&Channel{}).Preload("ProxyPool").Where("tag = ?", tag).Find(&channels).Error
 	return channels, err
 }
 
@@ -46,7 +46,7 @@ func GetChannelsTag(tag string) (*ChannelTagCollection, error) {
 	var channelTag ChannelTagCollection
 
 	var channels []Channel
-	err := DB.Where("tag = ?", tag).Find(&channels).Error
+	err := DB.Preload("ProxyPool").Where("tag = ?", tag).Find(&channels).Error
 	if err != nil {
 		return nil, err
 	}
@@ -142,24 +142,24 @@ func UpdateChannelsTag(tag string, channel *Channel) error {
 		}
 	}
 
-	err = tx.Model(Channel{}).Where("tag = ?", tag).Updates(
-		Channel{
-			BaseURL:            channel.BaseURL,
-			Other:              channel.Other,
-			Models:             channel.Models,
-			Group:              channel.Group,
-			Tag:                channel.Tag,
-			ModelMapping:       channel.ModelMapping,
-			ModelHeaders:       channel.ModelHeaders,
-			CustomParameter:    channel.CustomParameter,
-			Proxy:              channel.Proxy,
-			TestModel:          channel.TestModel,
-			OnlyChat:           channel.OnlyChat,
-			Plugin:             channel.Plugin,
-			PreCost:            channel.PreCost,
-			DisabledStream:     channel.DisabledStream,
-			CompatibleResponse: channel.CompatibleResponse,
-		}).Error
+	err = tx.Model(Channel{}).Where("tag = ?", tag).Updates(map[string]interface{}{
+		"base_url":            channel.BaseURL,
+		"other":               channel.Other,
+		"models":              channel.Models,
+		"group":               channel.Group,
+		"tag":                 channel.Tag,
+		"model_mapping":       channel.ModelMapping,
+		"model_headers":       channel.ModelHeaders,
+		"custom_parameter":    channel.CustomParameter,
+		"proxy":               channel.Proxy,
+		"proxy_pool_id":       channel.ProxyPoolID,
+		"test_model":          channel.TestModel,
+		"only_chat":           channel.OnlyChat,
+		"plugin":              channel.Plugin,
+		"pre_cost":            channel.PreCost,
+		"disabled_stream":     channel.DisabledStream,
+		"compatible_response": channel.CompatibleResponse,
+	}).Error
 
 	if err != nil {
 		tx.Rollback()

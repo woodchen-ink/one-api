@@ -2,6 +2,7 @@ package providers
 
 import (
 	"czloapi/common/config"
+	"czloapi/common/logger"
 	"czloapi/model"
 	"czloapi/providers/ali"
 	"czloapi/providers/azure"
@@ -67,6 +68,15 @@ func GetProvider(channel *model.Channel, c *gin.Context) base.ProviderInterface 
 		channel.Type == config.ChannelTypeOpenRouter ||
 		channel.Type == config.ChannelTypeTencent ||
 		channel.Type == config.ChannelTypeHunyuan {
+		return nil
+	}
+
+	if err := channel.SetProxy(); err != nil {
+		if c != nil && c.Request != nil {
+			logger.LogError(c.Request.Context(), "resolve channel proxy failed: "+err.Error())
+		} else {
+			logger.SysError("resolve channel proxy failed: " + err.Error())
+		}
 		return nil
 	}
 

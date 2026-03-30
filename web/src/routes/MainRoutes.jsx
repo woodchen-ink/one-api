@@ -8,6 +8,7 @@ const Channel = Loadable(lazy(() => import('views/Channel')));
 const Log = Loadable(lazy(() => import('views/Log')));
 const Redemption = Loadable(lazy(() => import('views/Redemption')));
 const Setting = Loadable(lazy(() => import('views/Setting')));
+const IPProxy = Loadable(lazy(() => import('views/IPProxy')));
 const Key = Loadable(lazy(() => import('views/Token')));
 const Topup = Loadable(lazy(() => import('views/Topup')));
 const OrderManagement = Loadable(lazy(() => import('views/Order')));
@@ -59,6 +60,10 @@ const MainRoutes = {
     {
       path: 'channel',
       element: <Channel />
+    },
+    {
+      path: 'ip_proxy',
+      element: <IPProxy />
     },
     {
       path: 'log',

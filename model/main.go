@@ -128,6 +128,10 @@ func InitDB() (err error) {
 			return err
 		}
 
+		err = db.AutoMigrate(&IPProxy{})
+		if err != nil {
+			return err
+		}
 		err = db.AutoMigrate(&Channel{})
 		if err != nil {
 			return err

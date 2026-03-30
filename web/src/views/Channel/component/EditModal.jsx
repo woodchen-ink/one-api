@@ -60,7 +60,19 @@ const getValidationSchema = (t) =>
     type: Yup.number().required(t('channel_edit.requiredChannel')),
     key: Yup.string().when('is_edit', { is: false, then: Yup.string().required(t('channel_edit.requiredKey')) }),
     other: Yup.string(),
-    proxy: Yup.string(),
+    proxy_mode: Yup.string().oneOf(['none', 'manual', 'pool']).default('none'),
+    proxy: Yup.string().test('manual-proxy-required', '请输入代理地址', function (value) {
+      if (this.parent.proxy_mode !== 'manual') {
+        return true;
+      }
+      return Boolean(value && `${value}`.trim());
+    }),
+    proxy_pool_id: Yup.mixed().test('proxy-pool-required', '请选择IP代理池', function (value) {
+      if (this.parent.proxy_mode !== 'pool') {
+        return true;
+      }
+      return value !== '' && value !== null && value !== undefined;
+    }),
     test_model: Yup.string(),
     models: Yup.array().min(1, t('channel_edit.requiredModels')),
     groups: Yup.array().min(1, t('channel_edit.requiredGroup')),
@@ -74,7 +86,7 @@ const getValidationSchema = (t) =>
     custom_parameter: Yup.string().nullable()
   });
 
-const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, modelOptions, prices }) => {
+const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, modelOptions, prices, proxyOptions = [] }) => {
   const { t } = useTranslation();
   const { t: customizeT } = useCustomizeT();
   const theme = useTheme();
@@ -94,6 +106,13 @@ const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, model
   const [modelSelectorOpen, setModelSelectorOpen] = useState(false);
   const [tempFormikValues, setTempFormikValues] = useState(null);
   const [tempSetFieldValue, setTempSetFieldValue] = useState(null);
+
+  const getSelectedProxyOption = (proxyPoolId) => {
+    if (proxyPoolId === '' || proxyPoolId === null || proxyPoolId === undefined) {
+      return null;
+    }
+    return proxyOptions.find((option) => option.id === Number(proxyPoolId)) || null;
+  };
 
   const initChannel = (typeValue) => {
     if (typeConfig[typeValue]?.inputLabel) {
@@ -169,6 +188,16 @@ const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, model
   const submit = async (values, { setErrors, setStatus, setSubmitting }) => {
     setSubmitting(true);
     values = trims(values);
+    if (values.proxy_mode === 'manual') {
+      values.proxy_pool_id = null;
+    } else if (values.proxy_mode === 'pool') {
+      values.proxy = '';
+      values.proxy_pool_id = values.proxy_pool_id === '' ? null : Number(values.proxy_pool_id);
+    } else {
+      values.proxy = '';
+      values.proxy_pool_id = null;
+    }
+    delete values.proxy_mode;
     if (values.base_url && values.base_url.endsWith('/')) {
       values.base_url = values.base_url.slice(0, values.base_url.length - 1);
     }
@@ -367,6 +396,15 @@ const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, model
         }
 
         data.base_url = data.base_url ?? '';
+        data.proxy = data.proxy ?? '';
+        data.proxy_pool_id = data.proxy_pool_id ?? '';
+        if (data.proxy) {
+          data.proxy_mode = 'manual';
+        } else if (data.proxy_pool_id !== '') {
+          data.proxy_mode = 'pool';
+        } else {
+          data.proxy_mode = 'none';
+        }
         data.is_edit = true;
         if (data.plugin === null) {
           data.plugin = {};
@@ -427,6 +465,7 @@ const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, model
                 setTempSetFieldValue(() => setFieldValue); // 保存函数引用
                 setModelSelectorOpen(true);
               };
+              const selectedProxyOption = getSelectedProxyOption(values.proxy_pool_id);
 
               return (
                 <form noValidate onSubmit={handleSubmit}>
@@ -984,28 +1023,98 @@ const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, model
                       </Box>
 
                       {inputPrompt.proxy && (
-                        <FormControl fullWidth error={Boolean(touched.proxy && errors.proxy)} sx={{ mt: 0.5, mb: 1.5 }}>
-                          <InputLabel htmlFor="channel-proxy-label">{customizeT(inputLabel.proxy)}</InputLabel>
-                          <OutlinedInput
-                            id="channel-proxy-label"
-                            label={customizeT(inputLabel.proxy)}
-                            disabled={hasTag}
-                            type="text"
-                            value={values.proxy}
-                            name="proxy"
-                            onBlur={handleBlur}
-                            onChange={handleChange}
-                            inputProps={{}}
-                            aria-describedby="helper-text-channel-proxy-label"
-                          />
-                          {touched.proxy && errors.proxy ? (
-                            <FormHelperText error id="helper-tex-channel-proxy-label">
-                              {errors.proxy}
-                            </FormHelperText>
-                          ) : (
-                            <FormHelperText id="helper-tex-channel-proxy-label"> {customizeT(inputPrompt.proxy)} </FormHelperText>
+                        <Box sx={{ mt: 0.5, mb: 1.5 }}>
+                          <FormControl fullWidth sx={{ mb: 1 }}>
+                            <InputLabel htmlFor="channel-proxy-mode-label">代理方式</InputLabel>
+                            <Select
+                              id="channel-proxy-mode-label"
+                              label="代理方式"
+                              disabled={hasTag}
+                              value={values.proxy_mode}
+                              name="proxy_mode"
+                              onBlur={handleBlur}
+                              onChange={(event) => {
+                                const mode = event.target.value;
+                                setFieldValue('proxy_mode', mode);
+                                if (mode !== 'manual') {
+                                  setFieldValue('proxy', '');
+                                }
+                                if (mode !== 'pool') {
+                                  setFieldValue('proxy_pool_id', '');
+                                }
+                              }}
+                            >
+                              <MenuItem value="none">不使用代理</MenuItem>
+                              <MenuItem value="manual">手动填写代理</MenuItem>
+                              <MenuItem value="pool">使用IP代理池</MenuItem>
+                            </Select>
+                            <FormHelperText>选择是否使用手动代理地址，或直接绑定已创建的IP代理池</FormHelperText>
+                          </FormControl>
+
+                          {values.proxy_mode === 'manual' && (
+                            <FormControl fullWidth error={Boolean(touched.proxy && errors.proxy)}>
+                              <InputLabel htmlFor="channel-proxy-label">{customizeT(inputLabel.proxy)}</InputLabel>
+                              <OutlinedInput
+                                id="channel-proxy-label"
+                                label={customizeT(inputLabel.proxy)}
+                                disabled={hasTag}
+                                type="text"
+                                value={values.proxy}
+                                name="proxy"
+                                onBlur={handleBlur}
+                                onChange={handleChange}
+                                inputProps={{}}
+                                aria-describedby="helper-text-channel-proxy-label"
+                              />
+                              {touched.proxy && errors.proxy ? (
+                                <FormHelperText error id="helper-tex-channel-proxy-label">
+                                  {errors.proxy}
+                                </FormHelperText>
+                              ) : (
+                                <FormHelperText id="helper-tex-channel-proxy-label"> {customizeT(inputPrompt.proxy)} </FormHelperText>
+                              )}
+                            </FormControl>
                           )}
-                        </FormControl>
+
+                          {values.proxy_mode === 'pool' && (
+                            <FormControl fullWidth error={Boolean(touched.proxy_pool_id && errors.proxy_pool_id)}>
+                              <InputLabel htmlFor="channel-proxy-pool-label">IP代理池</InputLabel>
+                              <Select
+                                id="channel-proxy-pool-label"
+                                label="IP代理池"
+                                disabled={hasTag}
+                                value={values.proxy_pool_id}
+                                name="proxy_pool_id"
+                                onBlur={handleBlur}
+                                onChange={(event) => {
+                                  setFieldValue('proxy_pool_id', event.target.value);
+                                }}
+                              >
+                                <MenuItem value="" disabled>
+                                  请选择IP代理池
+                                </MenuItem>
+                                {proxyOptions.map((option) => (
+                                  <MenuItem key={option.id} value={option.id}>
+                                    {option.name}
+                                  </MenuItem>
+                                ))}
+                              </Select>
+                              {touched.proxy_pool_id && errors.proxy_pool_id ? (
+                                <FormHelperText error id="helper-tex-channel-proxy-pool-label">
+                                  {errors.proxy_pool_id}
+                                </FormHelperText>
+                              ) : (
+                                <FormHelperText id="helper-tex-channel-proxy-pool-label">
+                                  {selectedProxyOption
+                                    ? `当前代理: ${selectedProxyOption.proxy}`
+                                    : proxyOptions.length > 0
+                                      ? '请选择一个已配置好的代理池，渠道请求会自动复用对应代理地址'
+                                      : '暂无可用IP代理池，请先到“IP代理池”页面新增代理'}
+                                </FormHelperText>
+                              )}
+                            </FormControl>
+                          )}
+                        </Box>
                       )}
 
                       {/* 高级配置 - 可折叠 */}
@@ -1374,5 +1483,6 @@ EditModal.propTypes = {
   groupOptions: PropTypes.array,
   isTag: PropTypes.bool,
   modelOptions: PropTypes.array,
-  prices: PropTypes.array
+  prices: PropTypes.array,
+  proxyOptions: PropTypes.array
 };

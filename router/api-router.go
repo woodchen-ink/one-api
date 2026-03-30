@@ -215,6 +215,17 @@ func SetApiRouter(router *gin.Engine) {
 
 		}
 
+		ipProxyRoute := apiRouter.Group("/ip_proxy")
+		ipProxyRoute.Use(middleware.AdminAuth())
+		{
+			ipProxyRoute.GET("/", controller.GetIPProxyList)
+			ipProxyRoute.GET("/:id", controller.GetIPProxy)
+			ipProxyRoute.GET("/:id/test", controller.TestIPProxyLatency)
+			ipProxyRoute.POST("/", controller.AddIPProxy)
+			ipProxyRoute.PUT("/", controller.UpdateIPProxy)
+			ipProxyRoute.DELETE("/:id", controller.DeleteIPProxy)
+		}
+
 		keyRoute := apiRouter.Group("/key")
 		keyRoute.Use(middleware.UserAuth())
 		{

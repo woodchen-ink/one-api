@@ -72,6 +72,10 @@ func UpdateChannelsTag(c *gin.Context) {
 		common.APIRespondWithError(c, http.StatusOK, err)
 		return
 	}
+	if err = channel.NormalizeProxyConfig(); err != nil {
+		common.APIRespondWithError(c, http.StatusOK, err)
+		return
+	}
 
 	err = model.UpdateChannelsTag(tag, &channel)
 	if err != nil {

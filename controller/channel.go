@@ -65,6 +65,13 @@ func AddChannel(c *gin.Context) {
 		})
 		return
 	}
+	if err = channel.NormalizeProxyConfig(); err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
 	channel.CreatedTime = utils.GetTimestamp()
 	keys := strings.Split(channel.Key, "\n")
 
@@ -158,6 +165,13 @@ func UpdateChannel(c *gin.Context) {
 	channel := model.Channel{}
 	err := c.ShouldBindJSON(&channel)
 	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
+	if err = channel.NormalizeProxyConfig(); err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
 			"message": err.Error(),
