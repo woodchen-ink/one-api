@@ -118,19 +118,36 @@ func (r *relayClaudeMessages) sendClaudeDirect(chatProvider claude.ClaudeChatInt
 			return
 		}
 	} else {
-		var response *claude.ClaudeResponse
-		response, err = chatProvider.CreateClaudeChat(r.claudeRequest)
-		if err != nil {
-			return
-		}
+		if rawProvider, ok := r.provider.(claude.ClaudeRawChatInterface); ok {
+			var response *http.Response
+			response, err = rawProvider.CreateClaudeChatRaw(r.claudeRequest)
+			if err != nil {
+				return
+			}
 
-		if r.heartbeat != nil {
-			r.heartbeat.Stop()
-		}
+			if r.heartbeat != nil {
+				r.heartbeat.Stop()
+			}
 
-		openErr := responseJsonClient(r.c, response)
-		if openErr != nil {
-			err = openErr
+			openErr := responseMultipart(r.c, response)
+			if openErr != nil {
+				err = openErr
+			}
+		} else {
+			var response *claude.ClaudeResponse
+			response, err = chatProvider.CreateClaudeChat(r.claudeRequest)
+			if err != nil {
+				return
+			}
+
+			if r.heartbeat != nil {
+				r.heartbeat.Stop()
+			}
+
+			openErr := responseJsonClient(r.c, response)
+			if openErr != nil {
+				err = openErr
+			}
 		}
 	}
 
