@@ -323,6 +323,8 @@ func BatchDelModelChannels(params *BatchChannelsParams) (int64, error) {
 
 // NormalizeProxyConfig 统一清洗渠道上的代理配置字段。
 func (c *Channel) NormalizeProxyConfig() error {
+	// 渠道编辑表单只需要提交 proxy_pool_id，不应携带旧的关联对象回写数据库。
+	c.ProxyPool = nil
 	c.ProxyPoolID = NormalizeChannelProxyPoolID(c.ProxyPoolID)
 	if c.Proxy != nil {
 		proxyAddr := strings.TrimSpace(*c.Proxy)

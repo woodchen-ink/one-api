@@ -188,6 +188,7 @@ const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, model
   const submit = async (values, { setErrors, setStatus, setSubmitting }) => {
     setSubmitting(true);
     values = trims(values);
+    delete values.proxy_pool;
     if (values.proxy_mode === 'manual') {
       values.proxy_pool_id = null;
     } else if (values.proxy_mode === 'pool') {
