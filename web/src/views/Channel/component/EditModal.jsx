@@ -815,7 +815,7 @@ const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, model
                       )}
                     </Grid>
 
-                    {/* ========== 右栏：模型 + 高级配置 + 插件 ========== */}
+                    {/* ========== 右栏：模型 + 代理 + 高级配置 + 插件 ========== */}
                     <Grid item xs={12} lg={6}>
                       {/* 模型选择 */}
                       <FormControl fullWidth sx={{ mt: 0.5, mb: 0.5 }}>
@@ -983,11 +983,37 @@ const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, model
                         </ButtonGroup>
                       </Box>
 
+                      {inputPrompt.proxy && (
+                        <FormControl fullWidth error={Boolean(touched.proxy && errors.proxy)} sx={{ mt: 0.5, mb: 1.5 }}>
+                          <InputLabel htmlFor="channel-proxy-label">{customizeT(inputLabel.proxy)}</InputLabel>
+                          <OutlinedInput
+                            id="channel-proxy-label"
+                            label={customizeT(inputLabel.proxy)}
+                            disabled={hasTag}
+                            type="text"
+                            value={values.proxy}
+                            name="proxy"
+                            onBlur={handleBlur}
+                            onChange={handleChange}
+                            inputProps={{}}
+                            aria-describedby="helper-text-channel-proxy-label"
+                          />
+                          {touched.proxy && errors.proxy ? (
+                            <FormHelperText error id="helper-tex-channel-proxy-label">
+                              {errors.proxy}
+                            </FormHelperText>
+                          ) : (
+                            <FormHelperText id="helper-tex-channel-proxy-label"> {customizeT(inputPrompt.proxy)} </FormHelperText>
+                          )}
+                        </FormControl>
+                      )}
+
                       {/* 高级配置 - 可折叠 */}
                       {(inputPrompt.model_mapping ||
                         inputPrompt.model_headers ||
                         inputPrompt.custom_parameter ||
-                        inputPrompt.disabled_stream) && (
+                        inputPrompt.disabled_stream ||
+                        inputPrompt.test_model) && (
                         <Box sx={{ mt: 1 }}>
                           <Box
                             sx={{
@@ -1164,33 +1190,9 @@ const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, model
                                 </FormControl>
                               )}
 
-                              <Grid container spacing={2}>
-                                <Grid item xs={12} sm={inputPrompt.test_model ? 6 : 12}>
-                                  <FormControl fullWidth error={Boolean(touched.proxy && errors.proxy)} sx={{ mt: 0.5, mb: 0.5 }}>
-                                    <InputLabel htmlFor="channel-proxy-label">{customizeT(inputLabel.proxy)}</InputLabel>
-                                    <OutlinedInput
-                                      id="channel-proxy-label"
-                                      label={customizeT(inputLabel.proxy)}
-                                      disabled={hasTag}
-                                      type="text"
-                                      value={values.proxy}
-                                      name="proxy"
-                                      onBlur={handleBlur}
-                                      onChange={handleChange}
-                                      inputProps={{}}
-                                      aria-describedby="helper-text-channel-proxy-label"
-                                    />
-                                    {touched.proxy && errors.proxy ? (
-                                      <FormHelperText error id="helper-tex-channel-proxy-label">
-                                        {errors.proxy}
-                                      </FormHelperText>
-                                    ) : (
-                                      <FormHelperText id="helper-tex-channel-proxy-label"> {customizeT(inputPrompt.proxy)} </FormHelperText>
-                                    )}
-                                  </FormControl>
-                                </Grid>
-                                {inputPrompt.test_model && (
-                                  <Grid item xs={12} sm={6}>
+                              {inputPrompt.test_model && (
+                                <Grid container spacing={2}>
+                                  <Grid item xs={12}>
                                     <FormControl
                                       fullWidth
                                       error={Boolean(touched.test_model && errors.test_model)}
@@ -1220,8 +1222,8 @@ const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, model
                                       )}
                                     </FormControl>
                                   </Grid>
-                                )}
-                              </Grid>
+                                </Grid>
+                              )}
                             </Box>
                           </Collapse>
                         </Box>
