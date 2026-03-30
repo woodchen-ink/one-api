@@ -283,9 +283,10 @@ function viewReasoning(reasoning, t) {
     );
   }
 
-  const label = reasoning.level ? (
+  const displayLabel = getReasoningDisplayLabel(reasoning);
+  const label = displayLabel ? (
     <Label color={getReasoningColor(reasoning.level)} variant="soft">
-      {reasoning.level}
+      {displayLabel}
     </Label>
   ) : (
     <Typography variant="body2" color="text.secondary">
@@ -313,6 +314,19 @@ function viewReasoning(reasoning, t) {
       <span style={{ cursor: 'help' }}>{label}</span>
     </Tooltip>
   );
+}
+
+// Claude 原生请求优先展示原始 effort 文案，颜色仍沿用归一化 level。
+function getReasoningDisplayLabel(reasoning) {
+  if (!reasoning) {
+    return '';
+  }
+
+  if (reasoning.provider_family === 'claude' && reasoning.raw_effort) {
+    return reasoning.raw_effort;
+  }
+
+  return reasoning.level || '';
 }
 
 function getReasoningColor(level) {
