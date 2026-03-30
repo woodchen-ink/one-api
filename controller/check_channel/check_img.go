@@ -55,7 +55,8 @@ func (c *CheckImgProcess) GetName() string {
 
 func (c *CheckImgProcess) GetRequest() *types.ChatCompletionRequest {
 	return &types.ChatCompletionRequest{
-		Model: c.ModelName,
+		Model:     c.ModelName,
+		MaxTokens: 16,
 		Messages: []types.ChatCompletionMessage{
 			{
 				Role: types.ChatMessageRoleUser,

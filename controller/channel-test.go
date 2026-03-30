@@ -135,8 +135,9 @@ func testChannel(channel *model.Channel, testModel string) (openaiErr *types.Ope
 					Content: "You just need to output 'hi' next.",
 				},
 			},
-			Model:  newModelName,
-			Stream: false,
+			Model:     newModelName,
+			MaxTokens: 16,
+			Stream:    false,
 		}
 
 		response, openAIErrorWithStatusCode = chatProvider.CreateChatCompletion(testRequest)

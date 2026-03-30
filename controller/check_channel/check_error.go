@@ -22,7 +22,8 @@ func (c *CheckErrorProcess) GetName() string {
 
 func (c *CheckErrorProcess) GetRequest() *types.ChatCompletionRequest {
 	return &types.ChatCompletionRequest{
-		Model: c.ModelName,
+		Model:     c.ModelName,
+		MaxTokens: 16,
 		Messages: []types.ChatCompletionMessage{
 			{
 				Role:    types.ChatMessageRoleUser,

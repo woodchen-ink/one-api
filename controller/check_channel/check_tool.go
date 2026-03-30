@@ -28,7 +28,8 @@ func (c *CheckToolProcess) GetRequest() *types.ChatCompletionRequest {
 	json.Unmarshal([]byte(`{"properties":{"a":{"type":"integer"},"b":{"type":"integer"}},"required":["a","b"],"type":"object"}`), &multiplyTool)
 
 	return &types.ChatCompletionRequest{
-		Model: c.ModelName,
+		Model:     c.ModelName,
+		MaxTokens: 256,
 		Messages: []types.ChatCompletionMessage{
 			{
 				Role:    types.ChatMessageRoleUser,

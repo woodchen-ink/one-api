@@ -24,7 +24,8 @@ func (c *CheckJsonFormatProcess) GetRequest() *types.ChatCompletionRequest {
 	json.Unmarshal([]byte(`{"type":"object","properties":{"steps":{"type":"array","items":{"type":"object","properties":{"explanation":{"type":"string"},"output":{"type":"string"}},"required":["explanation","output"],"additionalProperties":false}},"final_answer":{"type":"string"}},"required":["steps","final_answer"],"additionalProperties":false}`), &jsonSchema)
 
 	return &types.ChatCompletionRequest{
-		Model: c.ModelName,
+		Model:     c.ModelName,
+		MaxTokens: 256,
 		Messages: []types.ChatCompletionMessage{
 			{
 				Role:    types.ChatMessageRoleSystem,
