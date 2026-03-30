@@ -150,6 +150,8 @@ func hasRelayHeader(headers map[string]string, key string) bool {
 func shouldSkipRelayIncomingHeader(key string) bool {
 	switch strings.ToLower(strings.TrimSpace(key)) {
 	case "authorization",
+		"x-api-key",
+		"x-goog-api-key",
 		"host",
 		"content-length",
 		"connection",

@@ -25,6 +25,8 @@ func TestCreateClaudeChatRawPreservesUnknownFieldsAndHeaders(t *testing.T) {
 	var receivedBeta string
 	var receivedVersion string
 	var receivedAuthorization string
+	var receivedXAPIKey string
+	var receivedXGoogAPIKey string
 	var receivedAcceptEncoding string
 	var receivedCookie string
 	var receivedXFF string
@@ -39,6 +41,8 @@ func TestCreateClaudeChatRawPreservesUnknownFieldsAndHeaders(t *testing.T) {
 		receivedBeta = r.Header.Get("Anthropic-Beta")
 		receivedVersion = r.Header.Get("Anthropic-Version")
 		receivedAuthorization = r.Header.Get("Authorization")
+		receivedXAPIKey = r.Header.Get("X-Api-Key")
+		receivedXGoogAPIKey = r.Header.Get("X-Goog-Api-Key")
 		receivedAcceptEncoding = r.Header.Get("Accept-Encoding")
 		receivedCookie = r.Header.Get("Cookie")
 		receivedXFF = r.Header.Get("X-Forwarded-For")
@@ -59,6 +63,8 @@ func TestCreateClaudeChatRawPreservesUnknownFieldsAndHeaders(t *testing.T) {
 	c.Request.Header.Set("Anthropic-Version", "2023-06-01")
 	c.Request.Header.Set("Anthropic-Beta", "thinking-v2")
 	c.Request.Header.Set("Authorization", "Bearer gateway-token")
+	c.Request.Header.Set("X-API-Key", "client-claude-key")
+	c.Request.Header.Set("X-Goog-Api-Key", "client-gemini-key")
 	c.Request.Header.Set("Accept-Encoding", "gzip, br")
 	c.Request.Header.Set("Cookie", "session=secret")
 	c.Request.Header.Set("X-Forwarded-For", "1.2.3.4")
@@ -98,6 +104,8 @@ func TestCreateClaudeChatRawPreservesUnknownFieldsAndHeaders(t *testing.T) {
 	assert.Equal(t, "thinking-v2", receivedBeta)
 	assert.Equal(t, "2023-06-01", receivedVersion)
 	assert.Empty(t, receivedAuthorization)
+	assert.Equal(t, "upstream-key", receivedXAPIKey)
+	assert.Empty(t, receivedXGoogAPIKey)
 	assert.Equal(t, "identity", receivedAcceptEncoding)
 	assert.Empty(t, receivedCookie)
 	assert.Empty(t, receivedXFF)
