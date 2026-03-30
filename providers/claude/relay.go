@@ -109,7 +109,7 @@ func (p *ClaudeProvider) getRelayChatRequest(request *ClaudeRequest) (*http.Requ
 
 	headers := p.GetRequestHeaders()
 	for key, values := range p.Context.Request.Header {
-		if shouldSkipRelayIncomingHeader(key) || hasRelayHeader(headers, key) {
+		if !shouldPassthroughClaudeIncomingHeader(key) || hasRelayHeader(headers, key) {
 			continue
 		}
 		headers[key] = strings.Join(values, ", ")
@@ -117,6 +117,9 @@ func (p *ClaudeProvider) getRelayChatRequest(request *ClaudeRequest) (*http.Requ
 	// Avoid leaking the caller's compression preferences and keep upstream
 	// responses in plain text for raw passthrough / SSE handling.
 	headers["Accept-Encoding"] = "identity"
+	// Suppress Go's default User-Agent so the upstream only receives the
+	// protocol-specific headers we explicitly allow.
+	headers["User-Agent"] = ""
 	if request.Stream {
 		headers["Accept"] = "text/event-stream"
 	}
@@ -147,29 +150,10 @@ func hasRelayHeader(headers map[string]string, key string) bool {
 	return false
 }
 
-func shouldSkipRelayIncomingHeader(key string) bool {
+func shouldPassthroughClaudeIncomingHeader(key string) bool {
 	switch strings.ToLower(strings.TrimSpace(key)) {
-	case "authorization",
-		"x-api-key",
-		"x-goog-api-key",
-		"host",
-		"content-length",
-		"connection",
-		"transfer-encoding",
-		"accept-encoding",
-		"cookie",
-		"x-forwarded-for",
-		"x-real-ip",
-		"forwarded",
-		"cf-connecting-ip",
-		"cf-ray",
-		"cf-ipcountry",
-		"cf-visitor",
-		"true-client-ip",
-		"x-cluster-client-ip",
-		"x-forwarded-host",
-		"x-forwarded-proto",
-		"x-forwarded-port":
+	case "anthropic-version",
+		"anthropic-beta":
 		return true
 	default:
 		return false

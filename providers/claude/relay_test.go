@@ -33,6 +33,9 @@ func TestCreateClaudeChatRawPreservesUnknownFieldsAndHeaders(t *testing.T) {
 	var receivedXRealIP string
 	var receivedCFConnectingIP string
 	var receivedCFRay string
+	var receivedUserAgent string
+	var receivedTraceparent string
+	var receivedXRequestID string
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		body, err := io.ReadAll(r.Body)
@@ -49,6 +52,9 @@ func TestCreateClaudeChatRawPreservesUnknownFieldsAndHeaders(t *testing.T) {
 		receivedXRealIP = r.Header.Get("X-Real-Ip")
 		receivedCFConnectingIP = r.Header.Get("Cf-Connecting-Ip")
 		receivedCFRay = r.Header.Get("Cf-Ray")
+		receivedUserAgent = r.Header.Get("User-Agent")
+		receivedTraceparent = r.Header.Get("Traceparent")
+		receivedXRequestID = r.Header.Get("X-Request-Id")
 
 		w.Header().Set("Content-Type", "application/json")
 		_, err = w.Write([]byte(`{"id":"msg_123","type":"message","role":"assistant","content":[{"type":"text","text":"ok"}],"model":"claude-sonnet-4-6","usage":{"input_tokens":12,"output_tokens":34},"thinking_info":{"effort":"max"}}`))
@@ -71,6 +77,9 @@ func TestCreateClaudeChatRawPreservesUnknownFieldsAndHeaders(t *testing.T) {
 	c.Request.Header.Set("X-Real-IP", "5.6.7.8")
 	c.Request.Header.Set("CF-Connecting-IP", "9.8.7.6")
 	c.Request.Header.Set("CF-Ray", "ray-id")
+	c.Request.Header.Set("User-Agent", "client-agent")
+	c.Request.Header.Set("Traceparent", "00-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-bbbbbbbbbbbbbbbb-01")
+	c.Request.Header.Set("X-Request-Id", "client-request-id")
 	c.Set(config.GinRequestBodyKey, []byte(`{"model":"alias-model","max_tokens":128,"stream":false,"messages":[{"role":"user","content":"hello"}],"output_config":{"effort":"max","display":"verbose"},"future_field":{"enabled":true}}`))
 
 	baseURL := server.URL
@@ -112,6 +121,9 @@ func TestCreateClaudeChatRawPreservesUnknownFieldsAndHeaders(t *testing.T) {
 	assert.Empty(t, receivedXRealIP)
 	assert.Empty(t, receivedCFConnectingIP)
 	assert.Empty(t, receivedCFRay)
+	assert.Empty(t, receivedUserAgent)
+	assert.Empty(t, receivedTraceparent)
+	assert.Empty(t, receivedXRequestID)
 	assert.Contains(t, string(rawResponse), `"thinking_info":{"effort":"max"}`)
 	assert.Equal(t, 12, provider.GetUsage().PromptTokens)
 	assert.Equal(t, 34, provider.GetUsage().CompletionTokens)
