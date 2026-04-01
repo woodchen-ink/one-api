@@ -66,8 +66,7 @@ func UpdateChannelsTag(c *gin.Context) {
 		common.AbortWithMessage(c, http.StatusOK, "tag is required")
 		return
 	}
-	channel := model.Channel{}
-	err := c.ShouldBindJSON(&channel)
+	channel, err := bindChannelJSON(c)
 	if err != nil {
 		common.APIRespondWithError(c, http.StatusOK, err)
 		return
@@ -77,7 +76,7 @@ func UpdateChannelsTag(c *gin.Context) {
 		return
 	}
 
-	err = model.UpdateChannelsTag(tag, &channel)
+	err = model.UpdateChannelsTag(tag, channel)
 	if err != nil {
 		common.APIRespondWithError(c, http.StatusOK, err)
 		return

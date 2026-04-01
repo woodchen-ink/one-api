@@ -11,8 +11,7 @@ import (
 )
 
 func GetModelList(c *gin.Context) {
-	channel := &model.Channel{}
-	err := c.ShouldBindJSON(channel)
+	channel, err := bindChannelJSON(c)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,

@@ -56,8 +56,7 @@ func GetChannel(c *gin.Context) {
 }
 
 func AddChannel(c *gin.Context) {
-	channel := model.Channel{}
-	err := c.ShouldBindJSON(&channel)
+	channel, err := bindChannelJSON(c)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -84,7 +83,7 @@ func AddChannel(c *gin.Context) {
 		if key == "" {
 			continue
 		}
-		localChannel := channel
+		localChannel := *channel
 		localChannel.Key = key
 		if index > 0 {
 			localChannel.Name = localChannel.Name + "_" + strconv.Itoa(index+1)
@@ -162,8 +161,7 @@ func DeleteDisabledChannel(c *gin.Context) {
 }
 
 func UpdateChannel(c *gin.Context) {
-	channel := model.Channel{}
-	err := c.ShouldBindJSON(&channel)
+	channel, err := bindChannelJSON(c)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
