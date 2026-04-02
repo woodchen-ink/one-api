@@ -30,6 +30,18 @@ var (
 	noSupportRegex  = regexp.MustCompile(`(?:^tts|rerank|whisper|speech|^chirp)`)
 )
 
+var responsesPreferredModelMap = map[string]bool{
+	"o3-pro-2025-06-10":                true,
+	"o3-pro":                           true,
+	"o1-pro-2025-03-19":                true,
+	"o1-pro":                           true,
+	"o3-deep-research-2025-06-26":      true,
+	"o3-deep-research":                 true,
+	"o4-mini-deep-research-2025-06-26": true,
+	"o4-mini-deep-research":            true,
+	"codex-mini-latest":                true,
+}
+
 func testChannel(channel *model.Channel, testModel string) (openaiErr *types.OpenAIErrorWithStatusCode, err error) {
 	if testModel == "" {
 		testModel = channel.TestModel
@@ -38,29 +50,14 @@ func testChannel(channel *model.Channel, testModel string) (openaiErr *types.Ope
 		}
 	}
 
-	channelType := getModelType(testModel)
 	if err = channel.SetProxy(); err != nil {
 		return nil, err
-	}
-
-	var url string
-	switch channelType {
-	case "embeddings":
-		url = "/v1/embeddings"
-	case "image":
-		url = "/v1/images/generations"
-	case "chat":
-		url = "/v1/chat/completions"
-	case "response":
-		url = "/v1/responses"
-	default:
-		return nil, errors.New("不支持的模型类型")
 	}
 
 	// 创建测试上下文
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
-	req, err := http.NewRequest("POST", url, nil)
+	req, err := http.NewRequest("POST", "/v1/chat/completions", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -79,33 +76,116 @@ func testChannel(channel *model.Channel, testModel string) (openaiErr *types.Ope
 	}
 
 	newModelName = strings.TrimPrefix(newModelName, "+")
+	channelType := getModelType(newModelName)
 
 	usage := &types.Usage{}
 	provider.SetUsage(usage)
 
-	// 执行测试请求
-	var response any
-	var openAIErrorWithStatusCode *types.OpenAIErrorWithStatusCode
+	if shouldPreferResponsesChannelTest(newModelName) {
+		if err = setChannelTestRequestPath(c.Request, "response"); err != nil {
+			return nil, err
+		}
+		response, responseOpenAIError, responseErr := runChannelTest(provider, "response", newModelName)
+		if responseOpenAIError == nil && responseErr == nil {
+			logChannelTestResponse(channel.Name, newModelName, response)
+			return nil, nil
+		}
 
+		fallbackReason := "channel not implemented"
+		if responseErr != nil {
+			fallbackReason = responseErr.Error()
+		}
+		logger.SysLog(fmt.Sprintf("测试渠道 %s : %s responses 接口测速失败，回退 chat/completions，原因：%s", channel.Name, newModelName, fallbackReason))
+
+		if err = setChannelTestRequestPath(c.Request, "chat"); err != nil {
+			return nil, err
+		}
+		response, openAIErrorWithStatusCode, err := runChannelTest(provider, "chat", newModelName)
+		if openAIErrorWithStatusCode != nil || err != nil {
+			return openAIErrorWithStatusCode, err
+		}
+		logChannelTestResponse(channel.Name, newModelName, response)
+		return nil, nil
+	}
+
+	if err = setChannelTestRequestPath(c.Request, channelType); err != nil {
+		return nil, err
+	}
+	response, openAIErrorWithStatusCode, err := runChannelTest(provider, channelType, newModelName)
+	if openAIErrorWithStatusCode != nil || err != nil {
+		return openAIErrorWithStatusCode, err
+	}
+	logChannelTestResponse(channel.Name, newModelName, response)
+
+	return nil, nil
+}
+
+// shouldPreferResponsesChannelTest 判断测速时是否优先尝试 Responses API。
+func shouldPreferResponsesChannelTest(modelName string) bool {
+	normalizedModelName := strings.ToLower(strings.TrimSpace(modelName))
+	if normalizedModelName == "" {
+		return false
+	}
+
+	if responsesPreferredModelMap[normalizedModelName] {
+		return true
+	}
+
+	if responseRegex.MatchString(normalizedModelName) {
+		return true
+	}
+
+	return strings.HasPrefix(normalizedModelName, "gpt-5")
+}
+
+// setChannelTestRequestPath 同步测试上下文中的请求路径，避免后续逻辑依赖旧路径。
+func setChannelTestRequestPath(req *http.Request, channelType string) error {
+	path, err := getChannelTestPath(channelType)
+	if err != nil {
+		return err
+	}
+	req.URL.Path = path
+	req.RequestURI = path
+	return nil
+}
+
+// getChannelTestPath 返回测速场景下对应的 API 路径。
+func getChannelTestPath(channelType string) (string, error) {
+	switch channelType {
+	case "embeddings":
+		return "/v1/embeddings", nil
+	case "image":
+		return "/v1/images/generations", nil
+	case "chat":
+		return "/v1/chat/completions", nil
+	case "response":
+		return "/v1/responses", nil
+	default:
+		return "", errors.New("不支持的模型类型")
+	}
+}
+
+// runChannelTest 按指定接口类型执行一次测速请求。
+func runChannelTest(provider providers_base.ProviderInterface, channelType string, modelName string) (response any, openAIErrorWithStatusCode *types.OpenAIErrorWithStatusCode, err error) {
 	switch channelType {
 	case "embeddings":
 		embeddingsProvider, ok := provider.(providers_base.EmbeddingsInterface)
 		if !ok {
-			return nil, errors.New("channel not implemented")
+			return nil, nil, errors.New("channel not implemented")
 		}
 		testRequest := &types.EmbeddingRequest{
-			Model: newModelName,
+			Model: modelName,
 			Input: "hi",
 		}
 		response, openAIErrorWithStatusCode = embeddingsProvider.CreateEmbeddings(testRequest)
 	case "image":
 		imageProvider, ok := provider.(providers_base.ImageGenerationsInterface)
 		if !ok {
-			return nil, errors.New("channel not implemented")
+			return nil, nil, errors.New("channel not implemented")
 		}
 
 		testRequest := &types.ImageRequest{
-			Model:  newModelName,
+			Model:  modelName,
 			Prompt: "A cute cat",
 			N:      1,
 		}
@@ -113,12 +193,12 @@ func testChannel(channel *model.Channel, testModel string) (openaiErr *types.Ope
 	case "response":
 		responseProvider, ok := provider.(providers_base.ResponsesInterface)
 		if !ok {
-			return nil, errors.New("channel not implemented")
+			return nil, nil, errors.New("channel not implemented")
 		}
 
 		testRequest := &types.OpenAIResponsesRequest{
 			Input:  "You just need to output 'hi' next.",
-			Model:  newModelName,
+			Model:  modelName,
 			Stream: false,
 		}
 
@@ -126,7 +206,7 @@ func testChannel(channel *model.Channel, testModel string) (openaiErr *types.Ope
 	case "chat":
 		chatProvider, ok := provider.(providers_base.ChatInterface)
 		if !ok {
-			return nil, errors.New("channel not implemented")
+			return nil, nil, errors.New("channel not implemented")
 		}
 		testRequest := &types.ChatCompletionRequest{
 			Messages: []types.ChatCompletionMessage{
@@ -135,25 +215,27 @@ func testChannel(channel *model.Channel, testModel string) (openaiErr *types.Ope
 					Content: "You just need to output 'hi' next.",
 				},
 			},
-			Model:     newModelName,
+			Model:     modelName,
 			MaxTokens: 16,
 			Stream:    false,
 		}
 
 		response, openAIErrorWithStatusCode = chatProvider.CreateChatCompletion(testRequest)
 	default:
-		return nil, errors.New("不支持的模型类型")
+		return nil, nil, errors.New("不支持的模型类型")
 	}
 
 	if openAIErrorWithStatusCode != nil {
-		return openAIErrorWithStatusCode, errors.New(openAIErrorWithStatusCode.Message)
+		return nil, openAIErrorWithStatusCode, errors.New(openAIErrorWithStatusCode.Message)
 	}
 
-	// 转换为JSON字符串
-	jsonBytes, _ := json.Marshal(response)
-	logger.SysLog(fmt.Sprintf("测试渠道 %s : %s 返回内容为：%s", channel.Name, newModelName, string(jsonBytes)))
+	return response, nil, nil
+}
 
-	return nil, nil
+// logChannelTestResponse 记录测速成功时的响应摘要，便于排查渠道兼容性问题。
+func logChannelTestResponse(channelName string, modelName string, response any) {
+	jsonBytes, _ := json.Marshal(response)
+	logger.SysLog(fmt.Sprintf("测试渠道 %s : %s 返回内容为：%s", channelName, modelName, string(jsonBytes)))
 }
 
 func getModelType(modelName string) string {

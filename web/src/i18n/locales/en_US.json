@@ -878,7 +878,7 @@
     "lastTime": "Last speed test time:",
     "noTest": "Not tested",
     "second": "Second",
-    "testClick": "Click speed test (only supports chat model)"
+    "testClick": "Click speed test (prefer responses, fallback to chat)"
   },
   "setting": "Setting",
   "setting_index": {
@@ -1452,7 +1452,7 @@
   "渠道名称": "Channel name",
   "渠道类型": "Channel type",
   "版本号": "version number",
-  "用于测试使用的模型，为空时无法测速,如：gpt-3.5-turbo，仅支持chat模型": "The model used for testing cannot measure speed when empty. For example: gpt-3.5-turbo, only supports chat model.",
+  "用于测试使用的模型，为空时无法测速,如：gpt-3.5-turbo，仅支持chat模型": "The model used for testing cannot measure speed when empty. For example: gpt-3.5-turbo. When the model matches Responses, the test will prefer Responses and automatically fall back to Chat on failure.",
   "用户组": "user group",
   "知识库": "knowledge base",
   "知识库ID": "Knowledge base ID",
