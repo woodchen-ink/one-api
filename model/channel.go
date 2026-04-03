@@ -32,7 +32,6 @@ type Channel struct {
 	Tag                string  `json:"tag" form:"tag" gorm:"type:varchar(32);default:''"`
 	UsedQuota          int64   `json:"used_quota" gorm:"bigint;default:0"`
 	ModelMapping       *string `json:"model_mapping" gorm:"type:text"`
-	CustomParameter    *string `json:"custom_parameter" gorm:"type:varchar(1024);default:''"`
 	UserAgentMode      string  `json:"user_agent_mode" form:"user_agent_mode" gorm:"type:varchar(32);default:'default'"`
 	UserAgentPreset    string  `json:"user_agent_preset" form:"user_agent_preset" gorm:"type:varchar(64);default:''"`
 	Priority           *int64  `json:"priority" gorm:"bigint;default:0"`
@@ -390,13 +389,6 @@ func (channel *Channel) GetModelMapping() string {
 		return ""
 	}
 	return *channel.ModelMapping
-}
-
-func (channel *Channel) GetCustomParameter() string {
-	if channel.CustomParameter == nil {
-		return ""
-	}
-	return *channel.CustomParameter
 }
 
 func (channel *Channel) Insert() error {

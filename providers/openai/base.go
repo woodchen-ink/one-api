@@ -191,65 +191,6 @@ func (p *OpenAIProvider) GetRequestHeaders() (headers map[string]string) {
 	return headers
 }
 
-// mergeCustomParams 将自定义参数合并到请求体中
-func (p *OpenAIProvider) mergeCustomParams(requestMap map[string]interface{}, customParams map[string]interface{}) map[string]interface{} {
-	// 检查是否需要覆盖已有参数
-	shouldOverwrite := false
-	if overwriteValue, exists := customParams["overwrite"]; exists {
-		if boolValue, ok := overwriteValue.(bool); ok {
-			shouldOverwrite = boolValue
-		}
-	}
-
-	// 如果配置是pre_add，而不是发送阶段，则此处跳过所有处理
-	if preAdd, exists := customParams["pre_add"]; exists && preAdd == true {
-		return requestMap
-	}
-
-	// 检查是否按照模型粒度控制
-	perModel := false
-	if perModelValue, exists := customParams["per_model"]; exists {
-		if boolValue, ok := perModelValue.(bool); ok {
-			perModel = boolValue
-		}
-	}
-
-	customParamsModel := customParams
-	if perModel {
-		if modelValue, ok := requestMap["model"].(string); ok {
-			if v, exists := customParams[modelValue]; exists {
-				if modelConfig, ok := v.(map[string]interface{}); ok {
-					customParamsModel = modelConfig
-				} else {
-					customParamsModel = map[string]interface{}{}
-				}
-			} else {
-				customParamsModel = map[string]interface{}{}
-			}
-		}
-	}
-
-	// 添加额外参数
-	for key, value := range customParamsModel {
-		// 忽略 keys "stream", "overwrite", and "per_model"
-		if key == "stream" || key == "overwrite" || key == "per_model" || key == "pre_add" {
-			continue
-		}
-		// 根据覆盖设置决定如何添加参数
-		if shouldOverwrite {
-			// 覆盖模式：直接添加/覆盖参数
-			requestMap[key] = value
-		} else {
-			// 非覆盖模式：仅当参数不存在时添加
-			if _, exists := requestMap[key]; !exists {
-				requestMap[key] = value
-			}
-		}
-	}
-
-	return requestMap
-}
-
 // mergeExtraBodyFromRawRequest 从原始请求基础上合并处理后的请求字段
 // 以用户原始请求为基础，用处理后的字段覆盖，这样额外字段自然保留
 func (p *OpenAIProvider) mergeExtraBodyFromRawRequest(requestMap map[string]interface{}) map[string]interface{} {
@@ -291,17 +232,11 @@ func (p *OpenAIProvider) GetRequestTextBody(relayMode int, ModelName string, req
 		}
 	}
 
-	// 处理额外参数
-	customParams, err := p.CustomParameterHandler()
-	if err != nil {
-		return nil, common.ErrorWrapper(err, "custom_parameter_error", http.StatusInternalServerError)
-	}
-
-	// 检查是否需要合并额外字段（来自渠道配置的额外参数或用户请求中的extra_body）
-	needMerge := customParams != nil || p.Channel.AllowExtraBody
+	// 检查是否需要合并额外字段（来自用户请求中的 extra_body）
+	needMerge := p.Channel.AllowExtraBody
 
 	if needMerge {
-		// 将请求体转换为map，以便添加额外参数
+		// 将请求体转换为 map，以便保留用户请求中的额外字段
 		var requestMap map[string]interface{}
 		requestBytes, err := json.Marshal(request)
 		if err != nil {
@@ -316,11 +251,6 @@ func (p *OpenAIProvider) GetRequestTextBody(relayMode int, ModelName string, req
 		// 如果允许额外字段透传，从原始请求中获取额外字段
 		if p.Channel.AllowExtraBody {
 			requestMap = p.mergeExtraBodyFromRawRequest(requestMap)
-		}
-
-		// 处理自定义额外参数
-		if customParams != nil {
-			requestMap = p.mergeCustomParams(requestMap, customParams)
 		}
 
 		if relayMode == config.RelayModeResponses {
@@ -342,7 +272,7 @@ func (p *OpenAIProvider) GetRequestTextBody(relayMode int, ModelName string, req
 		return req, nil
 	}
 
-	// 如果没有额外参数，使用原始请求体创建请求
+	// 如果没有额外字段透传，使用原始请求体创建请求
 	req, err := p.Requester.NewRequest(http.MethodPost, fullRequestURL, p.Requester.WithBody(request), p.Requester.WithHeader(headers))
 	if err != nil {
 		return nil, common.ErrorWrapper(err, "new_request_failed", http.StatusInternalServerError)

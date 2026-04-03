@@ -1490,6 +1490,27 @@ func removeOllamaHeaderPluginConfig() *gormigrate.Migration {
 	}
 }
 
+func dropChannelCustomParameterColumn() *gormigrate.Migration {
+	return &gormigrate.Migration{
+		ID: "202604030002",
+		Migrate: func(tx *gorm.DB) error {
+			if !tx.Migrator().HasTable("channels") || !tx.Migrator().HasColumn("channels", "custom_parameter") {
+				return nil
+			}
+
+			if err := tx.Migrator().DropColumn("channels", "custom_parameter"); err != nil {
+				return err
+			}
+
+			logger.SysLog("dropped legacy channels.custom_parameter column")
+			return nil
+		},
+		Rollback: func(tx *gorm.DB) error {
+			return nil
+		},
+	}
+}
+
 func migrationAfter(db *gorm.DB) error {
 	// 从库不执行
 	if !config.IsMasterNode {
@@ -1512,6 +1533,7 @@ func migrationAfter(db *gorm.DB) error {
 		widenGroupColumns(),
 		addSubscriptionPlanPriceCurrency(),
 		removeOllamaHeaderPluginConfig(),
+		dropChannelCustomParameterColumn(),
 	})
 	return m.Migrate()
 }

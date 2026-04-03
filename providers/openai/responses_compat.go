@@ -18,7 +18,7 @@ func responsesCompatHeaders(stream bool) map[string]string {
 }
 
 // sanitizeResponsesCompatRequestMap strips legacy chat-only fields that may be
-// reintroduced by extra_body / custom params during chat->responses conversion.
+// reintroduced by extra_body during chat->responses conversion.
 func sanitizeResponsesCompatRequestMap(requestMap map[string]interface{}) map[string]interface{} {
 	dropKeys := []string{
 		"messages",

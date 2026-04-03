@@ -123,6 +123,7 @@ The provider system implements a plugin-based architecture in `providers/`:
 - The default homepage highlights the currently enabled native routes for quick onboarding.
 - Support for streaming responses and WebSocket connections
 - WebSocket quota logs can carry `metadata.request_mode` / `metadata.request_transport` so the log page can distinguish `responses v2 wss` and other WS traffic from normal requests
+- 渠道编辑页已移除历史 `custom_parameter` JSON 注入能力；如需透传 OpenAI SDK 的 `extra_body` 等扩展字段，继续使用渠道开关 `allow_extra_body`
 
 #### Frontend React Structure
 - `web/src/` - React application source

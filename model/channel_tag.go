@@ -149,7 +149,6 @@ func UpdateChannelsTag(tag string, channel *Channel) error {
 		"group":               channel.Group,
 		"tag":                 channel.Tag,
 		"model_mapping":       channel.ModelMapping,
-		"custom_parameter":    channel.CustomParameter,
 		"user_agent_mode":     channel.UserAgentMode,
 		"user_agent_preset":   channel.UserAgentPreset,
 		"proxy":               channel.Proxy,
