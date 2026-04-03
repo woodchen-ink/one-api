@@ -252,10 +252,6 @@ const (
 	ChannelTypeAnthropic       = 14
 	ChannelTypeZhipu           = 16
 	ChannelTypeAli             = 17
-	ChannelType360             = 19 // deprecated: reserved for removed 360 provider
-	ChannelTypeOpenRouter      = 20 // deprecated: reserved for removed OpenRouter provider
-	ChannelTypeTencent         = 23 // deprecated: reserved for removed Tencent provider
-	ChannelTypeAzureSpeech     = 24
 	ChannelTypeGemini          = 25
 	ChannelTypeMiniMax         = 27
 	ChannelTypeDeepseek        = 28
@@ -265,14 +261,11 @@ const (
 	ChannelTypeCloudflareAI    = 35
 	ChannelTypeCohere          = 36
 	ChannelTypeOllama          = 39
-	ChannelTypeHunyuan         = 40 // deprecated: reserved for removed Hunyuan provider
 	ChannelTypeVertexAI        = 42
 	ChannelTypeLLAMA           = 43
 	ChannelTypeIdeogram        = 44
-	ChannelTypeSiliconflow     = 45 // deprecated: reserved for removed Siliconflow provider
 	ChannelTypeFlux            = 46
 	ChannelTypeRerank          = 48
-	ChannelTypeGithub          = 49 // deprecated: reserved for removed GitHub provider
 	ChannelTypeAzureDatabricks = 54
 	ChannelTypeAzureV1         = 55
 	ChannelTypeXAI             = 56

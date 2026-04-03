@@ -264,10 +264,6 @@ func (cc *ChannelsChooser) Load() {
 
 	// 处理每个channel
 	for _, channel := range channels {
-		if channel.Type == config.ChannelTypeGithub || channel.Type == config.ChannelTypeOpenRouter {
-			continue
-		}
-
 		if err := channel.SetProxy(); err != nil {
 			logger.SysError(fmt.Sprintf("failed to resolve proxy for channel #%d: %s", channel.Id, err.Error()))
 			continue

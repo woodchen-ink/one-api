@@ -111,13 +111,6 @@ export const CHANNEL_OPTIONS = {
     color: 'orange',
     url: 'https://console.cloud.google.com/'
   },
-  24: {
-    key: 24,
-    text: 'Azure Speech',
-    value: 24,
-    color: 'orange',
-    url: 'https://portal.azure.com/'
-  },
   54: {
     key: 54,
     text: 'Azure Databricks',

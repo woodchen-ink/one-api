@@ -6,7 +6,6 @@ import (
 	"czloapi/model"
 	"czloapi/providers/ali"
 	"czloapi/providers/azure"
-	azurespeech "czloapi/providers/azureSpeech"
 	"czloapi/providers/azure_v1"
 	"czloapi/providers/azuredatabricks"
 	"czloapi/providers/base"
@@ -44,7 +43,6 @@ func init() {
 		config.ChannelTypeAli:             ali.AliProviderFactory{},
 		config.ChannelTypeAnthropic:       claude.ClaudeProviderFactory{},
 		config.ChannelTypeZhipu:           zhipu.ZhipuProviderFactory{},
-		config.ChannelTypeAzureSpeech:     azurespeech.AzureSpeechProviderFactory{},
 		config.ChannelTypeGemini:          gemini.GeminiProviderFactory{},
 		config.ChannelTypeMiniMax:         minimax.MiniMaxProviderFactory{},
 		config.ChannelTypeDeepseek:        deepseek.DeepseekProviderFactory{},
@@ -63,14 +61,6 @@ func init() {
 
 // 获取供应商
 func GetProvider(channel *model.Channel, c *gin.Context) base.ProviderInterface {
-	if channel.Type == config.ChannelTypeGithub ||
-		channel.Type == config.ChannelType360 ||
-		channel.Type == config.ChannelTypeOpenRouter ||
-		channel.Type == config.ChannelTypeTencent ||
-		channel.Type == config.ChannelTypeHunyuan {
-		return nil
-	}
-
 	if err := channel.SetProxy(); err != nil {
 		if c != nil && c.Request != nil {
 			logger.LogError(c.Request.Context(), "resolve channel proxy failed: "+err.Error())

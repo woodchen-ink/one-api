@@ -50,7 +50,6 @@ If you find that a new model is missing, please add the corresponding pricing en
 - Added user dashboard
 - Added administrator data analysis and statistics interface
 - Refactored the intermediary `supplier` module
-- Support for using `Azure Speech` to simulate `TTS` function
 - Channels can be configured with separate http/socks5 proxies
 - Support for dynamically returning user model lists
 - Support for custom speed testing models
@@ -74,7 +73,6 @@ If you find that a new model is missing, please add the corresponding pricing en
 | --------------------------------------------------------------------- | -------------------------------- | ---------- | ------ | -------- | ---------------------------------------------------------------- |
 | [OpenAI](https://platform.openai.com/docs/api-reference/introduction) | ✅                               | ✅         | ✅     | ✅       | -                                                                |
 | [Azure OpenAI](https://oai.azure.com/)                                | ✅                               | ✅         | ✅     | ✅       | -                                                                |
-| [Azure Speech](https://portal.azure.com/)                             | -                                | -          | ⚠️ tts | -        | -                                                                |
 | [Anthropic](https://www.anthropic.com/)                               | ✅                               | -          | -      | -        | -                                                                |
 | [Gemini](https://aistudio.google.com/)                                | ✅                               | -          | -      | -        | -                                                                |
 | [通义千问](https://dashscope.console.aliyun.com/overview)             | ✅                               | ✅         | -      | -        | -                                                                |
