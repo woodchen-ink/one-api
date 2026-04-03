@@ -2,8 +2,9 @@ import PropTypes from 'prop-types';
 import * as Yup from 'yup';
 import { Formik } from 'formik';
 import { useTheme } from '@mui/material/styles';
-import { useContext, useState, useEffect } from 'react';
+import { useContext, useState, useEffect, useMemo } from 'react';
 import {
+  Box,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -15,8 +16,15 @@ import {
   OutlinedInput,
   Switch,
   FormControlLabel,
-  FormHelperText
+  FormHelperText,
+  IconButton,
+  MenuItem,
+  Select,
+  Stack,
+  Typography
 } from '@mui/material';
+import { useSelector } from 'react-redux';
+import { Icon } from '@iconify/react';
 
 import { showSuccess, showError, trims } from 'utils/common';
 import { API } from 'utils/api';
@@ -30,7 +38,8 @@ const validationSchema = Yup.object().shape({
   ratio: Yup.number().required('ratio is required'),
   promotion: Yup.boolean(),
   min: Yup.number(),
-  max: Yup.number()
+  max: Yup.number(),
+  provider_ratios: Yup.array()
 });
 
 const originInputs = {
@@ -42,7 +51,45 @@ const originInputs = {
   api_rate: 300,
   promotion: false,
   min: 0,
-  max: 0
+  max: 0,
+  provider_ratios: []
+};
+
+const normalizeProviderRatios = (providerRatios = []) => {
+  const normalizedRules = [];
+  const seenChannelTypes = new Set();
+
+  for (let index = 0; index < providerRatios.length; index += 1) {
+    const rule = providerRatios[index] || {};
+    const channelType = Number.parseInt(rule.channel_type, 10);
+    const ratio = Number.parseFloat(rule.ratio);
+    const hasChannelType = Number.isFinite(channelType) && channelType > 0;
+    const hasRatio = Number.isFinite(ratio) && ratio > 0;
+
+    if (!hasChannelType && !hasRatio) {
+      continue;
+    }
+
+    if (!hasChannelType) {
+      return { error: `厂商倍率 #${index + 1} 请选择模型厂家` };
+    }
+
+    if (!hasRatio) {
+      return { error: `厂商倍率 #${index + 1} 请输入大于 0 的倍率` };
+    }
+
+    if (seenChannelTypes.has(channelType)) {
+      return { error: `厂商倍率 #${index + 1} 的模型厂家重复了` };
+    }
+
+    seenChannelTypes.add(channelType);
+    normalizedRules.push({
+      channel_type: channelType,
+      ratio
+    });
+  }
+
+  return { rules: normalizedRules };
 };
 
 const EditModal = ({ open, userGroupId, onCancel, onOk }) => {
@@ -50,12 +97,24 @@ const EditModal = ({ open, userGroupId, onCancel, onOk }) => {
   const [inputs, setInputs] = useState(originInputs);
   const { t } = useTranslation();
   const { loadUser, loadUserGroup: reloadUserGroupMap } = useContext(UserContext);
+  const ownedby = useSelector((state) => state.siteInfo?.ownedby || []);
+  const ownedbyOptions = useMemo(() => {
+    return [...ownedby].sort((a, b) => a.id - b.id);
+  }, [ownedby]);
 
   const submit = async (values, { setErrors, setStatus, setSubmitting }) => {
     setSubmitting(true);
 
     let res;
     values = trims(values);
+    const normalizedProviderRatios = normalizeProviderRatios(values.provider_ratios || []);
+    if (normalizedProviderRatios.error) {
+      showError(normalizedProviderRatios.error);
+      setSubmitting(false);
+      return;
+    }
+    values.provider_ratios = normalizedProviderRatios.rules;
+
     try {
       if (values.is_edit) {
         res = await API.put(`/api/user_group/`, { ...values, id: parseInt(userGroupId) });
@@ -84,8 +143,12 @@ const EditModal = ({ open, userGroupId, onCancel, onOk }) => {
       let res = await API.get(`/api/user_group/${userGroupId}`);
       const { success, message, data } = res.data;
       if (success) {
-        data.is_edit = true;
-        setInputs(data);
+        setInputs({
+          ...originInputs,
+          ...data,
+          is_edit: true,
+          provider_ratios: data.provider_ratios || []
+        });
       } else {
         showError(message);
       }
@@ -113,6 +176,9 @@ const EditModal = ({ open, userGroupId, onCancel, onOk }) => {
         <Formik initialValues={inputs} enableReinitialize validationSchema={validationSchema} onSubmit={submit}>
           {({ errors, handleBlur, handleChange, setFieldValue, handleSubmit, touched, values, isSubmitting }) => (
             <form noValidate onSubmit={handleSubmit}>
+              {/*
+                管理员界面直接展示中文，避免增加额外理解成本。
+              */}
               <FormControl fullWidth error={Boolean(touched.symbol && errors.symbol)} sx={{ ...theme.typography.otherInput }}>
                 <InputLabel htmlFor="channel-symbol-label">{t('userGroup.symbol')}</InputLabel>
                 <OutlinedInput
@@ -270,6 +336,109 @@ const EditModal = ({ open, userGroupId, onCancel, onOk }) => {
                 />
                 <FormHelperText id="helper-tex-channel-public-label">{t('userGroup.publicTip')}</FormHelperText>
               </FormControl>
+
+              <Box
+                sx={{
+                  ...theme.typography.otherInput,
+                  p: 2,
+                  borderRadius: 2,
+                  border: (themeValue) => `1px solid ${themeValue.palette.divider}`,
+                  backgroundColor: (themeValue) => (themeValue.palette.mode === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.015)')
+                }}
+              >
+                <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2} sx={{ mb: 1.5 }}>
+                  <Box>
+                    <Typography variant="subtitle2">{t('userGroup.providerRatios')}</Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {t('userGroup.providerRatiosTip')}
+                    </Typography>
+                  </Box>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    startIcon={<Icon icon="ic:baseline-add" />}
+                    onClick={() => {
+                      setFieldValue('provider_ratios', [...(values.provider_ratios || []), { channel_type: '', ratio: '' }]);
+                    }}
+                  >
+                    {t('userGroup.addProviderRatio')}
+                  </Button>
+                </Stack>
+
+                {(values.provider_ratios || []).length === 0 ? (
+                  <Typography variant="body2" color="text.secondary">
+                    {t('userGroup.noProviderRatios')}
+                  </Typography>
+                ) : (
+                  <Stack spacing={1.5}>
+                    {(values.provider_ratios || []).map((rule, index) => (
+                      <Box
+                        key={`provider-ratio-${index}`}
+                        sx={{
+                          p: 1.5,
+                          borderRadius: 1.5,
+                          border: (themeValue) => `1px solid ${themeValue.palette.divider}`
+                        }}
+                      >
+                        <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.5} alignItems={{ md: 'center' }}>
+                          <FormControl fullWidth>
+                            <InputLabel>{t('userGroup.provider')}</InputLabel>
+                            <Select
+                              label={t('userGroup.provider')}
+                              value={rule?.channel_type ?? ''}
+                              onChange={(event) => {
+                                const nextRules = [...(values.provider_ratios || [])];
+                                nextRules[index] = {
+                                  ...nextRules[index],
+                                  channel_type: event.target.value
+                                };
+                                setFieldValue('provider_ratios', nextRules);
+                              }}
+                            >
+                              {ownedbyOptions.map((item) => (
+                                <MenuItem key={item.id} value={item.id}>
+                                  {item.name}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
+
+                          <FormControl fullWidth>
+                            <InputLabel>{t('userGroup.providerRatioValue')}</InputLabel>
+                            <OutlinedInput
+                              label={t('userGroup.providerRatioValue')}
+                              type="number"
+                              value={rule?.ratio ?? ''}
+                              onBlur={handleBlur}
+                              onChange={(event) => {
+                                const nextRules = [...(values.provider_ratios || [])];
+                                nextRules[index] = {
+                                  ...nextRules[index],
+                                  ratio: event.target.value
+                                };
+                                setFieldValue('provider_ratios', nextRules);
+                              }}
+                              startAdornment={<Typography sx={{ color: 'text.secondary', mr: 0.75 }}>x</Typography>}
+                            />
+                          </FormControl>
+
+                          <IconButton
+                            color="error"
+                            onClick={() => {
+                              setFieldValue(
+                                'provider_ratios',
+                                (values.provider_ratios || []).filter((_, ruleIndex) => ruleIndex !== index)
+                              );
+                            }}
+                          >
+                            <Icon icon="mdi:delete" width={18} />
+                          </IconButton>
+                        </Stack>
+                      </Box>
+                    ))}
+                  </Stack>
+                )}
+              </Box>
 
               <DialogActions>
                 <Button onClick={onCancel}>{t('userPage.cancel')}</Button>

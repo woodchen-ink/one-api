@@ -259,7 +259,7 @@ func (gm *GroupManager) setGroupRatio(group string) error {
 	if groupRatio == nil {
 		return fmt.Errorf("分组 %s 不存在", group)
 	}
-	gm.context.Set("group_ratio", groupRatio.Ratio)
+	syncGroupBillingContext(gm.context, group, "")
 	return nil
 }
 

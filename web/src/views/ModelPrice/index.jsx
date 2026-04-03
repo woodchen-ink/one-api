@@ -32,6 +32,46 @@ import BillingRuleDetails, { getExtraRatioDisplayName } from './component/Billin
 import Label from 'ui-component/Label';
 import { Helmet } from 'react-helmet-async';
 
+const getProviderRatioRules = (group) => {
+  return Array.isArray(group?.provider_ratios) ? group.provider_ratios : [];
+};
+
+const getProviderRatioForGroup = (group, channelType) => {
+  if (!group || !Number.isFinite(Number(channelType)) || Number(channelType) <= 0) {
+    return 1;
+  }
+
+  const matchedRule = getProviderRatioRules(group).find((rule) => Number(rule?.channel_type) === Number(channelType));
+  const providerRatio = Number(matchedRule?.ratio);
+  return Number.isFinite(providerRatio) && providerRatio > 0 ? providerRatio : 1;
+};
+
+const getEffectiveGroupRatio = (group, channelType) => {
+  const baseGroupRatio = Number(group?.ratio);
+  if (!Number.isFinite(baseGroupRatio)) {
+    return 0;
+  }
+
+  return baseGroupRatio * getProviderRatioForGroup(group, channelType);
+};
+
+const scaleExtraRatios = (extraRatios, effectiveRatio) => {
+  if (!extraRatios) {
+    return null;
+  }
+
+  return Object.fromEntries(Object.entries(extraRatios).map(([key, value]) => [key, effectiveRatio * value]));
+};
+
+const formatRatioLabel = (value) => {
+  const numericValue = Number(value);
+  if (!Number.isFinite(numericValue)) {
+    return 'x0';
+  }
+
+  return `x${numericValue.toFixed(numericValue >= 1 ? 4 : 6).replace(/(\.\d*?[1-9])0+$|\.0*$/, '$1')}`;
+};
+
 // ----------------------------------------------------------------------
 export default function ModelPrice() {
   const { t } = useTranslation();
@@ -58,6 +98,25 @@ export default function ModelPrice() {
       return a.id - b.id;
     });
   }, [userGroupMap]);
+
+  const selectedGroupProviderRatios = useMemo(() => {
+    const group = userGroupMap[selectedGroup];
+    if (!group) {
+      return [];
+    }
+
+    return getProviderRatioRules(group)
+      .map((rule) => {
+        const provider = ownedby?.find((item) => item.id === Number(rule.channel_type));
+        return {
+          channelType: Number(rule.channel_type),
+          ratio: Number(rule.ratio),
+          name: provider?.name || `${t('modelpricePage.provider', '供应商')} #${rule.channel_type}`
+        };
+      })
+      .filter((rule) => Number.isFinite(rule.ratio) && rule.ratio > 0)
+      .sort((a, b) => a.channelType - b.channelType);
+  }, [ownedby, selectedGroup, t, userGroupMap]);
 
   // 获取可用模型
   const fetchAvailableModels = useCallback(async () => {
@@ -152,36 +211,36 @@ export default function ModelPrice() {
       })
       .map(([modelName, model]) => {
         const group = userGroupMap[selectedGroup];
+        const channelType = Number(model?.price?.channel_type);
         const hasAccess = model.groups.includes(selectedGroup);
+        const selectedProviderRatio = hasAccess ? getProviderRatioForGroup(group, channelType) : 1;
+        const selectedEffectiveGroupRatio = hasAccess ? getEffectiveGroupRatio(group, channelType) : 0;
         const price = hasAccess
           ? {
-              input: group.ratio * model.price.input,
-              output: group.ratio * model.price.output
+              input: selectedEffectiveGroupRatio * model.price.input,
+              output: selectedEffectiveGroupRatio * model.price.output
             }
           : { input: t('modelpricePage.noneGroup'), output: t('modelpricePage.noneGroup') };
 
-        // 计算所有用户组的价格F
         const allGroupPrices = sortedGroupEntries.map(([key, grp]) => {
           const hasGroupAccess = model.groups.includes(key);
+          const providerRatio = hasGroupAccess ? getProviderRatioForGroup(grp, channelType) : 1;
+          const effectiveRatio = hasGroupAccess ? getEffectiveGroupRatio(grp, channelType) : 0;
           return {
             groupName: grp.name,
             groupKey: key,
             available: hasGroupAccess,
-            input: hasGroupAccess ? grp.ratio * model.price.input : null,
-            output: hasGroupAccess ? grp.ratio * model.price.output : null,
+            input: hasGroupAccess ? effectiveRatio * model.price.input : null,
+            output: hasGroupAccess ? effectiveRatio * model.price.output : null,
             type: model.price.type,
             ratio: grp.ratio,
-            extraRatios:
-              model.price.extra_ratios && hasGroupAccess
-                ? Object.fromEntries(Object.entries(model.price.extra_ratios).map(([k, v]) => [k, grp.ratio * v]))
-                : null
+            providerRatio,
+            effectiveRatio,
+            extraRatios: hasGroupAccess ? scaleExtraRatios(model.price.extra_ratios, effectiveRatio) : null
           };
         });
 
-        const selectedGroupExtraRatios =
-          model.price.extra_ratios && hasAccess
-            ? Object.fromEntries(Object.entries(model.price.extra_ratios).map(([k, v]) => [k, group.ratio * v]))
-            : null;
+        const selectedGroupExtraRatios = hasAccess ? scaleExtraRatios(model.price.extra_ratios, selectedEffectiveGroupRatio) : null;
 
         return {
           model: modelName,
@@ -197,6 +256,8 @@ export default function ModelPrice() {
             selectedGroupName: group?.name,
             selectedGroupHasAccess: hasAccess,
             selectedGroupRatio: group?.ratio || 0,
+            selectedProviderRatio,
+            selectedEffectiveRatio: selectedEffectiveGroupRatio,
             selectedGroupExtraRatios
           }
         };
@@ -328,8 +389,16 @@ export default function ModelPrice() {
                   })}
                 </Label>
               )}
+              {selectedGroupProviderRatios.map((item) => (
+                <Label key={`selected-provider-ratio-${item.channelType}`} color="warning" variant="soft">
+                  {`${item.name} ${formatRatioLabel(item.ratio)}`}
+                </Label>
+              ))}
               <Typography variant="caption" color="text.secondary">
                 {t('modelpricePage.tokenUnitHint', 'Token 按 USD / 1M')} · {t('modelpricePage.timesUnitHint', '按次模型按 USD / 次')}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {t('modelpricePage.groupPriceFormulaHint', '展示价格 = 基础价格 × 分组倍率 × 厂商附加倍率（如命中）')}
               </Typography>
             </Box>
           </Box>
@@ -535,7 +604,7 @@ export default function ModelPrice() {
         <Box>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1.25 }}>
             {t('modelpricePage.totalModels', { count: filteredModels.length })} ·{' '}
-            {t('modelpricePage.listHint', '列表价格已按当前分组实时换算')}
+            {t('modelpricePage.listHint', '列表价格已按当前分组和厂商附加倍率实时换算')}
           </Typography>
           {filteredModels.length > 0 ? (
             <>
@@ -600,22 +669,41 @@ export default function ModelPrice() {
                           </TableCell>
 
                           <TableCell align="center" sx={{ width: '12%' }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-                              <Avatar
-                                src={getIconByName(model.provider)}
-                                alt={model.provider}
-                                sx={{
-                                  width: 24,
-                                  height: 24,
-                                  backgroundColor: theme.palette.mode === 'dark' ? '#fff' : theme.palette.background.paper,
-                                  '& .MuiAvatar-img': {
-                                    objectFit: 'contain',
-                                    padding: '2px'
-                                  }
-                                }}
-                              />
-                              <Typography variant="body2">{model.provider}</Typography>
-                            </Box>
+                            <Stack spacing={0.75} alignItems="center">
+                              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                                <Avatar
+                                  src={getIconByName(model.provider)}
+                                  alt={model.provider}
+                                  sx={{
+                                    width: 24,
+                                    height: 24,
+                                    backgroundColor: theme.palette.mode === 'dark' ? '#fff' : theme.palette.background.paper,
+                                    '& .MuiAvatar-img': {
+                                      objectFit: 'contain',
+                                      padding: '2px'
+                                    }
+                                  }}
+                                />
+                                <Typography variant="body2">{model.provider}</Typography>
+                              </Box>
+                              {model.hasAccess && (
+                                <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap justifyContent="center">
+                                  <Label color="info" variant="soft" sx={{ fontSize: '0.68rem' }}>
+                                    {`${t('modelpricePage.baseGroupRatio', '基础倍率')} ${formatRatioLabel(model.priceData.selectedGroupRatio)}`}
+                                  </Label>
+                                  {model.priceData.selectedProviderRatio !== 1 && (
+                                    <Label color="warning" variant="soft" sx={{ fontSize: '0.68rem' }}>
+                                      {`${t('modelpricePage.providerRatio', '厂商倍率')} ${formatRatioLabel(model.priceData.selectedProviderRatio)}`}
+                                    </Label>
+                                  )}
+                                  <Label color="primary" variant="soft" sx={{ fontSize: '0.68rem' }}>
+                                    {`${t('modelpricePage.effectiveGroupRatio', '最终倍率')} ${formatRatioLabel(
+                                      model.priceData.selectedEffectiveRatio
+                                    )}`}
+                                  </Label>
+                                </Stack>
+                              )}
+                            </Stack>
                           </TableCell>
 
                           <TableCell align="center" sx={{ width: '10%' }}>
@@ -666,7 +754,7 @@ export default function ModelPrice() {
                             <BillingRuleDetails
                               rules={model.priceData.price.billing_rules}
                               priceType={model.type}
-                              groupRatio={model.priceData.selectedGroupRatio}
+                              groupRatio={model.priceData.selectedEffectiveRatio}
                               formatPrice={formatPrice}
                               compact
                             />

@@ -21,6 +21,27 @@ func floatPtr(value float64) *float64 {
 	return &value
 }
 
+func withTestGroupPricingState(
+	t *testing.T,
+	groups map[string]*model.UserGroup,
+	prices map[string]*model.Price,
+	ownedBy map[int]*model.ModelOwnedBy,
+) {
+	oldPricing := model.PricingInstance
+	oldGroupRatio := model.GlobalUserGroupRatio
+	oldOwnedBy := model.ModelOwnedBysInstance
+
+	model.PricingInstance = &model.Pricing{Prices: prices}
+	model.GlobalUserGroupRatio = model.UserGroupRatio{UserGroup: groups}
+	model.ModelOwnedBysInstance = &model.ModelOwnedBys{ModelOwnedBy: ownedBy}
+
+	t.Cleanup(func() {
+		model.PricingInstance = oldPricing
+		model.GlobalUserGroupRatio = oldGroupRatio
+		model.ModelOwnedBysInstance = oldOwnedBy
+	})
+}
+
 func TestQuotaGetLogMetaMergesReasoningMetadata(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	recorder := httptest.NewRecorder()
@@ -48,6 +69,113 @@ func TestQuotaGetLogMetaMergesReasoningMetadata(t *testing.T) {
 			assert.Equal(t, 4096, *reasoning.BudgetTokens)
 		}
 	}
+}
+
+func TestQuotaGetTotalQuotaAppliesProviderSpecificGroupRatio(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	recorder := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(recorder)
+	c.Set("key_group", "Pro")
+
+	providerRatios := datatypes.NewJSONType([]model.ProviderRatioRule{
+		{ChannelType: config.ChannelTypeAnthropic, Ratio: 1.05},
+	})
+	withTestGroupPricingState(
+		t,
+		map[string]*model.UserGroup{
+			"Pro": {
+				Symbol:         "Pro",
+				Ratio:          2.0,
+				ProviderRatios: &providerRatios,
+			},
+		},
+		map[string]*model.Price{
+			"claude-test": {
+				Model:       "claude-test",
+				Type:        model.TokensPriceType,
+				ChannelType: config.ChannelTypeAnthropic,
+				Input:       5,
+				Output:      15,
+			},
+		},
+		map[int]*model.ModelOwnedBy{
+			config.ChannelTypeAnthropic: {
+				Id:   config.ChannelTypeAnthropic,
+				Name: "Anthropic",
+			},
+		},
+	)
+
+	quota := NewQuota(c, "claude-test", 0)
+	usage := &types.Usage{
+		PromptTokens:     100000,
+		CompletionTokens: 50000,
+		TotalTokens:      150000,
+	}
+
+	assert.Equal(t, 2625000, quota.GetTotalQuotaByUsage(usage))
+
+	meta := quota.GetLogMeta(usage)
+	assert.InDelta(t, 2.0, meta["base_group_ratio"], 0.000001)
+	assert.InDelta(t, 1.05, meta["provider_ratio"], 0.000001)
+	assert.InDelta(t, 2.1, meta["effective_group_ratio"], 0.000001)
+	assert.InDelta(t, 2.1, meta["group_ratio"], 0.000001)
+	assert.Equal(t, "Anthropic", meta["billing_provider"])
+}
+
+func TestQuotaUsesProviderRatioFromBackupGroup(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	recorder := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(recorder)
+	c.Set("key_group", "Backup")
+	c.Set("key_backup_group", "Backup")
+	c.Set("is_backupGroup", true)
+
+	providerRatios := datatypes.NewJSONType([]model.ProviderRatioRule{
+		{ChannelType: config.ChannelTypeAnthropic, Ratio: 1.1},
+	})
+	withTestGroupPricingState(
+		t,
+		map[string]*model.UserGroup{
+			"Backup": {
+				Symbol:         "Backup",
+				Ratio:          1.5,
+				ProviderRatios: &providerRatios,
+			},
+		},
+		map[string]*model.Price{
+			"claude-test": {
+				Model:       "claude-test",
+				Type:        model.TokensPriceType,
+				ChannelType: config.ChannelTypeAnthropic,
+				Input:       2,
+				Output:      8,
+			},
+		},
+		map[int]*model.ModelOwnedBy{
+			config.ChannelTypeAnthropic: {
+				Id:   config.ChannelTypeAnthropic,
+				Name: "Anthropic",
+			},
+		},
+	)
+
+	quota := NewQuota(c, "claude-test", 0)
+	usage := &types.Usage{
+		PromptTokens:     1000,
+		CompletionTokens: 500,
+		TotalTokens:      1500,
+	}
+
+	assert.Equal(t, 9900, quota.GetTotalQuotaByUsage(usage))
+
+	meta := quota.GetLogMeta(usage)
+	assert.Equal(t, "Backup", meta["group_name"])
+	assert.Equal(t, "Backup", meta["backup_group_name"])
+	assert.Equal(t, true, meta["is_backup_group"])
+	assert.InDelta(t, 1.5, meta["base_group_ratio"], 0.000001)
+	assert.InDelta(t, 1.1, meta["provider_ratio"], 0.000001)
+	assert.InDelta(t, 1.65, meta["effective_group_ratio"], 0.000001)
 }
 
 func TestQuotaGetTotalQuotaUsesDirectUSDPerMillion(t *testing.T) {

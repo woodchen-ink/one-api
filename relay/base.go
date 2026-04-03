@@ -68,6 +68,7 @@ func (r *relayBase) setProvider(modelName string) error {
 
 	r.provider.SetOtherArg(r.otherArg)
 	enrichLogReasoningMetadata(r.c, r.originalModel, provider.GetChannel().Type)
+	syncGroupBillingContext(r.c, r.c.GetString("key_group"), r.getModelName())
 
 	return nil
 }

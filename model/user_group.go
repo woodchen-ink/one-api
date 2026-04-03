@@ -12,6 +12,7 @@ import (
 	"strings"
 	"sync"
 
+	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
 
@@ -53,17 +54,18 @@ func GetPricingVisibleGroupSymbols(userSymbol string) []string {
 }
 
 type UserGroup struct {
-	Id        int     `json:"id"`
-	Symbol    string  `json:"symbol" gorm:"type:varchar(50);uniqueIndex"`
-	Name      string  `json:"name" gorm:"type:varchar(50)"`
-	Ratio     float64 `json:"ratio" gorm:"type:decimal(10,2); default:1"`
-	APIRate   int     `json:"api_rate" gorm:"default:600"`
-	Public    bool    `json:"public" form:"public" gorm:"default:false"`
-	Promotion bool    `json:"promotion" form:"promotion" gorm:"default:false"`
-	Min       int     `json:"min" form:"min" gorm:"default:0"`
-	Max       int     `json:"max" form:"max" gorm:"default:0"`
-	Enable    *bool   `json:"enable" form:"enable" gorm:"default:true"`
-	IsDefault bool    `json:"is_default" form:"is_default" gorm:"default:false"`
+	Id             int                                      `json:"id"`
+	Symbol         string                                   `json:"symbol" gorm:"type:varchar(50);uniqueIndex"`
+	Name           string                                   `json:"name" gorm:"type:varchar(50)"`
+	Ratio          float64                                  `json:"ratio" gorm:"type:decimal(10,2); default:1"`
+	APIRate        int                                      `json:"api_rate" gorm:"default:600"`
+	Public         bool                                     `json:"public" form:"public" gorm:"default:false"`
+	Promotion      bool                                     `json:"promotion" form:"promotion" gorm:"default:false"`
+	Min            int                                      `json:"min" form:"min" gorm:"default:0"`
+	Max            int                                      `json:"max" form:"max" gorm:"default:0"`
+	Enable         *bool                                    `json:"enable" form:"enable" gorm:"default:true"`
+	IsDefault      bool                                     `json:"is_default" form:"is_default" gorm:"default:false"`
+	ProviderRatios *datatypes.JSONType[[]ProviderRatioRule] `json:"provider_ratios,omitempty" gorm:"type:json"`
 }
 
 type SearchUserGroupParams struct {
@@ -113,6 +115,7 @@ func GetUserGroupsAll(isPublic bool) ([]*UserGroup, error) {
 func (c *UserGroup) normalize() {
 	c.Symbol = strings.TrimSpace(c.Symbol)
 	c.Name = strings.TrimSpace(c.Name)
+	c.SetProviderRatioRules(c.GetProviderRatioRules())
 }
 
 func getUserGroupColumnName() string {
@@ -151,6 +154,9 @@ func GetDefaultUserGroupSymbol() (string, error) {
 func (c *UserGroup) Create() error {
 	c.normalize()
 	c.IsDefault = false
+	if err := c.ValidateProviderRatios(); err != nil {
+		return err
+	}
 
 	db := DB.Session(&gorm.Session{PrepareStmt: false})
 	err := db.Create(c).Error
@@ -163,6 +169,9 @@ func (c *UserGroup) Create() error {
 func (c *UserGroup) Update() error {
 	renameDB := DB.Session(&gorm.Session{PrepareStmt: false})
 	c.normalize()
+	if err := c.ValidateProviderRatios(); err != nil {
+		return err
+	}
 	if c.Id == 0 {
 		return errors.New("id 涓虹┖")
 	}
@@ -249,7 +258,7 @@ func (c *UserGroup) Update() error {
 
 		return tx.Model(&UserGroup{}).
 			Where("id = ?", c.Id).
-			Select("symbol", "name", "ratio", "public", "api_rate", "promotion", "min", "max").
+			Select("symbol", "name", "ratio", "public", "api_rate", "promotion", "min", "max", "provider_ratios").
 			Updates(c).Error
 	})
 	if err == nil {

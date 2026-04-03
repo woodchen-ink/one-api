@@ -3,7 +3,6 @@ package relay_util
 import (
 	"context"
 	"errors"
-	"math"
 	"net/http"
 	"strings"
 	"time"
@@ -16,6 +15,7 @@ import (
 	"czloapi/types"
 
 	"github.com/gin-gonic/gin"
+	"github.com/shopspring/decimal"
 )
 
 type Quota struct {
@@ -27,7 +27,10 @@ type Quota struct {
 	groupName         string
 	isBackupGroup     bool
 	backupGroupName   string
+	baseGroupRatio    float64
+	providerRatio     float64
 	groupRatio        float64
+	billingProvider   string
 	inputPrice        float64
 	outputPrice       float64
 	preConsumedQuota  int
@@ -86,7 +89,30 @@ func NewQuota(c *gin.Context, modelName string, promptTokens int, billingContext
 	quota.billingResolution = model.PricingInstance.GetBillingResolution(quota.modelName, billingContext)
 	quota.groupName = c.GetString("key_group")
 	quota.backupGroupName = c.GetString("key_backup_group")
-	quota.groupRatio = c.GetFloat64("group_ratio")
+
+	resolvedRatio := model.ResolveGroupBillingRatio(quota.groupName, quota.modelName)
+	quota.baseGroupRatio = resolvedRatio.BaseGroupRatio
+	quota.providerRatio = resolvedRatio.ProviderRatio
+	quota.groupRatio = resolvedRatio.EffectiveGroupRatio
+	quota.billingProvider = resolvedRatio.BillingProvider
+	if quota.providerRatio == 0 {
+		quota.providerRatio = c.GetFloat64("provider_ratio")
+	}
+	if quota.providerRatio == 0 {
+		quota.providerRatio = 1
+	}
+	if quota.baseGroupRatio == 0 {
+		quota.baseGroupRatio = c.GetFloat64("base_group_ratio")
+	}
+	if quota.groupRatio == 0 {
+		quota.groupRatio = c.GetFloat64("effective_group_ratio")
+	}
+	if quota.groupRatio == 0 {
+		quota.groupRatio = c.GetFloat64("group_ratio")
+	}
+	if quota.billingProvider == "" {
+		quota.billingProvider = c.GetString("billing_provider")
+	}
 	quota.inputPrice = quota.billingResolution.Input
 	quota.outputPrice = quota.billingResolution.Output
 
@@ -286,6 +312,50 @@ type BillingBreakdownItem struct {
 	Quota     int     `json:"quota"`
 }
 
+func decimalFromFloat(value float64) decimal.Decimal {
+	if value <= 0 {
+		return decimal.Zero
+	}
+
+	return decimal.NewFromFloat(value)
+}
+
+func ceilDecimalToInt(value decimal.Decimal) int {
+	if value.LessThanOrEqual(decimal.Zero) {
+		return 0
+	}
+
+	return int(value.Ceil().IntPart())
+}
+
+func (q *Quota) getEffectiveGroupRatioDecimal() decimal.Decimal {
+	return decimalFromFloat(q.groupRatio)
+}
+
+func getQuotaPerUnitDecimal() decimal.Decimal {
+	return decimal.NewFromFloat(config.QuotaPerUnit)
+}
+
+func getTokenPricePerMillionBaseDecimal() decimal.Decimal {
+	return decimal.NewFromFloat(config.TokenPricePerMillionBase)
+}
+
+func (q *Quota) getExtraServicePerCallQuota(unitPrice float64) int {
+	if unitPrice <= 0 {
+		return 0
+	}
+
+	return ceilDecimalToInt(decimalFromFloat(unitPrice).Mul(getQuotaPerUnitDecimal()))
+}
+
+func (q *Quota) applyGroupRatioToQuota(baseQuota int) int {
+	if baseQuota <= 0 || q.groupRatio <= 0 {
+		return 0
+	}
+
+	return ceilDecimalToInt(decimal.NewFromInt(int64(baseQuota)).Mul(q.getEffectiveGroupRatioDecimal()))
+}
+
 // getAdjustedBaseTokens subtracts subset extra tokens from a base token count
 // to prevent double billing. OpenAI's prompt_tokens/completion_tokens already
 // include their respective detail breakdowns (audio, image, cache, reasoning)
@@ -407,7 +477,7 @@ func (q *Quota) buildBillingBreakdown(usage *types.Usage, resolution *model.Bill
 			Quantity:  value.CallCount,
 			UnitPrice: value.Price,
 			CostUSD:   float64(value.CallCount) * value.Price,
-			Quota:     int(math.Ceil(float64(int(math.Ceil(value.Price*float64(config.QuotaPerUnit)))*value.CallCount) * q.groupRatio)),
+			Quota:     q.applyGroupRatioToQuota(q.getExtraServicePerCallQuota(value.Price) * value.CallCount),
 		})
 	}
 
@@ -423,7 +493,11 @@ func (q *Quota) GetLogMeta(usage *types.Usage, requestPath ...string) map[string
 		"backup_group_name":        q.backupGroupName,
 		"is_backup_group":          q.isBackupGroup,
 		"price_type":               q.price.Type,
+		"base_group_ratio":         q.baseGroupRatio,
+		"provider_ratio":           q.providerRatio,
+		"effective_group_ratio":    q.groupRatio,
 		"group_ratio":              q.groupRatio,
+		"billing_provider":         q.billingProvider,
 		"original_input_price":     q.price.GetInput(),
 		"original_output_price":    q.price.GetOutput(),
 		"input_price":              finalResolution.Input,
@@ -536,7 +610,13 @@ func (q *Quota) getTokenPriceQuota(tokens int, unitPrice float64) int {
 		return 0
 	}
 
-	return int(math.Ceil(float64(tokens) * unitPrice * q.groupRatio * config.QuotaPerUnit / config.TokenPricePerMillionBase))
+	return ceilDecimalToInt(
+		decimal.NewFromInt(int64(tokens)).
+			Mul(decimalFromFloat(unitPrice)).
+			Mul(q.getEffectiveGroupRatioDecimal()).
+			Mul(getQuotaPerUnitDecimal()).
+			Div(getTokenPricePerMillionBaseDecimal()),
+	)
 }
 
 func (q *Quota) getFlatPriceQuota(unitPrice float64) int {
@@ -544,7 +624,11 @@ func (q *Quota) getFlatPriceQuota(unitPrice float64) int {
 		return 0
 	}
 
-	return int(math.Ceil(unitPrice * q.groupRatio * config.QuotaPerUnit))
+	return ceilDecimalToInt(
+		decimalFromFloat(unitPrice).
+			Mul(q.getEffectiveGroupRatioDecimal()).
+			Mul(getQuotaPerUnitDecimal()),
+	)
 }
 
 func (q *Quota) GetTotalQuota(promptTokens, completionTokens int, extraTokens map[string]int, extraBilling map[string]types.ExtraBilling) (quota int) {
@@ -584,12 +668,12 @@ func (q *Quota) getTotalQuotaWithResolution(
 	extraBillingQuota := 0
 	if q.extraBillingData != nil {
 		for _, value := range q.extraBillingData {
-			extraBillingQuota += int(math.Ceil(float64(value.Price)*float64(config.QuotaPerUnit))) * value.CallCount
+			extraBillingQuota += q.getExtraServicePerCallQuota(value.Price) * value.CallCount
 		}
 	}
 
 	if extraBillingQuota > 0 {
-		quota += int(math.Ceil(float64(extraBillingQuota) * q.groupRatio))
+		quota += q.applyGroupRatioToQuota(extraBillingQuota)
 	}
 
 	totalChargeableTokens := adjustedPromptTokens + adjustedCompletionTokens

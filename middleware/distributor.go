@@ -68,7 +68,12 @@ func (gd *GroupDistributor) setGroupRatio(group string) error {
 		return fmt.Errorf("分组 %s 不存在", group)
 	}
 
-	gd.context.Set("group_ratio", groupRatio.Ratio)
+	resolved := model.ResolveGroupBillingRatioByChannelType(group, 0)
+	gd.context.Set("base_group_ratio", resolved.BaseGroupRatio)
+	gd.context.Set("provider_ratio", resolved.ProviderRatio)
+	gd.context.Set("effective_group_ratio", resolved.EffectiveGroupRatio)
+	gd.context.Set("billing_provider", resolved.BillingProvider)
+	gd.context.Set("group_ratio", resolved.EffectiveGroupRatio)
 	return nil
 }
 

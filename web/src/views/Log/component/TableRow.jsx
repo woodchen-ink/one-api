@@ -591,9 +591,20 @@ function viewQuota(item, t) {
   const billingBreakdown = metadata?.billing_breakdown || [];
   const billingRules = metadata?.billing_rules || [];
   const rawUserRatio = Number(metadata?.user_ratio);
+  const rawBaseGroupRatio = Number(metadata?.base_group_ratio);
+  const rawProviderRatio = Number(metadata?.provider_ratio);
+  const rawEffectiveGroupRatio = Number(metadata?.effective_group_ratio);
   const rawGroupRatio = Number(metadata?.group_ratio);
   const userRatio = Number.isFinite(rawUserRatio) && rawUserRatio > 0 ? rawUserRatio : null;
-  const groupRatio = Number.isFinite(rawGroupRatio) && rawGroupRatio > 0 ? rawGroupRatio : null;
+  const baseGroupRatio = Number.isFinite(rawBaseGroupRatio) && rawBaseGroupRatio > 0 ? rawBaseGroupRatio : null;
+  const providerRatio = Number.isFinite(rawProviderRatio) && rawProviderRatio > 0 ? rawProviderRatio : null;
+  const effectiveGroupRatio =
+    Number.isFinite(rawEffectiveGroupRatio) && rawEffectiveGroupRatio > 0
+      ? rawEffectiveGroupRatio
+      : Number.isFinite(rawGroupRatio) && rawGroupRatio > 0
+        ? rawGroupRatio
+        : null;
+  const billingProvider = metadata?.billing_provider;
   const originalBilling = billingBreakdown.reduce((sum, detail) => sum + Number(detail?.cost_usd || 0), 0);
   const hasBillingInfo = metadata?.billing_context || billingRules.length > 0 || billingBreakdown.length > 0;
 
@@ -640,13 +651,33 @@ function viewQuota(item, t) {
         </Box>
       ))}
 
-      {(userRatio != null || groupRatio != null || billingBreakdown.length > 0) && (
+      {(userRatio != null ||
+        baseGroupRatio != null ||
+        providerRatio != null ||
+        effectiveGroupRatio != null ||
+        billingProvider ||
+        billingBreakdown.length > 0) && (
         <Stack spacing={0.5}>
           {userRatio != null && (
             <MetadataTypography>{`${t('logPage.quotaDetail.userRatio')}: x${formatRatio(userRatio)}`}</MetadataTypography>
           )}
-          {groupRatio != null && (
-            <MetadataTypography>{`${t('logPage.quotaDetail.groupRatio')}: x${formatRatio(groupRatio)}`}</MetadataTypography>
+          {billingProvider ? (
+            <MetadataTypography>{`${t('logPage.quotaDetail.billingProvider', '计费厂商')}: ${billingProvider}`}</MetadataTypography>
+          ) : null}
+          {baseGroupRatio != null && (
+            <MetadataTypography>{`${t('logPage.quotaDetail.baseGroupRatio', '基础分组倍率')}: x${formatRatio(
+              baseGroupRatio
+            )}`}</MetadataTypography>
+          )}
+          {providerRatio != null && providerRatio !== 1 && (
+            <MetadataTypography>{`${t('logPage.quotaDetail.providerRatio', '厂商附加倍率')}: x${formatRatio(
+              providerRatio
+            )}`}</MetadataTypography>
+          )}
+          {effectiveGroupRatio != null && (
+            <MetadataTypography>{`${t('logPage.quotaDetail.effectiveGroupRatio', '最终倍率')}: x${formatRatio(
+              effectiveGroupRatio
+            )}`}</MetadataTypography>
           )}
           {billingBreakdown.length > 0 && (
             <MetadataTypography>{`${t('logPage.quotaDetail.originalBilling')}: $${formatUSD(originalBilling)}`}</MetadataTypography>
