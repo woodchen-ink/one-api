@@ -1,21 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
 import { Box, List, Button, ListItem, TextField, IconButton, ListItemSecondaryAction } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
-import Editor from '@monaco-editor/react';
 
 import { Icon } from '@iconify/react';
-import { showError } from 'utils/common';
 import { useTranslation } from 'react-i18next';
 
 const ListInput = ({ listValue, onChange, disabled, error, label }) => {
   const { t } = useTranslation();
-  const theme = useTheme();
   const [items, setItems] = useState([]);
 
   useEffect(() => {
@@ -25,9 +17,6 @@ const ListInput = ({ listValue, onChange, disabled, error, label }) => {
       setItems([]);
     }
   }, [listValue]);
-
-  const [openJsonDialog, setOpenJsonDialog] = useState(false);
-  const [jsonInput, setJsonInput] = useState('');
 
   const handleAdd = () => {
     const newItems = [...items, ''];
@@ -50,34 +39,6 @@ const ListInput = ({ listValue, onChange, disabled, error, label }) => {
 
   const updateParent = (newItems) => {
     onChange(newItems);
-  };
-
-  const handleAddByJson = () => {
-    // 将当前列表转换为JSON字符串
-    const currentItemsJson = JSON.stringify(items, null, 2);
-    setJsonInput(currentItemsJson);
-    setOpenJsonDialog(true);
-  };
-
-  const handleCloseJsonDialog = () => {
-    setOpenJsonDialog(false);
-    setJsonInput('');
-  };
-
-  const handleJsonSubmit = () => {
-    try {
-      const parsedJson = JSON.parse(jsonInput);
-      if (!Array.isArray(parsedJson)) {
-        throw new Error(t('channel_edit.listJsonError'));
-      }
-
-      const newItems = parsedJson.map((item) => item.toString());
-      setItems(newItems);
-      updateParent(newItems);
-      handleCloseJsonDialog();
-    } catch (e) {
-      showError(t('channel_edit.listJsonError'));
-    }
   };
 
   return (
@@ -104,57 +65,6 @@ const ListInput = ({ listValue, onChange, disabled, error, label }) => {
       <Button startIcon={<Icon icon="mdi:plus" />} onClick={handleAdd} disabled={disabled}>
         {t('channel_edit.mapAdd', { name: label?.name || '项目' })}
       </Button>
-
-      <Button startIcon={<Icon icon="mdi:plus" />} onClick={handleAddByJson} disabled={disabled}>
-        {t('channel_edit.mapAddByJson', { name: label?.name || '项目' })}
-      </Button>
-
-      <Dialog open={openJsonDialog} onClose={handleCloseJsonDialog} fullWidth maxWidth="md">
-        <DialogTitle>{t('channel_edit.mapAddByJson', { name: label?.name || '项目' })}</DialogTitle>
-        <DialogContent>
-          <Box
-            sx={{
-              border: '1px solid',
-              borderColor: 'divider',
-              borderRadius: 1,
-              overflow: 'hidden',
-              marginTop: 1,
-              resize: 'vertical',
-              height: '400px',
-              minHeight: '200px',
-              '&:hover': {
-                borderColor: 'primary.main'
-              },
-              '&:focus-within': {
-                borderColor: 'primary.main',
-                borderWidth: 1
-              }
-            }}
-          >
-            <Editor
-              height="100%"
-              language="json"
-              theme={theme.palette.mode === 'dark' ? 'vs-dark' : 'light'}
-              value={jsonInput}
-              options={{
-                minimap: { enabled: false },
-                scrollBeyondLastLine: false,
-                automaticLayout: true,
-                fontSize: 14,
-                lineNumbers: 'on',
-                folding: true,
-                formatOnPaste: true,
-                formatOnType: true
-              }}
-              onChange={(value) => setJsonInput(value)}
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseJsonDialog}>{t('common.cancel')}</Button>
-          <Button onClick={handleJsonSubmit}>{t('common.submit')}</Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 };

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
 	"czloapi/common/requester"
 	"czloapi/model"
 	"czloapi/providers/base"
@@ -65,17 +66,6 @@ func (p *OllamaProvider) GetRequestHeaders() (headers map[string]string) {
 	headers = make(map[string]string)
 	p.CommonRequestHeaders(headers)
 	headers["Authorization"] = fmt.Sprintf("Bearer %s", p.Channel.Key)
-
-	otherHeaders := p.Channel.Plugin.Data()["headers"]
-
-	for key, value := range otherHeaders {
-		headerValue, isString := value.(string)
-		if !isString || headerValue == "" {
-			continue
-		}
-
-		headers[key] = headerValue
-	}
 
 	return headers
 }

@@ -307,8 +307,7 @@ const typeConfig = {
       ]
     },
     prompt: {
-      base_url:
-        '请输入你部署的Ollama地址或者Ollama Cloud地址，例如：http://127.0.0.1:11434或者https://ollama.com，如果你使用了cloudflare Zero Trust，可以在下方Header配置填入授权信息',
+      base_url: '请输入你部署的Ollama地址或者Ollama Cloud地址，例如：http://127.0.0.1:11434或者https://ollama.com',
       key: '本地部署可以随便填，Ollama Cloud请填写API KEY，获取地址https://ollama.com/settings/keys'
     }
   },

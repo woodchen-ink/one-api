@@ -1,21 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
 import { Box, List, Button, ListItem, TextField, IconButton, ListItemSecondaryAction } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
-import Editor from '@monaco-editor/react';
 
 import { Icon } from '@iconify/react';
-import { showError } from 'utils/common';
 import { useTranslation } from 'react-i18next';
 
 const MapInput = ({ mapValue, onChange, disabled, error, label }) => {
   const { t } = useTranslation();
-  const theme = useTheme();
   const [mappings, setMappings] = useState([]);
 
   useEffect(() => {
@@ -25,9 +17,6 @@ const MapInput = ({ mapValue, onChange, disabled, error, label }) => {
       setMappings([{ index: 0, key: '', value: '' }]);
     }
   }, [mapValue]);
-
-  const [openJsonDialog, setOpenJsonDialog] = useState(false);
-  const [jsonInput, setJsonInput] = useState('');
 
   const handleAdd = () => {
     const newIndex = mappings.length > 0 ? Math.max(...mappings.map((m) => m.index)) + 1 : 0;
@@ -49,38 +38,6 @@ const MapInput = ({ mapValue, onChange, disabled, error, label }) => {
 
   const updateParent = (newMappings) => {
     onChange(newMappings);
-  };
-
-  const handleAddByJson = () => {
-    // 将当前映射转换为 key:value 形式的 JSON 字符串
-    const currentMappingsObject = mappings.reduce((acc, { key, value }) => {
-      if (key) acc[key] = value;
-      return acc;
-    }, {});
-    const currentMappingsJson = JSON.stringify(currentMappingsObject, null, 2);
-    setJsonInput(currentMappingsJson);
-    setOpenJsonDialog(true);
-  };
-
-  const handleCloseJsonDialog = () => {
-    setOpenJsonDialog(false);
-    setJsonInput('');
-  };
-
-  const handleJsonSubmit = () => {
-    try {
-      const parsedJson = JSON.parse(jsonInput);
-      const newMappings = Object.entries(parsedJson).map(([key, value], index) => ({
-        index,
-        key,
-        value: value.toString()
-      }));
-      setMappings(newMappings);
-      updateParent(newMappings);
-      handleCloseJsonDialog();
-    } catch (e) {
-      showError(t('common.jsonFormatError'));
-    }
   };
 
   return (
@@ -115,57 +72,6 @@ const MapInput = ({ mapValue, onChange, disabled, error, label }) => {
       <Button startIcon={<Icon icon="mdi:plus" />} onClick={handleAdd} disabled={disabled}>
         {t('channel_edit.mapAdd', { name: label.name })}
       </Button>
-
-      <Button startIcon={<Icon icon="mdi:plus" />} onClick={handleAddByJson} disabled={disabled}>
-        {t('channel_edit.mapAddByJson', { name: label.name })}
-      </Button>
-
-      <Dialog open={openJsonDialog} onClose={handleCloseJsonDialog} fullWidth maxWidth="md">
-        <DialogTitle>{t('channel_edit.mapAddByJson', { name: label.name })}</DialogTitle>
-        <DialogContent>
-          <Box
-            sx={{
-              border: '1px solid',
-              borderColor: 'divider',
-              borderRadius: 1,
-              overflow: 'hidden',
-              marginTop: 1,
-              resize: 'vertical',
-              height: '400px',
-              minHeight: '200px',
-              '&:hover': {
-                borderColor: 'primary.main'
-              },
-              '&:focus-within': {
-                borderColor: 'primary.main',
-                borderWidth: 1
-              }
-            }}
-          >
-            <Editor
-              height="100%"
-              language="json"
-              theme={theme.palette.mode === 'dark' ? 'vs-dark' : 'light'}
-              value={jsonInput}
-              options={{
-                minimap: { enabled: false },
-                scrollBeyondLastLine: false,
-                automaticLayout: true,
-                fontSize: 14,
-                lineNumbers: 'on',
-                folding: true,
-                formatOnPaste: true,
-                formatOnType: true
-              }}
-              onChange={(value) => setJsonInput(value)}
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseJsonDialog}>{t('common.cancel')}</Button>
-          <Button onClick={handleJsonSubmit}>{t('common.submit')}</Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 };

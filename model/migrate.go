@@ -1453,6 +1453,43 @@ func addSubscriptionPlanPriceCurrency() *gormigrate.Migration {
 	}
 }
 
+func removeOllamaHeaderPluginConfig() *gormigrate.Migration {
+	return &gormigrate.Migration{
+		ID: "202604030001",
+		Migrate: func(tx *gorm.DB) error {
+			var channels []*Channel
+			if err := tx.Where("type = ?", 39).Find(&channels).Error; err != nil {
+				return err
+			}
+
+			for _, channel := range channels {
+				if channel.Plugin == nil {
+					continue
+				}
+
+				pluginData := channel.Plugin.Data()
+				if pluginData == nil {
+					continue
+				}
+
+				if _, ok := pluginData["headers"]; !ok {
+					continue
+				}
+
+				delete(pluginData, "headers")
+				if err := tx.Model(&Channel{}).Where("id = ?", channel.Id).Update("plugin", datatypes.NewJSONType(pluginData)).Error; err != nil {
+					return err
+				}
+			}
+
+			return nil
+		},
+		Rollback: func(tx *gorm.DB) error {
+			return nil
+		},
+	}
+}
+
 func migrationAfter(db *gorm.DB) error {
 	// 从库不执行
 	if !config.IsMasterNode {
@@ -1474,6 +1511,7 @@ func migrationAfter(db *gorm.DB) error {
 		addLogKeyID(),
 		widenGroupColumns(),
 		addSubscriptionPlanPriceCurrency(),
+		removeOllamaHeaderPluginConfig(),
 	})
 	return m.Migrate()
 }

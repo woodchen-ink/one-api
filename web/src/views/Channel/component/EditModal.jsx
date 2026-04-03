@@ -105,8 +105,6 @@ const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, model
   const [batchAdd, setBatchAdd] = useState(false);
   const [hasTag, setHasTag] = useState(false);
   const [expanded, setExpanded] = useState(false);
-  const [advancedOpen, setAdvancedOpen] = useState(false);
-  const [priceModelsLoad, setPriceModelsLoad] = useState(false);
 
   const [inputValue, setInputValue] = useState('');
   const removeDuplicates = (array) => [...new Set(array)];
@@ -119,6 +117,34 @@ const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, model
       return null;
     }
     return proxyOptions.find((option) => option.id === Number(proxyPoolId)) || null;
+  };
+
+  const sanitizePluginValues = (typeValue, pluginValues) => {
+    const pluginConfig = pluginList[typeValue];
+    if (!pluginConfig || !pluginValues || typeof pluginValues !== 'object') {
+      return {};
+    }
+
+    const sanitizedPlugins = {};
+    Object.entries(pluginConfig).forEach(([pluginName, pluginDefinition]) => {
+      const sourcePlugin = pluginValues[pluginName];
+      if (!sourcePlugin || typeof sourcePlugin !== 'object') {
+        return;
+      }
+
+      const sanitizedParams = {};
+      Object.keys(pluginDefinition.params || {}).forEach((paramName) => {
+        if (sourcePlugin[paramName] !== undefined && sourcePlugin[paramName] !== null) {
+          sanitizedParams[paramName] = sourcePlugin[paramName];
+        }
+      });
+
+      if (Object.keys(sanitizedParams).length > 0) {
+        sanitizedPlugins[pluginName] = sanitizedParams;
+      }
+    });
+
+    return sanitizedPlugins;
   };
 
   const initChannel = (typeValue) => {
@@ -152,6 +178,8 @@ const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, model
         }
       }
       setFieldValue('plugin', newPluginValues);
+    } else {
+      setFieldValue('plugin', {});
     }
 
     const newInput = initChannel(typeValue);
@@ -196,6 +224,7 @@ const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, model
     setSubmitting(true);
     values = trims(values);
     delete values.proxy_pool;
+    values.plugin = sanitizePluginValues(values.type, values.plugin);
     if (values.proxy_mode === 'manual') {
       values.proxy_pool_id = null;
     } else if (values.proxy_mode === 'pool') {
@@ -371,6 +400,7 @@ const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, model
           data.custom_parameter = '';
         }
 
+        data.plugin = sanitizePluginValues(data.type, data.plugin);
         data.base_url = data.base_url ?? '';
         data.proxy = data.proxy ?? '';
         data.proxy_pool_id = data.proxy_pool_id ?? '';
@@ -384,9 +414,6 @@ const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, model
           data.proxy_mode = 'none';
         }
         data.is_edit = true;
-        if (data.plugin === null) {
-          data.plugin = {};
-        }
         initChannel(data.type);
         setInitialInput(data);
 
@@ -947,12 +974,22 @@ const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, model
                                 );
                               })
                             }
+                            ListboxProps={{
+                              style: {
+                                maxHeight: 320
+                              }
+                            }}
                             sx={{
                               '& .MuiAutocomplete-tag': {
                                 margin: '2px'
                               },
                               '& .MuiAutocomplete-inputRoot': {
-                                flexWrap: 'wrap'
+                                flexWrap: 'wrap',
+                                alignItems: 'flex-start',
+                                alignContent: 'flex-start',
+                                maxHeight: 220,
+                                overflowY: 'auto',
+                                overflowX: 'hidden'
                               }
                             }}
                           />
@@ -1095,7 +1132,7 @@ const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, model
                         </Box>
                       )}
 
-                      {/* 高级配置 - 可折叠 */}
+                      {/* 高级配置 */}
                       {(inputPrompt.model_mapping ||
                         inputPrompt.custom_parameter ||
                         inputPrompt.user_agent_mode ||
@@ -1106,253 +1143,241 @@ const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, model
                             sx={{
                               display: 'flex',
                               alignItems: 'center',
-                              cursor: 'pointer',
                               py: 1,
                               px: 1.5,
                               borderRadius: 1,
                               border: '1px solid',
-                              borderColor: 'divider',
-                              '&:hover': { bgcolor: 'action.hover' }
+                              borderColor: 'divider'
                             }}
-                            onClick={() => setAdvancedOpen(!advancedOpen)}
                           >
-                            <Icon
-                              icon={advancedOpen ? 'solar:alt-arrow-up-line-duotone' : 'solar:alt-arrow-down-line-duotone'}
-                              style={{ marginRight: 8 }}
-                            />
+                            <Icon icon="solar:settings-line-duotone" style={{ marginRight: 8 }} />
                             <Typography variant="subtitle2" sx={{ flex: 1 }}>
                               {t('channel_edit.advancedSettings')}
                             </Typography>
                           </Box>
-                          <Collapse in={advancedOpen}>
-                            <Box
-                              sx={{
-                                pt: 1.5,
-                                px: 2,
-                                pb: 1.5,
-                                mt: 1,
-                                borderRadius: 1,
-                                bgcolor: (theme) => (theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'),
-                                border: '1px solid',
-                                borderColor: 'divider'
-                              }}
-                            >
-                              {inputPrompt.model_mapping && (
-                                <FormControl
-                                  fullWidth
+                          <Box
+                            sx={{
+                              pt: 1.5,
+                              px: 2,
+                              pb: 1.5,
+                              mt: 1,
+                              borderRadius: 1,
+                              bgcolor: (theme) => (theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'),
+                              border: '1px solid',
+                              borderColor: 'divider'
+                            }}
+                          >
+                            {inputPrompt.model_mapping && (
+                              <FormControl
+                                fullWidth
+                                error={Boolean(touched.model_mapping && errors.model_mapping)}
+                                sx={{ mt: 0.5, mb: 0.5 }}
+                              >
+                                <MapInput
+                                  mapValue={values.model_mapping}
+                                  onChange={(newValue) => {
+                                    setFieldValue('model_mapping', newValue);
+                                  }}
+                                  disabled={hasTag}
                                   error={Boolean(touched.model_mapping && errors.model_mapping)}
-                                  sx={{ mt: 0.5, mb: 0.5 }}
+                                  label={{
+                                    keyName: customizeT(inputLabel.model_mapping),
+                                    valueName: customizeT(inputPrompt.model_mapping),
+                                    name: customizeT(inputLabel.model_mapping)
+                                  }}
+                                />
+                                {touched.model_mapping && errors.model_mapping ? (
+                                  <FormHelperText error id="helper-tex-channel-model_mapping-label">
+                                    {errors.model_mapping}
+                                  </FormHelperText>
+                                ) : (
+                                  <FormHelperText id="helper-tex-channel-model_mapping-label">
+                                    {customizeT(inputPrompt.model_mapping)}
+                                  </FormHelperText>
+                                )}
+                              </FormControl>
+                            )}
+                            {inputPrompt.user_agent_mode && (
+                              <FormControl
+                                fullWidth
+                                error={Boolean(touched.user_agent_mode && errors.user_agent_mode)}
+                                sx={{ mt: 0.5, mb: 0.5 }}
+                              >
+                                <InputLabel id="channel-user_agent_mode-label">{customizeT(inputLabel.user_agent_mode)}</InputLabel>
+                                <Select
+                                  labelId="channel-user_agent_mode-label"
+                                  id="channel-user_agent_mode"
+                                  value={values.user_agent_mode}
+                                  label={customizeT(inputLabel.user_agent_mode)}
+                                  disabled={hasTag}
+                                  name="user_agent_mode"
+                                  onChange={(event) => {
+                                    const nextMode = event.target.value;
+                                    setFieldValue('user_agent_mode', nextMode);
+                                    if (nextMode !== 'preset') {
+                                      setFieldValue('user_agent_preset', '');
+                                    }
+                                  }}
                                 >
-                                  <MapInput
-                                    mapValue={values.model_mapping}
-                                    onChange={(newValue) => {
-                                      setFieldValue('model_mapping', newValue);
+                                  <MenuItem value="default">保持原样</MenuItem>
+                                  <MenuItem value="preset">伪装成固定客户端</MenuItem>
+                                  <MenuItem value="passthrough">透传来路 User-Agent</MenuItem>
+                                </Select>
+                                {touched.user_agent_mode && errors.user_agent_mode ? (
+                                  <FormHelperText error id="helper-text-channel-user_agent_mode-label">
+                                    {errors.user_agent_mode}
+                                  </FormHelperText>
+                                ) : (
+                                  <FormHelperText id="helper-text-channel-user_agent_mode-label">
+                                    {customizeT(inputPrompt.user_agent_mode)}
+                                  </FormHelperText>
+                                )}
+                              </FormControl>
+                            )}
+                            {values.user_agent_mode === 'preset' && inputPrompt.user_agent_preset && (
+                              <FormControl
+                                fullWidth
+                                error={Boolean(touched.user_agent_preset && errors.user_agent_preset)}
+                                sx={{ mt: 0.5, mb: 0.5 }}
+                              >
+                                <InputLabel id="channel-user_agent_preset-label">{customizeT(inputLabel.user_agent_preset)}</InputLabel>
+                                <Select
+                                  labelId="channel-user_agent_preset-label"
+                                  id="channel-user_agent_preset"
+                                  value={values.user_agent_preset}
+                                  label={customizeT(inputLabel.user_agent_preset)}
+                                  disabled={hasTag}
+                                  name="user_agent_preset"
+                                  onChange={handleChange}
+                                >
+                                  {userAgentPresetOptions.map((option) => (
+                                    <MenuItem key={option.value} value={option.value}>
+                                      {option.label}
+                                    </MenuItem>
+                                  ))}
+                                </Select>
+                                {touched.user_agent_preset && errors.user_agent_preset ? (
+                                  <FormHelperText error id="helper-text-channel-user_agent_preset-label">
+                                    {errors.user_agent_preset}
+                                  </FormHelperText>
+                                ) : (
+                                  <FormHelperText id="helper-text-channel-user_agent_preset-label">
+                                    {customizeT(inputPrompt.user_agent_preset)}
+                                  </FormHelperText>
+                                )}
+                              </FormControl>
+                            )}
+                            {inputPrompt.custom_parameter && (
+                              <FormControl
+                                fullWidth
+                                error={Boolean(touched.custom_parameter && errors.custom_parameter)}
+                                sx={{ mt: 0.5, mb: 0.5 }}
+                              >
+                                <InputLabel shrink htmlFor="channel-custom_parameter-label">
+                                  {customizeT(inputLabel.custom_parameter)}
+                                </InputLabel>
+                                <Box
+                                  sx={{
+                                    border: '1px solid',
+                                    borderColor: touched.custom_parameter && errors.custom_parameter ? 'error.main' : 'divider',
+                                    borderRadius: 1,
+                                    overflow: 'hidden',
+                                    marginTop: 2,
+                                    resize: 'vertical',
+                                    height: '160px',
+                                    minHeight: '100px',
+                                    '&:hover': {
+                                      borderColor: 'primary.main'
+                                    },
+                                    '&:focus-within': {
+                                      borderColor: 'primary.main',
+                                      borderWidth: 2
+                                    }
+                                  }}
+                                >
+                                  <Editor
+                                    height="100%"
+                                    language="json"
+                                    theme={theme.palette.mode === 'dark' ? 'vs-dark' : 'light'}
+                                    value={values.custom_parameter}
+                                    options={{
+                                      minimap: { enabled: false },
+                                      scrollBeyondLastLine: false,
+                                      automaticLayout: true,
+                                      fontSize: 14,
+                                      lineNumbers: 'on',
+                                      folding: true,
+                                      formatOnPaste: true,
+                                      formatOnType: true
                                     }}
-                                    disabled={hasTag}
-                                    error={Boolean(touched.model_mapping && errors.model_mapping)}
-                                    label={{
-                                      keyName: customizeT(inputLabel.model_mapping),
-                                      valueName: customizeT(inputPrompt.model_mapping),
-                                      name: customizeT(inputLabel.model_mapping)
+                                    onChange={(value) => {
+                                      setFieldValue('custom_parameter', value);
                                     }}
                                   />
-                                  {touched.model_mapping && errors.model_mapping ? (
-                                    <FormHelperText error id="helper-tex-channel-model_mapping-label">
-                                      {errors.model_mapping}
-                                    </FormHelperText>
-                                  ) : (
-                                    <FormHelperText id="helper-tex-channel-model_mapping-label">
-                                      {customizeT(inputPrompt.model_mapping)}
-                                    </FormHelperText>
-                                  )}
-                                </FormControl>
-                              )}
-                              {inputPrompt.user_agent_mode && (
-                                <FormControl
-                                  fullWidth
-                                  error={Boolean(touched.user_agent_mode && errors.user_agent_mode)}
-                                  sx={{ mt: 0.5, mb: 0.5 }}
-                                >
-                                  <InputLabel id="channel-user_agent_mode-label">{customizeT(inputLabel.user_agent_mode)}</InputLabel>
-                                  <Select
-                                    labelId="channel-user_agent_mode-label"
-                                    id="channel-user_agent_mode"
-                                    value={values.user_agent_mode}
-                                    label={customizeT(inputLabel.user_agent_mode)}
-                                    disabled={hasTag}
-                                    name="user_agent_mode"
-                                    onChange={(event) => {
-                                      const nextMode = event.target.value;
-                                      setFieldValue('user_agent_mode', nextMode);
-                                      if (nextMode !== 'preset') {
-                                        setFieldValue('user_agent_preset', '');
-                                      }
-                                    }}
-                                  >
-                                    <MenuItem value="default">保持原样</MenuItem>
-                                    <MenuItem value="preset">伪装成固定客户端</MenuItem>
-                                    <MenuItem value="passthrough">透传来路 User-Agent</MenuItem>
-                                  </Select>
-                                  {touched.user_agent_mode && errors.user_agent_mode ? (
-                                    <FormHelperText error id="helper-text-channel-user_agent_mode-label">
-                                      {errors.user_agent_mode}
-                                    </FormHelperText>
-                                  ) : (
-                                    <FormHelperText id="helper-text-channel-user_agent_mode-label">
-                                      {customizeT(inputPrompt.user_agent_mode)}
-                                    </FormHelperText>
-                                  )}
-                                </FormControl>
-                              )}
-                              {values.user_agent_mode === 'preset' && inputPrompt.user_agent_preset && (
-                                <FormControl
-                                  fullWidth
-                                  error={Boolean(touched.user_agent_preset && errors.user_agent_preset)}
-                                  sx={{ mt: 0.5, mb: 0.5 }}
-                                >
-                                  <InputLabel id="channel-user_agent_preset-label">{customizeT(inputLabel.user_agent_preset)}</InputLabel>
-                                  <Select
-                                    labelId="channel-user_agent_preset-label"
-                                    id="channel-user_agent_preset"
-                                    value={values.user_agent_preset}
-                                    label={customizeT(inputLabel.user_agent_preset)}
-                                    disabled={hasTag}
-                                    name="user_agent_preset"
-                                    onChange={handleChange}
-                                  >
-                                    {userAgentPresetOptions.map((option) => (
-                                      <MenuItem key={option.value} value={option.value}>
-                                        {option.label}
-                                      </MenuItem>
-                                    ))}
-                                  </Select>
-                                  {touched.user_agent_preset && errors.user_agent_preset ? (
-                                    <FormHelperText error id="helper-text-channel-user_agent_preset-label">
-                                      {errors.user_agent_preset}
-                                    </FormHelperText>
-                                  ) : (
-                                    <FormHelperText id="helper-text-channel-user_agent_preset-label">
-                                      {customizeT(inputPrompt.user_agent_preset)}
-                                    </FormHelperText>
-                                  )}
-                                </FormControl>
-                              )}
-                              {inputPrompt.custom_parameter && (
-                                <FormControl
-                                  fullWidth
-                                  error={Boolean(touched.custom_parameter && errors.custom_parameter)}
-                                  sx={{ mt: 0.5, mb: 0.5 }}
-                                >
-                                  <InputLabel shrink htmlFor="channel-custom_parameter-label">
-                                    {customizeT(inputLabel.custom_parameter)}
-                                  </InputLabel>
-                                  <Box
-                                    sx={{
-                                      border: '1px solid',
-                                      borderColor: touched.custom_parameter && errors.custom_parameter ? 'error.main' : 'divider',
-                                      borderRadius: 1,
-                                      overflow: 'hidden',
-                                      marginTop: 2,
-                                      resize: 'vertical',
-                                      height: '160px',
-                                      minHeight: '100px',
-                                      '&:hover': {
-                                        borderColor: 'primary.main'
-                                      },
-                                      '&:focus-within': {
-                                        borderColor: 'primary.main',
-                                        borderWidth: 2
-                                      }
-                                    }}
-                                  >
-                                    <Editor
-                                      height="100%"
-                                      language="json"
-                                      theme={theme.palette.mode === 'dark' ? 'vs-dark' : 'light'}
-                                      value={values.custom_parameter}
-                                      options={{
-                                        minimap: { enabled: false },
-                                        scrollBeyondLastLine: false,
-                                        automaticLayout: true,
-                                        fontSize: 14,
-                                        lineNumbers: 'on',
-                                        folding: true,
-                                        formatOnPaste: true,
-                                        formatOnType: true
-                                      }}
-                                      onChange={(value) => {
-                                        setFieldValue('custom_parameter', value);
-                                      }}
-                                    />
-                                  </Box>
-                                  {touched.custom_parameter && errors.custom_parameter ? (
-                                    <FormHelperText error id="helper-tex-channel-custom_parameter-label">
-                                      {errors.custom_parameter}
-                                    </FormHelperText>
-                                  ) : (
-                                    <FormHelperText id="helper-tex-channel-custom_parameter-label">
-                                      {customizeT(inputPrompt.custom_parameter)}
-                                    </FormHelperText>
-                                  )}
-                                </FormControl>
-                              )}
-                              {inputPrompt.disabled_stream && (
-                                <FormControl
-                                  fullWidth
+                                </Box>
+                                {touched.custom_parameter && errors.custom_parameter ? (
+                                  <FormHelperText error id="helper-tex-channel-custom_parameter-label">
+                                    {errors.custom_parameter}
+                                  </FormHelperText>
+                                ) : (
+                                  <FormHelperText id="helper-tex-channel-custom_parameter-label">
+                                    {customizeT(inputPrompt.custom_parameter)}
+                                  </FormHelperText>
+                                )}
+                              </FormControl>
+                            )}
+                            {inputPrompt.disabled_stream && (
+                              <FormControl
+                                fullWidth
+                                error={Boolean(touched.disabled_stream && errors.disabled_stream)}
+                                sx={{ mt: 0.5, mb: 0.5 }}
+                              >
+                                <ListInput
+                                  listValue={values.disabled_stream}
+                                  onChange={(newValue) => {
+                                    setFieldValue('disabled_stream', newValue);
+                                  }}
+                                  disabled={hasTag}
                                   error={Boolean(touched.disabled_stream && errors.disabled_stream)}
-                                  sx={{ mt: 0.5, mb: 0.5 }}
-                                >
-                                  <ListInput
-                                    listValue={values.disabled_stream}
-                                    onChange={(newValue) => {
-                                      setFieldValue('disabled_stream', newValue);
-                                    }}
-                                    disabled={hasTag}
-                                    error={Boolean(touched.disabled_stream && errors.disabled_stream)}
-                                    label={{
-                                      name: customizeT(inputLabel.disabled_stream),
-                                      itemName: customizeT(inputPrompt.disabled_stream)
-                                    }}
-                                  />
-                                </FormControl>
-                              )}
+                                  label={{
+                                    name: customizeT(inputLabel.disabled_stream),
+                                    itemName: customizeT(inputPrompt.disabled_stream)
+                                  }}
+                                />
+                              </FormControl>
+                            )}
 
-                              {inputPrompt.test_model && (
-                                <Grid container spacing={2}>
-                                  <Grid item xs={12}>
-                                    <FormControl
-                                      fullWidth
-                                      error={Boolean(touched.test_model && errors.test_model)}
-                                      sx={{ mt: 0.5, mb: 0.5 }}
-                                    >
-                                      <InputLabel htmlFor="channel-test_model-label">{customizeT(inputLabel.test_model)}</InputLabel>
-                                      <OutlinedInput
-                                        id="channel-test_model-label"
-                                        label={customizeT(inputLabel.test_model)}
-                                        type="text"
-                                        disabled={hasTag}
-                                        value={values.test_model}
-                                        name="test_model"
-                                        onBlur={handleBlur}
-                                        onChange={handleChange}
-                                        inputProps={{}}
-                                        aria-describedby="helper-text-channel-test_model-label"
-                                      />
-                                      {touched.test_model && errors.test_model ? (
-                                        <FormHelperText error id="helper-tex-channel-test_model-label">
-                                          {errors.test_model}
-                                        </FormHelperText>
-                                      ) : (
-                                        <FormHelperText id="helper-tex-channel-test_model-label">
-                                          {customizeT(inputPrompt.test_model)}
-                                        </FormHelperText>
-                                      )}
-                                    </FormControl>
-                                  </Grid>
+                            {inputPrompt.test_model && (
+                              <Grid container spacing={2}>
+                                <Grid item xs={12}>
+                                  <FormControl fullWidth error={Boolean(touched.test_model && errors.test_model)} sx={{ mt: 0.5, mb: 0.5 }}>
+                                    <InputLabel htmlFor="channel-test_model-label">{customizeT(inputLabel.test_model)}</InputLabel>
+                                    <OutlinedInput
+                                      id="channel-test_model-label"
+                                      label={customizeT(inputLabel.test_model)}
+                                      type="text"
+                                      disabled={hasTag}
+                                      value={values.test_model}
+                                      name="test_model"
+                                      onBlur={handleBlur}
+                                      onChange={handleChange}
+                                      inputProps={{}}
+                                      aria-describedby="helper-text-channel-test_model-label"
+                                    />
+                                    {touched.test_model && errors.test_model ? (
+                                      <FormHelperText error id="helper-tex-channel-test_model-label">
+                                        {errors.test_model}
+                                      </FormHelperText>
+                                    ) : (
+                                      <FormHelperText id="helper-tex-channel-test_model-label">
+                                        {customizeT(inputPrompt.test_model)}
+                                      </FormHelperText>
+                                    )}
+                                  </FormControl>
                                 </Grid>
-                              )}
-                            </Box>
-                          </Collapse>
+                              </Grid>
+                            )}
+                          </Box>
                         </Box>
                       )}
 
