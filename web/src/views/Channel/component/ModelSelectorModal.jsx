@@ -166,8 +166,7 @@ const ModelSelectorModal = ({ open, onClose, onConfirm, channelValues, prices })
       const requestData = {
         ...channelValues,
         models: '',
-        model_mapping: '',
-        model_headers: ''
+        model_mapping: ''
       };
 
       if (isOpenAIMode) {

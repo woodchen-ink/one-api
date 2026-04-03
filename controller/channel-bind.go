@@ -47,6 +47,9 @@ func decodeChannelJSONPayload(body []byte) (*model.Channel, error) {
 	if err := json.Unmarshal(normalizedBody, channel); err != nil {
 		return nil, err
 	}
+	if err := channel.NormalizeUserAgentConfig(); err != nil {
+		return nil, err
+	}
 
 	return channel, nil
 }

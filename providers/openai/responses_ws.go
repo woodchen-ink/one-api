@@ -46,6 +46,9 @@ func (p *OpenAIProvider) CreateResponsesWS() (*websocket.Conn, requester.Message
 			httpHeaders.Set("OpenAI-Beta", beta)
 		}
 	}
+	if userAgent, ok := p.ResolveConfiguredUserAgent(); ok {
+		httpHeaders.Set("User-Agent", userAgent)
+	}
 
 	wsRequester := requester.NewWSRequester(*p.Channel.Proxy, true)
 

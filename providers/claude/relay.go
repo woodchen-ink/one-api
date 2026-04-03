@@ -117,9 +117,13 @@ func (p *ClaudeProvider) getRelayChatRequest(request *ClaudeRequest) (*http.Requ
 	// Avoid leaking the caller's compression preferences and keep upstream
 	// responses in plain text for raw passthrough / SSE handling.
 	headers["Accept-Encoding"] = "identity"
-	// Suppress Go's default User-Agent so the upstream only receives the
-	// protocol-specific headers we explicitly allow.
-	headers["User-Agent"] = ""
+	if userAgent, ok := p.ResolveConfiguredUserAgent(); ok {
+		headers["User-Agent"] = userAgent
+	} else {
+		// Suppress Go's default User-Agent so the upstream only receives the
+		// protocol-specific headers we explicitly allow.
+		headers["User-Agent"] = ""
+	}
 	if request.Stream {
 		headers["Accept"] = "text/event-stream"
 	}

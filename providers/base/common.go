@@ -1,15 +1,15 @@
 package base
 
 import (
-	"encoding/json"
-	"fmt"
-	"net/http"
 	"czloapi/common"
 	"czloapi/common/config"
 	"czloapi/common/requester"
 	"czloapi/common/utils"
 	"czloapi/model"
 	"czloapi/types"
+	"encoding/json"
+	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -108,16 +108,23 @@ func (p *BaseProvider) CommonRequestHeaders(headers map[string]string) {
 	if headers["Content-Type"] == "" {
 		headers["Content-Type"] = "application/json"
 	}
-	// 自定义header
-	if p.Channel.ModelHeaders != nil {
-		var customHeaders map[string]string
-		err := json.Unmarshal([]byte(*p.Channel.ModelHeaders), &customHeaders)
-		if err == nil {
-			for key, value := range customHeaders {
-				headers[key] = value
-			}
-		}
+	if userAgent, ok := p.ResolveConfiguredUserAgent(); ok {
+		headers["User-Agent"] = userAgent
 	}
+}
+
+// ResolveConfiguredUserAgent resolves the effective User-Agent override from the channel config and request context.
+func (p *BaseProvider) ResolveConfiguredUserAgent() (string, bool) {
+	if p.Channel == nil {
+		return "", false
+	}
+
+	incomingUserAgent := ""
+	if p.Context != nil && p.Context.Request != nil {
+		incomingUserAgent = p.Context.Request.UserAgent()
+	}
+
+	return p.Channel.ResolveConfiguredUserAgent(incomingUserAgent)
 }
 
 func (p *BaseProvider) GetUsage() *types.Usage {

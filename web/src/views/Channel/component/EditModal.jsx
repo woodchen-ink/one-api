@@ -34,7 +34,7 @@ import {
 } from '@mui/material';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
-import { defaultConfig, typeConfig } from '../type/Config'; //typeConfig
+import { defaultConfig, typeConfig, userAgentPresetOptions } from '../type/Config'; //typeConfig
 import { createFilterOptions } from '@mui/material/Autocomplete';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
@@ -82,8 +82,15 @@ const getValidationSchema = (t) =>
       otherwise: Yup.string() // 在其他情况下，base_url 可以是任意字符串
     }),
     model_mapping: Yup.array(),
-    model_headers: Yup.array(),
-    custom_parameter: Yup.string().nullable()
+    custom_parameter: Yup.string().nullable(),
+    user_agent_mode: Yup.string().oneOf(['default', 'preset', 'passthrough']).default('default'),
+    user_agent_preset: Yup.string().when('user_agent_mode', {
+      is: 'preset',
+      then: Yup.string()
+        .oneOf(userAgentPresetOptions.map((option) => option.value))
+        .required('请选择 User-Agent 预设'),
+      otherwise: Yup.string().nullable()
+    })
   });
 
 const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, modelOptions, prices, proxyOptions = [] }) => {
@@ -234,29 +241,8 @@ const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, model
         showError('Error parsing model_mapping:' + error.message);
       }
     }
-    let modelHeadersKey = [];
-
-    if (values.model_headers) {
-      try {
-        const modelHeader = values.model_headers.reduce((acc, item) => {
-          if (item.key && item.value) {
-            acc[item.key] = item.value;
-          }
-          return acc;
-        }, {});
-        const cleanedHeader = {};
-
-        for (const [key, value] of Object.entries(modelHeader)) {
-          if (key && value && !(key in cleanedHeader)) {
-            cleanedHeader[key] = value;
-            modelHeadersKey.push(key);
-          }
-        }
-
-        values.model_headers = JSON.stringify(cleanedHeader, null, 2);
-      } catch (error) {
-        showError('Error parsing model_headers:' + error.message);
-      }
+    if (values.user_agent_mode !== 'preset') {
+      values.user_agent_preset = '';
     }
 
     if (values.custom_parameter) {
@@ -371,17 +357,6 @@ const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, model
                 value
               }))
             : [];
-        // if (data.model_headers) {
-        data.model_headers =
-          data.model_headers !== ''
-            ? Object.entries(JSON.parse(data.model_headers)).map(([key, value], index) => ({
-                index,
-                key,
-                value
-              }))
-            : [];
-        // }
-
         // Format the custom_parameter JSON for better readability if it's not empty
         if (data.custom_parameter !== '') {
           try {
@@ -399,6 +374,8 @@ const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, model
         data.base_url = data.base_url ?? '';
         data.proxy = data.proxy ?? '';
         data.proxy_pool_id = data.proxy_pool_id ?? '';
+        data.user_agent_mode = data.user_agent_mode || 'default';
+        data.user_agent_preset = data.user_agent_preset || '';
         if (data.proxy) {
           data.proxy_mode = 'manual';
         } else if (data.proxy_pool_id !== '') {
@@ -1120,8 +1097,8 @@ const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, model
 
                       {/* 高级配置 - 可折叠 */}
                       {(inputPrompt.model_mapping ||
-                        inputPrompt.model_headers ||
                         inputPrompt.custom_parameter ||
+                        inputPrompt.user_agent_mode ||
                         inputPrompt.disabled_stream ||
                         inputPrompt.test_model) && (
                         <Box sx={{ mt: 1 }}>
@@ -1190,32 +1167,72 @@ const EditModal = ({ open, channelId, onCancel, onOk, groupOptions, isTag, model
                                   )}
                                 </FormControl>
                               )}
-                              {inputPrompt.model_headers && (
+                              {inputPrompt.user_agent_mode && (
                                 <FormControl
                                   fullWidth
-                                  error={Boolean(touched.model_headers && errors.model_headers)}
+                                  error={Boolean(touched.user_agent_mode && errors.user_agent_mode)}
                                   sx={{ mt: 0.5, mb: 0.5 }}
                                 >
-                                  <MapInput
-                                    mapValue={values.model_headers}
-                                    onChange={(newValue) => {
-                                      setFieldValue('model_headers', newValue);
-                                    }}
+                                  <InputLabel id="channel-user_agent_mode-label">{customizeT(inputLabel.user_agent_mode)}</InputLabel>
+                                  <Select
+                                    labelId="channel-user_agent_mode-label"
+                                    id="channel-user_agent_mode"
+                                    value={values.user_agent_mode}
+                                    label={customizeT(inputLabel.user_agent_mode)}
                                     disabled={hasTag}
-                                    error={Boolean(touched.model_headers && errors.model_headers)}
-                                    label={{
-                                      keyName: customizeT(inputLabel.model_headers),
-                                      valueName: customizeT(inputPrompt.model_headers),
-                                      name: customizeT(inputLabel.model_headers)
+                                    name="user_agent_mode"
+                                    onChange={(event) => {
+                                      const nextMode = event.target.value;
+                                      setFieldValue('user_agent_mode', nextMode);
+                                      if (nextMode !== 'preset') {
+                                        setFieldValue('user_agent_preset', '');
+                                      }
                                     }}
-                                  />
-                                  {touched.model_headers && errors.model_headers ? (
-                                    <FormHelperText error id="helper-tex-channel-model_headers-label">
-                                      {errors.model_headers}
+                                  >
+                                    <MenuItem value="default">保持原样</MenuItem>
+                                    <MenuItem value="preset">伪装成固定客户端</MenuItem>
+                                    <MenuItem value="passthrough">透传来路 User-Agent</MenuItem>
+                                  </Select>
+                                  {touched.user_agent_mode && errors.user_agent_mode ? (
+                                    <FormHelperText error id="helper-text-channel-user_agent_mode-label">
+                                      {errors.user_agent_mode}
                                     </FormHelperText>
                                   ) : (
-                                    <FormHelperText id="helper-tex-channel-model_headers-label">
-                                      {customizeT(inputPrompt.model_headers)}
+                                    <FormHelperText id="helper-text-channel-user_agent_mode-label">
+                                      {customizeT(inputPrompt.user_agent_mode)}
+                                    </FormHelperText>
+                                  )}
+                                </FormControl>
+                              )}
+                              {values.user_agent_mode === 'preset' && inputPrompt.user_agent_preset && (
+                                <FormControl
+                                  fullWidth
+                                  error={Boolean(touched.user_agent_preset && errors.user_agent_preset)}
+                                  sx={{ mt: 0.5, mb: 0.5 }}
+                                >
+                                  <InputLabel id="channel-user_agent_preset-label">{customizeT(inputLabel.user_agent_preset)}</InputLabel>
+                                  <Select
+                                    labelId="channel-user_agent_preset-label"
+                                    id="channel-user_agent_preset"
+                                    value={values.user_agent_preset}
+                                    label={customizeT(inputLabel.user_agent_preset)}
+                                    disabled={hasTag}
+                                    name="user_agent_preset"
+                                    onChange={handleChange}
+                                  >
+                                    {userAgentPresetOptions.map((option) => (
+                                      <MenuItem key={option.value} value={option.value}>
+                                        {option.label}
+                                      </MenuItem>
+                                    ))}
+                                  </Select>
+                                  {touched.user_agent_preset && errors.user_agent_preset ? (
+                                    <FormHelperText error id="helper-text-channel-user_agent_preset-label">
+                                      {errors.user_agent_preset}
+                                    </FormHelperText>
+                                  ) : (
+                                    <FormHelperText id="helper-text-channel-user_agent_preset-label">
+                                      {customizeT(inputPrompt.user_agent_preset)}
                                     </FormHelperText>
                                   )}
                                 </FormControl>

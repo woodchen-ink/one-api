@@ -1,14 +1,14 @@
 package openai
 
 import (
-	"encoding/json"
-	"fmt"
-	"net/http"
 	"czloapi/common"
 	"czloapi/common/config"
 	"czloapi/common/logger"
 	"czloapi/common/requester"
 	"czloapi/types"
+	"encoding/json"
+	"fmt"
+	"net/http"
 
 	"github.com/gorilla/websocket"
 )
@@ -29,6 +29,9 @@ func (p *OpenAIProvider) CreateChatRealtime(modelName string) (*websocket.Conn, 
 		httpHeaders.Set("Authorization", fmt.Sprintf("Bearer %s", p.Channel.Key))
 	}
 	httpHeaders.Set("OpenAI-Beta", "realtime=v1")
+	if userAgent, ok := p.ResolveConfiguredUserAgent(); ok {
+		httpHeaders.Set("User-Agent", userAgent)
+	}
 
 	wsRequester := requester.NewWSRequester(*p.Channel.Proxy)
 

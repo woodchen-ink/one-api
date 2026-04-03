@@ -36,6 +36,9 @@ func (p *AzureDatabricksProvider) GetRequestHeaders() (headers map[string]string
 	// https://learn.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/authentication
 	auth := base64.StdEncoding.EncodeToString([]byte("token:" + p.Channel.Key))
 	headers["Authorization"] = fmt.Sprintf("Basic %s", auth)
+	if userAgent, ok := p.ResolveConfiguredUserAgent(); ok {
+		headers["User-Agent"] = userAgent
+	}
 	return headers
 }
 

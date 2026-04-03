@@ -129,6 +129,49 @@ func TestCreateClaudeChatRawPreservesUnknownFieldsAndHeaders(t *testing.T) {
 	assert.Equal(t, 34, provider.GetUsage().CompletionTokens)
 }
 
+func TestCreateClaudeChatRawUsesPassthroughUserAgentWhenConfigured(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	var receivedUserAgent string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		receivedUserAgent = r.Header.Get("User-Agent")
+		w.Header().Set("Content-Type", "application/json")
+		_, err := w.Write([]byte(`{"id":"msg_123","type":"message","role":"assistant","content":[{"type":"text","text":"ok"}],"model":"claude-sonnet-4-6","usage":{"input_tokens":12,"output_tokens":34}}`))
+		require.NoError(t, err)
+	}))
+	defer server.Close()
+
+	recorder := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(recorder)
+	c.Request = httptest.NewRequest(http.MethodPost, "/v1/messages", strings.NewReader(`{"model":"claude-sonnet-4-6","max_tokens":128,"stream":false,"messages":[{"role":"user","content":"hello"}]}`))
+	c.Request.Header.Set("Content-Type", "application/json")
+	c.Request.Header.Set("User-Agent", "client-agent")
+
+	baseURL := server.URL
+	proxy := ""
+	provider := &ClaudeProvider{}
+	provider.BaseProvider = base.BaseProvider{
+		Config:    getConfig(),
+		Channel:   &model.Channel{Key: "upstream-key", BaseURL: &baseURL, Proxy: &proxy, UserAgentMode: model.ChannelUserAgentModePassthrough},
+		Requester: requester.NewHTTPRequester(proxy, RequestErrorHandle),
+		Context:   c,
+		Usage:     &types.Usage{},
+	}
+
+	response, errWithCode := provider.CreateClaudeChatRaw(&ClaudeRequest{
+		Model:     "claude-sonnet-4-6",
+		MaxTokens: 128,
+		Messages: []Message{
+			{Role: "user", Content: "hello"},
+		},
+	})
+	require.Nil(t, errWithCode)
+	require.NotNil(t, response)
+	defer response.Body.Close()
+
+	assert.Equal(t, "client-agent", receivedUserAgent)
+}
+
 func TestClaudeRelayStreamHandlerPassthroughTracksUsageWithoutRewriting(t *testing.T) {
 	handler := &ClaudeRelayStreamHandler{
 		Usage:  &types.Usage{},

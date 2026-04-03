@@ -10,8 +10,9 @@ const defaultConfig = {
     proxy_pool_id: '',
     test_model: '',
     model_mapping: [],
-    model_headers: [],
     custom_parameter: '',
+    user_agent_mode: 'default',
+    user_agent_preset: '',
     models: [],
     groups: ['Lite'],
     plugin: {},
@@ -36,8 +37,9 @@ const defaultConfig = {
     test_model: '测速模型',
     models: '模型',
     model_mapping: '模型映射关系',
-    model_headers: '自定义模型请求头',
     custom_parameter: '额外参数',
+    user_agent_mode: 'User-Agent 策略',
+    user_agent_preset: '伪装 User-Agent',
     groups: '用户组',
     only_chat: '仅支持聊天',
     tag: '标签',
@@ -63,9 +65,11 @@ const defaultConfig = {
     models:
       '请选择该渠道所支持的模型,你也可以输入通配符*来匹配模型，例如：gpt-3.5*，表示支持所有gpt-3.5开头的模型，*号只能在最后一位使用，前面必须有字符，例如：gpt-3.5*是正确的，*gpt-3.5是错误的',
     model_mapping: '模型映射关系：例如用户请求A模型，实际转发给渠道的模型为B。在B模型加前缀+，表示使用传入模型计费，例如：+gpt-3.5-turbo',
-    model_headers: '自定义模型请求头，例如：{"key": "value"}',
     custom_parameter:
       '支持通过 JSON 注入额外参数（可嵌套）。可用控制项：overwrite：设为 true 覆盖同名字段，未设置或 false 时仅补充缺失字段；per_model：设为 true 后按模型名进行参数覆盖，如 {"per_model":true,"gpt-3.5-turbo":{"temperature": 0.7},"gpt-4":{"temperature": 0.5}}；pre_add：设为 true 时在请求入口即完成参数覆盖，否则会在发送请求前再进行参数覆盖，适用于所有渠道（含 Claude、Gemini），如 {"pre_add":true,"overwrite":true,"stream":false}。',
+    user_agent_mode:
+      '保持原样会沿用当前渠道实现；伪装会固定成常见客户端；透传会把入口请求的 User-Agent 转发给上游。测速等无来路请求在透传模式下会回退为原始行为。',
+    user_agent_preset: '选择一个常见客户端标识伪装给上游，适合对白名单或风控有要求的渠道。',
     groups: '请选择该渠道所支持的用户组',
     only_chat: '如果选择了仅支持聊天，那么遇到有函数调用的请求会跳过该渠道',
     provider_models_list: '必须填写所有数据后才能获取模型列表',
@@ -83,6 +87,16 @@ const defaultConfig = {
   },
   modelGroup: 'OpenAI'
 };
+
+const userAgentPresetOptions = [
+  { value: 'go-http-client', label: 'Go 默认客户端' },
+  { value: 'python-requests', label: 'Python Requests' },
+  { value: 'openai-python', label: 'OpenAI Python SDK' },
+  { value: 'openai-node', label: 'OpenAI Node SDK' },
+  { value: 'curl', label: 'cURL' },
+  { value: 'chrome-windows', label: 'Chrome Windows' },
+  { value: 'channel-test', label: '普通测速请求' }
+];
 
 const typeConfig = {
   1: {
@@ -321,4 +335,4 @@ const typeConfig = {
   }
 };
 
-export { defaultConfig, typeConfig };
+export { defaultConfig, typeConfig, userAgentPresetOptions };

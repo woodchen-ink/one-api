@@ -32,8 +32,9 @@ type Channel struct {
 	Tag                string  `json:"tag" form:"tag" gorm:"type:varchar(32);default:''"`
 	UsedQuota          int64   `json:"used_quota" gorm:"bigint;default:0"`
 	ModelMapping       *string `json:"model_mapping" gorm:"type:text"`
-	ModelHeaders       *string `json:"model_headers" gorm:"type:varchar(1024);default:''"`
 	CustomParameter    *string `json:"custom_parameter" gorm:"type:varchar(1024);default:''"`
+	UserAgentMode      string  `json:"user_agent_mode" form:"user_agent_mode" gorm:"type:varchar(32);default:'default'"`
+	UserAgentPreset    string  `json:"user_agent_preset" form:"user_agent_preset" gorm:"type:varchar(64);default:''"`
 	Priority           *int64  `json:"priority" gorm:"bigint;default:0"`
 	Proxy              *string `json:"proxy" gorm:"type:varchar(255);default:''"`
 	ProxyPoolID        *int    `json:"proxy_pool_id" form:"proxy_pool_id" gorm:"column:proxy_pool_id"`
