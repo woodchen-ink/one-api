@@ -31,6 +31,7 @@ type Order struct {
 	Fee                float64        `json:"fee" gorm:"type:decimal(10,2);default:0"`
 	Discount           float64        `json:"discount" gorm:"type:decimal(10,2);default:0"`
 	SubscriptionPlanId int            `json:"subscription_plan_id" gorm:"default:0"`
+	BillingCycle       string         `json:"billing_cycle" gorm:"type:varchar(20);default:'monthly'"`
 	Status             OrderStatus    `json:"status" gorm:"type:varchar(32)"`
 	CreatedAt          int            `json:"created_at"`
 	UpdatedAt          int            `json:"-"`

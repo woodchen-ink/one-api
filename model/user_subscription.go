@@ -33,9 +33,12 @@ type UserSubscription struct {
 	QuotaAmount float64            `json:"quota_amount" gorm:"type:decimal(10,2)"`
 	UsedAmount  float64            `json:"used_amount" gorm:"type:decimal(10,4);default:0"`
 	TradeNo     string             `json:"trade_no" gorm:"type:varchar(50);index"`
-	StartTime   int64              `json:"start_time" gorm:"not null"`
-	ExpireTime  int64              `json:"expire_time" gorm:"index;not null"`
-	Status      SubscriptionStatus `json:"status" gorm:"type:varchar(20);index;default:'active'"`
+	BillingCycle  string             `json:"billing_cycle" gorm:"type:varchar(20);default:'monthly'"`
+	StartTime     int64              `json:"start_time" gorm:"not null"`
+	ExpireTime    int64              `json:"expire_time" gorm:"index;not null"`
+	NextResetTime int64              `json:"next_reset_time" gorm:"default:0"`
+	LastResetTime int64              `json:"last_reset_time" gorm:"default:0"`
+	Status        SubscriptionStatus `json:"status" gorm:"type:varchar(20);index;default:'active'"`
 	CreatedAt   int                `json:"created_at"`
 	UpdatedAt   int                `json:"-"`
 	DeletedAt   gorm.DeletedAt     `json:"-" gorm:"index"`
@@ -348,6 +351,43 @@ func CalculateExpireTime(durationType string, durationCount int) int64 {
 	default:
 		return now.AddDate(0, 0, durationCount).Unix()
 	}
+}
+
+// ResetSubscriptionQuotas 重置到期需重置配额的订阅
+func ResetSubscriptionQuotas() (int64, error) {
+	now := time.Now().Unix()
+
+	var subs []UserSubscription
+	err := DB.Where("status = ? AND next_reset_time > 0 AND next_reset_time <= ? AND expire_time > ?",
+		SubscriptionStatusActive, now, now).
+		Find(&subs).Error
+	if err != nil {
+		return 0, err
+	}
+
+	count := int64(0)
+	for _, sub := range subs {
+		nextReset := time.Unix(sub.NextResetTime, 0).AddDate(0, 1, 0).Unix()
+		if nextReset > sub.ExpireTime {
+			nextReset = sub.ExpireTime
+		}
+
+		updates := map[string]interface{}{
+			"used_amount":     0,
+			"last_reset_time": now,
+			"next_reset_time": nextReset,
+		}
+
+		err := DB.Model(&UserSubscription{}).Where("id = ?", sub.ID).Updates(updates).Error
+		if err != nil {
+			logger.SysError(fmt.Sprintf("reset subscription quota error: id=%d, err=%s", sub.ID, err.Error()))
+			continue
+		}
+		ClearUserSubscriptionCache(sub.UserId)
+		count++
+	}
+
+	return count, nil
 }
 
 // ClearUserSubscriptionCache 清除用户订阅相关缓存

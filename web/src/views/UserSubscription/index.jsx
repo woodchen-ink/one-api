@@ -279,6 +279,7 @@ export default function UserSubscription() {
                   { id: 'plan_name', label: '套餐名称', disableSort: true },
                   { id: 'group_symbol', label: '分组', disableSort: false },
                   { id: 'usage', label: '使用量', disableSort: true, minWidth: 180 },
+                  { id: 'billing_cycle', label: '周期', disableSort: false },
                   { id: 'expire_time', label: '到期时间', disableSort: false },
                   { id: 'status', label: '状态', disableSort: false },
                   { id: 'action', label: '操作', disableSort: true }
@@ -307,6 +308,9 @@ export default function UserSubscription() {
                             ${(row.used_amount || 0).toFixed(2)} / ${(row.quota_amount || 0).toFixed(2)}
                           </Typography>
                         </Box>
+                      </TableCell>
+                      <TableCell>
+                        {row.billing_cycle === 'quarterly' ? '季付' : row.billing_cycle === 'yearly' ? '年付' : '月付'}
                       </TableCell>
                       <TableCell>{row.expire_time ? timestamp2string(row.expire_time) : '-'}</TableCell>
                       <TableCell>

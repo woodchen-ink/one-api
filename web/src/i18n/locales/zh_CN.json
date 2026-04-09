@@ -699,6 +699,7 @@
     "ModelCount": "模型数量"
   },
   "modelpricePage": {
+    "modelPrice": "模型价格",
     "model": "模型名称",
     "modelName": "模型名称",
     "type": "类型",
@@ -1649,6 +1650,12 @@
     "paymentSuccess": "支付成功",
     "durationDays": "{{days}} 天",
     "durationMonths": "{{months}} 个月",
-    "durationYears": "{{years}} 年"
+    "durationYears": "{{years}} 年",
+    "monthly": "月付",
+    "quarterly": "季付",
+    "yearly": "年付",
+    "savePercent": "省 {{percent}}%",
+    "perMonthEquiv": "/月",
+    "nextQuotaReset": "下次配额重置"
   }
 }

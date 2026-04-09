@@ -28,7 +28,8 @@ const validationSchema = Yup.object().shape({
 
 const originInputs = {
   user_id: '',
-  plan_id: ''
+  plan_id: '',
+  billing_cycle: 'monthly'
 };
 
 const AssignModal = ({ open, onCancel, onOk }) => {
@@ -65,7 +66,8 @@ const AssignModal = ({ open, onCancel, onOk }) => {
     try {
       const submitValues = {
         user_id: parseInt(values.user_id, 10),
-        plan_id: parseInt(values.plan_id, 10)
+        plan_id: parseInt(values.plan_id, 10),
+        billing_cycle: values.billing_cycle || 'monthly'
       };
 
       const res = await API.post(`/api/user_subscription/admin/assign`, submitValues);
@@ -132,6 +134,23 @@ const AssignModal = ({ open, onCancel, onOk }) => {
                   ))}
                 </Select>
                 {touched.plan_id && errors.plan_id && <FormHelperText error>{errors.plan_id}</FormHelperText>}
+              </FormControl>
+
+              <FormControl fullWidth sx={{ ...theme.typography.otherInput }}>
+                <InputLabel htmlFor="assign-billing-cycle-label">计费周期</InputLabel>
+                <Select
+                  id="assign-billing-cycle-label"
+                  label="计费周期"
+                  value={values.billing_cycle}
+                  name="billing_cycle"
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                >
+                  <MenuItem value="monthly">月付</MenuItem>
+                  <MenuItem value="quarterly">季付</MenuItem>
+                  <MenuItem value="yearly">年付</MenuItem>
+                </Select>
+                <FormHelperText>季付/年付订阅配额每月重置</FormHelperText>
               </FormControl>
 
               <DialogActions>

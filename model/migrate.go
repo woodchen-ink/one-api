@@ -1511,6 +1511,27 @@ func dropChannelCustomParameterColumn() *gormigrate.Migration {
 	}
 }
 
+func addSubscriptionBillingCycleFields() *gormigrate.Migration {
+	return &gormigrate.Migration{
+		ID: "202604090001",
+		Migrate: func(tx *gorm.DB) error {
+			// 为现有订阅设置默认 billing_cycle
+			if tx.Migrator().HasTable("user_subscriptions") && tx.Migrator().HasColumn("user_subscriptions", "billing_cycle") {
+				tx.Model(&UserSubscription{}).Where("billing_cycle = '' OR billing_cycle IS NULL").Update("billing_cycle", "monthly")
+			}
+			// 为现有订单设置默认 billing_cycle
+			if tx.Migrator().HasTable("orders") && tx.Migrator().HasColumn("orders", "billing_cycle") {
+				tx.Model(&Order{}).Where("billing_cycle = '' OR billing_cycle IS NULL").Update("billing_cycle", "monthly")
+			}
+			logger.SysLog("backfilled billing_cycle defaults for existing subscriptions and orders")
+			return nil
+		},
+		Rollback: func(tx *gorm.DB) error {
+			return nil
+		},
+	}
+}
+
 func migrationAfter(db *gorm.DB) error {
 	// 从库不执行
 	if !config.IsMasterNode {
@@ -1534,6 +1555,7 @@ func migrationAfter(db *gorm.DB) error {
 		addSubscriptionPlanPriceCurrency(),
 		removeOllamaHeaderPluginConfig(),
 		dropChannelCustomParameterColumn(),
+		addSubscriptionBillingCycleFields(),
 	})
 	return m.Migrate()
 }

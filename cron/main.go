@@ -83,4 +83,24 @@ func InitCron() {
 		logger.SysError("Cron job error: " + err.Error())
 		return
 	}
+
+	// 每2分钟检查订阅配额重置（季度/年度订阅月度重置配额）
+	err = scheduler.Manager.AddJob(
+		"reset_subscription_quotas",
+		gocron.DurationJob(2*time.Minute),
+		gocron.NewTask(func() {
+			count, err := model.ResetSubscriptionQuotas()
+			if err != nil {
+				logger.SysError("Reset subscription quotas error: " + err.Error())
+				return
+			}
+			if count > 0 {
+				logger.SysLog(fmt.Sprintf("Reset quotas for %d subscriptions", count))
+			}
+		}),
+	)
+	if err != nil {
+		logger.SysError("Cron job error: " + err.Error())
+		return
+	}
 }

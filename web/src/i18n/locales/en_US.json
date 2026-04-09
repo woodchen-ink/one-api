@@ -541,6 +541,7 @@
   },
   "model_price": "Model Price",
   "modelpricePage": {
+    "modelPrice": "Model Pricing",
     "availableModels": "Available Models",
     "channelType": "Supplier",
     "provider": "Provider",
@@ -1687,6 +1688,12 @@
     "paymentSuccess": "Payment successful",
     "durationDays": "{{days}} days",
     "durationMonths": "{{months}} months",
-    "durationYears": "{{years}} years"
+    "durationYears": "{{years}} years",
+    "monthly": "Monthly",
+    "quarterly": "Quarterly",
+    "yearly": "Yearly",
+    "savePercent": "Save {{percent}}%",
+    "perMonthEquiv": "/mo",
+    "nextQuotaReset": "Next quota reset"
   }
 }

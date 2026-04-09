@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import {
   Card,
   Stack,
@@ -30,6 +31,7 @@ import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
 import BillingRuleDetails, { getExtraRatioDisplayName } from './component/BillingRuleDetails';
 import Label from 'ui-component/Label';
+import SubscriptionPlanCards from 'ui-component/SubscriptionPlanCards';
 import { Helmet } from 'react-helmet-async';
 
 const getProviderRatioRules = (group) => {
@@ -80,6 +82,8 @@ export default function ModelPrice() {
   const ownedby = useSelector((state) => state.siteInfo?.ownedby);
   const user = useSelector((state) => state.account?.user);
 
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('models');
   const [availableModels, setAvailableModels] = useState({});
   const [userGroupMap, setUserGroupMap] = useState({});
   const [searchQuery, setSearchQuery] = useState('');
@@ -87,6 +91,8 @@ export default function ModelPrice() {
   const [selectedOwnedBy, setSelectedOwnedBy] = useState('all');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
+  const [subscriptionPlans, setSubscriptionPlans] = useState([]);
+  const [plansLoading, setPlansLoading] = useState(true);
 
   const pageSizeOptions = [20, 30, 60, 100];
 
@@ -156,10 +162,25 @@ export default function ModelPrice() {
     }
   }, [user?.group]);
 
+  const fetchSubscriptionPlans = useCallback(async () => {
+    try {
+      setPlansLoading(true);
+      const res = await API.get('/api/user/subscription_plan');
+      if (res.data.success) {
+        setSubscriptionPlans(res.data.data || []);
+      }
+    } catch {
+      // not critical
+    } finally {
+      setPlansLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchAvailableModels();
     fetchUserGroupMap();
-  }, [fetchAvailableModels, fetchUserGroupMap]);
+    fetchSubscriptionPlans();
+  }, [fetchAvailableModels, fetchUserGroupMap, fetchSubscriptionPlans]);
 
   useEffect(() => {
     if (!user?.group || !userGroupMap[user.group]) {
@@ -328,6 +349,67 @@ export default function ModelPrice() {
         <meta name="description" content="CZLOapi 各 AI 模型定价一览，支持 OpenAI、Claude、Gemini 等主流模型，按 token 计费，价格透明。" />
       </Helmet>
       <Stack spacing={2} sx={{ padding: { xs: theme.spacing(2), md: theme.spacing(2.5) } }}>
+        {/* Tab 切换器 - 仅在有套餐时显示 */}
+        {subscriptionPlans.length > 0 && (
+          <Box
+            sx={{
+              width: '100%',
+              maxWidth: 420,
+              p: 0.5,
+              mx: 'auto',
+              borderRadius: '999px',
+              border: `1px solid ${theme.palette.divider}`,
+              backgroundColor:
+                theme.palette.mode === 'dark' ? alpha(theme.palette.background.paper, 0.72) : alpha(theme.palette.common.white, 0.88),
+              backdropFilter: 'blur(12px)'
+            }}
+          >
+            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 0.5 }}>
+              {[
+                { value: 'models', icon: 'solar:tag-bold-duotone', label: t('modelpricePage.modelPrice', '模型价格') },
+                { value: 'plans', icon: 'solar:layers-minimalistic-linear', label: t('subscription.subscriptionPlans') }
+              ].map((tab) => {
+                const selected = activeTab === tab.value;
+                return (
+                  <ButtonBase
+                    key={tab.value}
+                    onClick={() => setActiveTab(tab.value)}
+                    sx={{
+                      width: '100%',
+                      minHeight: 44,
+                      px: 2,
+                      borderRadius: '999px',
+                      color: selected ? theme.palette.primary.main : theme.palette.text.secondary,
+                      backgroundColor: selected
+                        ? theme.palette.mode === 'dark'
+                          ? alpha(theme.palette.primary.main, 0.16)
+                          : alpha(theme.palette.primary.main, 0.1)
+                        : 'transparent',
+                      border: `1px solid ${selected ? alpha(theme.palette.primary.main, 0.26) : 'transparent'}`,
+                      transition: 'all 0.2s ease',
+                      '&:hover': {
+                        backgroundColor: selected
+                          ? undefined
+                          : theme.palette.mode === 'dark'
+                            ? alpha(theme.palette.common.white, 0.04)
+                            : alpha(theme.palette.common.black, 0.03)
+                      }
+                    }}
+                  >
+                    <Stack direction="row" spacing={1} alignItems="center" justifyContent="center">
+                      <Icon icon={tab.icon} width={18} />
+                      <Typography variant="subtitle2" fontWeight={selected ? 700 : 600}>
+                        {tab.label}
+                      </Typography>
+                    </Stack>
+                  </ButtonBase>
+                );
+              })}
+            </Box>
+          </Box>
+        )}
+
+        {activeTab === 'models' && (<>
         <Card
           elevation={0}
           sx={{
@@ -816,6 +898,24 @@ export default function ModelPrice() {
             </Card>
           )}
         </Box>
+        </>)}
+
+        {activeTab === 'plans' && (
+          <Box sx={{ maxWidth: 1180, mx: 'auto', width: '100%' }}>
+            <Typography variant="h4" sx={{ mb: 2, textAlign: 'center', fontWeight: 700 }}>
+              {t('subscription.subscriptionPlans')}
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3, textAlign: 'center' }}>
+              {t('subscription.plansDescription')}
+            </Typography>
+            <SubscriptionPlanCards
+              plans={subscriptionPlans}
+              loading={plansLoading}
+              onBuy={() => navigate('/panel/topup')}
+              buyButtonLabel={t('subscription.purchase')}
+            />
+          </Box>
+        )}
       </Stack>
     </>
   );

@@ -1,6 +1,7 @@
 package model
 
 import (
+	"czloapi/common/utils"
 	"errors"
 	"strings"
 
@@ -21,8 +22,12 @@ type SubscriptionPlan struct {
 	Sort           int            `json:"sort" gorm:"default:0"`
 	PaymentProduct string         `json:"payment_product" gorm:"type:varchar(200)"`
 	Enable         *bool          `json:"enable" gorm:"default:true"`
-	AllowRenewal   *bool          `json:"allow_renewal" gorm:"default:true"`
-	CreatedAt      int            `json:"created_at"`
+	AllowRenewal      *bool          `json:"allow_renewal" gorm:"default:true"`
+	EnableQuarterly   *bool          `json:"enable_quarterly" gorm:"default:false"`
+	QuarterlyDiscount float64        `json:"quarterly_discount" gorm:"type:decimal(5,2);default:0"`
+	EnableYearly      *bool          `json:"enable_yearly" gorm:"default:false"`
+	YearlyDiscount    float64        `json:"yearly_discount" gorm:"type:decimal(5,2);default:0"`
+	CreatedAt         int            `json:"created_at"`
 	UpdatedAt      int            `json:"-"`
 	DeletedAt      gorm.DeletedAt `json:"-" gorm:"index"`
 }
@@ -49,6 +54,69 @@ func (p *SubscriptionPlan) normalize() {
 	p.Features = strings.TrimSpace(p.Features)
 	p.PaymentProduct = strings.TrimSpace(p.PaymentProduct)
 	p.PriceCurrency = NormalizeCurrencyType(p.PriceCurrency)
+	if p.QuarterlyDiscount < 0 {
+		p.QuarterlyDiscount = 0
+	} else if p.QuarterlyDiscount > 100 {
+		p.QuarterlyDiscount = 100
+	}
+	if p.YearlyDiscount < 0 {
+		p.YearlyDiscount = 0
+	} else if p.YearlyDiscount > 100 {
+		p.YearlyDiscount = 100
+	}
+}
+
+// GetQuarterlyPrice 计算季度总价
+func (p *SubscriptionPlan) GetQuarterlyPrice() float64 {
+	return utils.Decimal(p.Price*3*(1-p.QuarterlyDiscount/100), 2)
+}
+
+// GetYearlyPrice 计算年度总价
+func (p *SubscriptionPlan) GetYearlyPrice() float64 {
+	return utils.Decimal(p.Price*12*(1-p.YearlyDiscount/100), 2)
+}
+
+// PriceForCycle 根据计费周期返回价格和对应月数
+func (p *SubscriptionPlan) PriceForCycle(cycle string) (price float64, months int, err error) {
+	switch cycle {
+	case "monthly", "":
+		return p.Price, 1, nil
+	case "quarterly":
+		if p.EnableQuarterly == nil || !*p.EnableQuarterly {
+			return 0, 0, errors.New("该套餐未开启季度订阅")
+		}
+		return p.GetQuarterlyPrice(), 3, nil
+	case "yearly":
+		if p.EnableYearly == nil || !*p.EnableYearly {
+			return 0, 0, errors.New("该套餐未开启年度订阅")
+		}
+		return p.GetYearlyPrice(), 12, nil
+	default:
+		return 0, 0, errors.New("不支持的计费周期: " + cycle)
+	}
+}
+
+// SubscriptionPlanPricing 包含计算后价格的套餐响应
+type SubscriptionPlanPricing struct {
+	*SubscriptionPlan
+	MonthlyPrice   float64 `json:"monthly_price"`
+	QuarterlyPrice float64 `json:"quarterly_price,omitempty"`
+	YearlyPrice    float64 `json:"yearly_price,omitempty"`
+}
+
+// ToSubscriptionPlanPricing 转换为包含计算价格的响应
+func (p *SubscriptionPlan) ToSubscriptionPlanPricing() *SubscriptionPlanPricing {
+	pricing := &SubscriptionPlanPricing{
+		SubscriptionPlan: p,
+		MonthlyPrice:     p.Price,
+	}
+	if p.EnableQuarterly != nil && *p.EnableQuarterly {
+		pricing.QuarterlyPrice = p.GetQuarterlyPrice()
+	}
+	if p.EnableYearly != nil && *p.EnableYearly {
+		pricing.YearlyPrice = p.GetYearlyPrice()
+	}
+	return pricing
 }
 
 func GetSubscriptionPlanList(params *SearchSubscriptionPlanParams) (*DataResult[SubscriptionPlan], error) {
@@ -103,7 +171,8 @@ func (p *SubscriptionPlan) Update() error {
 	}
 	return DB.Model(&SubscriptionPlan{}).Where("id = ?", p.ID).
 		Select("name", "group_symbol", "description", "features", "price", "price_currency", "quota_amount",
-			"duration_type", "duration_count", "sort", "payment_product", "allow_renewal").
+			"duration_type", "duration_count", "sort", "payment_product", "allow_renewal",
+			"enable_quarterly", "quarterly_discount", "enable_yearly", "yearly_discount").
 		Updates(p).Error
 }
 

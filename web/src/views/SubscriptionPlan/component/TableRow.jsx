@@ -13,7 +13,8 @@ import {
   DialogTitle,
   Button,
   IconButton,
-  Tooltip
+  Tooltip,
+  Typography
 } from '@mui/material';
 
 import TableSwitch from 'ui-component/Switch';
@@ -49,7 +50,19 @@ export default function SubscriptionPlanTableRow({ item, managePlan, handleOpenM
         <TableCell>{item.id}</TableCell>
         <TableCell>{item.name}</TableCell>
         <TableCell>{item.group_symbol}</TableCell>
-        <TableCell>{formatMoneyByCurrency(item.price, item.price_currency || 'USD')}</TableCell>
+        <TableCell>
+          {formatMoneyByCurrency(item.price, item.price_currency || 'USD')}/月
+          {item.enable_quarterly && (
+            <Typography variant="caption" display="block" color="text.secondary">
+              季付 {item.quarterly_discount}% off
+            </Typography>
+          )}
+          {item.enable_yearly && (
+            <Typography variant="caption" display="block" color="text.secondary">
+              年付 {item.yearly_discount}% off
+            </Typography>
+          )}
+        </TableCell>
         <TableCell>{formatMoneyByCurrency(item.quota_amount, 'USD')}</TableCell>
         <TableCell>
           {item.duration_count} {durationTypeLabel(item.duration_type)}

@@ -36,7 +36,9 @@ const validationSchema = Yup.object().shape({
   price_currency: Yup.string().oneOf(['USD', 'CNY']).required('请选择售价币种'),
   quota_amount: Yup.number().required('配额不能为空').min(0, '配额不能为负数'),
   duration_type: Yup.string().oneOf(['day', 'week', 'month']).required(),
-  duration_count: Yup.number().min(1, '数量至少为1').required()
+  duration_count: Yup.number().min(1, '数量至少为1').required(),
+  quarterly_discount: Yup.number().min(0, '折扣不能为负数').max(100, '折扣不能超过100%'),
+  yearly_discount: Yup.number().min(0, '折扣不能为负数').max(100, '折扣不能超过100%')
 });
 
 const originInputs = {
@@ -53,7 +55,11 @@ const originInputs = {
   sort: 0,
   payment_product: '',
   enable: true,
-  allow_renewal: true
+  allow_renewal: true,
+  enable_quarterly: false,
+  quarterly_discount: 0,
+  enable_yearly: false,
+  yearly_discount: 0
 };
 
 const EditModal = ({ open, planId, onCancel, onOk }) => {
@@ -71,8 +77,11 @@ const EditModal = ({ open, planId, onCancel, onOk }) => {
         price: parseFloat(values.price),
         quota_amount: parseFloat(values.quota_amount),
         duration_count: parseInt(values.duration_count, 10),
-        sort: parseInt(values.sort, 10)
-        // features 保持 string 类型，直接提交
+        sort: parseInt(values.sort, 10),
+        enable_quarterly: Boolean(values.enable_quarterly),
+        quarterly_discount: parseFloat(values.quarterly_discount) || 0,
+        enable_yearly: Boolean(values.enable_yearly),
+        yearly_discount: parseFloat(values.yearly_discount) || 0
       };
 
       if (values.is_edit) {
@@ -335,6 +344,88 @@ const EditModal = ({ open, planId, onCancel, onOk }) => {
                   label="启用"
                 />
               </FormControl>
+
+              <FormControl fullWidth>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={values.enable_quarterly === true}
+                      onClick={() => setFieldValue('enable_quarterly', !values.enable_quarterly)}
+                    />
+                  }
+                  label="开启季度订阅"
+                />
+              </FormControl>
+
+              {values.enable_quarterly && (
+                <FormControl
+                  fullWidth
+                  error={Boolean(touched.quarterly_discount && errors.quarterly_discount)}
+                  sx={{ ...theme.typography.otherInput }}
+                >
+                  <InputLabel htmlFor="plan-quarterly-discount-label">季度折扣 (%)</InputLabel>
+                  <OutlinedInput
+                    id="plan-quarterly-discount-label"
+                    label="季度折扣 (%)"
+                    type="number"
+                    value={values.quarterly_discount}
+                    name="quarterly_discount"
+                    onBlur={handleBlur}
+                    onChange={handleChange}
+                  />
+                  {touched.quarterly_discount && errors.quarterly_discount ? (
+                    <FormHelperText error>{errors.quarterly_discount}</FormHelperText>
+                  ) : (
+                    <FormHelperText>
+                      季度总价 = 月价 × 3 × (1 - 折扣%)
+                      {values.price > 0 && values.quarterly_discount >= 0
+                        ? `，预计 ${(values.price * 3 * (1 - values.quarterly_discount / 100)).toFixed(2)} ${values.price_currency || 'USD'}`
+                        : ''}
+                    </FormHelperText>
+                  )}
+                </FormControl>
+              )}
+
+              <FormControl fullWidth>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={values.enable_yearly === true}
+                      onClick={() => setFieldValue('enable_yearly', !values.enable_yearly)}
+                    />
+                  }
+                  label="开启年度订阅"
+                />
+              </FormControl>
+
+              {values.enable_yearly && (
+                <FormControl
+                  fullWidth
+                  error={Boolean(touched.yearly_discount && errors.yearly_discount)}
+                  sx={{ ...theme.typography.otherInput }}
+                >
+                  <InputLabel htmlFor="plan-yearly-discount-label">年度折扣 (%)</InputLabel>
+                  <OutlinedInput
+                    id="plan-yearly-discount-label"
+                    label="年度折扣 (%)"
+                    type="number"
+                    value={values.yearly_discount}
+                    name="yearly_discount"
+                    onBlur={handleBlur}
+                    onChange={handleChange}
+                  />
+                  {touched.yearly_discount && errors.yearly_discount ? (
+                    <FormHelperText error>{errors.yearly_discount}</FormHelperText>
+                  ) : (
+                    <FormHelperText>
+                      年度总价 = 月价 × 12 × (1 - 折扣%)
+                      {values.price > 0 && values.yearly_discount >= 0
+                        ? `，预计 ${(values.price * 12 * (1 - values.yearly_discount / 100)).toFixed(2)} ${values.price_currency || 'USD'}`
+                        : ''}
+                    </FormHelperText>
+                  )}
+                </FormControl>
+              )}
 
               <FormControl fullWidth>
                 <FormControlLabel

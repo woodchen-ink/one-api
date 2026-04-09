@@ -136,9 +136,14 @@ func GetAvailableSubscriptionPlans(c *gin.Context) {
 		return
 	}
 
+	pricingList := make([]*model.SubscriptionPlanPricing, 0, len(plans))
+	for _, plan := range plans {
+		pricingList = append(pricingList, plan.ToSubscriptionPlanPricing())
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "",
-		"data":    plans,
+		"data":    pricingList,
 	})
 }

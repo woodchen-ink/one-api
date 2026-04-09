@@ -77,7 +77,7 @@ StatusChip.propTypes = {
   t: PropTypes.func.isRequired
 };
 
-const RenewPayDialog = ({ open, onClose, subscriptionId, planId }) => {
+const RenewPayDialog = ({ open, onClose, subscriptionId, planId, billingCycle }) => {
   const theme = useTheme();
   const { t } = useTranslation();
   const siteInfo = useSelector((state) => state.siteInfo);
@@ -176,7 +176,8 @@ const RenewPayDialog = ({ open, onClose, subscriptionId, planId }) => {
       const res = await API.post('/api/user/subscription/renew', {
         subscription_id: subscriptionId,
         plan_id: planId,
-        uuid: selectedPayment.uuid
+        uuid: selectedPayment.uuid,
+        billing_cycle: billingCycle || 'monthly'
       });
       if (!res.data.success) {
         showError(res.data.message);
@@ -295,7 +296,19 @@ RenewPayDialog.propTypes = {
   open: PropTypes.bool,
   onClose: PropTypes.func,
   subscriptionId: PropTypes.number,
-  planId: PropTypes.number
+  planId: PropTypes.number,
+  billingCycle: PropTypes.string
+};
+
+const billingCycleLabel = (cycle) => {
+  switch (cycle) {
+    case 'quarterly':
+      return '季付';
+    case 'yearly':
+      return '年付';
+    default:
+      return '月付';
+  }
 };
 
 const MySubscription = () => {
@@ -307,6 +320,7 @@ const MySubscription = () => {
   const [renewDialogOpen, setRenewDialogOpen] = useState(false);
   const [renewPlanId, setRenewPlanId] = useState(null);
   const [renewSubscriptionId, setRenewSubscriptionId] = useState(null);
+  const [renewBillingCycle, setRenewBillingCycle] = useState(null);
 
   const fetchSubscriptions = async () => {
     try {
@@ -350,9 +364,10 @@ const MySubscription = () => {
     return Number(quota || 0).toFixed(2);
   };
 
-  const handleRenew = (subscriptionId, planId) => {
+  const handleRenew = (subscriptionId, planId, billingCycle) => {
     setRenewSubscriptionId(subscriptionId);
     setRenewPlanId(planId);
+    setRenewBillingCycle(billingCycle || 'monthly');
     setRenewDialogOpen(true);
   };
 
@@ -360,6 +375,7 @@ const MySubscription = () => {
     setRenewDialogOpen(false);
     setRenewSubscriptionId(null);
     setRenewPlanId(null);
+    setRenewBillingCycle(null);
     fetchSubscriptions();
   };
 
@@ -425,7 +441,17 @@ const MySubscription = () => {
                         />
                       )}
                     </Box>
-                    <StatusChip status={sub.status} t={t} />
+                    <Stack direction="row" spacing={0.5} alignItems="center">
+                      {sub.billing_cycle && sub.billing_cycle !== 'monthly' && (
+                        <Chip
+                          label={billingCycleLabel(sub.billing_cycle)}
+                          size="small"
+                          variant="outlined"
+                          sx={{ borderRadius: '4px', fontSize: '0.7rem', fontWeight: 600, height: 20 }}
+                        />
+                      )}
+                      <StatusChip status={sub.status} t={t} />
+                    </Stack>
                   </Stack>
 
                   <Box sx={{ mb: 2 }}>
@@ -452,6 +478,11 @@ const MySubscription = () => {
                     <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
                       ${formatQuota(sub.used_amount)} / ${formatQuota(sub.quota_amount)}
                     </Typography>
+                    {sub.next_reset_time > 0 && isActive && (
+                      <Typography variant="caption" color="text.secondary" sx={{ mt: 0.25, display: 'block' }}>
+                        {t('subscription.nextQuotaReset')}: {new Date(sub.next_reset_time * 1000).toLocaleDateString()}
+                      </Typography>
+                    )}
                   </Box>
 
                   <Stack
@@ -499,7 +530,7 @@ const MySubscription = () => {
                       <Button
                         variant="outlined"
                         size="small"
-                        onClick={() => handleRenew(sub.id, sub.plan_id)}
+                        onClick={() => handleRenew(sub.id, sub.plan_id, sub.billing_cycle)}
                         startIcon={<Icon icon="solar:refresh-circle-linear" width={18} />}
                         sx={{
                           flex: 1,
@@ -522,7 +553,13 @@ const MySubscription = () => {
         })}
       </Grid>
 
-      <RenewPayDialog open={renewDialogOpen} onClose={handleRenewDialogClose} subscriptionId={renewSubscriptionId} planId={renewPlanId} />
+      <RenewPayDialog
+        open={renewDialogOpen}
+        onClose={handleRenewDialogClose}
+        subscriptionId={renewSubscriptionId}
+        planId={renewPlanId}
+        billingCycle={renewBillingCycle}
+      />
     </Box>
   );
 };

@@ -21,8 +21,9 @@ import (
 // ---- 用户端 API ----
 
 type PurchaseSubscriptionRequest struct {
-	PlanId int    `json:"plan_id" binding:"required"`
-	UUID   string `json:"uuid" binding:"required"` // 支付网关 UUID
+	PlanId       int    `json:"plan_id" binding:"required"`
+	UUID         string `json:"uuid" binding:"required"` // 支付网关 UUID
+	BillingCycle string `json:"billing_cycle"`            // monthly, quarterly, yearly; 默认 monthly
 }
 
 type PurchaseSubscriptionResponse struct {
@@ -31,18 +32,19 @@ type PurchaseSubscriptionResponse struct {
 }
 
 // calculateSubscriptionOrderAmount computes the payable amount in the gateway currency while keeping fee stored in USD.
-func calculateSubscriptionOrderAmount(plan *model.SubscriptionPlan, payment *model.Payment) (fee, payMoney float64, err error) {
+// basePrice is the plan price for the selected billing cycle (may differ from plan.Price for quarterly/yearly).
+func calculateSubscriptionOrderAmount(basePrice float64, priceCurrency model.CurrencyType, payment *model.Payment) (fee, payMoney float64, err error) {
 	orderCurrency := model.NormalizeCurrencyType(payment.Currency)
-	priceCurrency := model.NormalizeCurrencyType(plan.PriceCurrency)
+	normalizedPriceCurrency := model.NormalizeCurrencyType(priceCurrency)
 
-	baseAmount, err := model.ConvertCurrencyAmount(plan.Price, priceCurrency, orderCurrency)
+	baseAmount, err := model.ConvertCurrencyAmount(basePrice, normalizedPriceCurrency, orderCurrency)
 	if err != nil {
 		return 0, 0, err
 	}
 
 	feeInOrderCurrency := 0.0
 	if payment.PercentFee > 0 {
-		baseAmountUSD, convertErr := model.ConvertCurrencyAmount(plan.Price, priceCurrency, model.CurrencyTypeUSD)
+		baseAmountUSD, convertErr := model.ConvertCurrencyAmount(basePrice, normalizedPriceCurrency, model.CurrencyTypeUSD)
 		if convertErr != nil {
 			return 0, 0, convertErr
 		}
@@ -62,6 +64,15 @@ func calculateSubscriptionOrderAmount(plan *model.SubscriptionPlan, payment *mod
 	return fee, payMoney, nil
 }
 
+func normalizeBillingCycle(cycle string) string {
+	switch cycle {
+	case "quarterly", "yearly":
+		return cycle
+	default:
+		return "monthly"
+	}
+}
+
 func purchaseSubscription(c *gin.Context, req PurchaseSubscriptionRequest) {
 	userId := c.GetInt("id")
 	user, err := model.GetUserById(userId, false)
@@ -77,6 +88,14 @@ func purchaseSubscription(c *gin.Context, req PurchaseSubscriptionRequest) {
 		return
 	}
 
+	// 校验并获取计费周期对应的价格
+	billingCycle := normalizeBillingCycle(req.BillingCycle)
+	cyclePrice, _, err := plan.PriceForCycle(billingCycle)
+	if err != nil {
+		common.APIRespondWithError(c, http.StatusOK, err)
+		return
+	}
+
 	// 关闭未完成的订单
 	go model.CloseUnfinishedOrder()
 
@@ -88,7 +107,7 @@ func purchaseSubscription(c *gin.Context, req PurchaseSubscriptionRequest) {
 	}
 
 	// 计算支付金额（套餐价格固定，不走充值折扣）
-	fee, payMoney, err := calculateSubscriptionOrderAmount(plan, paymentService.Payment)
+	fee, payMoney, err := calculateSubscriptionOrderAmount(cyclePrice, plan.PriceCurrency, paymentService.Payment)
 	if err != nil {
 		common.APIRespondWithError(c, http.StatusOK, errors.New("套餐支付金额计算失败，请检查币种与汇率配置"))
 		return
@@ -107,7 +126,7 @@ func purchaseSubscription(c *gin.Context, req PurchaseSubscriptionRequest) {
 		UserId:             userId,
 		GatewayId:          paymentService.Payment.ID,
 		TradeNo:            tradeNo,
-		Amount:             plan.Price,
+		Amount:             cyclePrice,
 		AmountCurrency:     model.NormalizeCurrencyType(plan.PriceCurrency),
 		OrderAmount:        payMoney,
 		OrderCurrency:      model.NormalizeCurrencyType(paymentService.Payment.Currency),
@@ -116,6 +135,7 @@ func purchaseSubscription(c *gin.Context, req PurchaseSubscriptionRequest) {
 		Status:             model.OrderStatusPending,
 		Quota:              0, // 套餐订单不直接加 quota
 		SubscriptionPlanId: plan.ID,
+		BillingCycle:       billingCycle,
 	}
 
 	err = order.Insert()
@@ -151,6 +171,7 @@ func RenewSubscription(c *gin.Context) {
 		PlanId         int    `json:"plan_id"`
 		SubscriptionId int    `json:"subscription_id"`
 		UUID           string `json:"uuid" binding:"required"`
+		BillingCycle   string `json:"billing_cycle"`
 	}
 
 	var req RenewSubscriptionRequest
@@ -161,6 +182,7 @@ func RenewSubscription(c *gin.Context) {
 
 	userId := c.GetInt("id")
 	planId := req.PlanId
+	billingCycle := req.BillingCycle
 
 	if req.SubscriptionId != 0 {
 		sub, err := model.GetUserSubscriptionById(req.SubscriptionId)
@@ -180,6 +202,10 @@ func RenewSubscription(c *gin.Context) {
 			if err == nil && plan != nil {
 				planId = plan.ID
 			}
+		}
+		// 如果没有指定 billing_cycle，使用原订阅的周期
+		if billingCycle == "" {
+			billingCycle = sub.BillingCycle
 		}
 	}
 
@@ -202,8 +228,9 @@ func RenewSubscription(c *gin.Context) {
 
 	// 续订走购买相同流程
 	purchaseSubscription(c, PurchaseSubscriptionRequest{
-		PlanId: planId,
-		UUID:   req.UUID,
+		PlanId:       planId,
+		UUID:         req.UUID,
+		BillingCycle: billingCycle,
 	})
 }
 
@@ -264,8 +291,9 @@ func AdminGetSubscriptionList(c *gin.Context) {
 
 // AdminAssignSubscription 管理员分配订阅
 type AssignSubscriptionRequest struct {
-	UserId int `json:"user_id" binding:"required"`
-	PlanId int `json:"plan_id" binding:"required"`
+	UserId       int    `json:"user_id" binding:"required"`
+	PlanId       int    `json:"plan_id" binding:"required"`
+	BillingCycle string `json:"billing_cycle"` // 可选，默认 monthly
 }
 
 func AdminAssignSubscription(c *gin.Context) {
@@ -287,10 +315,23 @@ func AdminAssignSubscription(c *gin.Context) {
 		return
 	}
 
-	expireTime := model.CalculateExpireTime(plan.DurationType, plan.DurationCount)
+	billingCycle := normalizeBillingCycle(req.BillingCycle)
+	cyclePrice, months, err := plan.PriceForCycle(billingCycle)
+	if err != nil {
+		common.APIRespondWithError(c, http.StatusOK, err)
+		return
+	}
+
+	nowTime := time.Now()
+	now := nowTime.Unix()
+	expireTime := nowTime.AddDate(0, months, 0).Unix()
 	tradeNo := utils.GenerateTradeNo()
-	now := time.Now().Unix()
 	planCurrency := model.NormalizeCurrencyType(plan.PriceCurrency)
+
+	var nextResetTime int64
+	if months > 1 {
+		nextResetTime = nowTime.AddDate(0, 1, 0).Unix()
+	}
 
 	err = model.DB.Transaction(func(tx *gorm.DB) error {
 		order := &model.Order{
@@ -298,7 +339,7 @@ func AdminAssignSubscription(c *gin.Context) {
 			GatewayId:          0,
 			TradeNo:            tradeNo,
 			GatewayNo:          "",
-			Amount:             plan.Price,
+			Amount:             cyclePrice,
 			AmountCurrency:     planCurrency,
 			OrderAmount:        0,
 			OrderCurrency:      planCurrency,
@@ -306,6 +347,7 @@ func AdminAssignSubscription(c *gin.Context) {
 			Fee:                0,
 			Discount:           0,
 			SubscriptionPlanId: plan.ID,
+			BillingCycle:       billingCycle,
 			Status:             model.OrderStatusSuccess,
 			CreatedAt:          int(now),
 		}
@@ -314,17 +356,19 @@ func AdminAssignSubscription(c *gin.Context) {
 		}
 
 		sub := &model.UserSubscription{
-			UserId:      req.UserId,
-			PlanId:      plan.ID,
-			PlanName:    plan.Name,
-			GroupSymbol: plan.GroupSymbol,
-			QuotaAmount: plan.QuotaAmount,
-			UsedAmount:  0,
-			TradeNo:     tradeNo,
-			StartTime:   now,
-			ExpireTime:  expireTime,
-			Status:      model.SubscriptionStatusActive,
-			CreatedAt:   int(now),
+			UserId:        req.UserId,
+			PlanId:        plan.ID,
+			PlanName:      plan.Name,
+			GroupSymbol:   plan.GroupSymbol,
+			QuotaAmount:   plan.QuotaAmount,
+			UsedAmount:    0,
+			TradeNo:       tradeNo,
+			BillingCycle:  billingCycle,
+			StartTime:     now,
+			ExpireTime:    expireTime,
+			NextResetTime: nextResetTime,
+			Status:        model.SubscriptionStatusActive,
+			CreatedAt:     int(now),
 		}
 		if err := tx.Create(sub).Error; err != nil {
 			return err
@@ -424,19 +468,39 @@ func CreateSubscriptionFromOrder(order *model.Order) {
 		return
 	}
 
-	expireTime := model.CalculateExpireTime(plan.DurationType, plan.DurationCount)
+	billingCycle := normalizeBillingCycle(order.BillingCycle)
+	now := time.Now()
+
+	// 根据计费周期计算到期时间
+	var expireTime int64
+	_, months, err := plan.PriceForCycle(billingCycle)
+	if err != nil {
+		// 回退到套餐默认周期
+		expireTime = model.CalculateExpireTime(plan.DurationType, plan.DurationCount)
+		billingCycle = "monthly"
+	} else {
+		expireTime = now.AddDate(0, months, 0).Unix()
+	}
+
+	// 多月订阅设置月度配额重置时间
+	var nextResetTime int64
+	if months > 1 {
+		nextResetTime = now.AddDate(0, 1, 0).Unix()
+	}
 
 	sub := &model.UserSubscription{
-		UserId:      order.UserId,
-		PlanId:      plan.ID,
-		PlanName:    plan.Name,
-		GroupSymbol: plan.GroupSymbol,
-		QuotaAmount: plan.QuotaAmount,
-		UsedAmount:  0,
-		TradeNo:     order.TradeNo,
-		StartTime:   time.Now().Unix(),
-		ExpireTime:  expireTime,
-		Status:      model.SubscriptionStatusActive,
+		UserId:        order.UserId,
+		PlanId:        plan.ID,
+		PlanName:      plan.Name,
+		GroupSymbol:   plan.GroupSymbol,
+		QuotaAmount:   plan.QuotaAmount,
+		UsedAmount:    0,
+		TradeNo:       order.TradeNo,
+		BillingCycle:  billingCycle,
+		StartTime:     now.Unix(),
+		ExpireTime:    expireTime,
+		NextResetTime: nextResetTime,
+		Status:        model.SubscriptionStatusActive,
 	}
 
 	if err := sub.Insert(); err != nil {
