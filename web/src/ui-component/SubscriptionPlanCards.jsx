@@ -152,8 +152,9 @@ const SubscriptionPlanCards = ({ plans, loading, onBuy, buyButtonLabel, buyButto
         const selectedCycle = getSelectedCycle(plan.id);
         const displayPrice = getPlanPriceForCycle(plan, selectedCycle);
         const hasMultipleCycles = plan.enable_quarterly || plan.enable_yearly;
-        const monthlyEquiv =
-          selectedCycle === 'quarterly' ? displayPrice / 3 : selectedCycle === 'yearly' ? displayPrice / 12 : null;
+        const monthlyEquiv = selectedCycle === 'quarterly' ? displayPrice / 3 : selectedCycle === 'yearly' ? displayPrice / 12 : null;
+        const billingHint =
+          selectedCycle === 'monthly' ? '按月计费' : `折合 ${formatMoneyByCurrency(monthlyEquiv, plan.price_currency || 'USD')}/月`;
 
         return (
           <Grid xs={12} sm={6} md={4} key={plan.id}>
@@ -207,13 +208,9 @@ const SubscriptionPlanCards = ({ plans, loading, onBuy, buyButtonLabel, buyButto
                   )}
                 </Stack>
 
-                {monthlyEquiv && (
-                  <Typography variant="caption" color="text.secondary" sx={{ mb: 1.5 }}>
-                    折合 {formatMoneyByCurrency(monthlyEquiv, plan.price_currency || 'USD')}/月
-                  </Typography>
-                )}
-
-                {!monthlyEquiv && <Box sx={{ mb: 1.5 }} />}
+                <Typography variant="caption" color="text.secondary" sx={{ mb: 1.5 }}>
+                  {billingHint}
+                </Typography>
 
                 {plan.description && (
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>

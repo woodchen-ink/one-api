@@ -356,7 +356,7 @@ export default function ModelPrice() {
               width: '100%',
               maxWidth: 420,
               p: 0.5,
-              mx: 'auto',
+              mx: 'auto !important',
               borderRadius: '999px',
               border: `1px solid ${theme.palette.divider}`,
               backgroundColor:
@@ -409,499 +409,509 @@ export default function ModelPrice() {
           </Box>
         )}
 
-        {activeTab === 'models' && (<>
-        <Card
-          elevation={0}
-          sx={{
-            p: { xs: 1.5, md: 2 },
-            overflow: 'visible',
-            backgroundColor: theme.palette.mode === 'dark' ? alpha(theme.palette.background.paper, 0.6) : theme.palette.background.paper,
-            borderRadius: 2
-          }}
-        >
-          {/* 搜索和单位提示 */}
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              flexWrap: 'wrap',
-              gap: 2,
-              mb: 1.5
-            }}
-          >
-            <Paper
-              component="form"
+        {activeTab === 'models' && (
+          <>
+            <Card
+              elevation={0}
               sx={{
-                p: '2px 4px',
-                display: 'flex',
-                alignItems: 'center',
-                width: isMobile ? '100%' : 280,
-                borderRadius: '8px',
-                border: 'none',
-                boxShadow: theme.palette.mode === 'dark' ? '0 2px 8px rgba(0,0,0,0.2)' : '0 2px 8px rgba(0,0,0,0.05)',
+                p: { xs: 1.5, md: 2 },
+                overflow: 'visible',
                 backgroundColor:
-                  theme.palette.mode === 'dark' ? alpha(theme.palette.background.default, 0.6) : theme.palette.background.default
+                  theme.palette.mode === 'dark' ? alpha(theme.palette.background.paper, 0.6) : theme.palette.background.paper,
+                borderRadius: 2
               }}
             >
-              <IconButton sx={{ p: '8px' }} aria-label="search">
-                <Icon icon="eva:search-fill" width={18} height={18} />
-              </IconButton>
-              <InputBase
-                sx={{ ml: 1, flex: 1 }}
-                placeholder={t('modelpricePage.search')}
-                value={searchQuery}
-                onChange={handleSearchChange}
-              />
-              {searchQuery && (
-                <IconButton sx={{ p: '8px' }} aria-label="clear" onClick={clearSearch}>
-                  <Icon icon="eva:close-fill" width={16} height={16} />
-                </IconButton>
-              )}
-            </Paper>
-
-            <Box
-              sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', justifyContent: { xs: 'flex-start', sm: 'flex-end' } }}
-            >
-              {selectedGroup && userGroupMap[selectedGroup] && (
-                <Label color="primary" variant="soft">
-                  {t('modelpricePage.selectedGroupDisplay', {
-                    name: userGroupMap[selectedGroup].name,
-                    ratio: userGroupMap[selectedGroup].ratio
-                  })}
-                </Label>
-              )}
-              {selectedGroupProviderRatios.map((item) => (
-                <Label key={`selected-provider-ratio-${item.channelType}`} color="warning" variant="soft">
-                  {`${item.name} ${formatRatioLabel(item.ratio)}`}
-                </Label>
-              ))}
-              <Typography variant="caption" color="text.secondary">
-                {t('modelpricePage.tokenUnitHint', 'Token 按 USD / 1M')} · {t('modelpricePage.timesUnitHint', '按次模型按 USD / 次')}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {t('modelpricePage.groupPriceFormulaHint', '展示价格 = 基础价格 × 分组倍率 × 厂商附加倍率（如命中）')}
-              </Typography>
-            </Box>
-          </Box>
-
-          {/* 模型提供商标签 */}
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={1} sx={{ mb: 1.25 }} alignItems={{ md: 'flex-start' }}>
-            <Typography
-              variant="caption"
-              sx={{
-                fontWeight: 600,
-                color: theme.palette.text.secondary,
-                minWidth: { md: 72 },
-                pt: { md: 0.75 }
-              }}
-            >
-              {t('modelpricePage.channelType')}
-            </Typography>
-            <Box
-              sx={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: 0.75,
-                flex: 1
-              }}
-            >
-              {uniqueOwnedBy.map((ownedBy, index) => {
-                const isSelected = selectedOwnedBy === ownedBy;
-                return (
-                  <ButtonBase
-                    key={index}
-                    onClick={() => handleOwnedByChange(ownedBy)}
-                    sx={{
-                      borderRadius: '6px',
-                      overflow: 'hidden',
-                      position: 'relative',
-                      transition: 'all 0.2s ease',
-                      transform: isSelected ? 'translateY(-1px)' : 'none',
-                      '&:hover': {
-                        transform: 'translateY(-1px)'
-                      }
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 0.625,
-                        py: 0.5,
-                        px: 1.125,
-                        borderRadius: '6px',
-                        backgroundColor: isSelected
-                          ? alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.25 : 0.1)
-                          : theme.palette.mode === 'dark'
-                            ? alpha(theme.palette.background.default, 0.5)
-                            : theme.palette.background.default,
-                        border: `1px solid ${
-                          isSelected
-                            ? theme.palette.primary.main
-                            : theme.palette.mode === 'dark'
-                              ? alpha('#fff', 0.08)
-                              : alpha('#000', 0.05)
-                        }`,
-                        boxShadow: isSelected ? `0 2px 8px ${alpha(theme.palette.primary.main, 0.2)}` : 'none'
-                      }}
-                    >
-                      {ownedBy !== 'all' ? (
-                        <Avatar
-                          src={getIconByName(ownedBy)}
-                          alt={ownedBy}
-                          sx={{
-                            width: 18,
-                            height: 18,
-                            backgroundColor: theme.palette.mode === 'dark' ? '#fff' : theme.palette.background.paper,
-                            '.MuiAvatar-img': {
-                              objectFit: 'contain',
-                              padding: '2px'
-                            }
-                          }}
-                        >
-                          {ownedBy.charAt(0).toUpperCase()}
-                        </Avatar>
-                      ) : (
-                        <Icon
-                          icon="eva:grid-outline"
-                          width={18}
-                          height={18}
-                          color={isSelected ? theme.palette.primary.main : theme.palette.text.secondary}
-                        />
-                      )}
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          fontWeight: isSelected ? 600 : 500,
-                          color: isSelected ? theme.palette.primary.main : theme.palette.text.primary,
-                          fontSize: '0.75rem',
-                          lineHeight: 1.2
-                        }}
-                      >
-                        {ownedBy === 'all' ? t('modelpricePage.all') : ownedBy}
-                      </Typography>
-                    </Box>
-                  </ButtonBase>
-                );
-              })}
-            </Box>
-          </Stack>
-
-          {/* 用户组标签 */}
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={1} sx={{ mb: 0 }} alignItems={{ md: 'flex-start' }}>
-            <Typography
-              variant="caption"
-              sx={{
-                fontWeight: 600,
-                color: theme.palette.text.secondary,
-                minWidth: { md: 72 },
-                pt: { md: 0.75 }
-              }}
-            >
-              {t('modelpricePage.group')}
-            </Typography>
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 0.75,
-                flexWrap: 'wrap',
-                p: 1,
-                borderRadius: '8px',
-                flex: 1,
-                backgroundColor:
-                  theme.palette.mode === 'dark' ? alpha(theme.palette.background.default, 0.5) : theme.palette.background.default,
-                border: `1px solid ${theme.palette.mode === 'dark' ? alpha('#fff', 0.08) : alpha('#000', 0.05)}`
-              }}
-            >
-              {sortedGroupEntries.map(([key, group]) => {
-                const isSelected = selectedGroup === key;
-
-                return (
-                  <ButtonBase
-                    key={key}
-                    onClick={() => handleGroupChange(key)}
-                    sx={{
-                      borderRadius: '6px',
-                      overflow: 'hidden',
-                      transition: 'all 0.2s ease',
-                      transform: isSelected ? 'translateY(-1px)' : 'none',
-                      '&:hover': {
-                        transform: 'translateY(-1px)'
-                      }
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 0.75,
-                        py: 0.5,
-                        px: 1.125,
-                        borderRadius: '6px',
-                        backgroundColor: isSelected
-                          ? alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.25 : 0.1)
-                          : theme.palette.mode === 'dark'
-                            ? alpha(theme.palette.background.paper, 0.6)
-                            : alpha(theme.palette.background.paper, 1),
-                        border: `1px solid ${
-                          isSelected
-                            ? theme.palette.primary.main
-                            : theme.palette.mode === 'dark'
-                              ? alpha('#fff', 0.08)
-                              : alpha('#000', 0.05)
-                        }`
-                      }}
-                    >
-                      <Icon
-                        icon={isSelected ? 'eva:checkmark-circle-2-fill' : 'eva:radio-button-off-outline'}
-                        width={16}
-                        height={16}
-                        color={isSelected ? theme.palette.primary.main : theme.palette.text.secondary}
-                      />
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          fontWeight: isSelected ? 600 : 500,
-                          color: isSelected ? theme.palette.primary.main : theme.palette.text.primary,
-                          fontSize: '0.75rem',
-                          lineHeight: 1.2
-                        }}
-                      >
-                        {group.name}
-                      </Typography>
-                      <Label color={group.ratio > 1 ? 'warning' : 'info'} variant="soft" sx={{ fontSize: '0.7rem' }}>
-                        x{group.ratio}
-                      </Label>
-                    </Box>
-                  </ButtonBase>
-                );
-              })}
-            </Box>
-          </Stack>
-        </Card>
-
-        {/* 模型列表 */}
-        <Box>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 1.25 }}>
-            {t('modelpricePage.totalModels', { count: filteredModels.length })} ·{' '}
-            {t('modelpricePage.listHint', '列表价格已按当前分组和厂商附加倍率实时换算')}
-          </Typography>
-          {filteredModels.length > 0 ? (
-            <>
-              <TableContainer
-                component={Paper}
+              {/* 搜索和单位提示 */}
+              <Box
                 sx={{
-                  boxShadow: 'none',
-                  border: `1px solid ${theme.palette.divider}`,
-                  borderRadius: 2,
-                  overflowX: 'auto'
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: 2,
+                  mb: 1.5
                 }}
               >
-                <Table sx={{ minWidth: 1180 }}>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>{t('modelpricePage.modelName')}</TableCell>
-                      <TableCell align="center">{t('modelpricePage.type')}</TableCell>
-                      <TableCell align="center">{t('modelpricePage.provider')}</TableCell>
-                      <TableCell align="center">{t('modelpricePage.inputPrice')}</TableCell>
-                      <TableCell align="center">{t('modelpricePage.outputPrice')}</TableCell>
-                      <TableCell align="center">{t('modelpricePage.extraRatios')}</TableCell>
-                      <TableCell align="center">{t('modelpricePage.billingRules', '分档价格')}</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {paginatedModels.map((model) => {
-                      return (
-                        <TableRow key={model.model} hover>
-                          <TableCell sx={{ width: '28%' }}>
-                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
-                                <Typography variant="body2" fontWeight="bold" sx={{ fontSize: '1rem' }}>
-                                  {model.model}
-                                </Typography>
-                                <IconButton
-                                  size="small"
-                                  onClick={() => copy(model.model, t('modelpricePage.modelName'))}
-                                  sx={{ opacity: 0.6, '&:hover': { opacity: 1 } }}
-                                >
-                                  <Icon icon="eva:copy-outline" width={16} height={16} />
-                                </IconButton>
-                              </Box>
-                            </Box>
-                          </TableCell>
+                <Paper
+                  component="form"
+                  sx={{
+                    p: '2px 4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    width: isMobile ? '100%' : 280,
+                    borderRadius: '8px',
+                    border: 'none',
+                    boxShadow: theme.palette.mode === 'dark' ? '0 2px 8px rgba(0,0,0,0.2)' : '0 2px 8px rgba(0,0,0,0.05)',
+                    backgroundColor:
+                      theme.palette.mode === 'dark' ? alpha(theme.palette.background.default, 0.6) : theme.palette.background.default
+                  }}
+                >
+                  <IconButton sx={{ p: '8px' }} aria-label="search">
+                    <Icon icon="eva:search-fill" width={18} height={18} />
+                  </IconButton>
+                  <InputBase
+                    sx={{ ml: 1, flex: 1 }}
+                    placeholder={t('modelpricePage.search')}
+                    value={searchQuery}
+                    onChange={handleSearchChange}
+                  />
+                  {searchQuery && (
+                    <IconButton sx={{ p: '8px' }} aria-label="clear" onClick={clearSearch}>
+                      <Icon icon="eva:close-fill" width={16} height={16} />
+                    </IconButton>
+                  )}
+                </Paper>
 
-                          <TableCell align="center" sx={{ width: '10%' }}>
-                            <Box
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                    flexWrap: 'wrap',
+                    justifyContent: { xs: 'flex-start', sm: 'flex-end' }
+                  }}
+                >
+                  {selectedGroup && userGroupMap[selectedGroup] && (
+                    <Label color="primary" variant="soft">
+                      {t('modelpricePage.selectedGroupDisplay', {
+                        name: userGroupMap[selectedGroup].name,
+                        ratio: userGroupMap[selectedGroup].ratio
+                      })}
+                    </Label>
+                  )}
+                  {selectedGroupProviderRatios.map((item) => (
+                    <Label key={`selected-provider-ratio-${item.channelType}`} color="warning" variant="soft">
+                      {`${item.name} ${formatRatioLabel(item.ratio)}`}
+                    </Label>
+                  ))}
+                  <Typography variant="caption" color="text.secondary">
+                    {t('modelpricePage.tokenUnitHint', 'Token 按 USD / 1M')} · {t('modelpricePage.timesUnitHint', '按次模型按 USD / 次')}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {t('modelpricePage.groupPriceFormulaHint', '展示价格 = 基础价格 × 分组倍率 × 厂商附加倍率（如命中）')}
+                  </Typography>
+                </Box>
+              </Box>
+
+              {/* 模型提供商标签 */}
+              <Stack direction={{ xs: 'column', md: 'row' }} spacing={1} sx={{ mb: 1.25 }} alignItems={{ md: 'flex-start' }}>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontWeight: 600,
+                    color: theme.palette.text.secondary,
+                    minWidth: { md: 72 },
+                    pt: { md: 0.75 }
+                  }}
+                >
+                  {t('modelpricePage.channelType')}
+                </Typography>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: 0.75,
+                    flex: 1
+                  }}
+                >
+                  {uniqueOwnedBy.map((ownedBy, index) => {
+                    const isSelected = selectedOwnedBy === ownedBy;
+                    return (
+                      <ButtonBase
+                        key={index}
+                        onClick={() => handleOwnedByChange(ownedBy)}
+                        sx={{
+                          borderRadius: '6px',
+                          overflow: 'hidden',
+                          position: 'relative',
+                          transition: 'all 0.2s ease',
+                          transform: isSelected ? 'translateY(-1px)' : 'none',
+                          '&:hover': {
+                            transform: 'translateY(-1px)'
+                          }
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 0.625,
+                            py: 0.5,
+                            px: 1.125,
+                            borderRadius: '6px',
+                            backgroundColor: isSelected
+                              ? alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.25 : 0.1)
+                              : theme.palette.mode === 'dark'
+                                ? alpha(theme.palette.background.default, 0.5)
+                                : theme.palette.background.default,
+                            border: `1px solid ${
+                              isSelected
+                                ? theme.palette.primary.main
+                                : theme.palette.mode === 'dark'
+                                  ? alpha('#fff', 0.08)
+                                  : alpha('#000', 0.05)
+                            }`,
+                            boxShadow: isSelected ? `0 2px 8px ${alpha(theme.palette.primary.main, 0.2)}` : 'none'
+                          }}
+                        >
+                          {ownedBy !== 'all' ? (
+                            <Avatar
+                              src={getIconByName(ownedBy)}
+                              alt={ownedBy}
                               sx={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                px: 1,
-                                py: 0.5,
-                                borderRadius: 1,
-                                backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                                color: theme.palette.primary.main,
-                                fontSize: '0.75rem',
-                                fontWeight: 600
+                                width: 18,
+                                height: 18,
+                                backgroundColor: theme.palette.mode === 'dark' ? '#fff' : theme.palette.background.paper,
+                                '.MuiAvatar-img': {
+                                  objectFit: 'contain',
+                                  padding: '2px'
+                                }
                               }}
                             >
-                              {model.type === 'tokens' ? t('modelpricePage.tokens') : t('modelpricePage.times')}
-                            </Box>
-                          </TableCell>
-
-                          <TableCell align="center" sx={{ width: '12%' }}>
-                            <Stack spacing={0.75} alignItems="center">
-                              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-                                <Avatar
-                                  src={getIconByName(model.provider)}
-                                  alt={model.provider}
-                                  sx={{
-                                    width: 24,
-                                    height: 24,
-                                    backgroundColor: theme.palette.mode === 'dark' ? '#fff' : theme.palette.background.paper,
-                                    '& .MuiAvatar-img': {
-                                      objectFit: 'contain',
-                                      padding: '2px'
-                                    }
-                                  }}
-                                />
-                                <Typography variant="body2">{model.provider}</Typography>
-                              </Box>
-                              {model.hasAccess && (
-                                <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap justifyContent="center">
-                                  <Label color="info" variant="soft" sx={{ fontSize: '0.68rem' }}>
-                                    {`${t('modelpricePage.baseGroupRatio', '基础倍率')} ${formatRatioLabel(model.priceData.selectedGroupRatio)}`}
-                                  </Label>
-                                  {model.priceData.selectedProviderRatio !== 1 && (
-                                    <Label color="warning" variant="soft" sx={{ fontSize: '0.68rem' }}>
-                                      {`${t('modelpricePage.providerRatio', '厂商倍率')} ${formatRatioLabel(model.priceData.selectedProviderRatio)}`}
-                                    </Label>
-                                  )}
-                                  <Label color="primary" variant="soft" sx={{ fontSize: '0.68rem' }}>
-                                    {`${t('modelpricePage.effectiveGroupRatio', '最终倍率')} ${formatRatioLabel(
-                                      model.priceData.selectedEffectiveRatio
-                                    )}`}
-                                  </Label>
-                                </Stack>
-                              )}
-                            </Stack>
-                          </TableCell>
-
-                          <TableCell align="center" sx={{ width: '10%' }}>
-                            {model.hasAccess ? (
-                              <Label color="success" variant="outlined">
-                                {formatPrice(model.price.input, model.type)}
-                              </Label>
-                            ) : (
-                              <Typography variant="body2" color="text.secondary">
-                                {t('modelpricePage.noneGroup')}
-                              </Typography>
-                            )}
-                          </TableCell>
-
-                          <TableCell align="center" sx={{ width: '10%' }}>
-                            {model.type === 'times' ? (
-                              <Typography variant="body2" color="text.secondary">
-                                -
-                              </Typography>
-                            ) : model.hasAccess ? (
-                              <Label color="warning" variant="outlined">
-                                {formatPrice(model.price.output, model.type)}
-                              </Label>
-                            ) : (
-                              <Typography variant="body2" color="text.secondary">
-                                {t('modelpricePage.noneGroup')}
-                              </Typography>
-                            )}
-                          </TableCell>
-
-                          <TableCell align="center" sx={{ width: '14%' }}>
-                            {model.hasAccess && model.priceData.selectedGroupExtraRatios ? (
-                              <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap justifyContent="center">
-                                {Object.entries(model.priceData.selectedGroupExtraRatios).map(([key, value]) => (
-                                  <Label key={key} color="default" variant="soft" sx={{ maxWidth: 220 }}>
-                                    {`${getExtraRatioDisplayName(key)}: ${formatPrice(value, 'tokens')}`}
-                                  </Label>
-                                ))}
-                              </Stack>
-                            ) : (
-                              <Typography variant="body2" color="text.secondary">
-                                {model.hasAccess ? t('modelpricePage.noExtraRatios') : t('modelpricePage.noneGroup')}
-                              </Typography>
-                            )}
-                          </TableCell>
-
-                          <TableCell align="center" sx={{ width: '10%' }}>
-                            <BillingRuleDetails
-                              rules={model.priceData.price.billing_rules}
-                              priceType={model.type}
-                              groupRatio={model.priceData.selectedEffectiveRatio}
-                              formatPrice={formatPrice}
-                              compact
+                              {ownedBy.charAt(0).toUpperCase()}
+                            </Avatar>
+                          ) : (
+                            <Icon
+                              icon="eva:grid-outline"
+                              width={18}
+                              height={18}
+                              color={isSelected ? theme.palette.primary.main : theme.palette.text.secondary}
                             />
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+                          )}
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              fontWeight: isSelected ? 600 : 500,
+                              color: isSelected ? theme.palette.primary.main : theme.palette.text.primary,
+                              fontSize: '0.75rem',
+                              lineHeight: 1.2
+                            }}
+                          >
+                            {ownedBy === 'all' ? t('modelpricePage.all') : ownedBy}
+                          </Typography>
+                        </Box>
+                      </ButtonBase>
+                    );
+                  })}
+                </Box>
+              </Stack>
 
-              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mt: 4, gap: 2, flexWrap: 'wrap' }}>
-                <Pagination
-                  count={Math.ceil(filteredModels.length / pageSize)}
-                  page={page}
-                  onChange={handlePageChange}
-                  color="primary"
-                  size={isMobile ? 'small' : 'medium'}
-                />
-                <FormControl size="small" sx={{ minWidth: 120 }}>
-                  <Select
-                    value={pageSize}
-                    onChange={handlePageSizeChange}
-                    displayEmpty
-                    inputProps={{ 'aria-label': 'Without label' }}
-                    sx={{
-                      borderRadius: '8px',
-                      '& .MuiSelect-select': {
-                        py: 1
-                      }
-                    }}
-                  >
-                    {pageSizeOptions.map((size) => (
-                      <MenuItem key={size} value={size}>
-                        {size} / Page
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Box>
-            </>
-          ) : (
-            <Card
-              sx={{
-                p: 8,
-                textAlign: 'center',
-                backgroundColor: theme.palette.mode === 'dark' ? alpha(theme.palette.background.paper, 0.6) : theme.palette.background.paper
-              }}
-            >
-              <Stack spacing={2} alignItems="center">
-                <Icon icon="eva:search-outline" width={64} height={64} color={theme.palette.text.secondary} />
-                <Typography variant="h5" color="text.secondary">
-                  {t('modelpricePage.noModelsFound')}
+              {/* 用户组标签 */}
+              <Stack direction={{ xs: 'column', md: 'row' }} spacing={1} sx={{ mb: 0 }} alignItems={{ md: 'flex-start' }}>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontWeight: 600,
+                    color: theme.palette.text.secondary,
+                    minWidth: { md: 72 },
+                    pt: { md: 0.75 }
+                  }}
+                >
+                  {t('modelpricePage.group')}
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {t('modelpricePage.noModelsFoundTip')}
-                </Typography>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 0.75,
+                    flexWrap: 'wrap',
+                    p: 1,
+                    borderRadius: '8px',
+                    flex: 1,
+                    backgroundColor:
+                      theme.palette.mode === 'dark' ? alpha(theme.palette.background.default, 0.5) : theme.palette.background.default,
+                    border: `1px solid ${theme.palette.mode === 'dark' ? alpha('#fff', 0.08) : alpha('#000', 0.05)}`
+                  }}
+                >
+                  {sortedGroupEntries.map(([key, group]) => {
+                    const isSelected = selectedGroup === key;
+
+                    return (
+                      <ButtonBase
+                        key={key}
+                        onClick={() => handleGroupChange(key)}
+                        sx={{
+                          borderRadius: '6px',
+                          overflow: 'hidden',
+                          transition: 'all 0.2s ease',
+                          transform: isSelected ? 'translateY(-1px)' : 'none',
+                          '&:hover': {
+                            transform: 'translateY(-1px)'
+                          }
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 0.75,
+                            py: 0.5,
+                            px: 1.125,
+                            borderRadius: '6px',
+                            backgroundColor: isSelected
+                              ? alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.25 : 0.1)
+                              : theme.palette.mode === 'dark'
+                                ? alpha(theme.palette.background.paper, 0.6)
+                                : alpha(theme.palette.background.paper, 1),
+                            border: `1px solid ${
+                              isSelected
+                                ? theme.palette.primary.main
+                                : theme.palette.mode === 'dark'
+                                  ? alpha('#fff', 0.08)
+                                  : alpha('#000', 0.05)
+                            }`
+                          }}
+                        >
+                          <Icon
+                            icon={isSelected ? 'eva:checkmark-circle-2-fill' : 'eva:radio-button-off-outline'}
+                            width={16}
+                            height={16}
+                            color={isSelected ? theme.palette.primary.main : theme.palette.text.secondary}
+                          />
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              fontWeight: isSelected ? 600 : 500,
+                              color: isSelected ? theme.palette.primary.main : theme.palette.text.primary,
+                              fontSize: '0.75rem',
+                              lineHeight: 1.2
+                            }}
+                          >
+                            {group.name}
+                          </Typography>
+                          <Label color={group.ratio > 1 ? 'warning' : 'info'} variant="soft" sx={{ fontSize: '0.7rem' }}>
+                            x{group.ratio}
+                          </Label>
+                        </Box>
+                      </ButtonBase>
+                    );
+                  })}
+                </Box>
               </Stack>
             </Card>
-          )}
-        </Box>
-        </>)}
+
+            {/* 模型列表 */}
+            <Box>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1.25 }}>
+                {t('modelpricePage.totalModels', { count: filteredModels.length })} ·{' '}
+                {t('modelpricePage.listHint', '列表价格已按当前分组和厂商附加倍率实时换算')}
+              </Typography>
+              {filteredModels.length > 0 ? (
+                <>
+                  <TableContainer
+                    component={Paper}
+                    sx={{
+                      boxShadow: 'none',
+                      border: `1px solid ${theme.palette.divider}`,
+                      borderRadius: 2,
+                      overflowX: 'auto'
+                    }}
+                  >
+                    <Table sx={{ minWidth: 1180 }}>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>{t('modelpricePage.modelName')}</TableCell>
+                          <TableCell align="center">{t('modelpricePage.type')}</TableCell>
+                          <TableCell align="center">{t('modelpricePage.provider')}</TableCell>
+                          <TableCell align="center">{t('modelpricePage.inputPrice')}</TableCell>
+                          <TableCell align="center">{t('modelpricePage.outputPrice')}</TableCell>
+                          <TableCell align="center">{t('modelpricePage.extraRatios')}</TableCell>
+                          <TableCell align="center">{t('modelpricePage.billingRules', '分档价格')}</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {paginatedModels.map((model) => {
+                          return (
+                            <TableRow key={model.model} hover>
+                              <TableCell sx={{ width: '28%' }}>
+                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
+                                    <Typography variant="body2" fontWeight="bold" sx={{ fontSize: '1rem' }}>
+                                      {model.model}
+                                    </Typography>
+                                    <IconButton
+                                      size="small"
+                                      onClick={() => copy(model.model, t('modelpricePage.modelName'))}
+                                      sx={{ opacity: 0.6, '&:hover': { opacity: 1 } }}
+                                    >
+                                      <Icon icon="eva:copy-outline" width={16} height={16} />
+                                    </IconButton>
+                                  </Box>
+                                </Box>
+                              </TableCell>
+
+                              <TableCell align="center" sx={{ width: '10%' }}>
+                                <Box
+                                  sx={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    px: 1,
+                                    py: 0.5,
+                                    borderRadius: 1,
+                                    backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                                    color: theme.palette.primary.main,
+                                    fontSize: '0.75rem',
+                                    fontWeight: 600
+                                  }}
+                                >
+                                  {model.type === 'tokens' ? t('modelpricePage.tokens') : t('modelpricePage.times')}
+                                </Box>
+                              </TableCell>
+
+                              <TableCell align="center" sx={{ width: '12%' }}>
+                                <Stack spacing={0.75} alignItems="center">
+                                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                                    <Avatar
+                                      src={getIconByName(model.provider)}
+                                      alt={model.provider}
+                                      sx={{
+                                        width: 24,
+                                        height: 24,
+                                        backgroundColor: theme.palette.mode === 'dark' ? '#fff' : theme.palette.background.paper,
+                                        '& .MuiAvatar-img': {
+                                          objectFit: 'contain',
+                                          padding: '2px'
+                                        }
+                                      }}
+                                    />
+                                    <Typography variant="body2">{model.provider}</Typography>
+                                  </Box>
+                                  {model.hasAccess && (
+                                    <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap justifyContent="center">
+                                      <Label color="info" variant="soft" sx={{ fontSize: '0.68rem' }}>
+                                        {`${t('modelpricePage.baseGroupRatio', '基础倍率')} ${formatRatioLabel(model.priceData.selectedGroupRatio)}`}
+                                      </Label>
+                                      {model.priceData.selectedProviderRatio !== 1 && (
+                                        <Label color="warning" variant="soft" sx={{ fontSize: '0.68rem' }}>
+                                          {`${t('modelpricePage.providerRatio', '厂商倍率')} ${formatRatioLabel(model.priceData.selectedProviderRatio)}`}
+                                        </Label>
+                                      )}
+                                      <Label color="primary" variant="soft" sx={{ fontSize: '0.68rem' }}>
+                                        {`${t('modelpricePage.effectiveGroupRatio', '最终倍率')} ${formatRatioLabel(
+                                          model.priceData.selectedEffectiveRatio
+                                        )}`}
+                                      </Label>
+                                    </Stack>
+                                  )}
+                                </Stack>
+                              </TableCell>
+
+                              <TableCell align="center" sx={{ width: '10%' }}>
+                                {model.hasAccess ? (
+                                  <Label color="success" variant="outlined">
+                                    {formatPrice(model.price.input, model.type)}
+                                  </Label>
+                                ) : (
+                                  <Typography variant="body2" color="text.secondary">
+                                    {t('modelpricePage.noneGroup')}
+                                  </Typography>
+                                )}
+                              </TableCell>
+
+                              <TableCell align="center" sx={{ width: '10%' }}>
+                                {model.type === 'times' ? (
+                                  <Typography variant="body2" color="text.secondary">
+                                    -
+                                  </Typography>
+                                ) : model.hasAccess ? (
+                                  <Label color="warning" variant="outlined">
+                                    {formatPrice(model.price.output, model.type)}
+                                  </Label>
+                                ) : (
+                                  <Typography variant="body2" color="text.secondary">
+                                    {t('modelpricePage.noneGroup')}
+                                  </Typography>
+                                )}
+                              </TableCell>
+
+                              <TableCell align="center" sx={{ width: '14%' }}>
+                                {model.hasAccess && model.priceData.selectedGroupExtraRatios ? (
+                                  <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap justifyContent="center">
+                                    {Object.entries(model.priceData.selectedGroupExtraRatios).map(([key, value]) => (
+                                      <Label key={key} color="default" variant="soft" sx={{ maxWidth: 220 }}>
+                                        {`${getExtraRatioDisplayName(key)}: ${formatPrice(value, 'tokens')}`}
+                                      </Label>
+                                    ))}
+                                  </Stack>
+                                ) : (
+                                  <Typography variant="body2" color="text.secondary">
+                                    {model.hasAccess ? t('modelpricePage.noExtraRatios') : t('modelpricePage.noneGroup')}
+                                  </Typography>
+                                )}
+                              </TableCell>
+
+                              <TableCell align="center" sx={{ width: '10%' }}>
+                                <BillingRuleDetails
+                                  rules={model.priceData.price.billing_rules}
+                                  priceType={model.type}
+                                  groupRatio={model.priceData.selectedEffectiveRatio}
+                                  formatPrice={formatPrice}
+                                  compact
+                                />
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+
+                  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mt: 4, gap: 2, flexWrap: 'wrap' }}>
+                    <Pagination
+                      count={Math.ceil(filteredModels.length / pageSize)}
+                      page={page}
+                      onChange={handlePageChange}
+                      color="primary"
+                      size={isMobile ? 'small' : 'medium'}
+                    />
+                    <FormControl size="small" sx={{ minWidth: 120 }}>
+                      <Select
+                        value={pageSize}
+                        onChange={handlePageSizeChange}
+                        displayEmpty
+                        inputProps={{ 'aria-label': 'Without label' }}
+                        sx={{
+                          borderRadius: '8px',
+                          '& .MuiSelect-select': {
+                            py: 1
+                          }
+                        }}
+                      >
+                        {pageSizeOptions.map((size) => (
+                          <MenuItem key={size} value={size}>
+                            {size} / Page
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Box>
+                </>
+              ) : (
+                <Card
+                  sx={{
+                    p: 8,
+                    textAlign: 'center',
+                    backgroundColor:
+                      theme.palette.mode === 'dark' ? alpha(theme.palette.background.paper, 0.6) : theme.palette.background.paper
+                  }}
+                >
+                  <Stack spacing={2} alignItems="center">
+                    <Icon icon="eva:search-outline" width={64} height={64} color={theme.palette.text.secondary} />
+                    <Typography variant="h5" color="text.secondary">
+                      {t('modelpricePage.noModelsFound')}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {t('modelpricePage.noModelsFoundTip')}
+                    </Typography>
+                  </Stack>
+                </Card>
+              )}
+            </Box>
+          </>
+        )}
 
         {activeTab === 'plans' && (
-          <Box sx={{ maxWidth: 1180, mx: 'auto', width: '100%' }}>
+          <Box sx={{ mx: 'auto', width: '100%' }}>
             <Typography variant="h4" sx={{ mb: 2, textAlign: 'center', fontWeight: 700 }}>
               {t('subscription.subscriptionPlans')}
             </Typography>
