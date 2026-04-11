@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { Box, Typography, List, ListItemButton, ListItemText, useTheme, useMediaQuery } from '@mui/material';
 import { alpha } from '@mui/material/styles';
+import { SIDEBAR_WIDTH } from './apiData';
 
 const TOC_WIDTH = 180;
 
@@ -47,56 +48,61 @@ const TableOfContents = ({ items }) => {
       sx={{
         width: TOC_WIDTH,
         flexShrink: 0,
-        alignSelf: 'flex-start',
-        position: 'sticky',
-        top: 88,
-        height: 'fit-content',
-        maxHeight: 'calc(100vh - 100px)',
-        overflowY: 'auto',
         ml: 3,
-        display: { xs: 'none', lg: 'block' },
-        '&::-webkit-scrollbar': { width: 2 },
-        '&::-webkit-scrollbar-thumb': { backgroundColor: alpha(theme.palette.divider, 0.4), borderRadius: 1 }
+        display: { xs: 'none', lg: 'block' }
       }}
     >
-      <Typography
-        variant="caption"
+      <Box
         sx={{
-          display: 'block',
-          color: 'text.secondary',
-          fontSize: '0.65rem',
-          letterSpacing: '0.1em',
-          px: 1.5,
-          mb: 0.5
+          position: 'fixed',
+          top: 88,
+          right: `max(24px, calc((100vw - ${SIDEBAR_WIDTH}px - 1100px) / 2 + 32px))`,
+          width: TOC_WIDTH,
+          maxHeight: 'calc(100vh - 100px)',
+          overflowY: 'auto',
+          '&::-webkit-scrollbar': { width: 2 },
+          '&::-webkit-scrollbar-thumb': { backgroundColor: alpha(theme.palette.divider, 0.4), borderRadius: 1 }
         }}
       >
-        ON THIS PAGE
-      </Typography>
-      <List component="nav" disablePadding dense>
-        {items.map((item) => (
-          <ListItemButton
-            key={item.id}
-            onClick={() => handleClick(item.id)}
-            sx={{
-              py: 0.25,
-              px: 1.5,
-              minHeight: 28,
-              borderLeft: `2px solid ${activeId === item.id ? theme.palette.primary.main : 'transparent'}`,
-              '&:hover': { backgroundColor: 'transparent' }
-            }}
-          >
-            <ListItemText
-              primary={item.label}
-              primaryTypographyProps={{
-                fontSize: '0.72rem',
-                color: activeId === item.id ? 'primary.main' : 'text.secondary',
-                fontWeight: activeId === item.id ? 600 : 400,
-                noWrap: true
+        <Typography
+          variant="caption"
+          sx={{
+            display: 'block',
+            color: 'text.secondary',
+            fontSize: '0.65rem',
+            letterSpacing: '0.1em',
+            px: 1.5,
+            mb: 0.5
+          }}
+        >
+          ON THIS PAGE
+        </Typography>
+        <List component="nav" disablePadding dense>
+          {items.map((item) => (
+            <ListItemButton
+              key={item.id}
+              onClick={() => handleClick(item.id)}
+              sx={{
+                py: 0.25,
+                px: 1.5,
+                minHeight: 28,
+                borderLeft: `2px solid ${activeId === item.id ? theme.palette.primary.main : 'transparent'}`,
+                '&:hover': { backgroundColor: 'transparent' }
               }}
-            />
-          </ListItemButton>
-        ))}
-      </List>
+            >
+              <ListItemText
+                primary={item.label}
+                primaryTypographyProps={{
+                  fontSize: '0.72rem',
+                  color: activeId === item.id ? 'primary.main' : 'text.secondary',
+                  fontWeight: activeId === item.id ? 600 : 400,
+                  noWrap: true
+                }}
+              />
+            </ListItemButton>
+          ))}
+        </List>
+      </Box>
     </Box>
   );
 };
