@@ -19,3 +19,4 @@ czloapi
 _output
 .claude
 cc-switch-main/
+.gocache/

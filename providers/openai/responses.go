@@ -5,6 +5,7 @@ import (
 	"czloapi/common"
 	"czloapi/common/config"
 	"czloapi/common/requester"
+	"czloapi/model"
 	"czloapi/types"
 	"encoding/json"
 	"strings"
@@ -36,6 +37,7 @@ func (p *OpenAIProvider) CreateResponses(request *types.OpenAIResponsesRequest) 
 	}
 
 	*p.Usage = *response.Usage.ToOpenAIUsage()
+	model.StoreResponseResourceBinding(response.ID, p.Channel.Id)
 
 	getResponsesExtraBilling(response, p.Usage)
 
@@ -55,7 +57,7 @@ func (p *OpenAIProvider) CreateResponsesStream(request *types.OpenAIResponsesReq
 		return nil, errWithCode
 	}
 
-	chatHandler := newOpenAIResponsesStreamHandler(p.Usage, request.Model)
+	chatHandler := newOpenAIResponsesStreamHandler(p.Usage, request.Model, p.Channel.Id)
 
 	if request.ConvertChat {
 		return requester.RequestStream(p.Requester, resp, chatHandler.HandlerChatStream)
@@ -88,6 +90,9 @@ func (h *OpenAIResponsesStreamHandler) HandlerResponsesStream(rawLine *[]byte, d
 
 	switch openaiResponse.Type {
 	case "response.created":
+		if openaiResponse.Response != nil {
+			model.StoreResponseResourceBinding(openaiResponse.Response.ID, h.ChannelID)
+		}
 		if len(openaiResponse.Response.Tools) > 0 {
 			for _, tool := range openaiResponse.Response.Tools {
 				if isResponsesWebSearchToolType(tool.Type) {
@@ -122,6 +127,7 @@ func (h *OpenAIResponsesStreamHandler) HandlerResponsesStream(rawLine *[]byte, d
 		}
 	default:
 		if openaiResponse.Response != nil && openaiResponse.Response.Usage != nil {
+			model.StoreResponseResourceBinding(openaiResponse.Response.ID, h.ChannelID)
 			usage := openaiResponse.Response.Usage
 			*h.Usage = *usage.ToOpenAIUsage()
 			getResponsesExtraBilling(openaiResponse.Response, h.Usage)

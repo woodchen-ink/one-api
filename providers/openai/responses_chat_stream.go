@@ -15,6 +15,7 @@ type OpenAIResponsesStreamHandler struct {
 	Usage     *types.Usage
 	Prefix    string
 	Model     string
+	ChannelID int
 	MessageID string
 	CreatedAt any
 
@@ -31,11 +32,12 @@ type OpenAIResponsesStreamHandler struct {
 	sawToolCall               bool
 }
 
-func newOpenAIResponsesStreamHandler(usage *types.Usage, model string) OpenAIResponsesStreamHandler {
+func newOpenAIResponsesStreamHandler(usage *types.Usage, model string, channelID int) OpenAIResponsesStreamHandler {
 	return OpenAIResponsesStreamHandler{
 		Usage:                     usage,
 		Prefix:                    `data: `,
 		Model:                     model,
+		ChannelID:                 channelID,
 		toolCallIndexByID:         make(map[string]int),
 		toolCallNameByID:          make(map[string]string),
 		toolCallArgsByID:          make(map[string]string),

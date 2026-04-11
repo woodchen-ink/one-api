@@ -468,6 +468,7 @@ type ReasoningEffort struct {
 
 type OpenAIResponsesResponses struct {
 	CreatedAt            any               `json:"created_at,omitempty"`
+	ConversationID       string            `json:"conversation_id,omitempty"`
 	Error                *OpenAIError      `json:"error,omitempty"`
 	ID                   string            `json:"id,omitempty"`
 	IncompleteDetail     *IncompleteDetail `json:"incomplete_details,omitempty"`
