@@ -5,6 +5,8 @@ import CodeBlock from './CodeBlock';
 const ApiSection = ({ section, withTocIds }) => {
   const theme = useTheme();
   const baseUrl = window.location.origin;
+  const endpoints =
+    section.endpoints && section.endpoints.length > 0 ? section.endpoints : [{ method: section.method, endpoint: section.endpoint }];
 
   return (
     <Box id={section.id} sx={{ mb: 6, scrollMarginTop: '80px' }}>
@@ -24,39 +26,42 @@ const ApiSection = ({ section, withTocIds }) => {
         Endpoint
       </Typography>
       <Box sx={{ mb: 3 }}>
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1,
-            p: 0.75,
-            borderRadius: '4px',
-            '&:hover': { backgroundColor: alpha(theme.palette.primary.main, 0.04) }
-          }}
-        >
-          <Chip
-            label={section.method}
-            size="small"
+        {endpoints.map((item) => (
+          <Box
+            key={`${item.method}-${item.endpoint}`}
             sx={{
-              height: 20,
-              fontSize: '0.65rem',
-              fontWeight: 700,
-              backgroundColor: section.method === 'POST' ? alpha('#5E7E80', 0.15) : alpha('#4B669A', 0.15),
-              color: section.method === 'POST' ? '#5E7E80' : '#4B669A'
-            }}
-          />
-          <Typography
-            variant="body2"
-            sx={{
-              fontFamily: '"Roboto Mono", Consolas, monospace',
-              fontSize: '0.8rem',
-              color: 'text.primary'
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+              p: 0.75,
+              borderRadius: '4px',
+              '&:hover': { backgroundColor: alpha(theme.palette.primary.main, 0.04) }
             }}
           >
-            {baseUrl}
-            {section.endpoint}
-          </Typography>
-        </Box>
+            <Chip
+              label={item.method}
+              size="small"
+              sx={{
+                height: 20,
+                fontSize: '0.65rem',
+                fontWeight: 700,
+                backgroundColor: item.method === 'POST' ? alpha('#5E7E80', 0.15) : alpha('#4B669A', 0.15),
+                color: item.method === 'POST' ? '#5E7E80' : '#4B669A'
+              }}
+            />
+            <Typography
+              variant="body2"
+              sx={{
+                fontFamily: '"Roboto Mono", Consolas, monospace',
+                fontSize: '0.8rem',
+                color: 'text.primary'
+              }}
+            >
+              {baseUrl}
+              {item.endpoint}
+            </Typography>
+          </Box>
+        ))}
       </Box>
 
       {/* Description */}

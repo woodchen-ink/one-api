@@ -51,6 +51,188 @@ export const apiSections = [
     }
   },
   {
+    id: 'api-responses-resource',
+    title: 'Responses 资源接口',
+    group: 'OpenAI Compatible',
+    method: 'GET',
+    endpoint: '/v1/responses/{response_id}',
+    endpoints: [
+      { method: 'GET', endpoint: '/v1/responses/{response_id}' },
+      { method: 'DELETE', endpoint: '/v1/responses/{response_id}' },
+      { method: 'POST', endpoint: '/v1/responses/{response_id}/cancel' },
+      { method: 'GET', endpoint: '/v1/responses/{response_id}/input_items' }
+    ],
+    description: 'Responses 资源管理接口。用于读取、删除、取消已创建的 response，以及查看该 response 的 input items。',
+    detail:
+      '适用于 agent 工作流、远程压缩、异步任务管理等场景。通常先通过 POST /v1/responses 创建 response，再使用这些资源接口进行后续查询或控制。',
+    headers: {
+      Authorization: 'Bearer sk-your-api-key'
+    },
+    note: '这些接口依赖 response_id。建议 response 先通过当前网关创建，再使用后续资源接口访问。',
+    parameters: [{ name: 'response_id', type: 'string (path)', required: true, desc: 'response 资源 ID，如 resp_123' }],
+    requestExample: {
+      retrieve: 'GET /v1/responses/resp_123',
+      cancel: 'POST /v1/responses/resp_123/cancel',
+      input_items: 'GET /v1/responses/resp_123/input_items'
+    },
+    responseExample: {
+      id: 'resp_123',
+      object: 'response',
+      status: 'completed',
+      conversation_id: 'conv_123',
+      model: 'o4-mini',
+      output: [{ type: 'message', id: 'msg_123', role: 'assistant' }]
+    }
+  },
+  {
+    id: 'api-responses-compact',
+    title: 'Responses Compact',
+    group: 'OpenAI Compatible',
+    method: 'POST',
+    endpoint: '/v1/responses/compact',
+    description: 'Responses 压缩接口。用于将现有上下文压缩成更短、更适合继续推理的状态，常见于 Codex、agent 长会话自动压缩场景。',
+    detail:
+      '请求格式与 OpenAI Responses 生态兼容，通常会基于已有 response / conversation 上下文生成新的压缩结果。适合长上下文工作流中的自动整理与续写。',
+    headers: {
+      Authorization: 'Bearer sk-your-api-key',
+      'Content-Type': 'application/json'
+    },
+    parameters: [
+      { name: 'model', type: 'string', required: true, desc: '模型名称，如 o4-mini、gpt-5 系列或其他支持 responses 的模型' },
+      { name: 'input', type: 'string | array', required: false, desc: '待压缩的输入内容或消息数组' },
+      { name: 'instructions', type: 'string', required: false, desc: '补充压缩指令，如压缩目标、保留重点等' },
+      { name: 'reasoning', type: 'object', required: false, desc: '推理配置，如 { "effort": "medium" }' }
+    ],
+    requestExample: {
+      model: 'o4-mini',
+      instructions: '请压缩以下客服会话上下文，仅保留后续继续处理工单所需的关键信息。',
+      input: [{ role: 'user', type: 'message', content: '用户反馈订单延迟发货，希望确认最新物流状态并申请补偿。' }]
+    },
+    responseExample: {
+      id: 'resp_compact_123',
+      object: 'response',
+      status: 'completed',
+      output: [
+        {
+          type: 'message',
+          id: 'msg_compact_123',
+          role: 'assistant',
+          content: [{ type: 'output_text', text: '已完成 responses 与 conversations 接口接入，并为资源接口补充日志记录。' }]
+        }
+      ]
+    }
+  },
+  {
+    id: 'api-responses-input-tokens',
+    title: 'Responses Input Tokens Count',
+    group: 'OpenAI Compatible',
+    method: 'POST',
+    endpoint: '/v1/responses/input_tokens/count',
+    endpoints: [
+      { method: 'POST', endpoint: '/v1/responses/input_tokens/count' },
+      { method: 'POST', endpoint: '/v1/responses/input_tokens' }
+    ],
+    description: 'Responses 输入 token 计数接口。用于在正式发起请求前，估算输入消息消耗的 token 数。',
+    detail: '适合在前端预估成本、长上下文截断、自动压缩阈值控制等场景中使用。请求体中需要包含 model 和 input。',
+    headers: {
+      Authorization: 'Bearer sk-your-api-key',
+      'Content-Type': 'application/json'
+    },
+    parameters: [
+      { name: 'model', type: 'string', required: true, desc: '模型名称' },
+      { name: 'input', type: 'string | array', required: true, desc: '待计数的输入内容' }
+    ],
+    requestExample: {
+      model: 'o4-mini',
+      input: '请先帮我估算这段输入会消耗多少 token。'
+    },
+    responseExample: {
+      input_tokens: 18,
+      input_tokens_details: {
+        text_tokens: 18,
+        image_tokens: 0
+      }
+    }
+  },
+  {
+    id: 'api-conversations',
+    title: 'Conversations',
+    group: 'OpenAI Compatible',
+    method: 'POST',
+    endpoint: '/v1/conversations',
+    endpoints: [
+      { method: 'POST', endpoint: '/v1/conversations' },
+      { method: 'GET', endpoint: '/v1/conversations/{conversation_id}' },
+      { method: 'POST', endpoint: '/v1/conversations/{conversation_id}' },
+      { method: 'DELETE', endpoint: '/v1/conversations/{conversation_id}' }
+    ],
+    description: 'Conversations 会话资源接口。用于创建、读取、更新、删除持久化 conversation 资源，适合多轮 agent 会话管理。',
+    detail:
+      '通常配合 Responses API 一起使用。创建 conversation 后，可在后续请求中围绕同一个会话对象持续追加内容、查询历史状态或进行资源清理。',
+    headers: {
+      Authorization: 'Bearer sk-your-api-key',
+      'Content-Type': 'application/json'
+    },
+    parameters: [
+      { name: 'conversation_id', type: 'string (path)', required: false, desc: '已存在的 conversation ID，读取、更新、删除时使用' },
+      { name: 'metadata', type: 'object', required: false, desc: '可选的会话元数据' }
+    ],
+    requestExample: {
+      metadata: {
+        ticket_id: 'CS-2026-0411',
+        channel: 'web-support'
+      }
+    },
+    responseExample: {
+      id: 'conv_123',
+      object: 'conversation',
+      created_at: 1700000000,
+      metadata: {
+        ticket_id: 'CS-2026-0411',
+        channel: 'web-support'
+      }
+    }
+  },
+  {
+    id: 'api-conversation-items',
+    title: 'Conversation Items',
+    group: 'OpenAI Compatible',
+    method: 'POST',
+    endpoint: '/v1/conversations/{conversation_id}/items',
+    endpoints: [
+      { method: 'POST', endpoint: '/v1/conversations/{conversation_id}/items' },
+      { method: 'GET', endpoint: '/v1/conversations/{conversation_id}/items' },
+      { method: 'GET', endpoint: '/v1/conversations/{conversation_id}/items/{item_id}' },
+      { method: 'DELETE', endpoint: '/v1/conversations/{conversation_id}/items/{item_id}' }
+    ],
+    description: 'Conversation Items 子资源接口。用于向 conversation 中追加 item、列出历史 item、读取单个 item 或删除 item。',
+    detail:
+      '适合需要把用户输入、工具输出、系统记录等结构化内容持续挂载到 conversation 上的工作流。和 Responses API 组合后，可以更方便地维护长期状态。',
+    headers: {
+      Authorization: 'Bearer sk-your-api-key',
+      'Content-Type': 'application/json'
+    },
+    parameters: [
+      { name: 'conversation_id', type: 'string (path)', required: true, desc: '会话资源 ID' },
+      { name: 'item_id', type: 'string (path)', required: false, desc: '单个 item ID，读取或删除时使用' },
+      { name: 'type', type: 'string', required: false, desc: 'item 类型，如 message、function_call_output 等' },
+      { name: 'role', type: 'string', required: false, desc: '消息角色，如 user、assistant' },
+      { name: 'content', type: 'string | array', required: false, desc: 'item 内容' }
+    ],
+    requestExample: {
+      type: 'message',
+      role: 'user',
+      content: [{ type: 'input_text', text: '请帮我总结这个订单问题的处理进展，并告诉我下一步需要联系哪个部门。' }]
+    },
+    responseExample: {
+      id: 'item_123',
+      object: 'conversation.item',
+      type: 'message',
+      role: 'user',
+      content: [{ type: 'input_text', text: '请帮我总结这个订单问题的处理进展，并告诉我下一步需要联系哪个部门。' }]
+    }
+  },
+  {
     id: 'api-chat-completions',
     title: 'Chat Completions',
     group: 'OpenAI Compatible',
