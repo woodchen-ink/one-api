@@ -3,6 +3,7 @@ package model
 import (
 	"fmt"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -11,8 +12,9 @@ import (
 )
 
 const (
-	responseResourceBindingCacheKey = "response_resource_binding:%s"
-	responseResourceBindingTTL      = 30 * 24 * time.Hour
+	responseResourceBindingCacheKey     = "response_resource_binding:%s"
+	conversationResourceBindingCacheKey = "conversation_resource_binding:%s"
+	responseResourceBindingTTL          = 30 * 24 * time.Hour
 )
 
 type responseResourceBinding struct {
@@ -35,7 +37,18 @@ func init() {
 // response so subsequent resource requests can be routed back to the same
 // upstream account.
 func StoreResponseResourceBinding(responseID string, channelID int) {
-	if responseID == "" || channelID <= 0 {
+	storeResourceBinding(&responseResourceBindings, responseResourceBindingCacheKey, responseID, channelID)
+}
+
+// StoreConversationResourceBinding caches the channel used for a stored
+// conversation resource so conversation follow-up requests can be routed back
+// to the same upstream account.
+func StoreConversationResourceBinding(conversationID string, channelID int) {
+	storeResourceBinding(&responseResourceBindings, conversationResourceBindingCacheKey, conversationID, channelID)
+}
+
+func storeResourceBinding(cache *sync.Map, keyPattern string, resourceID string, channelID int) {
+	if resourceID == "" || channelID <= 0 {
 		return
 	}
 
@@ -43,38 +56,48 @@ func StoreResponseResourceBinding(responseID string, channelID int) {
 		ChannelID: channelID,
 		ExpireAt:  time.Now().Add(responseResourceBindingTTL),
 	}
-	responseResourceBindings.Store(responseID, binding)
+	cache.Store(resourceID, binding)
 
 	if config.RedisEnabled {
 		_ = redis.RedisSet(
-			fmt.Sprintf(responseResourceBindingCacheKey, responseID),
+			fmt.Sprintf(keyPattern, resourceID),
 			strconv.Itoa(channelID),
 			responseResourceBindingTTL,
 		)
 	}
 }
 
+// GetConversationResourceBinding resolves the channel previously used for a
+// stored conversation resource.
+func GetConversationResourceBinding(conversationID string) (int, bool) {
+	return getResourceBinding(&responseResourceBindings, conversationResourceBindingCacheKey, conversationID)
+}
+
 // GetResponseResourceBinding resolves the channel previously used for a stored
 // response resource.
 func GetResponseResourceBinding(responseID string) (int, bool) {
-	if responseID == "" {
+	return getResourceBinding(&responseResourceBindings, responseResourceBindingCacheKey, responseID)
+}
+
+func getResourceBinding(cache *sync.Map, keyPattern string, resourceID string) (int, bool) {
+	if resourceID == "" {
 		return 0, false
 	}
 
-	if value, ok := responseResourceBindings.Load(responseID); ok {
+	if value, ok := cache.Load(resourceID); ok {
 		if binding, ok := value.(responseResourceBinding); ok {
 			if time.Now().Before(binding.ExpireAt) {
 				return binding.ChannelID, true
 			}
 		}
-		responseResourceBindings.Delete(responseID)
+		cache.Delete(resourceID)
 	}
 
 	if !config.RedisEnabled {
 		return 0, false
 	}
 
-	channelIDStr, err := redis.RedisGet(fmt.Sprintf(responseResourceBindingCacheKey, responseID))
+	channelIDStr, err := redis.RedisGet(fmt.Sprintf(keyPattern, resourceID))
 	if err != nil {
 		return 0, false
 	}
@@ -84,12 +107,76 @@ func GetResponseResourceBinding(responseID string) (int, bool) {
 		return 0, false
 	}
 
-	responseResourceBindings.Store(responseID, responseResourceBinding{
+	cache.Store(resourceID, responseResourceBinding{
 		ChannelID: channelID,
 		ExpireAt:  time.Now().Add(responseResourceBindingTTL),
 	})
 
 	return channelID, true
+}
+
+// PickResourceChannel chooses a resource-host channel for endpoints that do not
+// carry a model, such as conversations. It limits selection to OpenAI-compatible
+// channels that support Responses-style resources.
+func PickResourceChannel(group string, channelTypes ...int) (*Channel, error) {
+	if strings.TrimSpace(group) == "" {
+		return nil, fmt.Errorf("当前分组为空，无法为资源接口选择渠道")
+	}
+
+	allowedTypes := make(map[int]bool, len(channelTypes))
+	for _, channelType := range channelTypes {
+		allowedTypes[channelType] = true
+	}
+
+	ChannelGroup.RLock()
+	defer ChannelGroup.RUnlock()
+
+	type candidate struct {
+		channel *Channel
+	}
+
+	candidates := make([]candidate, 0)
+	for _, choice := range ChannelGroup.Channels {
+		if choice == nil || choice.Disable || choice.Channel == nil {
+			continue
+		}
+
+		channel := choice.Channel
+		if !allowedTypes[channel.Type] {
+			continue
+		}
+		if !channelGroupContains(channel.Group, group) {
+			continue
+		}
+		candidates = append(candidates, candidate{channel: channel})
+	}
+
+	if len(candidates) == 0 {
+		return nil, fmt.Errorf("当前分组 %s 下无可用的资源渠道", group)
+	}
+
+	best := candidates[0].channel
+	for _, item := range candidates[1:] {
+		channel := item.channel
+		if channel.GetPriority() > best.GetPriority() {
+			best = channel
+			continue
+		}
+		if channel.GetPriority() == best.GetPriority() && channel.Id > best.Id {
+			best = channel
+		}
+	}
+
+	return best, nil
+}
+
+func channelGroupContains(rawGroups string, target string) bool {
+	for _, group := range strings.Split(rawGroups, ",") {
+		if strings.TrimSpace(group) == target {
+			return true
+		}
+	}
+	return false
 }
 
 func cleanupResponseResourceBindings() {

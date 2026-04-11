@@ -98,6 +98,7 @@ func (r *relayResponsesCompact) send() (err *types.OpenAIErrorWithStatusCode, do
 		*r.provider.GetUsage() = *response.Usage.ToOpenAIUsage()
 	}
 	model.StoreResponseResourceBinding(response.ID, r.provider.GetChannel().Id)
+	model.StoreConversationResourceBinding(response.ConversationID, r.provider.GetChannel().Id)
 
 	if responseErr := responseMultipart(r.c, resp); responseErr != nil {
 		err = responseErr
@@ -141,6 +142,11 @@ func ResponsesResource(c *gin.Context) {
 		relayResponseWithOpenAIErr(c, &newErrWithCode)
 		return
 	}
+
+	recordResourceRelayLog(c, "中继:"+c.Request.URL.Path, map[string]any{
+		"response_id":   responseID,
+		"resource_type": "responses",
+	})
 }
 
 func ResponsesInputTokensCount(c *gin.Context) {
@@ -190,6 +196,10 @@ func ResponsesInputTokensCount(c *gin.Context) {
 		relayResponseWithOpenAIErr(c, &newErrWithCode)
 		return
 	}
+
+	recordResourceRelayLog(c, "中继:"+c.Request.URL.Path, map[string]any{
+		"resource_type": "responses_input_tokens",
+	})
 }
 
 func overrideRequestModel(rawBody []byte, modelName string) ([]byte, error) {
@@ -242,6 +252,37 @@ func proxyResponsesResourceRequest(c *gin.Context, provider providersBase.Provid
 	c.Set("upstream_request_path", getUpstreamPathOnly(url))
 
 	response, errWithCode := requester.SendRequestRaw(req)
+	if errWithCode != nil {
+		return errWithCode
+	}
+
+	return responseMultipart(c, response)
+}
+
+func proxyResourceRequestAndDecode(c *gin.Context, provider providersBase.ProviderInterface, url string, body any, output any) *types.OpenAIErrorWithStatusCode {
+	headers := provider.GetRequestHeaders()
+	for k, v := range c.Request.Header {
+		if _, ok := headers[k]; ok {
+			continue
+		}
+		headers[k] = strings.Join(v, ", ")
+	}
+
+	requester := provider.GetRequester()
+	req, err := requester.NewRequest(
+		c.Request.Method,
+		url,
+		requester.WithBody(body),
+		requester.WithHeader(headers),
+	)
+	if err != nil {
+		return common.ErrorWrapper(err, "new_request_failed", http.StatusInternalServerError)
+	}
+	defer req.Body.Close()
+
+	c.Set("upstream_request_path", getUpstreamPathOnly(url))
+
+	response, errWithCode := requester.SendRequest(req, output, true)
 	if errWithCode != nil {
 		return errWithCode
 	}

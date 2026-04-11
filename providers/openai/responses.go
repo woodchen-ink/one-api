@@ -38,6 +38,7 @@ func (p *OpenAIProvider) CreateResponses(request *types.OpenAIResponsesRequest) 
 
 	*p.Usage = *response.Usage.ToOpenAIUsage()
 	model.StoreResponseResourceBinding(response.ID, p.Channel.Id)
+	model.StoreConversationResourceBinding(response.ConversationID, p.Channel.Id)
 
 	getResponsesExtraBilling(response, p.Usage)
 
@@ -92,6 +93,7 @@ func (h *OpenAIResponsesStreamHandler) HandlerResponsesStream(rawLine *[]byte, d
 	case "response.created":
 		if openaiResponse.Response != nil {
 			model.StoreResponseResourceBinding(openaiResponse.Response.ID, h.ChannelID)
+			model.StoreConversationResourceBinding(openaiResponse.Response.ConversationID, h.ChannelID)
 		}
 		if len(openaiResponse.Response.Tools) > 0 {
 			for _, tool := range openaiResponse.Response.Tools {
@@ -128,6 +130,7 @@ func (h *OpenAIResponsesStreamHandler) HandlerResponsesStream(rawLine *[]byte, d
 	default:
 		if openaiResponse.Response != nil && openaiResponse.Response.Usage != nil {
 			model.StoreResponseResourceBinding(openaiResponse.Response.ID, h.ChannelID)
+			model.StoreConversationResourceBinding(openaiResponse.Response.ConversationID, h.ChannelID)
 			usage := openaiResponse.Response.Usage
 			*h.Usage = *usage.ToOpenAIUsage()
 			getResponsesExtraBilling(openaiResponse.Response, h.Usage)

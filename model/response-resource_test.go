@@ -16,3 +16,18 @@ func TestStoreAndGetResponseResourceBinding(t *testing.T) {
 		t.Fatalf("expected channel id %d, got %d", channelID, gotChannelID)
 	}
 }
+
+func TestStoreAndGetConversationResourceBinding(t *testing.T) {
+	const conversationID = "conv_test_binding"
+	const channelID = 456
+
+	StoreConversationResourceBinding(conversationID, channelID)
+
+	gotChannelID, ok := GetConversationResourceBinding(conversationID)
+	if !ok {
+		t.Fatalf("expected binding for %s", conversationID)
+	}
+	if gotChannelID != channelID {
+		t.Fatalf("expected channel id %d, got %d", channelID, gotChannelID)
+	}
+}
