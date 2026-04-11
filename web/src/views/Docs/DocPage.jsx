@@ -61,8 +61,16 @@ const DocPage = () => {
         <title>{seo.title}</title>
         <meta name="description" content={seo.desc} />
       </Helmet>
-      <Box sx={{ display: 'flex', width: '100%', maxWidth: 1100, p: { xs: 2, md: 5 } }}>
-        <Box sx={{ flex: 1, minWidth: 0 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          width: '100%',
+          maxWidth: 1100,
+          p: { xs: 2, md: 5 }
+        }}
+      >
+        <Box sx={{ flex: '1 1 auto', minWidth: 0 }}>
           {contentType === 'api' && <ApiSection section={apiSection} withTocIds />}
           {contentType === 'guide' && <QuickStartGuide guide={guide} />}
           {contentType === 'tutorial' && (

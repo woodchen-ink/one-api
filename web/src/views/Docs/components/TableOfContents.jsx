@@ -47,6 +47,7 @@ const TableOfContents = ({ items }) => {
       sx={{
         width: TOC_WIDTH,
         flexShrink: 0,
+        alignSelf: 'flex-start',
         position: 'sticky',
         top: 88,
         height: 'fit-content',
